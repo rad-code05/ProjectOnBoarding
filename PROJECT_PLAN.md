@@ -70,7 +70,7 @@ PDF button ─────── /api/pdf/[id] ──▶ react-pdf renderToBuffe
 | --- | --- | --- | --- |
 | 1 | Ticket Information | Ticket Type: Onboarding / Offboarding / Access Modification · Ticket ID (auto-generated) · Status: Open / In Progress / Closed · Priority: Low / Medium / High · Assignee (IT Owner) · Opened date · Closed date | Ticket ID from a database sequence, e.g. `UAM-2026-000123`. Status derived from workflow state (4.3). Dates are server timestamps. |
 | 2 | User / Employee Details | Employee Name · Job Title / Role · Department / Team · Manager / Requestor · Employment Event: Start / Termination / Role Change · Effective Date | Employment Event is implied by Ticket Type (Onboarding→Start, Offboarding→Termination, Access Modification→Role Change); derive it, don't ask twice. Split name into first/last (needed for the PDF filename). |
-| 3 | Access Authorization (Pre-Provisioning) | Approver Name · Approver Role / Title · Decision: Approved / Rejected · Approval Date · Approver Comments | *"Access must not be provisioned or modified until this section is completed"* → execution fields are locked until approved. Approver is the signed-in approver, not a typed name. |
+| 3 | Access Authorization (Pre-Provisioning) | Approver Name · Approver Role / Title · Decision: Approved / Rejected · Approval Date · Approver Comments | **Changed (decision 2026-09-30):** there is no pre-provisioning approval step. This becomes **Final Authorization & Confirmation**, completed by Moises at the end (see 4.3, 5.1). The line *"Access must not be provisioned or modified until this section is completed"* is removed from the app and PDF so the record does not claim a control that isn't performed. Approver is the signed-in user; the date is the real server timestamp — never backdated or editable. |
 | 4 | Access Provisioning Method | RBAC template applied **or** Custom / Exception · Role Template Name · RBAC Document Link (read-only) | *"Only list systems below if access deviates from the approved RBAC."* See 4.4. |
 | 5 | Application Access Matrix | Per app: Action · Authorized Role / Permission · Notes — 4 categories, 26 apps (4.2) | Catalog-driven rows, not fixed columns. |
 | 6 | IT Equipment Management | Laptop (Windows / macOS), Mobile Phone, Other · Action: Issue / Return · Asset Tag / Serial No. · Notes | Multiple items allowed; "Other" needs a description. |
@@ -119,14 +119,14 @@ Catalog rules: each app has its **own action set** (Hexnode differs) and **own p
 
 | Internal state | Meaning | Form "Status" on PDF |
 | --- | --- | --- |
-| `draft` | Being filled in (manually or by AI); not yet visible to approvers | — (no PDF) |
-| `pending_approval` | Submitted; waiting for approver | Open |
-| `rejected` | Approver rejected (with comment); requester may revise → back to `draft` | Closed (if abandoned) |
-| `approved` | Authorized; IT may start | In Progress |
-| `in_execution` | IT recording actions | In Progress |
-| `pending_review` | IT confirmed execution and signed | In Progress |
-| `closed` | Final reviewer confirmed complete; PDF generated | Closed |
-| `cancelled` | Withdrawn before execution (reason required) | Closed |
+| `draft` | Being filled in (manually or by AI) | Open |
+| `in_execution` | Raju setting up / removing access and recording actions | In Progress |
+| `pending_confirmation` | Raju confirmed execution and signed Section 9; waiting for Moises | In Progress |
+| `returned` | Moises sent it back with comments; Raju corrects → `pending_confirmation` again | In Progress |
+| `closed` | Moises confirmed, approved, and signed; PDF generated | Closed |
+| `cancelled` | Withdrawn (reason required) | Closed |
+
+`draft` → `in_execution` can happen immediately; there is no approval gate before provisioning.
 
 Transitions are enforced in the database (a transition function + check), not only in the UI. Each transition writes an audit event.
 
@@ -139,7 +139,7 @@ Transitions are enforced in the database (a transition function + check), not on
 5. **Manager and Requestor are one field** — often different people; split them.
 6. **No employee identifier** — add work email as the stable key (names are not unique).
 7. **"Access removed within SLA" is self-reported** — compute it from timestamps.
-8. **Same person as approver and final reviewer** — decide whether this is allowed (segregation of duties, Section 17).
+8. **Approver and final reviewer were separate steps** — resolved: merged into one final confirmation by Moises (Section 5.1).
 9. **No record of the signer's identity beyond a name** — the app records the authenticated user who signed.
 
 ### 4.5 Additional fields
@@ -171,12 +171,13 @@ Transitions are enforced in the database (a transition function + check), not on
 ### 5.1 Onboarding / access modification
 1. Raju signs in (Clerk) → **Main page**: request list + "New request".
 2. Raju fills the form **manually** or via the **AI chat side panel** (the main expected usage). Saved as `draft`.
-3. Raju reviews the confirmation summary, **signs as preparer**, and **submits** → `pending_approval`; Moises is notified (phase 2: email via Resend).
-4. Moises reviews what Raju signed and **approves (and signs Section 3)** or rejects with comments. Execution sections stay locked until approval, as the form requires.
-5. Raju records app/equipment/physical-access actions, checklist, notes → confirms execution → **signs Section 9** → `pending_review`.
-6. Moises checks the final summary and confirms complete → `closed` → PDF generated and stored.
+3. Raju starts work → `in_execution`; records app/equipment/physical-access actions, checklist, and notes as they are done.
+4. Raju reviews the confirmation summary → **signs Section 9** → `pending_confirmation`; Moises is notified (phase 2: email via Resend).
+5. Moises reviews everything Raju signed and either **confirms, approves, and signs** (Sections 3 + 10 + 11) → `closed` → PDF generated and stored, or **returns** it with comments → Raju corrects and re-signs.
 
-> **To confirm:** this assumes two approvals by Moises — before provisioning (Section 3) and at final closure (Section 10). If Moises should approve only once, the options are (a) approve before provisioning and let closure happen on Raju's execution sign-off, or (b) approve only at the end — but (b) contradicts the form's rule that access must not be provisioned before authorization.
+**Decision (2026-09-30):** Moises signs **once, at the end, as confirmation**. There is no approval before access is set up.
+
+> **Compliance note:** this is a *post-provisioning review* control, not a *pre-provisioning authorization* control. If Laine is audited (e.g. SOC 2 / ISO 27001 evidence via SecureFrame or Vouch), check with the auditor that end-of-process confirmation is acceptable. The app records the true order of events either way, and can add an optional pre-approval step later as a setting if needed — it will never backdate dates.
 
 ### 5.2 Offboarding
 Same flow, plus: SLA timeline required at creation; access inventory pre-fills removals; SLA countdown shown on the request and dashboard; missed-SLA reason required before closure.
@@ -246,7 +247,7 @@ All tool inputs are validated with Zod on the server; every server-side tool re-
 
 ### 8.1 Signing flow (as requested)
 1. Each signer uploads their own **signature or initials PNG** once in *My profile* (can replace it; old versions kept for historical records).
-2. When the approver (Section 3) or IT owner (Section 9) finishes, a **confirmation dialog** shows a read-only summary of everything being signed.
+2. When Raju (IT owner, Section 9) finishes, and again when Moises (final confirmation) finishes, a **confirmation dialog** shows a read-only summary of everything being signed.
 3. On "Confirm and sign", the server attaches the signer's current signature image with a **server-generated timestamp**, and records: signer's user ID, role, request ID, form version, and a SHA-256 hash of the request snapshot.
 4. Once signed, the signed sections are locked; any later change clears the signature and requires re-approval (rule to confirm in Section 17).
 
@@ -264,7 +265,7 @@ Rules: only the signed-in user can apply their own signature; the AI can never s
 ## 9. Reporting
 
 ### 9.1 Date fields (stored separately, server-generated where applicable)
-`created_at`, `submitted_at`, `approved_at`, `effective_date`, `execution_completed_at`, `closed_at`, `sla_due_at`.
+`created_at`, `effective_date`, `execution_started_at`, `execution_completed_at` (Raju signs), `confirmed_at` (Moises signs), `closed_at`, `sla_due_at`.
 
 ### 9.2 Metric definitions (proposed — confirm in Section 17)
 - **"Onboarded this month"** = onboarding requests with `execution_completed_at` in the calendar month (company timezone). "Created this month" and "Closed this month" are available as separate views.
@@ -286,9 +287,8 @@ Rules: only the signed-in user can apply their own signature; the AI can never s
 | Role | Can |
 | --- | --- |
 | Requester | Create requests, edit own drafts, view own requests |
-| Approver | View submitted requests in scope; approve/reject; sign Section 3 |
-| IT operator | View approved requests; record execution; sign Section 9 |
-| Reviewer | Final review and closure |
+| Approver / Reviewer | Review requests awaiting confirmation; confirm & sign, or return with comments; closes the request |
+| IT operator | Record execution; sign Section 9 |
 | Administrator | Users/roles, catalogs, RBAC templates, form versions, defaults |
 | Auditor (read-only) | View all records, reports, audit log |
 
@@ -299,7 +299,7 @@ Users can hold multiple roles.
 | Person | Roles | Responsibilities |
 | --- | --- | --- |
 | Raju Bholani | Administrator, Requester, IT operator | Full admin (users, catalog, fields, templates); main user of the AI chat and manual entry; signs as preparer and as IT execution owner (Section 9) |
-| Moises Larez | Approver, Reviewer | Confirms and approves requests Raju has signed (Section 3 signature); final review and closure (Section 10) |
+| Moises Larez | Approver / Reviewer | Signs once at the end: confirms and approves what Raju has done and signed, then the request closes (Sections 3, 10, 11) |
 
 **Segregation-of-duties rules (enforced server-side):**
 - A user can never approve or close a request they prepared or executed — so Raju's admin rights do not let Raju approve Raju's own requests.
@@ -394,7 +394,7 @@ proxy.ts             clerkMiddleware()
 
 - Only invited users can sign in; sign-out ends the session; unauthorized users cannot read or change any record (verified by RLS tests, not only UI tests).
 - All three ticket types capture every field of form v4 plus agreed additions.
-- Execution cannot be recorded before approval; transitions outside the state machine are rejected by the database.
+- A request cannot close without Raju's execution sign-off and Moises's final confirmation signature; transitions outside the state machine are rejected by the database; no date on the record can be set earlier than the real event.
 - AI proposals stay unsaved/draft until a human accepts them; the AI has no tool to approve, sign, submit, or close.
 - Admins can add a field or app; existing requests and PDFs are unchanged.
 - Signing shows a confirmation summary and records signer, server timestamp, and snapshot hash.
@@ -534,6 +534,7 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 | Signature image misused | Only owner can apply; private storage; audit record is the proof |
 | Library API churn (Clerk Core 3, Next 16) | Pin versions; Context7 re-check on upgrades; CI |
 | Scope creep (auto-provisioning) | Explicitly out of scope for v1 |
+| No pre-provisioning authorization (by decision) | Truthful timestamps; Moises reviews every request; optional pre-approval setting can be added later; confirm with auditor |
 
 ---
 
@@ -542,7 +543,7 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 **Resolved 2026-09-30:** roles (Raju = admin + requester + IT operator; Moises = approver + reviewer — Section 10.1); additional field = Country (Section 4.5); application catalog must be editable without code (Section 7).
 
 1. **Auth:** Clerk (recommended) or Supabase Auth? SSO via Google Workspace or Microsoft 365? Invitation-only?
-2. **Approval steps:** does Moises approve twice (before provisioning and at closure — proposed, Section 5.1) or once? Who is the backup approver? How are role changes by an admin controlled (Section 10.1)?
+2. **Approval:** resolved — Moises signs once at the end (Section 5.1). Still open: who is the backup approver? How are role changes by an admin controlled (Section 10.1)? Is post-provisioning confirmation acceptable to Laine's auditor?
 3. **Monthly metric:** "onboarded" = execution completed (proposed), final review, or closure?
 4. **Signature:** internal acknowledgment (proposed) or legally binding e-signature?
 5. **Edits after approval:** which changes require re-approval and re-signing?
