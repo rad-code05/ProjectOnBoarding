@@ -12,6 +12,7 @@ UI design for the internal user access management app, styled after [laine.ai](h
 | [request-list.md](request-list.md) | Requests list — landing page after sign-in, with **New request** |
 | [main-page.md](main-page.md) | Request form with the Laine robot assistant |
 | [review-sign.md](review-sign.md) | Review & sign confirmation dialog |
+| [pdf-export.md](pdf-export.md) | Closed request page: Download PDF, Save to SharePoint |
 
 ## Principles
 
@@ -30,6 +31,7 @@ UI design for the internal user access management app, styled after [laine.ai](h
 | Requests list (landing page) | Draft, awaiting review |
 | Request form + assistant | Revision 2 (denser, two-column application access), awaiting review |
 | Laine assistant robot (launcher) | Draft |
-| Review & sign dialog (Raju) | Draft, awaiting review |
+| Review & sign dialog (Raju) | Approved |
+| Closed request · PDF export (Download / SharePoint) | Draft, awaiting review |
 | Components sheet | Draft |
 | Confirm & sign dialog (Moises), reports, audit log, admin, batch review, My profile (signature upload) | Not started |

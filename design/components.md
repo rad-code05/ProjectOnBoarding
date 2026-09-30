@@ -59,6 +59,15 @@ Rules:
 | `SignatureBlock` | `signatureUrl`, `signer`, `role`, `section`, `formVersion` | Signature image preview + "will be recorded as"; no editable date |
 | `Checkbox` | `label`, `checked`, `required` | Native checkbox, ink accent color (UI primitive) |
 
+## Records & export (`components/records/`)
+
+| Component | Props | Notes |
+| --- | --- | --- |
+| `PdfRecordCard` | `filename`, `formVersion`, `generatedAt`, `hash`, `onDownload`, `onSaveToSharePoint`, `onPreview` | Black-outlined card with PDF icon and actions |
+| `SharePointStatus` | `status` (`not_saved` · `saving` · `saved` · `failed`), `path`, `savedBy`, `savedAt`, `url` | Sand strip under the actions; failed state in signal with Retry |
+| `ActivityList` | `events[]` | Compact audit timeline |
+| `Toast` | `message`, `tone` | Black pill toast, `role="status"` (UI primitive) |
+
 ## Requests list (`components/requests/`)
 
 | Component | Props | Notes |

@@ -260,6 +260,7 @@ Rules: only the signed-in user can apply their own signature; the AI can never s
 - Filename sanitising: lowercase, accents transliterated (`José Müller` → `jose.muller`), spaces/hyphens in multi-part names kept as `-`, other characters removed. Storage path includes the ticket ID so names never collide: `pdfs/UAM-2026-000123/jose.muller-onboarding.pdf`. The download keeps the plain filename.
 - Draft/unsigned PDFs (if allowed) are watermarked "DRAFT – NOT APPROVED".
 - Every download/export is an audit event.
+- **Export destinations** (design: `design/pdf-export.md`): **Download PDF** to the computer (v1). **Save to SharePoint** via Microsoft Graph with an Entra app registration limited by `Sites.Selected` to one site/library (proposed v1.1; needs a Microsoft 365 admin). Decision open in Section 17.
 
 ---
 
@@ -560,3 +561,4 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 12. **PDF filenames** for offboarding and access modification (proposed in 8.2); may drafts be exported?
 13. **Existing records:** import past completed forms?
 14. **Owners:** product owner, technical owner, and who approves go-live.
+15. **SharePoint:** manual upload only, a "Save to SharePoint" button, or automatic save on close? Which site, library and folder? Who can create the Entra app registration and grant `Sites.Selected` access?
