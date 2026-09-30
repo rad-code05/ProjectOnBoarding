@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine Onboarding Rights — Reports</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}
+a{color:#000000}a:hover{color:#cf2e2e}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1080px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+
+<header style="height: 60px; flex-shrink: 0; box-sizing: border-box; padding: 0 28px; background: #000000; display: flex; align-items: center; gap: 24px">
+<img src="/_blob/17b23c9ce6dc5f048942c7b514470f03" alt="Laine" style="width: 60px; height: 22px; display: block">
+<div style="width: 1px; height: 20px; background: #333333"></div>
+<div style="font-family: Newsreader, serif; font-size: 17px; color: #FFFFFF">Laine onboarding rights</div>
+<nav aria-label="Main" style="display: flex; gap: 4px; margin-left: 8px; align-self: stretch">
+<a href="RequestList.dc.html" style="display: flex; align-items: center; padding: 0 12px; font-size: 13px; font-weight: 500; color: #7e7e7e; text-decoration: none; border-bottom: 2px solid #000000">Requests</a>
+<a href="#" aria-current="page" style="display: flex; align-items: center; padding: 0 12px; font-size: 13px; font-weight: 600; color: #FFFFFF; text-decoration: none; border-bottom: 2px solid #cf2e2e">Reports</a>
+<a href="#" style="display: flex; align-items: center; padding: 0 12px; font-size: 13px; font-weight: 500; color: #7e7e7e; text-decoration: none; border-bottom: 2px solid #000000">Audit log</a>
+<a href="#" style="display: flex; align-items: center; padding: 0 12px; font-size: 13px; font-weight: 500; color: #7e7e7e; text-decoration: none; border-bottom: 2px solid #000000">Admin</a>
+</nav>
+<div style="flex-grow: 1"></div>
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="width: 30px; height: 30px; border-radius: 100px; background: #F4F0EA; color: #000000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">RB</div>
+<div style="display: flex; flex-direction: column; gap: 1px">
+<span style="font-size: 12px; font-weight: 600; color: #FFFFFF">Raju Bholani</span>
+<span style="font-size: 10px; color: #7e7e7e">Admin · IT owner</span>
+</div>
+<button type="button" aria-label="Sign out" style="margin-left: 6px; width: 36px; height: 36px; border-radius: 100px; border: 1px solid #333333; background: #000000; display: flex; align-items: center; justify-content: center">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+</button>
+</div>
+</header>
+
+<div style="flex-grow: 1; display: flex; min-height: 0">
+
+<aside aria-label="Report types" style="width: 280px; flex-shrink: 0; box-sizing: border-box; padding: 24px 16px; border-right: 1px solid #dcd4c7; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 0 8px">
+<h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 28px">Reports</h1>
+<span style="font-size: 12px; color: #535353">Choose a report to generate</span>
+</div>
+
+<nav style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #535353; padding: 0 8px 6px">People</span>
+<sc-for list="{{people}}" as="r" hint-placeholder-count="4">
+<button type="button" onClick="{{r.pick}}" aria-pressed="{{r.selected}}" style="{{r.itemStyle}}">
+<span style="font-size: 13px; font-weight: {{r.weight}}">{{r.name}}</span>
+<span style="font-size: 11px; line-height: 1.4; color: #535353">{{r.desc}}</span>
+</button>
+</sc-for>
+</nav>
+
+<nav style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #535353; padding: 0 8px 6px">Sign-off &amp; compliance</span>
+<sc-for list="{{compliance}}" as="r" hint-placeholder-count="4">
+<button type="button" onClick="{{r.pick}}" aria-pressed="{{r.selected}}" style="{{r.itemStyle}}">
+<span style="font-size: 13px; font-weight: {{r.weight}}">{{r.name}}</span>
+<span style="font-size: 11px; line-height: 1.4; color: #535353">{{r.desc}}</span>
+</button>
+</sc-for>
+</nav>
+
+<div style="margin-top: auto; padding: 12px; border: 1px dashed #cfc7ba; border-radius: 10px; font-size: 11px; line-height: 1.5; color: #535353">New report types can be added by the admin later — each one is a saved query with its own definition.</div>
+</aside>
+
+<main style="flex-grow: 1; min-width: 0; box-sizing: border-box; padding: 28px 36px; display: flex; flex-direction: column; gap: 18px">
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 6px; max-width: 640px">
+<div style="display: flex; align-items: center; gap: 10px">
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 30px; line-height: 1.1">{{current.name}}</h2>
+<span style="font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 100px; background: #ece6db; color: #535353">Sample data</span>
+</div>
+<p style="margin: 0; font-size: 12px; line-height: 1.55; color: #535353"><strong style="color: #000000">Definition:</strong> {{current.def}}</p>
+</div>
+<div style="display: flex; gap: 8px; flex-shrink: 0">
+<button type="button" style="height: 38px; padding: 0 16px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg>Export CSV</button>
+<button type="button" style="height: 38px; padding: 0 16px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg>Export PDF</button>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<div role="radiogroup" aria-label="Period" style="display: flex; gap: 3px; padding: 3px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 100px">
+<button type="button" role="radio" aria-checked="false" style="height: 30px; padding: 0 12px; border: none; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 500">This month</button>
+<button type="button" role="radio" aria-checked="false" style="height: 30px; padding: 0 12px; border: none; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 500">Last 3 months</button>
+<button type="button" role="radio" aria-checked="true" style="height: 30px; padding: 0 12px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600">Last 12 months</button>
+<button type="button" role="radio" aria-checked="false" style="height: 30px; padding: 0 12px; border: none; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 500">Custom…</button>
+</div>
+<select aria-label="Ticket type" style="height: 38px; padding: 0 12px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 100px; font-family: Raleway, sans-serif; font-size: 12px"><option>All types</option></select>
+<select aria-label="Country" style="height: 38px; padding: 0 12px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 100px; font-family: Raleway, sans-serif; font-size: 12px"><option>All countries</option></select>
+<select aria-label="Department" style="height: 38px; padding: 0 12px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 100px; font-family: Raleway, sans-serif; font-size: 12px"><option>All departments</option></select>
+<span style="margin-left: auto; font-size: 11px; color: #535353">Oct 2025 – Sep 2026 · company timezone</span>
+</div>
+
+<sc-if value="{{isMonth}}" hint-placeholder-val="{{true}}">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 600; color: #535353">Onboarded this month</span><span style="font-family: Newsreader, serif; font-size: 30px">4</span></div>
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 600; color: #535353">Last 12 months</span><span style="font-family: Newsreader, serif; font-size: 30px">46</span></div>
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 600; color: #535353">Busiest month</span><span style="font-family: Newsreader, serif; font-size: 30px">Aug 2026 · 7</span></div>
+</div>
+
+<section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 18px 22px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h3 style="margin: 0; font-size: 13px; font-weight: 700">Onboardings completed per month</h3>
+<span aria-live="polite" style="font-size: 12px; color: #535353">{{readout}}</span>
+</div>
+<div style="position: relative; height: 240px; display: flex; gap: 0; padding-left: 28px; border-bottom: 1px solid #535353">
+<div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; height: 1px; background: #ece6db"></div>
+<div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 120px; height: 1px; background: #ece6db"></div>
+<span aria-hidden="true" style="position: absolute; left: 0; top: -7px; font-size: 10px; color: #535353">8</span>
+<span aria-hidden="true" style="position: absolute; left: 0; top: 113px; font-size: 10px; color: #535353">4</span>
+<sc-for list="{{months}}" as="m" hint-placeholder-count="12">
+<div onMouseEnter="{{m.hover}}" onMouseLeave="{{clearHover}}" style="position: relative; flex-grow: 1; display: flex; align-items: flex-end; justify-content: center; cursor: default">
+<div style="{{m.barStyle}}"></div>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; padding-left: 28px">
+<sc-for list="{{months}}" as="m" hint-placeholder-count="12">
+<span style="flex-grow: 1; flex-basis: 0; text-align: center; font-size: 10px; color: #535353">{{m.label}}</span>
+</sc-for>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{isBars}}" hint-placeholder-val="{{false}}">
+<section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 18px 22px; display: flex; flex-direction: column; gap: 12px">
+<h3 style="margin: 0; font-size: 13px; font-weight: 700">{{current.chartTitle}}</h3>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{bars}}" as="b" hint-placeholder-count="6">
+<div title="{{b.label}}: {{b.value}}" style="display: flex; align-items: center; gap: 12px; font-size: 12px">
+<span style="width: 170px; flex-shrink: 0; text-align: right">{{b.label}}</span>
+<div style="flex-grow: 1; height: 20px; display: flex; align-items: center; gap: 8px; border-left: 1px solid #535353">
+<div style="{{b.barStyle}}"></div>
+<span style="font-weight: 700">{{b.value}}</span>
+</div>
+</div>
+</sc-for>
+</div>
+</section>
+</sc-if>
+
+<section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column">
+<div style="{{tableHeadStyle}}">
+<sc-for list="{{cols}}" as="c" hint-placeholder-count="6"><span>{{c}}</span></sc-for>
+</div>
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="6">
+<div style="{{tableRowStyle}}">
+<sc-for list="{{row.cells}}" as="cell" hint-placeholder-count="6"><span style="{{cell.s}}">{{cell.t}}</span></sc-for>
+</div>
+</sc-for>
+<div style="padding: 10px 20px; font-size: 11px; color: #535353">{{footer}}</div>
+</section>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1080}}'>
+class Component extends DCLogic {
+renderVals() {
+const st = this.state || {};
+const sel = st.report || 'month';
+const defs = [
+{ id: 'users', group: 'p', name: 'All users list', desc: 'Everyone with a request, with status and dates', kind: 'table', def: 'All employees with an onboarding, offboarding or access-modification request in the period, newest first.' },
+{ id: 'month', group: 'p', name: 'Onboarded by month', desc: 'Completed onboardings per month', kind: 'month', def: 'Onboarding requests whose IT execution was completed in the month (company timezone). Drafts and cancelled requests are excluded.' },
+{ id: 'country', group: 'p', name: 'Onboarded by country', desc: 'Completed onboardings grouped by country', kind: 'bars', chartTitle: 'Onboardings completed, by country', def: 'Completed onboardings in the period, grouped by the employee Country field.' },
+{ id: 'department', group: 'p', name: 'Onboarded by department', desc: 'Completed onboardings grouped by team', kind: 'bars', chartTitle: 'Onboardings completed, by department', def: 'Completed onboardings in the period, grouped by Department / Team.' },
+{ id: 'signed', group: 'c', name: 'Signature log', desc: 'When IT signed and when Moises approved', kind: 'table', def: 'Every signature with its server timestamp: IT execution (Raju) and final approval (Moises or backup approver).' },
+{ id: 'sla', group: 'c', name: 'Offboarding SLA', desc: 'Access removed within the agreed timeline', kind: 'table', def: 'Offboarding requests: agreed removal timeline vs. the time access removal was completed. Missed SLAs show the recorded reason.' },
+{ id: 'apps', group: 'c', name: 'Access by application', desc: 'Active access grants per tool', kind: 'bars', chartTitle: 'People with active access, by application', def: 'Current access inventory: people who hold access to each application, from closed requests.' },
+{ id: 'open', group: 'c', name: 'Open requests by status', desc: 'Where work is waiting right now', kind: 'bars', chartTitle: 'Open requests, by status', def: 'Requests that are not closed or cancelled, grouped by their current status.' }
+];
+const item = (d) => {
+const on = d.id === sel;
+return {
+name: d.name, desc: d.desc, selected: on ? 'true' : 'false', weight: on ? '700' : '500',
+pick: () => this.setState({ report: d.id }),
+itemStyle: 'display: flex; flex-direction: column; gap: 2px; align-items: flex-start; text-align: left; width: 100%; padding: 9px 10px; border-radius: 10px; cursor: pointer; font-family: Raleway, sans-serif; color: #000000; ' + (on ? 'background: #FFFFFF; border: 1.5px solid #000000;' : 'background: transparent; border: 1.5px solid transparent;')
+};
+};
+const current = defs.find((d) => d.id === sel);
+
+const monthData = [['Oct', 3], ['Nov', 2], ['Dec', 4], ['Jan', 1], ['Feb', 5], ['Mar', 3], ['Apr', 6], ['May', 4], ['Jun', 2], ['Jul', 5], ['Aug', 7], ['Sep', 4]];
+const hov = st.hover;
+const months = monthData.map((m, i) => ({
+label: m[0],
+hover: () => this.setState({ hover: i }),
+barStyle: 'width: 34px; height: ' + Math.round(m[1] / 8 * 240) + 'px; background: ' + (hov === undefined || hov === i ? '#000000' : '#7e7e7e') + '; border-radius: 4px 4px 0 0;'
+}));
+const readout = hov === undefined ? 'Hover a bar for details' : (monthData[hov][0] + (hov < 3 ? ' 2025' : ' 2026') + ' · ' + monthData[hov][1] + ' onboarded');
+
+const barSets = {
+country: [['Switzerland', 21], ['Germany', 9], ['Italy', 6], ['United Arab Emirates', 5], ['France', 3], ['Other', 2]],
+department: [['Engineering', 16], ['Design', 8], ['Sales', 7], ['Operations', 6], ['Legal', 5], ['Finance', 4]],
+apps: [['Google Workspace', 38], ['Slack', 38], ['Office 365', 22], ['GitHub', 17], ['Figma', 12], ['Supabase', 9], ['HubSpot', 7], ['Deel', 4]],
+open: [['Draft', 2], ['In execution', 3], ['Awaiting confirmation', 2], ['Returned', 1]]
+};
+const set = barSets[sel] || [];
+const maxV = set.reduce((a, b) => Math.max(a, b[1]), 1);
+const bars = set.map((b) => ({ label: b[0], value: b[1], barStyle: 'height: 18px; width: ' + Math.max(2, Math.round(b[1] / maxV * 560)) + 'px; background: #000000; border-radius: 0 4px 4px 0;' }));
+
+const c = (t, s) => ({ t: t, s: s || '' });
+const bold = 'font-weight: 700';
+const muted = 'color: #535353';
+const tables = {
+users: { cols: ['Employee', 'Email', 'Department', 'Country', 'Type', 'Status', 'Effective', 'Closed'], tpl: '1.3fr 1.8fr 1fr 1fr 1.2fr 1.3fr 0.9fr 0.9fr', rows: [
+['Anna Keller', 'anna.keller@laine.ai', 'Design', 'Switzerland', 'Onboarding', 'Awaiting confirmation', '14 Oct 2026', '—'],
+['Marco Rossi', 'marco.rossi@laine.ai', 'Sales', 'Italy', 'Offboarding', 'In execution', '30 Sep 2026', '—'],
+['Lea Schmid', 'lea.schmid@laine.ai', 'Legal', 'Switzerland', 'Access modification', 'Closed', '1 Oct 2026', '2 Oct 2026'],
+['Tom Weber', 'tom.weber@laine.ai', 'Engineering', 'Germany', 'Onboarding', 'Closed', '22 Sep 2026', '24 Sep 2026'],
+['Sara Haddad', 'sara.haddad@laine.ai', 'Operations', 'United Arab Emirates', 'Onboarding', 'Closed', '15 Sep 2026', '16 Sep 2026'],
+['Jonas Meier', 'jonas.meier@laine.ai', 'Engineering', 'Switzerland', 'Offboarding', 'Closed', '12 Sep 2026', '12 Sep 2026']
+].map((r) => r.map((v, i) => c(v, i === 0 ? bold : (i === 1 ? muted : '')))), footer: 'Showing 6 of 58 · sorted by most recent' },
+month: { cols: ['Month', 'Onboarded', 'Offboarded', 'Access changes', 'Avg. days to close'], tpl: '1.2fr 1fr 1fr 1fr 1fr', rows: [
+['Sep 2026', '4', '2', '3', '2.1'], ['Aug 2026', '7', '1', '2', '1.8'], ['Jul 2026', '5', '3', '1', '2.4'], ['Jun 2026', '2', '2', '4', '1.5']
+].map((r) => r.map((v, i) => c(v, i === 0 ? bold : ''))), footer: 'Table view of the chart · 4 of 12 months shown' },
+signed: { cols: ['Ticket', 'Employee', 'Type', 'IT signed (Raju)', 'Approved (Moises)', 'Time to approve', 'PDF'], tpl: '1.2fr 1.2fr 1.2fr 1.3fr 1.3fr 1fr 0.8fr', rows: [
+['UAM-2026-000124', 'Anna Keller', 'Onboarding', '1 Oct 2026, 17:40', 'Waiting', '—', '—'],
+['UAM-2026-000122', 'Lea Schmid', 'Access modification', '1 Oct 2026, 11:05', '2 Oct 2026, 09:12', '22 h', 'Yes'],
+['UAM-2026-000119', 'Tom Weber', 'Onboarding', '23 Sep 2026, 16:20', '24 Sep 2026, 10:02', '18 h', 'Yes'],
+['UAM-2026-000117', 'Sara Haddad', 'Onboarding', '15 Sep 2026, 15:48', '16 Sep 2026, 08:30', '17 h', 'Yes'],
+['UAM-2026-000116', 'Jonas Meier', 'Offboarding', '12 Sep 2026, 12:10', '12 Sep 2026, 14:45', '3 h', 'Yes']
+].map((r) => r.map((v, i) => c(v, i === 1 ? bold : (i === 0 ? muted : '')))), footer: 'Timestamps are recorded by the server at signing' },
+sla: { cols: ['Employee', 'Timeline', 'Effective', 'Access removed', 'Result', 'Reason if missed'], tpl: '1.2fr 1fr 1.1fr 1.3fr 0.8fr 2fr', rows: [
+[c('Marco Rossi', bold), c('Within 24h'), c('30 Sep 2026'), c('In progress', muted), c('Due in 6h', 'font-weight: 700; color: #cf2e2e'), c('—', muted)],
+[c('Jonas Meier', bold), c('Immediate'), c('12 Sep 2026'), c('12 Sep 2026, 11:40'), c('Met', bold), c('—', muted)],
+[c('Nina Brunner', bold), c('Within 48h'), c('2 Sep 2026'), c('5 Sep 2026, 09:15'), c('Missed', 'font-weight: 700; color: #cf2e2e'), c('Laptop returned late by courier')]
+], footer: 'Met: 11 · Missed: 1 · last 12 months' }
+};
+const barTables = {
+country: ['Country', 'Onboarded'], department: ['Department', 'Onboarded'], apps: ['Application', 'People with access'], open: ['Status', 'Requests']
+};
+let t = tables[sel];
+if (!t) {
+t = { cols: barTables[sel], tpl: '2fr 1fr', rows: set.map((b) => [c(b[0], bold), c(String(b[1]))]), footer: 'Table view of the chart' };
+}
+const base = 'display: grid; grid-template-columns: ' + t.tpl + '; gap: 12px; padding: 10px 20px; ';
+return {
+people: defs.filter((d) => d.group === 'p').map(item),
+compliance: defs.filter((d) => d.group === 'c').map(item),
+current: current,
+isMonth: current.kind === 'month',
+isBars: current.kind === 'bars',
+months: months, readout: readout, clearHover: () => this.setState({ hover: undefined }),
+bars: bars,
+cols: t.cols, rows: t.rows.map((r) => ({ cells: r })), footer: t.footer,
+tableHeadStyle: base + 'border-bottom: 1px solid #dcd4c7; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #535353;',
+tableRowStyle: base + 'border-bottom: 1px solid #ece6db; font-size: 12px; align-items: center;'
+};
+}
+}
+</script>
+</body>
+</html>

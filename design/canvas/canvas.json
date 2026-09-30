@@ -1,0 +1,40 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "ApproverHome.dc.html": { "h": 1000, "is_interactive": true, "title": "Moises · Approvals (landing)", "w": 1440, "x": 0, "y": 4400 },
+    "AssistantLauncher.dc.html": { "h": 520, "title": "Laine assistant robot", "w": 1440, "x": 3040, "y": 2200 },
+    "ClosedRequest.dc.html": { "h": 1000, "is_interactive": true, "title": "Moises · Closed request · PDF export", "w": 1440, "x": 3040, "y": 4400 },
+    "Components.dc.html": { "h": 1060, "title": "Components", "w": 1440, "x": 3040, "y": 1020 },
+    "ConfirmSign.dc.html": { "h": 1220, "is_interactive": true, "title": "Moises · Confirm & sign", "w": 1440, "x": 1520, "y": 4400 },
+    "Main.dc.html": { "h": 900, "title": "Sign-in · Desktop", "w": 1440, "x": 0, "y": 0 },
+    "MainPage.dc.html": { "h": 1600, "is_interactive": true, "title": "Request form + assistant", "w": 1440, "x": 1520, "y": 1020 },
+    "RequestList.dc.html": { "h": 960, "is_interactive": true, "title": "Requests list (landing after sign-in)", "w": 1440, "x": 0, "y": 1020 },
+    "ReviewSign.dc.html": { "h": 1180, "title": "Review & sign dialog", "w": 1440, "x": 0, "y": 2840 },
+    "Reports.dc.html": { "h": 1080, "is_interactive": true, "title": "Reports (Raju & Moises)", "w": 1440, "x": 1520, "y": 2840 },
+    "SignInError.dc.html": { "h": 900, "title": "Sign-in · Wrong password", "w": 1440, "x": 1520, "y": 0 },
+    "SignInMobile.dc.html": { "h": 844, "title": "Sign-in · Mobile", "w": 390, "x": 3040, "y": 0 }
+  },
+  "createdOnFiles": { "at": "2026-09-30T12:01:58.945Z", "v": 1 },
+  "designSystems": [],
+  "launch": { "view": "canvas" },
+  "notes": {
+    "moisesRow": { "kind": "title1", "maxW": 4480, "text": "Moises — approver view (approve, reports, export PDF)", "w": 240, "x": -157, "y": 4155 }
+  },
+  "order": [
+    "Main.dc.html",
+    "SignInError.dc.html",
+    "SignInMobile.dc.html",
+    "RequestList.dc.html",
+    "MainPage.dc.html",
+    "Components.dc.html",
+    "AssistantLauncher.dc.html",
+    "ReviewSign.dc.html",
+    "Reports.dc.html",
+    "ApproverHome.dc.html",
+    "ConfirmSign.dc.html",
+    "ClosedRequest.dc.html"
+  ],
+  "pages": [],
+  "title": "Laine Onboarding Rights — Design"
+}

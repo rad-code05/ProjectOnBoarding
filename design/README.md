@@ -38,4 +38,19 @@ UI design for the internal user access management app, styled after [laine.ai](h
 | Moises: Approvals landing, Confirm & sign | Draft, awaiting review |
 | Components sheet | Draft |
 | Reports | Draft, awaiting review |
-| Audit log, admin, batch review, My profile (signature upload) | Not started |
+
+### Not designed yet (priority order)
+1. My profile — signature PNG upload
+2. Admin — users & roles, app catalog, form fields & versions, RBAC templates, settings
+3. Offboarding and access-modification variants of the request form
+4. Returned request state (Moises's comment shown to Raju)
+5. Batch onboarding review grid
+6. Audit log
+7. Generated PDF document layout
+8. Read-only request view for approvers
+9. Sign-in: device verification code, forgot password
+10. Empty / 403 / 404 / loading / error states
+11. (Phase 2) notification templates
+
+## Canvas sources
+`canvas/` holds a copy of every artboard (`*.dc.html`) and the layout index (`canvas.json`) from the live canvas, so the design survives outside claude.ai. Keep it in sync after canvas edits. `assets/laine-logo-white.png` is the logo the artboards use (uploaded to the canvas as `/_blob/17b23c9ce6dc5f048942c7b514470f03`).

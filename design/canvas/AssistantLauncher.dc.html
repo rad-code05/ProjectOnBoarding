@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine assistant robot — launcher states</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}
+</style>
+</helmet>
+<div style="width: 1440px; height: 520px; box-sizing: border-box; padding: 48px 64px; display: flex; gap: 64px; align-items: center; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+
+<div style="width: 360px; flex-shrink: 0; display: flex; flex-direction: column; gap: 18px; align-items: flex-start">
+<svg width="180" height="180" viewBox="0 0 64 64" aria-label="Laine assistant robot"><line x1="32" y1="7" x2="32" y2="15" stroke="#000000" stroke-width="3" stroke-linecap="round"></line><circle cx="32" cy="6" r="4.5" fill="#cf2e2e"></circle><rect x="5" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="52" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="10" y="14" width="44" height="40" rx="17" fill="#000000"></rect><rect x="16" y="21" width="32" height="24" rx="11" fill="#F4F0EA"></rect><ellipse cx="25.5" cy="32" rx="3" ry="4" fill="#000000"></ellipse><ellipse cx="38.5" cy="32" rx="3" ry="4" fill="#000000"></ellipse><circle cx="26.5" cy="30.5" r="1" fill="#FFFFFF"></circle><circle cx="39.5" cy="30.5" r="1" fill="#FFFFFF"></circle><circle cx="20.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><circle cx="43.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><path d="M28 38.5 Q32 42 36 38.5" stroke="#000000" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+<h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 36px">Laine assistant</h1>
+<p style="margin: 0; font-size: 14px; line-height: 1.55; color: #535353">Black head and sand face screen from the Laine palette, signal-red antenna tip. Floats bottom-right on the request form; click to open the chat panel.</p>
+</div>
+
+<div style="flex-grow: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px">
+
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 24px; height: 260px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
+<span style="font-size: 12px; font-weight: 700">Idle</span>
+<div style="display: flex; justify-content: flex-end">
+<button type="button" aria-label="Open assistant" style="width: 68px; height: 68px; border-radius: 100px; border: 1px solid #dcd4c7; background: #FFFFFF; box-shadow: 0 8px 24px rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: center; padding: 0">
+<svg width="50" height="50" viewBox="0 0 64 64" aria-hidden="true"><line x1="32" y1="7" x2="32" y2="15" stroke="#000000" stroke-width="3" stroke-linecap="round"></line><circle cx="32" cy="6" r="4.5" fill="#cf2e2e"></circle><rect x="5" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="52" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="10" y="14" width="44" height="40" rx="17" fill="#000000"></rect><rect x="16" y="21" width="32" height="24" rx="11" fill="#F4F0EA"></rect><ellipse cx="25.5" cy="32" rx="3" ry="4" fill="#000000"></ellipse><ellipse cx="38.5" cy="32" rx="3" ry="4" fill="#000000"></ellipse><circle cx="20.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><circle cx="43.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><path d="M28 38.5 Q32 42 36 38.5" stroke="#000000" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+</button>
+</div>
+<span style="font-size: 11px; color: #535353">No suggestions pending</span>
+</div>
+
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 24px; height: 260px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
+<span style="font-size: 12px; font-weight: 700">Hover / focus</span>
+<div style="display: flex; justify-content: flex-end; align-items: center; gap: 8px">
+<span style="padding: 6px 10px; background: #000000; color: #FFFFFF; border-radius: 8px; font-size: 11px; font-weight: 600; white-space: nowrap">Open assistant</span>
+<button type="button" aria-label="Open assistant" style="width: 68px; height: 68px; border-radius: 100px; border: 2px solid #000000; background: #FFFFFF; box-shadow: 0 8px 24px rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: center; padding: 0">
+<svg width="50" height="50" viewBox="0 0 64 64" aria-hidden="true"><line x1="32" y1="7" x2="32" y2="15" stroke="#000000" stroke-width="3" stroke-linecap="round"></line><circle cx="32" cy="6" r="4.5" fill="#cf2e2e"></circle><rect x="5" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="52" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="10" y="14" width="44" height="40" rx="17" fill="#000000"></rect><rect x="16" y="21" width="32" height="24" rx="11" fill="#F4F0EA"></rect><path d="M22.5 32 Q25.5 28.5 28.5 32" stroke="#000000" stroke-width="2.4" fill="none" stroke-linecap="round"></path><path d="M35.5 32 Q38.5 28.5 41.5 32" stroke="#000000" stroke-width="2.4" fill="none" stroke-linecap="round"></path><circle cx="20.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><circle cx="43.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><path d="M27 37.5 Q32 43 37 37.5" stroke="#000000" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+</button>
+</div>
+<span style="font-size: 11px; color: #535353">Happy eyes + tooltip; 2px focus ring</span>
+</div>
+
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 24px; height: 260px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
+<span style="font-size: 12px; font-weight: 700">Suggestions ready</span>
+<div style="display: flex; justify-content: flex-end">
+<button type="button" aria-label="Open assistant (9 suggestions)" style="position: relative; width: 68px; height: 68px; border-radius: 100px; border: 1px solid #dcd4c7; background: #FFFFFF; box-shadow: 0 8px 24px rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: center; padding: 0">
+<svg width="50" height="50" viewBox="0 0 64 64" aria-hidden="true"><line x1="32" y1="7" x2="32" y2="15" stroke="#000000" stroke-width="3" stroke-linecap="round"></line><circle cx="32" cy="6" r="4.5" fill="#cf2e2e"></circle><rect x="5" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="52" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="10" y="14" width="44" height="40" rx="17" fill="#000000"></rect><rect x="16" y="21" width="32" height="24" rx="11" fill="#F4F0EA"></rect><ellipse cx="25.5" cy="32" rx="3" ry="4" fill="#000000"></ellipse><ellipse cx="38.5" cy="32" rx="3" ry="4" fill="#000000"></ellipse><circle cx="26.5" cy="30.5" r="1" fill="#FFFFFF"></circle><circle cx="39.5" cy="30.5" r="1" fill="#FFFFFF"></circle><circle cx="20.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><circle cx="43.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><path d="M28 38.5 Q32 42 36 38.5" stroke="#000000" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+<span style="position: absolute; top: -2px; right: -2px; min-width: 22px; height: 22px; box-sizing: border-box; padding: 0 6px; border-radius: 100px; background: #cf2e2e; border: 2px solid #FFFFFF; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">9</span>
+</button>
+</div>
+<span style="font-size: 11px; color: #535353">Badge = pending suggestions</span>
+</div>
+
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 24px; height: 260px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
+<span style="font-size: 12px; font-weight: 700">Thinking</span>
+<div style="display: flex; justify-content: flex-end">
+<button type="button" aria-label="Assistant is working" style="width: 68px; height: 68px; border-radius: 100px; border: 1px solid #dcd4c7; background: #FFFFFF; box-shadow: 0 8px 24px rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: center; padding: 0">
+<svg width="50" height="50" viewBox="0 0 64 64" aria-hidden="true"><line x1="32" y1="7" x2="32" y2="15" stroke="#000000" stroke-width="3" stroke-linecap="round"></line><circle cx="32" cy="6" r="4.5" fill="#cf2e2e"></circle><rect x="5" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="52" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="10" y="14" width="44" height="40" rx="17" fill="#000000"></rect><rect x="16" y="21" width="32" height="24" rx="11" fill="#F4F0EA"></rect><circle cx="24" cy="33" r="2.4" fill="#000000"></circle><circle cx="32" cy="33" r="2.4" fill="#7e7e7e"></circle><circle cx="40" cy="33" r="2.4" fill="#000000"></circle></svg>
+</button>
+</div>
+<span style="font-size: 11px; color: #535353">Dots pulse while replying</span>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":520}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
