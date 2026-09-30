@@ -5,6 +5,7 @@ Internal web application for Laine's user access management: onboarding, offboar
 **Status:** planning and design. No application code yet.
 
 - [CLAUDE.md](CLAUDE.md) — **start here**: one-page summary of all decisions, roles, open questions and next steps.
+- [plan/](plan/README.md) — delivery phases 0–7 with numbered steps (one step = one PR).
 - [PROJECT_PLAN.md](PROJECT_PLAN.md) — scope, stack, workflow, data model, delivery phases, and open decisions.
 - [design/](design/README.md) — design tokens, reusable components, and a spec for each screen; canvas sources in `design/canvas/`.
 

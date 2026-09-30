@@ -12,6 +12,7 @@ An internal web app for Laine that replaces the PDF *Laine User Access Managemen
 
 | File | Contents |
 | --- | --- |
+| [plan/](plan/README.md) | **Delivery phases 0–7**, one file each, split into numbered PR-sized steps. Sessions are started as "work on `plan/phase-N-….md` step N.M". |
 | [PROJECT_PLAN.md](PROJECT_PLAN.md) | Full plan: scope, stack, form analysis + app catalog (§4), workflow (§5), AI (§6), extensibility (§7), signatures/PDF (§8), reports (§9), roles/security (§10), data model (§11), engineering practices (§12), phases (§13), acceptance criteria (§14), Context7-verified syntax (§15), risks (§16), **open decisions (§17)** |
 | [design/README.md](design/README.md) | Design index + status of every screen |
 | [design/tokens.md](design/tokens.md) | Colors, fonts, spacing, Tailwind v4 `@theme` + `next/font` setup |
@@ -64,8 +65,11 @@ Gotchas already found — don't use outdated patterns:
 Shared canvas components: `TopBar`, `BrandPanel`, `AdminNav` (imported with `<dc-import>`).
 
 ## Next steps
-1. Raju reviews the new boards (most are "draft, awaiting review" in `design/README.md`) and answers the open decisions below.
-2. Then **Phase 1 — Foundation** (PROJECT_PLAN §13): Next.js 16 app, Clerk, Supabase schema + RLS + tests, CI, Vercel environments, design tokens and the shared UI components.
+1. **Phase 0** (`plan/phase-0-discovery.md`): Raju reviews the draft boards and answers decisions D1–D12 (D1, D2, D12 block Phase 1).
+2. Then **Phase 1 — Foundation** (`plan/phase-1-foundation.md`), starting at step 1.1.
+
+## How a working session runs
+Read this file → read the phase file and its **Read first** docs → check **Blocked by** decisions (ask if open) → verify APIs with Context7 → branch `phase-N/N.M-name` → implement + tests → PR → tick the step and add a **Session log** line in the phase file (and update this file if a decision changed). Full rules: `plan/README.md`.
 
 ## Open decisions (full list: PROJECT_PLAN §17)
 Auth details (SSO? MFA), backup approver name, auditor sign-off on end-only approval, AI provider/model and data policy, data residency/retention, SharePoint option (download only / button / automatic) + site & folder + M365 admin, notifications, how admin role changes are controlled.

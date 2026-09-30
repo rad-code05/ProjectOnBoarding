@@ -382,6 +382,8 @@ proxy.ts             clerkMiddleware()
 
 ## 13. Delivery Plan
 
+> The detailed, step-by-step version of this section lives in [plan/](plan/README.md) (one file per phase). Keep this table as the overview.
+
 | Phase | Deliverables | Exit criteria |
 | --- | --- | --- |
 | **0. Discovery** | Answers to Section 17; agreed field list; role matrix; report definitions; wireframes | Plan signed off by owner |
