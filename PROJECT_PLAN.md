@@ -300,11 +300,14 @@ Users can hold multiple roles.
 | --- | --- | --- |
 | Raju Bholani | Administrator, Requester, IT operator | Full admin (users, catalog, fields, templates); main user of the AI chat and manual entry; signs as preparer and as IT execution owner (Section 9) |
 | Moises Larez | Approver / Reviewer | Signs once at the end: confirms and approves what Raju has done and signed, then the request closes (Sections 3, 10, 11) |
+| Additional account (to be created; person TBD) | Approver / Reviewer | Backup approver with the same rights as Moises — covers absences so requests aren't blocked |
 
 **Segregation-of-duties rules (enforced server-side):**
 - A user can never approve or close a request they prepared or executed — so Raju's admin rights do not let Raju approve Raju's own requests.
 - An admin cannot grant themselves the Approver or Reviewer role on their own; role changes require a second admin or are at minimum flagged in the audit log and visible to Moises. *(Choose one in Section 17.)*
-- Because there is currently a single approver, define a **backup approver** for absences.
+- **Approver is a role, not a person.** Any account with the Approver / Reviewer role can confirm a request; the PDF and audit log record which approver actually signed. Raju (admin) assigns the role from the Admin → Users screen when the additional account is created (Clerk invitation → role assigned in `user_roles`).
+- **Pending confirmations go to all approvers** (queue visible to every approver; phase 2: notification to each). The first approver to confirm closes it; the others see it as done.
+- The *default approver* setting (Section 4.1) can name Moises as primary while still allowing any approver to sign.
 
 ### 10.2 Controls
 - **Sign-in:** invitation-only or company-domain restriction in Clerk; SSO with Google Workspace or Microsoft 365; MFA required.
@@ -543,7 +546,7 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 **Resolved 2026-09-30:** roles (Raju = admin + requester + IT operator; Moises = approver + reviewer — Section 10.1); additional field = Country (Section 4.5); application catalog must be editable without code (Section 7).
 
 1. **Auth:** Clerk (recommended) or Supabase Auth? SSO via Google Workspace or Microsoft 365? Invitation-only?
-2. **Approval:** resolved — Moises signs once at the end (Section 5.1). Still open: who is the backup approver? How are role changes by an admin controlled (Section 10.1)? Is post-provisioning confirmation acceptable to Laine's auditor?
+2. **Approval:** resolved — Moises signs once at the end (Section 5.1). Backup approver: an additional account with the Approver role (Section 10.1); person still to be named. Still open: how are role changes by an admin controlled (Section 10.1)? Is post-provisioning confirmation acceptable to Laine's auditor?
 3. **Monthly metric:** "onboarded" = execution completed (proposed), final review, or closure?
 4. **Signature:** internal acknowledgment (proposed) or legally binding e-signature?
 5. **Edits after approval:** which changes require re-approval and re-signing?
