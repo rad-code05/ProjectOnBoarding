@@ -68,6 +68,18 @@ Rules:
 | `ActivityList` | `events[]` | Compact audit timeline |
 | `Toast` | `message`, `tone` | Black pill toast, `role="status"` (UI primitive) |
 
+## Reports (`components/reports/`)
+
+| Component | Props | Notes |
+| --- | --- | --- |
+| `ReportNav` | `groups[]` of `{ id, name, description }`, `selected`, `onSelect` | Left side panel; selected item outlined in ink |
+| `ReportHeader` | `title`, `definition`, `onExportCsv`, `onExportPdf` | Definition line is mandatory for every report |
+| `FilterBar` | `period`, `filters[]` | One row: period segmented control + selects |
+| `StatTile` | `label`, `value` | White tile, Newsreader number |
+| `BarChart` | `data[]`, `max`, `formatReadout` | Vertical single-series bars, ink, 4px data ends, hover readout |
+| `HBarChart` | `data[]` | Horizontal bars with value label at the end |
+| `DataTable` | `columns[]`, `rows[]`, `footer` | Also the source for CSV export |
+
 ## Requests list (`components/requests/`)
 
 | Component | Props | Notes |
