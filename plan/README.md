@@ -1,5 +1,7 @@
 # Delivery plan — Laine onboarding rights
 
+**Tech stack:** [tech-stack.md](tech-stack.md) — every framework, library, service, tool and environment variable we use, with versions and the phase that introduces each.
+
 One file per phase. Each phase is split into **numbered steps**; one step = one branch = one pull request, sized for one working session.
 
 | Phase | File | Goal | Status |

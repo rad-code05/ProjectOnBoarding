@@ -3,7 +3,8 @@
 **Status:** Not started · **Goal:** a deployed, signed-in, empty app with the database, security model, CI and design system in place.
 
 **Depends on:** Phase 0 decisions D1, D2, D12.
-**Read first:** `CLAUDE.md` (stack gotchas) · `PROJECT_PLAN.md` §2–3, §10–12, §15 · `design/tokens.md` · `design/components.md` · `design/sign-in.md`
+**Before 1.1 (on Raju's PC):** install Node 24 LTS, pnpm, and Docker Desktop (for local Supabase) — see `plan/tech-stack.md` → Developer machine.
+**Read first:** `CLAUDE.md` (stack gotchas) · `plan/tech-stack.md` · `PROJECT_PLAN.md` §2–3, §10–12, §15 · `design/tokens.md` · `design/components.md` · `design/sign-in.md`
 **Verify with Context7 before coding:** Next.js 16 (`/vercel/next.js`), Clerk (`/clerk/clerk-docs`), Supabase (`/websites/supabase_guides`), Tailwind v4 (`/websites/tailwindcss`), Vercel (`/vercel/vercel`), Vitest, Playwright, Zod.
 
 ## Steps

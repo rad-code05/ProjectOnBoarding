@@ -12,6 +12,7 @@ An internal web app for Laine that replaces the PDF *Laine User Access Managemen
 
 | File | Contents |
 | --- | --- |
+| [plan/tech-stack.md](plan/tech-stack.md) | **Tech stack**: every library, service, dev tool and env var, with versions and the phase that introduces it |
 | [ROLES.md](ROLES.md) | People, roles, permissions, what each sees, workflow and signing rules |
 | [design/colours.md](design/colours.md) | Colour palette and colour rules (quick reference) |
 | [plan/](plan/README.md) | **Delivery phases 0–7**, one file each, split into numbered PR-sized steps. Sessions are started as "work on `plan/phase-N-….md` step N.M". |
