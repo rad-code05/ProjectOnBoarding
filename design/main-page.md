@@ -23,7 +23,7 @@ Opened from **New request** (or a row) on the [requests list](request-list.md). 
    - **01 Ticket information** — 6 fields in one row.
    - **02 Employee details** — 3-column grid (9 fields incl. Country).
    - **05 Application access** — two-column `AccessMatrix` (below).
-   - Remaining sections follow the same compact card pattern.
+   - **06–11 are collapsed** into one-line rows (see *Collapsed sections* below).
 4. **Right panel (380px) — `AssistantPanel`:** collapse button, mode switch (This request / Batch onboarding), conversation, `SuggestionCard`, composer with CSV/XLSX attach, guardrail line.
 
 ## Application access matrix
@@ -35,6 +35,21 @@ Opened from **New request** (or a row) on the [requests list](request-list.md). 
 - Notes open per row (expand) instead of a permanent Notes column, to keep rows compact.
 - Footer: **Add other application** (custom app on this request), **Apply RBAC template**.
 - Categories and apps come from the admin-managed catalog — adding a tool in Admin adds a row here with no code change.
+
+## Collapsed sections (decision 2026-09-30)
+
+Sections 1, 2, 4 and 5 are open while preparing a request. Sections 6–11 are collapsed to a 50px row (number, title, status note, chevron) and open only when relevant:
+
+| Section | Default | Opens |
+| --- | --- | --- |
+| 06 IT equipment | Collapsed | Any time (click) |
+| 07 Physical & logical access | Collapsed | Any time (click) |
+| 08 Access removal SLA | Collapsed, locked on onboarding / access modification | Open by default on offboarding |
+| 09 IT execution confirmation | Locked | When the request moves to *In execution* |
+| 10 Final review & closure | Locked | For Moises, when the request is *Awaiting confirmation* |
+| 11 Signatures & sign-off | Locked | From the **Review & sign** confirmation dialog |
+
+Clicking a section in the left rail opens it and scrolls to it. Locked rows show a lock icon and say when they open; the button uses `aria-expanded` / `aria-disabled`.
 
 ## Section states in the rail
 
@@ -58,5 +73,4 @@ Opened from **New request** (or a row) on the [requests list](request-list.md). 
 
 ## Open questions
 
-1. Collapsible assistant panel — drawn with a collapse button; confirm it should remember its state per user.
-2. Should sections 6–11 appear below 5 on the same page (current approach), or be collapsed until relevant (e.g. 9–11 only after execution starts)?
+1. Collapsible assistant panel — drawn with a collapse button. Default assumed: the open/closed state is remembered per user on that device.
