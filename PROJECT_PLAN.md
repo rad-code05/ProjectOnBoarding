@@ -31,6 +31,7 @@ Build a secure internal web application that replaces the static PDF form with a
 | AI chat | **Vercel AI SDK** (`ai`, `@ai-sdk/react`) | Provider-neutral; streaming chat; tool calling with built-in **human approval** (`needsApproval`). |
 | AI model | **To decide** — recommended default: Anthropic Claude (`claude-sonnet-5-5`) via `@ai-sdk/anthropic`, or via OpenRouter (already used at Laine) | Model is an environment setting, not hard-coded. Decision depends on data-processing terms (Section 10). |
 | AI tracing | LangFuse (already used at Laine) — optional | Only with personal-data redaction. |
+| Styling | Tailwind CSS v4 (`@theme` tokens) + `next/font/google` (Raleway, Newsreader, Instrument Serif) | Tokens and components defined in [design/](design/README.md). |
 | Validation | Zod | One schema shared by forms, Server Actions, and AI tool inputs. |
 | PDF | `@react-pdf/renderer` (`renderToBuffer`) in a Node.js Route Handler | No headless browser, so it works within Vercel serverless limits. |
 | Email notifications | Resend (already used at Laine) — phase 2 | Approval requests, SLA reminders. |
