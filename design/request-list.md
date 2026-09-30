@@ -28,7 +28,7 @@ Pagination at the bottom; default sort: most recently updated.
 ## Role differences
 
 - **Raju (admin / IT owner):** sees all requests; both action buttons.
-- **Moises / backup approver:** same list, default filter "Awaiting confirmation"; no **New request** or **Batch onboarding** buttons.
+- **Moises / backup approver:** do not see this page — they land on their own **Approvals** page instead. See [approver-view.md](approver-view.md).
 
 ## Components used
 `TopBar`, `Button`, `SummaryTile` (new), `SegmentedControl`, `SelectField`, `SearchField` (new), `RequestTable` (new), `StatusPill`, `Avatar`.

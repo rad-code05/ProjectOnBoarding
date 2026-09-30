@@ -13,6 +13,7 @@ UI design for the internal user access management app, styled after [laine.ai](h
 | [main-page.md](main-page.md) | Request form with the Laine robot assistant |
 | [review-sign.md](review-sign.md) | Review & sign confirmation dialog |
 | [pdf-export.md](pdf-export.md) | Closed request page: Download PDF, Save to SharePoint |
+| [approver-view.md](approver-view.md) | Moises's separate view: Approvals, Confirm & sign, Records, Reports |
 
 ## Principles
 
@@ -33,5 +34,6 @@ UI design for the internal user access management app, styled after [laine.ai](h
 | Laine assistant robot (launcher) | Draft |
 | Review & sign dialog (Raju) | Approved |
 | Closed request · PDF export (Download / SharePoint) | Draft, awaiting review |
+| Moises: Approvals landing, Confirm & sign | Draft, awaiting review |
 | Components sheet | Draft |
-| Confirm & sign dialog (Moises), reports, audit log, admin, batch review, My profile (signature upload) | Not started |
+| Reports, audit log, admin, batch review, My profile (signature upload) | Not started |

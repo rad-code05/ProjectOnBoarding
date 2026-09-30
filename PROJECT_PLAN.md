@@ -289,7 +289,7 @@ Rules: only the signed-in user can apply their own signature; the AI can never s
 | Role | Can |
 | --- | --- |
 | Requester | Create requests, edit own drafts, view own requests |
-| Approver / Reviewer | Review requests awaiting confirmation; confirm & sign, or return with comments; closes the request |
+| Approver / Reviewer | **Approve, view reports, export PDFs — nothing else.** Sees only requests that are Awaiting confirmation, Returned or Closed (read-only); confirm & sign, or return with comments; closes the request; downloads PDFs / saves to SharePoint; read-only reports. Cannot create or edit requests or use the assistant. Separate landing page (*Approvals*) — see `design/approver-view.md`. |
 | IT operator | Record execution; sign Section 9 |
 | Administrator | Users/roles, catalogs, RBAC templates, form versions, defaults |
 | Auditor (read-only) | View all records, reports, audit log |
