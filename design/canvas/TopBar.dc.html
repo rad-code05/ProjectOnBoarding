@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Top bar component</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<header style="width: 1440px; height: 60px; box-sizing: border-box; padding: 0 28px; background: #000000; display: flex; align-items: center; gap: 24px; font-family: Raleway, sans-serif; color: #FFFFFF">
+<img src="/_blob/17b23c9ce6dc5f048942c7b514470f03" alt="Laine" style="width: 60px; height: 22px; display: block">
+<div style="width: 1px; height: 20px; background: #333333"></div>
+<div style="font-family: Newsreader, serif; font-size: 17px; color: #FFFFFF">Laine onboarding rights</div>
+<nav aria-label="Main" style="display: flex; gap: 4px; margin-left: 8px; align-self: stretch">
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="4">
+<a href="{{n.href}}" aria-current="{{n.current}}" style="{{n.style}}">{{n.label}}</a>
+</sc-for>
+</nav>
+<div style="flex-grow: 1"></div>
+<a href="Profile.dc.html" aria-label="My profile" style="display: flex; align-items: center; gap: 10px; text-decoration: none">
+<div style="width: 30px; height: 30px; border-radius: 100px; background: #F4F0EA; color: #000000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">{{initials}}</div>
+<div style="display: flex; flex-direction: column; gap: 1px">
+<span style="font-size: 12px; font-weight: 600; color: #FFFFFF">{{userName}}</span>
+<span style="font-size: 10px; color: #7e7e7e">{{userRole}}</span>
+</div>
+</a>
+<a href="Main.dc.html" aria-label="Sign out" style="width: 36px; height: 36px; box-sizing: border-box; border-radius: 100px; border: 1px solid #333333; display: flex; align-items: center; justify-content: center">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+</a>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"role":{"editor":"enum","options":["admin","approver"],"default":"admin"},"active":{"editor":"text","default":"Requests"},"userName":{"editor":"text","default":"Raju Bholani"},"userRole":{"editor":"text","default":"Admin · IT owner"},"initials":{"editor":"text","default":"RB"},"$preview":{"width":1440,"height":60}}'>
+class Component extends DCLogic {
+renderVals() {
+const role = this.props.role ?? 'admin';
+const active = this.props.active ?? 'Requests';
+const items = role === 'approver'
+? [['Approvals', 'ApproverHome.dc.html'], ['Records', 'ClosedRequest.dc.html'], ['Reports', 'Reports.dc.html']]
+: [['Requests', 'RequestList.dc.html'], ['Reports', 'Reports.dc.html'], ['Audit log', 'AuditLog.dc.html'], ['Admin', 'AdminUsers.dc.html']];
+const nav = items.map((i) => {
+const on = i[0] === active;
+return {
+label: i[0], href: i[1], current: on ? 'page' : 'false',
+style: 'display: flex; align-items: center; padding: 0 12px; font-size: 13px; text-decoration: none; ' + (on ? 'font-weight: 600; color: #FFFFFF; border-bottom: 2px solid #cf2e2e;' : 'font-weight: 500; color: #7e7e7e; border-bottom: 2px solid #000000;')
+};
+});
+return {
+nav: nav,
+userName: this.props.userName ?? 'Raju Bholani',
+userRole: this.props.userRole ?? 'Admin · IT owner',
+initials: this.props.initials ?? 'RB'
+};
+}
+}
+</script>
+</body>
+</html>

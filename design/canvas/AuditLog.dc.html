@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine Onboarding Rights — Audit log</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}a{color:#000000}a:hover{color:#cf2e2e}input::placeholder{color:#7e7e7e}</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+<dc-import name="TopBar" role="admin" active="Audit log" user-name="Raju Bholani" user-role="Admin · IT owner" initials="RB" hint-size="1440px,60px"></dc-import>
+<main style="flex-grow: 1; box-sizing: border-box; padding: 28px 40px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: flex-end">
+<div style="display: flex; flex-direction: column; gap: 4px"><h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 32px">Audit log</h1><span style="font-size: 12px; color: #535353">Every action, append-only. Entries can't be edited or deleted by anyone.</span></div>
+<button type="button" style="height: 38px; padding: 0 16px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600">Export CSV</button>
+</div>
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<div style="display: flex; align-items: center; gap: 8px; height: 38px; box-sizing: border-box; width: 300px; padding: 0 12px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 100px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#535353" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input aria-label="Search" placeholder="Search ticket, person or action" style="flex-grow: 1; border: none; outline: none; background: transparent; font-family: Raleway, sans-serif; font-size: 12px"></div>
+<select aria-label="Actor" style="height: 38px; padding: 0 12px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 100px; font-family: Raleway, sans-serif; font-size: 12px"><option>All people</option></select>
+<select aria-label="Action" style="height: 38px; padding: 0 12px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 100px; font-family: Raleway, sans-serif; font-size: 12px"><option>All actions</option></select>
+<div role="radiogroup" aria-label="Source" style="display: flex; gap: 3px; padding: 3px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 100px">
+<button type="button" role="radio" aria-checked="true" style="height: 30px; padding: 0 12px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600">All</button>
+<button type="button" role="radio" aria-checked="false" style="height: 30px; padding: 0 12px; border: none; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 12px">People</button>
+<button type="button" role="radio" aria-checked="false" style="height: 30px; padding: 0 12px; border: none; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 12px">AI</button>
+<button type="button" role="radio" aria-checked="false" style="height: 30px; padding: 0 12px; border: none; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 12px">System</button>
+</div>
+<span style="margin-left: auto; font-size: 11px; color: #535353">Last 7 days</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; overflow: hidden">
+<div style="display: grid; grid-template-columns: 1.1fr 1.2fr 1.4fr 1.3fr 2.6fr 0.7fr; gap: 12px; padding: 11px 20px; border-bottom: 1px solid #dcd4c7; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #535353"><span>Time</span><span>Who</span><span>Action</span><span>Record</span><span>Details</span><span>Source</span></div>
+<sc-for list="{{events}}" as="e" hint-placeholder-count="10">
+<div style="display: grid; grid-template-columns: 1.1fr 1.2fr 1.4fr 1.3fr 2.6fr 0.7fr; gap: 12px; align-items: center; padding: 10px 20px; border-bottom: 1px solid #ece6db; font-size: 12px">
+<span style="color: #535353">{{e.time}}</span><span style="font-weight: 600">{{e.who}}</span><span>{{e.action}}</span><span style="color: #535353">{{e.record}}</span><span>{{e.details}}</span><span><span style="{{e.srcStyle}}">{{e.source}}</span></span>
+</div>
+</sc-for>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() {
+const chip = { People: 'font-size: 10px; font-weight: 700; padding: 2px 8px; border: 1px solid #000000; border-radius: 100px', AI: 'font-size: 10px; font-weight: 700; padding: 2px 8px; background: #f9e4b4; border-radius: 100px', System: 'font-size: 10px; font-weight: 700; padding: 2px 8px; background: #ece6db; color: #535353; border-radius: 100px' };
+const e = (time, who, action, record, details, source) => ({ time: time, who: who, action: action, record: record, details: details, source: source, srcStyle: chip[source] });
+return { events: [
+e('2 Oct, 16:06', 'Moises Larez', 'Saved to SharePoint', 'UAM-2026-000124', 'IT › Access records › 2026', 'People'),
+e('2 Oct, 16:06', 'Moises Larez', 'Downloaded PDF', 'UAM-2026-000124', 'anna.keller-onboarding.pdf', 'People'),
+e('2 Oct, 16:05', 'System', 'Generated PDF', 'UAM-2026-000124', 'From signed snapshot · SHA-256 recorded', 'System'),
+e('2 Oct, 16:05', 'Moises Larez', 'Confirmed & signed', 'UAM-2026-000124', 'Sections 3, 10, 11 · request closed', 'People'),
+e('1 Oct, 17:40', 'Raju Bholani', 'Signed section 9', 'UAM-2026-000124', 'Status → Awaiting confirmation', 'People'),
+e('30 Sep, 14:21', 'Raju Bholani', 'Edited field', 'UAM-2026-000124', 'Manager: — → [Manager name]', 'People'),
+e('30 Sep, 14:20', 'Laine assistant', 'Suggestions accepted', 'UAM-2026-000124', '9 values accepted by Raju (Country: — → Switzerland …)', 'AI'),
+e('30 Sep, 14:12', 'Raju Bholani', 'Created request', 'UAM-2026-000124', 'Onboarding · Anna Keller', 'People'),
+e('30 Sep, 11:02', 'Raju Bholani', 'Published form version', 'Form v4.1', '+ Country (Select, required)', 'People'),
+e('30 Sep, 09:15', 'Moises Larez', 'Signed in', '—', 'New device verified by email code', 'People')
+] };
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin sub-navigation component</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<aside aria-label="Admin sections" style="width: 240px; height: 940px; box-sizing: border-box; padding: 24px 14px; border-right: 1px solid #dcd4c7; background: #F4F0EA; display: flex; flex-direction: column; gap: 16px; font-family: Raleway, sans-serif; color: #000000">
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 0 8px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #535353">Admin</span>
+<span style="font-family: Newsreader, serif; font-size: 24px">Settings</span>
+</div>
+<nav style="display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{items}}" as="i" hint-placeholder-count="5">
+<a href="{{i.href}}" aria-current="{{i.current}}" style="{{i.style}}"><span style="font-size: 13px; font-weight: {{i.weight}}">{{i.label}}</span><span style="font-size: 11px; color: #535353">{{i.desc}}</span></a>
+</sc-for>
+</nav>
+<p style="margin-top: auto; margin-bottom: 0; padding: 0 8px; font-size: 11px; line-height: 1.5; color: #535353">Every change here is versioned and written to the audit log. Changes apply to new requests only.</p>
+</aside>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["users","apps","fields","settings"],"default":"users"},"$preview":{"width":240,"height":940}}'>
+class Component extends DCLogic {
+renderVals() {
+const active = this.props.active ?? 'users';
+const defs = [
+['users', 'Users & roles', 'Invite people, assign roles', 'AdminUsers.dc.html'],
+['apps', 'Applications', 'Tool catalog for access', 'AdminCatalog.dc.html'],
+['fields', 'Form fields', 'Fields, versions, suggestions', 'AdminFields.dc.html'],
+['settings', 'Templates & defaults', 'RBAC, approvers, SLA, PDF', 'AdminSettings.dc.html']
+];
+return {
+items: defs.map((d) => {
+const on = d[0] === active;
+return {
+label: d[1], desc: d[2], href: d[3], current: on ? 'page' : 'false', weight: on ? '700' : '500',
+style: 'display: flex; flex-direction: column; gap: 2px; padding: 9px 10px; border-radius: 10px; text-decoration: none; color: #000000; ' + (on ? 'background: #FFFFFF; border: 1.5px solid #000000;' : 'border: 1.5px solid transparent;')
+};
+})
+};
+}
+}
+</script>
+</body>
+</html>

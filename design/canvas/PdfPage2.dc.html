@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PDF record — page 2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#FFFFFF}</style>
+</helmet>
+<div style="width: 794px; height: 1123px; box-sizing: border-box; padding: 40px 48px; background: #FFFFFF; display: flex; flex-direction: column; gap: 14px; font-family: Raleway, sans-serif; color: #000000">
+<div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #000000; padding-bottom: 8px"><span style="font-family: Newsreader, serif; font-size: 16px">Anna Keller · UAM-2026-000124</span><span style="font-size: 10px; color: #535353">User Access Management Record</span></div>
+<sc-for list="{{sections}}" as="s" hint-placeholder-count="5">
+<section>
+<div style="padding: 6px 10px; background: #000000; color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 4px 4px 0 0">{{s.title}}</div>
+<div style="border: 1px solid #cfc7ba; border-top: none; border-radius: 0 0 4px 4px">
+<sc-for list="{{s.rows}}" as="r" hint-placeholder-count="3">
+<div style="display: grid; grid-template-columns: 200px minmax(0, 1fr); border-bottom: 1px solid #ece6db; font-size: 11px"><span style="padding: 5px 10px; background: #F4F0EA; font-weight: 600">{{r.k}}</span><span style="padding: 5px 10px">{{r.v}}</span></div>
+</sc-for>
+</div>
+</section>
+</sc-for>
+<section>
+<div style="padding: 6px 10px; background: #000000; color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 4px 4px 0 0">11. Signatures &amp; sign-off</div>
+<div style="border: 1px solid #cfc7ba; border-top: none; border-radius: 0 0 4px 4px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))">
+<div style="padding: 14px; border-right: 1px solid #ece6db; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 10px; font-weight: 700; color: #535353">IT EXECUTION (SECTION 9)</span>
+<svg width="170" height="48" viewBox="0 0 180 54" aria-label="Raju Bholani signature"><path d="M8 38 C 20 10, 30 10, 28 30 S 40 48, 52 24 S 66 12, 70 30 S 84 44, 96 22 C 104 10, 112 14, 110 30 C 108 42, 122 40, 134 26 S 156 18, 172 30" stroke="#000000" stroke-width="2" fill="none" stroke-linecap="round"></path></svg>
+<div style="height: 1px; background: #000000"></div>
+<span style="font-size: 11px; font-weight: 700">Raju Bholani · IT execution owner</span>
+<span style="font-size: 10px; color: #535353">Signed 1 Oct 2026, 17:40 (server time)</span>
+</div>
+<div style="padding: 14px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 10px; font-weight: 700; color: #535353">AUTHORIZING APPROVER (SECTIONS 3, 10)</span>
+<svg width="170" height="48" viewBox="0 0 180 54" aria-label="Moises Larez signature"><path d="M10 34 C 24 8, 36 44, 50 22 S 70 10, 78 32 C 84 46, 98 16, 112 20 S 130 44, 146 24 S 164 16, 172 28" stroke="#000000" stroke-width="2" fill="none" stroke-linecap="round"></path></svg>
+<div style="height: 1px; background: #000000"></div>
+<span style="font-size: 11px; font-weight: 700">Moises Larez · Approver</span>
+<span style="font-size: 10px; color: #535353">Signed 2 Oct 2026, 16:05 (server time)</span>
+</div>
+</div>
+</section>
+<p style="margin: 0; font-size: 9px; line-height: 1.5; color: #535353">Signatures are images applied by the authenticated signer after confirming the summary. The audit trail (signer identity, timestamps, snapshot hash) is kept in Laine onboarding rights.</p>
+<div style="margin-top: auto; display: flex; justify-content: space-between; font-size: 9px; color: #535353; border-top: 1px solid #dcd4c7; padding-top: 8px"><span>anna.keller-onboarding.pdf · SHA-256 [hash]</span><span>Page 2 of 2</span></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":794,"height":1123}}'>
+class Component extends DCLogic {
+renderVals() {
+const rows = (p) => p.map((x) => ({ k: x[0], v: x[1] }));
+return { sections: [
+{ title: '6. IT equipment', rows: rows([['Laptop (Windows / macOS)', 'Issue · macOS · [Asset tag]'], ['Mobile phone', '—'], ['Other equipment', '—']]) },
+{ title: '7. Physical & logical access', rows: rows([['Office access', 'Grant · Badge / Key'], ['VPN / secure access', '—'], ['Shared drives', 'Grant · Design']]) },
+{ title: '8. Access removal SLA', rows: rows([['Applies to', 'Offboarding only — not applicable']]) },
+{ title: '9. IT execution confirmation', rows: rows([['Access provisioned / modified', 'Yes'], ['Devices enrolled or recovered', 'Yes'], ['Security controls (MFA, MDM, EDR)', 'Yes'], ['Implementation notes', '[Implementation notes]'], ['Executed by · date', 'Raju Bholani · 1 Oct 2026']]) },
+{ title: '10. Final review & closure', rows: rows([['Final reviewer', 'Moises Larez'], ['Review date', '2 Oct 2026, 16:05'], ['Closure confirmation', 'Confirmed complete']]) }
+] };
+}
+}
+</script>
+</body>
+</html>

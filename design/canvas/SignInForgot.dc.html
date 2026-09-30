@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine Onboarding Rights — Reset password</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}a{color:#000000}a:hover{color:#cf2e2e}input::placeholder{color:#7e7e7e}</style>
+</helmet>
+<div style="width: 1440px; height: 900px; display: flex; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+<dc-import name="BrandPanel" hint-size="620px,900px"></dc-import>
+<div style="flex-grow: 1; box-sizing: border-box; padding: 56px 64px; display: flex; justify-content: center; align-items: center; gap: 48px">
+
+<form style="width: 340px; display: flex; flex-direction: column; gap: 22px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #535353">Step 1 of 2</span>
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 36px; line-height: 1.1">Reset password</h2>
+<p style="margin: 0; font-size: 14px; line-height: 1.55; color: #535353">Enter your work email. If it has an account, we'll send a reset code.</p>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="fe" style="font-size: 13px; font-weight: 600">Work email</label>
+<input id="fe" type="email" value="moises@laine.ai" style="height: 50px; box-sizing: border-box; padding: 0 16px; font-family: Raleway, sans-serif; font-size: 15px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px">
+</div>
+<button type="button" style="height: 52px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Send reset code</button>
+<a href="Main.dc.html" style="font-size: 13px; font-weight: 600">Back to sign in</a>
+</form>
+
+<div style="width: 1px; align-self: stretch; margin: 120px 0; background: #dcd4c7"></div>
+
+<form style="width: 340px; display: flex; flex-direction: column; gap: 18px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #535353">Step 2 of 2</span>
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 36px; line-height: 1.1">New password</h2>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="fc" style="font-size: 13px; font-weight: 600">Code from email</label>
+<input id="fc" value="731 902" style="height: 50px; box-sizing: border-box; padding: 0 16px; font-family: Raleway, sans-serif; font-size: 15px; letter-spacing: 0.2em; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px">
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="fp" style="font-size: 13px; font-weight: 600">New password</label>
+<input id="fp" type="password" value="••••••••••••" aria-describedby="fp-rules" style="height: 50px; box-sizing: border-box; padding: 0 16px; font-family: Raleway, sans-serif; font-size: 15px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px">
+<ul id="fp-rules" style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 12px">
+<li style="display: flex; gap: 6px; align-items: center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>At least 12 characters</li>
+<li style="display: flex; gap: 6px; align-items: center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Not found in known data breaches</li>
+</ul>
+</div>
+<button type="button" style="height: 52px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Save and sign in</button>
+</form>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

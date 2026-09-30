@@ -13,13 +13,40 @@
     "ReviewSign.dc.html": { "h": 1180, "title": "Review & sign dialog", "w": 1440, "x": 0, "y": 2840 },
     "Reports.dc.html": { "h": 1080, "is_interactive": true, "title": "Reports (Raju & Moises)", "w": 1440, "x": 1520, "y": 2840 },
     "SignInError.dc.html": { "h": 900, "title": "Sign-in · Wrong password", "w": 1440, "x": 1520, "y": 0 },
-    "SignInMobile.dc.html": { "h": 844, "title": "Sign-in · Mobile", "w": 390, "x": 3040, "y": 0 }
+    "SignInMobile.dc.html": { "h": 844, "title": "Sign-in · Mobile", "w": 390, "x": 3040, "y": 0 },
+
+    "SignInVerify.dc.html": { "h": 900, "title": "Sign-in · New device code", "w": 1440, "x": 0, "y": 6120 },
+    "SignInForgot.dc.html": { "h": 900, "title": "Sign-in · Reset password", "w": 1440, "x": 1520, "y": 6120 },
+    "BrandPanel.dc.html": { "h": 900, "title": "Component · BrandPanel", "w": 620, "x": 3040, "y": 6120 },
+    "TopBar.dc.html": { "h": 60, "title": "Component · TopBar", "w": 1440, "x": 3740, "y": 6120 },
+    "AdminNav.dc.html": { "h": 940, "title": "Component · AdminNav", "w": 240, "x": 3740, "y": 6260 },
+
+    "Profile.dc.html": { "h": 1000, "title": "My profile · signature upload", "w": 1440, "x": 0, "y": 7700 },
+    "AdminUsers.dc.html": { "h": 1000, "is_interactive": true, "title": "Admin · Users & roles", "w": 1440, "x": 1520, "y": 7700 },
+    "AdminCatalog.dc.html": { "h": 1000, "is_interactive": true, "title": "Admin · Applications", "w": 1440, "x": 3040, "y": 7700 },
+    "AdminFields.dc.html": { "h": 1000, "is_interactive": true, "title": "Admin · Form fields & versions", "w": 1440, "x": 0, "y": 8820 },
+    "AdminSettings.dc.html": { "h": 1000, "is_interactive": true, "title": "Admin · Templates & defaults", "w": 1440, "x": 1520, "y": 8820 },
+    "AuditLog.dc.html": { "h": 1000, "title": "Audit log", "w": 1440, "x": 3040, "y": 8820 },
+
+    "OffboardingForm.dc.html": { "h": 1240, "title": "Offboarding request", "w": 1440, "x": 0, "y": 10320 },
+    "ReturnedRequest.dc.html": { "h": 820, "title": "Returned request (Raju)", "w": 1440, "x": 1520, "y": 10320 },
+    "RequestReadOnly.dc.html": { "h": 1100, "is_interactive": true, "title": "Moises · Read-only request", "w": 1440, "x": 3040, "y": 10320 },
+    "BatchReview.dc.html": { "h": 900, "title": "Batch onboarding review", "w": 1440, "x": 4560, "y": 10320 },
+
+    "PdfPage1.dc.html": { "h": 1123, "title": "PDF record · page 1", "w": 794, "x": 0, "y": 12060, "paper": "a4" },
+    "PdfPage2.dc.html": { "h": 1123, "title": "PDF record · page 2", "w": 794, "x": 874, "y": 12060, "paper": "a4" },
+    "States.dc.html": { "h": 1000, "title": "System states", "w": 1440, "x": 1748, "y": 12060 },
+    "EmailTemplates.dc.html": { "h": 760, "title": "Email notifications (phase 2)", "w": 1440, "x": 3268, "y": 12060 }
   },
   "createdOnFiles": { "at": "2026-09-30T12:01:58.945Z", "v": 1 },
   "designSystems": [],
   "launch": { "view": "canvas" },
   "notes": {
-    "moisesRow": { "kind": "title1", "maxW": 4480, "text": "Moises — approver view (approve, reports, export PDF)", "w": 240, "x": -157, "y": 4155 }
+    "moisesRow": { "kind": "title1", "maxW": 4480, "text": "Moises — approver view (approve, reports, export PDF)", "w": 240, "x": -157, "y": 4155 },
+    "signinRow": { "kind": "title1", "maxW": 5180, "text": "Sign-in extras & shared components", "x": 0, "y": 5870 },
+    "adminRow": { "kind": "title1", "maxW": 4480, "text": "My profile, Admin & audit log", "x": 0, "y": 7450 },
+    "variantsRow": { "kind": "title1", "maxW": 6000, "text": "Request variants: offboarding, returned, read-only, batch", "x": 0, "y": 10070 },
+    "recordsRow": { "kind": "title1", "maxW": 4708, "text": "PDF record, system states & email notifications", "x": 0, "y": 11810 }
   },
   "order": [
     "Main.dc.html",
@@ -33,7 +60,26 @@
     "Reports.dc.html",
     "ApproverHome.dc.html",
     "ConfirmSign.dc.html",
-    "ClosedRequest.dc.html"
+    "ClosedRequest.dc.html",
+    "SignInVerify.dc.html",
+    "SignInForgot.dc.html",
+    "BrandPanel.dc.html",
+    "TopBar.dc.html",
+    "AdminNav.dc.html",
+    "Profile.dc.html",
+    "AdminUsers.dc.html",
+    "AdminCatalog.dc.html",
+    "AdminFields.dc.html",
+    "AdminSettings.dc.html",
+    "AuditLog.dc.html",
+    "OffboardingForm.dc.html",
+    "ReturnedRequest.dc.html",
+    "RequestReadOnly.dc.html",
+    "BatchReview.dc.html",
+    "PdfPage1.dc.html",
+    "PdfPage2.dc.html",
+    "States.dc.html",
+    "EmailTemplates.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

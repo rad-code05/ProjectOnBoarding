@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PDF record — page 1</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#FFFFFF}</style>
+</helmet>
+<div style="width: 794px; height: 1123px; box-sizing: border-box; padding: 40px 48px; background: #FFFFFF; display: flex; flex-direction: column; gap: 14px; font-family: Raleway, sans-serif; color: #000000">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #000000; border-radius: 8px">
+<img src="/_blob/17b23c9ce6dc5f048942c7b514470f03" alt="Laine" style="width: 66px; height: 24px; display: block">
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px; color: #FFFFFF"><span style="font-family: Newsreader, serif; font-size: 18px">User Access Management Record</span><span style="font-size: 10px; color: #7e7e7e">Onboarding · UAM-2026-000124 · Form v4.1</span></div>
+</div>
+<sc-for list="{{sections}}" as="s" hint-placeholder-count="5">
+<section style="display: flex; flex-direction: column; gap: 0">
+<div style="padding: 6px 10px; background: #000000; color: #FFFFFF; font-size: 11px; font-weight: 700; border-radius: 4px 4px 0 0">{{s.title}}</div>
+<div style="border: 1px solid #cfc7ba; border-top: none; border-radius: 0 0 4px 4px">
+<sc-for list="{{s.rows}}" as="r" hint-placeholder-count="4">
+<div style="display: grid; grid-template-columns: 200px minmax(0, 1fr); border-bottom: 1px solid #ece6db; font-size: 11px"><span style="padding: 5px 10px; background: #F4F0EA; font-weight: 600">{{r.k}}</span><span style="padding: 5px 10px">{{r.v}}</span></div>
+</sc-for>
+</div>
+</section>
+</sc-for>
+<div style="margin-top: auto; display: flex; justify-content: space-between; font-size: 9px; color: #535353; border-top: 1px solid #dcd4c7; padding-top: 8px"><span>Generated 2 Oct 2026, 16:05 (Europe/Zurich) from the signed snapshot · SHA-256 [hash]</span><span>Page 1 of 2</span></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":794,"height":1123}}'>
+class Component extends DCLogic {
+renderVals() {
+const rows = (p) => p.map((x) => ({ k: x[0], v: x[1] }));
+return { sections: [
+{ title: '1. Ticket information', rows: rows([['Ticket type', 'Onboarding'], ['Ticket ID', 'UAM-2026-000124'], ['Status', 'Closed'], ['Priority', 'Medium'], ['Assignee (IT owner)', 'Raju Bholani'], ['Opened / closed', '30 Sep 2026, 14:12 / 2 Oct 2026, 16:05']]) },
+{ title: '2. User / employee details', rows: rows([['Employee name', 'Anna Keller'], ['Job title / role', 'Product Designer'], ['Department / team', 'Design'], ['Manager / requestor', '[Manager name] / Raju Bholani'], ['Country', 'Switzerland'], ['Employment event · effective date', 'Start · 14 Oct 2026']]) },
+{ title: '3. Final authorization', rows: rows([['Approver', 'Moises Larez · Approver'], ['Decision', 'Approved'], ['Approval date', '2 Oct 2026, 16:05'], ['Comments', '—']]) },
+{ title: '4. Access provisioning method', rows: rows([['Method', 'Custom / exception access'], ['Role template', '—']]) },
+{ title: '5. Application access', rows: rows([['Google Workspace', 'Grant · User'], ['Slack', 'Grant · Member'], ['Figma', 'Grant · Viewer'], ['All other catalog applications', 'No change']]) }
+] };
+}
+}
+</script>
+</body>
+</html>

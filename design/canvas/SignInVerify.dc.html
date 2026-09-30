@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine Onboarding Rights — Verify new device</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}a{color:#000000}a:hover{color:#cf2e2e}</style>
+</helmet>
+<div style="width: 1440px; height: 900px; display: flex; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+<dc-import name="BrandPanel" hint-size="620px,900px"></dc-import>
+<div style="flex-grow: 1; box-sizing: border-box; padding: 56px 64px; display: flex; flex-direction: column; justify-content: center; align-items: center">
+<form style="width: 400px; display: flex; flex-direction: column; gap: 26px">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 6px; font-size: 13px; text-decoration: none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>Back to sign in</a>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 44px; line-height: 1.1">Check your email</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #535353">You're signing in from a new device. We sent a 6-digit code to <strong style="color: #000000">raju@laine.ai</strong>.</p>
+</div>
+<fieldset style="border: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+<legend style="font-size: 13px; font-weight: 600; padding: 0 0 8px">Verification code</legend>
+<div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px">
+<input aria-label="Digit 1" value="4" inputmode="numeric" style="height: 58px; text-align: center; font-family: Newsreader, serif; font-size: 26px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px">
+<input aria-label="Digit 2" value="8" inputmode="numeric" style="height: 58px; text-align: center; font-family: Newsreader, serif; font-size: 26px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px">
+<input aria-label="Digit 3" value="1" inputmode="numeric" style="height: 58px; text-align: center; font-family: Newsreader, serif; font-size: 26px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px">
+<input aria-label="Digit 4" inputmode="numeric" style="height: 58px; text-align: center; font-family: Newsreader, serif; font-size: 26px; background: #FFFFFF; border: 2px solid #000000; border-radius: 10px">
+<input aria-label="Digit 5" inputmode="numeric" style="height: 58px; text-align: center; font-family: Newsreader, serif; font-size: 26px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px">
+<input aria-label="Digit 6" inputmode="numeric" style="height: 58px; text-align: center; font-family: Newsreader, serif; font-size: 26px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px">
+</div>
+<span style="font-size: 12px; color: #535353">The code expires in 10 minutes.</span>
+</fieldset>
+<button type="button" style="height: 52px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Verify and continue</button>
+<div style="display: flex; justify-content: space-between; font-size: 13px">
+<button type="button" style="border: none; background: transparent; padding: 0; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600; text-decoration: underline">Send a new code</button>
+<span style="color: #535353">Wrong email? Contact Raju</span>
+</div>
+</form>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic { renderVals() { return {}; } }
+</script>
+</body>
+</html>

@@ -58,18 +58,14 @@ Gotchas already found — don't use outdated patterns:
 - **Reports:** left side panel of report types (All users, Onboarded by month/country/department, Signature log, Offboarding SLA, Access by application, Open requests), CSV/PDF export.
 - **Extensibility:** apps, categories, equipment, form fields are **data** (admin-editable, versioned); adding a tool/field needs no code change. Only extra field agreed so far: **Country**.
 
-## Pages still missing (design next, roughly in this order)
-1. **My profile** — upload/replace signature PNG (required before anyone can sign).
-2. **Admin** — Users & roles (invite Moises/backup), App catalog editor, Form fields & versions (+ field suggestions from chat), RBAC templates, Settings (defaults, timezone, SLA).
-3. **Offboarding variant** of the request form (access inventory pre-fills removals, SLA section open) and **Access modification** variant.
-4. **Returned request** state (Raju sees Moises's comment, fixes, re-signs).
-5. **Batch onboarding review** grid (CSV/XLSX → per-row review).
-6. **Audit log** page.
-7. **Generated PDF layout** (the document itself, mirroring form v4 + signatures).
-8. **Read-only request view** for Moises ("View the full form").
-9. Sign-in extras: **device verification code**, **forgot password**.
-10. System states: empty lists, 403 "not allowed", 404, loading, errors.
-11. (Phase 2) Email/Slack notification templates.
+## Design coverage (2026-09-30)
+**Every planned screen has a first design** (31 boards on the canvas, specs in `design/`): sign-in (+ new-device code, reset password), requests list, request form + robot assistant, offboarding, returned, batch review, Review & sign, Moises's approvals / confirm & sign / read-only / records & PDF export, reports, My profile (signature upload), Admin (users & roles, applications, form fields, templates & defaults), audit log, generated PDF (2 A4 pages), system states, email notifications (phase 2). Access modification is specified in `design/request-variants.md` (same layout as offboarding).
+
+Shared canvas components: `TopBar`, `BrandPanel`, `AdminNav` (imported with `<dc-import>`).
+
+## Next steps
+1. Raju reviews the new boards (most are "draft, awaiting review" in `design/README.md`) and answers the open decisions below.
+2. Then **Phase 1 — Foundation** (PROJECT_PLAN §13): Next.js 16 app, Clerk, Supabase schema + RLS + tests, CI, Vercel environments, design tokens and the shared UI components.
 
 ## Open decisions (full list: PROJECT_PLAN §17)
 Auth details (SSO? MFA), backup approver name, auditor sign-off on end-only approval, AI provider/model and data policy, data residency/retention, SharePoint option (download only / button / automatic) + site & folder + M365 admin, notifications, how admin role changes are controlled.

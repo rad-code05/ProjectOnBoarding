@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine Onboarding Rights — Admin: form fields and versions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}a{color:#000000}a:hover{color:#cf2e2e}</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+<dc-import name="TopBar" role="admin" active="Admin" user-name="Raju Bholani" user-role="Admin · IT owner" initials="RB" hint-size="1440px,60px"></dc-import>
+<div style="flex-grow: 1; display: flex; min-height: 0">
+<dc-import name="AdminNav" active="fields" hint-size="240px,940px"></dc-import>
+<main style="flex-grow: 1; box-sizing: border-box; padding: 28px 32px; display: flex; gap: 20px; align-items: flex-start">
+
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: flex-end">
+<div style="display: flex; flex-direction: column; gap: 4px"><h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 30px">Form fields</h1><span style="font-size: 12px; color: #535353">Published: <strong style="color: #000000">v4.1</strong> (30 Sep 2026) · Draft <strong style="color: #000000">v4.2</strong> has 1 unpublished change</span></div>
+<div style="display: flex; gap: 8px">
+<button type="button" style="height: 38px; padding: 0 16px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600">Add field</button>
+<button type="button" style="height: 38px; padding: 0 16px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600">Publish v4.2</button>
+</div>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; overflow: hidden">
+<div style="display: grid; grid-template-columns: 1.6fr 1.3fr 0.9fr 0.8fr 1.4fr 0.9fr 1fr; gap: 12px; padding: 11px 18px; border-bottom: 1px solid #dcd4c7; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #535353"><span>Field</span><span>Section</span><span>Type</span><span>Required</span><span>Applies to</span><span>Reports</span><span>Version</span></div>
+<sc-for list="{{fields}}" as="f" hint-placeholder-count="9">
+<div style="{{f.rowStyle}}">
+<span style="font-weight: 700">{{f.label}}</span><span style="color: #535353">{{f.section}}</span><span>{{f.type}}</span><span>{{f.req}}</span><span>{{f.applies}}</span><span>{{f.rep}}</span><span style="{{f.verStyle}}">{{f.ver}}</span>
+</div>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 11px; line-height: 1.5; color: #535353">Core fields (names, dates, type, status) can't be removed. Publishing creates a new version; existing requests and PDFs keep the version they were created with.</p>
+</div>
+
+<aside aria-label="Field suggestions" style="width: 340px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px">
+<section style="background: #FFFFFF; border: 1.5px dashed #000000; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 100px; background: #f9e4b4">AI</span><h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 20px">Suggestions · 1</h2></div>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: #F4F0EA; border-radius: 10px">
+<span style="font-size: 13px; font-weight: 700">Probation end date</span>
+<div style="display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 4px 8px; font-size: 12px">
+<span style="color: #535353">Type</span><span>Date</span>
+<span style="color: #535353">Section</span><span>2 · Employee details</span>
+<span style="color: #535353">Applies to</span><span>Onboarding</span>
+<span style="color: #535353">From</span><span>Raju, via assistant chat · today</span>
+</div>
+<p style="margin: 0; font-size: 12px; line-height: 1.5; font-style: italic">"We need to track when probation ends for new starters."</p>
+<div style="display: flex; gap: 6px"><button type="button" style="height: 32px; padding: 0 12px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 11px; font-weight: 600">Review &amp; add to draft</button><button type="button" style="height: 32px; padding: 0 12px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 11px; font-weight: 600">Dismiss</button></div>
+</div>
+</section>
+<section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 20px">Version history</h2>
+<div style="display: grid; grid-template-columns: 50px minmax(0, 1fr); gap: 6px 10px; font-size: 12px">
+<span style="font-weight: 700">v4.2</span><span>Draft · + Probation end date (pending)</span>
+<span style="font-weight: 700">v4.1</span><span>30 Sep 2026 · + Country</span>
+<span style="font-weight: 700">v4.0</span><span>Initial import of the PDF form</span>
+</div>
+</section>
+</aside>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() {
+const base = 'display: grid; grid-template-columns: 1.6fr 1.3fr 0.9fr 0.8fr 1.4fr 0.9fr 1fr; gap: 12px; align-items: center; padding: 10px 18px; border-bottom: 1px solid #ece6db; font-size: 12px; ';
+const f = (label, section, type, req, applies, rep, ver, mode) => ({
+label: label, section: section, type: type, req: req, applies: applies, rep: rep, ver: ver,
+rowStyle: base + (mode === 'new' ? 'background: #F4F0EA;' : (mode === 'draft' ? 'background: #FFFFFF; outline: 1.5px dashed #000000; outline-offset: -4px;' : '')),
+verStyle: mode === 'draft' ? 'font-weight: 700' : (mode === 'new' ? 'font-weight: 700' : 'color: #535353')
+});
+return { fields: [
+f('First name', '2 · Employee', 'Text', 'Yes', 'All', 'Yes', 'Core'),
+f('Last name', '2 · Employee', 'Text', 'Yes', 'All', 'Yes', 'Core'),
+f('Job title / Role', '2 · Employee', 'Text', 'Yes', 'All', 'Yes', 'v4.0'),
+f('Department / Team', '2 · Employee', 'Select', 'Yes', 'All', 'Yes', 'v4.0'),
+f('Manager', '2 · Employee', 'Person', 'Yes', 'All', 'Yes', 'v4.0'),
+f('Country', '2 · Employee', 'Select', 'Yes', 'All', 'Yes', 'Added v4.1', 'new'),
+f('Effective date', '2 · Employee', 'Date', 'Yes', 'All', 'Yes', 'Core'),
+f('Probation end date', '2 · Employee', 'Date', 'No', 'Onboarding', 'Yes', 'Draft v4.2', 'draft'),
+f('Asset tag / Serial', '6 · Equipment', 'Text', 'If issued', 'All', 'No', 'v4.0')
+] };
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine Onboarding Rights — Admin: applications catalog</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}a{color:#000000}a:hover{color:#cf2e2e}input::placeholder{color:#7e7e7e}</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+<dc-import name="TopBar" role="admin" active="Admin" user-name="Raju Bholani" user-role="Admin · IT owner" initials="RB" hint-size="1440px,60px"></dc-import>
+<div style="flex-grow: 1; display: flex; min-height: 0">
+<dc-import name="AdminNav" active="apps" hint-size="240px,940px"></dc-import>
+<main style="flex-grow: 1; box-sizing: border-box; padding: 28px 32px; display: flex; gap: 20px; align-items: flex-start">
+
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: flex-end">
+<div style="display: flex; flex-direction: column; gap: 4px"><h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 30px">Applications</h1><span style="font-size: 12px; color: #535353">The tools that appear in section 5 of every new request. 26 active · 0 retired</span></div>
+<div style="display: flex; gap: 8px">
+<button type="button" style="height: 38px; padding: 0 16px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600">Add category</button>
+<button type="button" style="height: 38px; padding: 0 16px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600">Add application</button>
+</div>
+</div>
+<div role="tablist" aria-label="Categories" style="display: flex; gap: 6px; flex-wrap: wrap">
+<button type="button" role="tab" aria-selected="true" style="height: 32px; padding: 0 14px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600">Core business · 8</button>
+<button type="button" role="tab" aria-selected="false" style="height: 32px; padding: 0 14px; border: 1px solid #cfc7ba; border-radius: 100px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px">Engineering, cloud &amp; data · 7</button>
+<button type="button" role="tab" aria-selected="false" style="height: 32px; padding: 0 14px; border: 1px solid #cfc7ba; border-radius: 100px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px">Security, device &amp; identity · 4</button>
+<button type="button" role="tab" aria-selected="false" style="height: 32px; padding: 0 14px; border: 1px solid #cfc7ba; border-radius: 100px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px">Business, finance &amp; ops · 7</button>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; overflow: hidden">
+<div style="display: grid; grid-template-columns: 28px 1.4fr 1.6fr 1.8fr 0.8fr 40px; gap: 12px; padding: 11px 18px; border-bottom: 1px solid #dcd4c7; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #535353"><span></span><span>Application</span><span>Actions</span><span>Permission options</span><span>Status</span><span></span></div>
+<sc-for list="{{apps}}" as="a" hint-placeholder-count="8">
+<div style="{{a.rowStyle}}">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8378" stroke-width="2" stroke-linecap="round" aria-label="Drag to reorder"><path d="M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01"></path></svg>
+<span style="font-weight: 700">{{a.name}}</span>
+<span style="display: flex; gap: 4px; flex-wrap: wrap"><sc-for list="{{a.actions}}" as="x" hint-placeholder-count="3"><span style="font-size: 10px; font-weight: 600; padding: 2px 8px; background: #F4F0EA; border-radius: 100px">{{x}}</span></sc-for></span>
+<span style="display: flex; gap: 4px; flex-wrap: wrap"><sc-for list="{{a.perms}}" as="x" hint-placeholder-count="3"><span style="font-size: 10px; font-weight: 600; padding: 2px 8px; border: 1px solid #cfc7ba; border-radius: 100px">{{x}}</span></sc-for></span>
+<span>Active</span>
+<button type="button" aria-label="Edit {{a.name}}" style="width: 30px; height: 30px; border: 1px solid #dcd4c7; border-radius: 100px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"></path></svg></button>
+</div>
+</sc-for>
+</div>
+</div>
+
+<aside aria-label="Edit application" style="width: 340px; flex-shrink: 0; background: #FFFFFF; border: 1.5px solid #000000; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 22px">Edit · Figma</h2><span style="font-size: 11px; color: #535353">Used on 12 requests</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="an" style="font-size: 12px; font-weight: 600">Name</label><input id="an" value="Figma" style="height: 40px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 13px"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="ac" style="font-size: 12px; font-weight: 600">Category</label><select id="ac" style="height: 40px; padding: 0 10px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 13px"><option>Core business</option></select></div>
+<fieldset style="border: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+<legend style="font-size: 12px; font-weight: 600; padding-bottom: 6px">Allowed actions</legend>
+<div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px">
+<label style="display: flex; gap: 6px; align-items: center"><input type="checkbox" checked style="accent-color: #000000; margin: 0">Grant</label>
+<label style="display: flex; gap: 6px; align-items: center"><input type="checkbox" checked style="accent-color: #000000; margin: 0">Modify</label>
+<label style="display: flex; gap: 6px; align-items: center"><input type="checkbox" checked style="accent-color: #000000; margin: 0">Remove</label>
+<label style="display: flex; gap: 6px; align-items: center"><input type="checkbox" style="accent-color: #000000; margin: 0">Enroll</label>
+<label style="display: flex; gap: 6px; align-items: center"><input type="checkbox" style="accent-color: #000000; margin: 0">Disable</label>
+</div>
+</fieldset>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="ap" style="font-size: 12px; font-weight: 600">Permission options</label>
+<div style="display: flex; gap: 6px; flex-wrap: wrap; padding: 8px; border: 1px solid #cfc7ba; border-radius: 10px">
+<span style="font-size: 11px; font-weight: 600; padding: 3px 8px; background: #F4F0EA; border-radius: 100px">Viewer ✕</span>
+<span style="font-size: 11px; font-weight: 600; padding: 3px 8px; background: #F4F0EA; border-radius: 100px">Editor ✕</span>
+<span style="font-size: 11px; font-weight: 600; padding: 3px 8px; background: #F4F0EA; border-radius: 100px">Admin ✕</span>
+<input id="ap" placeholder="Add option…" style="flex-grow: 1; min-width: 80px; border: none; outline: none; font-family: Raleway, sans-serif; font-size: 12px">
+</div>
+</div>
+<button type="button" style="height: 42px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">Save changes</button>
+<button type="button" style="height: 38px; border: 1px solid #cf2e2e; border-radius: 100px; background: transparent; color: #cf2e2e; font-family: Raleway, sans-serif; font-size: 12px; font-weight: 600">Retire application</button>
+<p style="margin: 0; font-size: 11px; line-height: 1.5; color: #535353">Retired tools disappear from new requests but stay on past records and PDFs. You can also ask the Laine assistant, e.g. "add Notion under Core business with Member/Admin" — it creates a suggestion here for you to confirm.</p>
+</aside>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() {
+const g = ['Grant', 'Modify', 'Remove'];
+const base = 'display: grid; grid-template-columns: 28px 1.4fr 1.6fr 1.8fr 0.8fr 40px; gap: 12px; align-items: center; padding: 10px 18px; border-bottom: 1px solid #ece6db; font-size: 12px; ';
+const row = (name, perms, sel) => ({ name: name, actions: g, perms: perms, rowStyle: base + (sel ? 'background: #F4F0EA;' : '') });
+return { apps: [
+row('Office 365', ['User', 'Admin']), row('Google Workspace', ['User', 'Admin']), row('Slack', ['Member', 'Admin']),
+row('GitHub', ['Read', 'Write', 'Admin']), row('Monday.com', ['User', 'Admin']), row('Trello', ['Member', 'Admin']),
+row('Siteground', ['Member', 'Admin']), row('Figma', ['Viewer', 'Editor', 'Admin'], true)
+] };
+}
+}
+</script>
+</body>
+</html>

@@ -36,8 +36,10 @@
 | Default | As above |
 | Submitting | Button shows loading state, disabled (`fetchStatus === 'fetching'`) |
 | Wrong email or password | Password field 2px signal border, `aria-invalid="true"`; `InlineError` "Email or password is incorrect." (don't reveal which one was wrong) |
-| New device (`needs_client_trust`) | Separate step: "Check your email" + 6-digit code field + "Send a new code" — **to design** |
-| Forgot password | Clerk reset-password custom flow — **to design** |
+| New device (`needs_client_trust`) | Board *Sign-in · New device code*: "Check your email", six single-digit boxes, 10-minute expiry note, **Verify and continue**, **Send a new code**, back to sign in |
+| Forgot password | Board *Sign-in · Reset password*: step 1 work email → **Send reset code**; step 2 code + new password with live rules (≥ 12 characters, not in known breaches) → **Save and sign in**. "Forgot password?" on the sign-in page links here |
+
+Both reuse the shared `BrandPanel` component.
 
 ## Copy rules
 - Say "Raju" for account help (per product owner).

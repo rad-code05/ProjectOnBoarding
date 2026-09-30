@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine Onboarding Rights — Email notifications (phase 2)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#ece6db}</style>
+</helmet>
+<div style="width: 1440px; height: 760px; box-sizing: border-box; padding: 48px 56px; display: flex; flex-direction: column; gap: 24px; font-family: Raleway, sans-serif; background: #ece6db; color: #000000">
+<div style="display: flex; align-items: baseline; gap: 12px"><h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 36px">Email notifications</h1><span style="font-size: 11px; font-weight: 700; padding: 3px 10px; background: #FFFFFF; border-radius: 100px">Phase 2 · sent with Resend</span></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px">
+<sc-for list="{{mails}}" as="m" hint-placeholder-count="3">
+<article style="background: #FFFFFF; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column">
+<div style="padding: 10px 16px; background: #F4F0EA; font-size: 11px; color: #535353; display: flex; flex-direction: column; gap: 2px"><span><strong style="color: #000000">To:</strong> {{m.to}}</span><span><strong style="color: #000000">Subject:</strong> {{m.subject}}</span></div>
+<div style="padding: 14px 20px; background: #000000"><img src="/_blob/17b23c9ce6dc5f048942c7b514470f03" alt="Laine" style="width: 54px; height: 20px; display: block"></div>
+<div style="padding: 22px 20px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 22px; line-height: 1.2">{{m.title}}</h2>
+<p style="margin: 0; font-size: 13px; line-height: 1.55">{{m.body}}</p>
+<div style="padding: 10px 12px; background: #F4F0EA; border-radius: 8px; font-size: 12px; line-height: 1.6">{{m.facts}}</div>
+<a href="#" style="align-self: flex-start; height: 40px; box-sizing: border-box; padding: 0 18px; border-radius: 100px; background: #000000; color: #FFFFFF; font-size: 13px; font-weight: 600; text-decoration: none; display: flex; align-items: center">{{m.cta}}</a>
+</div>
+<div style="margin-top: auto; padding: 12px 20px; border-top: 1px solid #ece6db; font-size: 10px; line-height: 1.5; color: #535353">Laine onboarding rights · internal system. No personal details beyond the name are included; sign in to see the request.</div>
+</article>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":760}}'>
+class Component extends DCLogic {
+renderVals() {
+return { mails: [
+{ to: 'Moises Larez, backup approver', subject: 'Waiting for your confirmation: Anna Keller', title: 'A request is waiting for you', body: 'Raju has completed and signed the onboarding for Anna Keller. Please review and confirm.', facts: 'UAM-2026-000124 · Onboarding · effective 14 Oct 2026', cta: 'Review & confirm' },
+{ to: 'Raju Bholani', subject: 'Returned by Moises: Anna Keller', title: 'Moises returned a request', body: 'Moises left a comment on the onboarding for Anna Keller. Fix it and sign again.', facts: '"Figma should be Viewer, not Editor…"', cta: 'Open request' },
+{ to: 'Raju Bholani', subject: 'SLA due in 6h: Marco Rossi offboarding', title: 'Access removal due in 6 hours', body: 'The offboarding for Marco Rossi must be completed by 1 Oct 2026, 18:00 (within 24h).', facts: '5 of 11 items removed · laptop return pending', cta: 'Open offboarding' }
+] };
+}
+}
+</script>
+</body>
+</html>

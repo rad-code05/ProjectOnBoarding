@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine Onboarding Rights — Request (read-only, approver)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}a{color:#000000}a:hover{color:#cf2e2e}</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+<dc-import name="TopBar" role="approver" active="Approvals" user-name="Moises Larez" user-role="Approver" initials="ML" hint-size="1440px,60px"></dc-import>
+<main style="flex-grow: 1; box-sizing: border-box; padding: 24px 40px; display: flex; flex-direction: column; gap: 16px">
+<a href="ApproverHome.dc.html" style="display: flex; align-items: center; gap: 6px; font-size: 12px; text-decoration: none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>Back to approvals</a>
+<div style="display: flex; justify-content: space-between; align-items: flex-end">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #535353">UAM-2026-000124 · Onboarding · Read-only</span>
+<div style="display: flex; align-items: center; gap: 12px"><h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 32px">Anna Keller</h1><span style="font-size: 11px; font-weight: 600; padding: 3px 10px; background: #f9e4b4; border-radius: 100px">Awaiting your confirmation</span></div>
+</div>
+<div style="display: flex; gap: 8px">
+<button type="button" style="height: 40px; padding: 0 16px; border: 1px solid #cf2e2e; border-radius: 100px; background: transparent; color: #cf2e2e; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">Return to Raju</button>
+<a href="ConfirmSign.dc.html" style="height: 40px; box-sizing: border-box; padding: 0 18px; border-radius: 100px; background: #000000; color: #FFFFFF; font-size: 13px; font-weight: 600; text-decoration: none; display: flex; align-items: center">Confirm &amp; sign</a>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start">
+<sc-for list="{{cards}}" as="c" hint-placeholder-count="6">
+<section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 11px; font-weight: 600; color: #535353">{{c.num}}</span><h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 18px">{{c.title}}</h2></div>
+<div style="display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px 10px; font-size: 12px">
+<sc-for list="{{c.rows}}" as="r" hint-placeholder-count="4"><span style="color: #535353">{{r.k}}</span><span>{{r.v}}</span></sc-for>
+</div>
+</section>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 11px; color: #535353">Approvers see every section but can't edit. Sections that don't apply (e.g. SLA on onboarding) are hidden.</p>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+renderVals() {
+const rows = (pairs) => pairs.map((p) => ({ k: p[0], v: p[1] }));
+return { cards: [
+{ num: '01', title: 'Ticket information', rows: rows([['Ticket', 'UAM-2026-000124'], ['Priority', 'Medium'], ['IT owner', 'Raju Bholani'], ['Opened', '30 Sep 2026, 14:12']]) },
+{ num: '02', title: 'Employee details', rows: rows([['Name', 'Anna Keller'], ['Job title', 'Product Designer'], ['Department', 'Design'], ['Manager', '[Manager name]'], ['Country', 'Switzerland'], ['Effective', '14 Oct 2026']]) },
+{ num: '04', title: 'Provisioning method', rows: rows([['Method', 'Custom / exception'], ['Template', '—']]) },
+{ num: '05', title: 'Application access', rows: rows([['Google Workspace', 'Grant · User'], ['Slack', 'Grant · Member'], ['Figma', 'Grant · Editor']]) },
+{ num: '06–07', title: 'Equipment & access', rows: rows([['Laptop (macOS)', 'Issue · [Asset tag]'], ['Office access', 'Grant · Badge / Key'], ['VPN', '—']]) },
+{ num: '09', title: 'IT execution', rows: rows([['Access provisioned', 'Yes'], ['Devices enrolled', 'Yes'], ['MFA / MDM / EDR', 'Yes'], ['Signed', 'Raju Bholani · 1 Oct 2026, 17:40'], ['Notes', '[Implementation notes]']]) }
+] };
+}
+}
+</script>
+</body>
+</html>

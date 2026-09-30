@@ -26,6 +26,27 @@ Rules:
 | `Avatar` | `name` | initials on sand (top bar) or ink | Top bar, audit log |
 | `Logo` | `size` | white wordmark — only on ink surfaces | Brand panel, top bar |
 
+## Shared components already built on the canvas
+`TopBar` (props: `role` admin/approver, `active`, `userName`, `userRole`, `initials` — nav items change by role), `BrandPanel`, `AdminNav` (`active`). Newer boards import them with `<dc-import>`; the app will have the same components.
+
+## Admin, profile & audit (`components/admin/`, `components/profile/`)
+
+| Component | Notes |
+| --- | --- |
+| `AdminNav` | Left sub-menu: Users & roles, Applications, Form fields, Templates & defaults |
+| `UserTable`, `InviteForm` | Roles as chips; invite with role checkboxes; role rules panel |
+| `CatalogEditor`, `AppEditPanel` | Category tabs, app rows, edit panel with actions + permission-option chip input, Retire |
+| `FieldTable`, `FieldSuggestionCard`, `VersionHistory` | Draft vs published versions; AI suggestions to review |
+| `TemplateTable`, `SettingsSection` | RBAC templates; defaults, SLA, PDF & SharePoint |
+| `SignatureSlot`, `SignatureHistory` | Upload/replace PNG, active marker, version history |
+| `AuditTable`, `SourceChip` | Source: People / AI / System |
+
+## Request variants (`components/request/`)
+`SlaPanel` (countdown, timeline, deadline), `InventoryBanner`, `RemovalTable`, `HandoverSection`, `ReturnedNotice`, `ReadOnlySectionCard`, `BatchGrid` (per-row check status).
+
+## Records & states
+`PdfDocument` (react-pdf; `PdfSectionTable`, `PdfSignatureBlock`, `PdfFooter`), `EmptyState` (with `RobotAvatar`), `ErrorPage` (403/404), `Skeleton`, `ConflictAlert`, `OfflineBanner`, `EmailLayout` (phase 2).
+
 ## Layout components (`components/layout/`)
 
 | Component | Description | Used in |

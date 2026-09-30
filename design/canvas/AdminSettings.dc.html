@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine Onboarding Rights — Admin: templates and defaults</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}a{color:#000000}a:hover{color:#cf2e2e}</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+<dc-import name="TopBar" role="admin" active="Admin" user-name="Raju Bholani" user-role="Admin · IT owner" initials="RB" hint-size="1440px,60px"></dc-import>
+<div style="flex-grow: 1; display: flex; min-height: 0">
+<dc-import name="AdminNav" active="settings" hint-size="240px,940px"></dc-import>
+<main style="flex-grow: 1; box-sizing: border-box; padding: 28px 32px; display: flex; flex-direction: column; gap: 16px">
+<h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 30px">Templates &amp; defaults</h1>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; align-items: start">
+
+<section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 20px">RBAC templates</h2><button type="button" style="height: 32px; padding: 0 12px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 11px; font-weight: 600">New template</button></div>
+<p style="margin: 0; font-size: 12px; color: #535353">Choosing a template on a request pre-fills its applications; the form then shows only deviations.</p>
+<div style="display: grid; grid-template-columns: 1.4fr 2fr 0.7fr 40px; gap: 10px; padding: 8px 0; border-bottom: 1px solid #dcd4c7; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #535353"><span>Template</span><span>Applications</span><span>Used</span><span></span></div>
+<sc-for list="{{templates}}" as="t" hint-placeholder-count="4">
+<div style="display: grid; grid-template-columns: 1.4fr 2fr 0.7fr 40px; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid #ece6db; font-size: 12px">
+<span style="font-weight: 700">{{t.name}}</span><span style="color: #535353">{{t.apps}}</span><span>{{t.used}}</span>
+<button type="button" aria-label="Edit {{t.name}}" style="width: 30px; height: 30px; border: 1px solid #dcd4c7; border-radius: 100px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"></path></svg></button>
+</div>
+</sc-for>
+</section>
+
+<div style="display: flex; flex-direction: column; gap: 16px">
+<section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 20px">Defaults</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 5px"><label for="d1" style="font-size: 11px; font-weight: 600">Default IT owner</label><select id="d1" style="height: 36px; padding: 0 8px; border: 1px solid #cfc7ba; border-radius: 8px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px"><option>Raju Bholani</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 5px"><label for="d2" style="font-size: 11px; font-weight: 600">Primary approver</label><select id="d2" style="height: 36px; padding: 0 8px; border: 1px solid #cfc7ba; border-radius: 8px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px"><option>Moises Larez</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 5px"><label for="d3" style="font-size: 11px; font-weight: 600">Company timezone</label><select id="d3" style="height: 36px; padding: 0 8px; border: 1px solid #cfc7ba; border-radius: 8px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px"><option>Europe/Zurich</option></select></div>
+<div style="display: flex; flex-direction: column; gap: 5px"><label for="d4" style="font-size: 11px; font-weight: 600">Ticket ID prefix</label><input id="d4" value="UAM" style="height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px solid #cfc7ba; border-radius: 8px; font-family: Raleway, sans-serif; font-size: 12px"></div>
+</div>
+</section>
+<section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 20px">Offboarding SLA</h2>
+<div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px 12px; font-size: 12px; align-items: center">
+<span>Immediate (same day)</span><span>End of effective day</span>
+<span>Within 24h</span><span>24 hours after effective time</span>
+<span>Within 48h</span><span>48 hours after effective time</span>
+<span>Reminder before due</span><span><select aria-label="Reminder" style="height: 30px; padding: 0 6px; border: 1px solid #cfc7ba; border-radius: 8px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 12px"><option>6 hours</option></select></span>
+</div>
+</section>
+<section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 20px">PDF &amp; SharePoint</h2>
+<div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px 12px; font-size: 12px; align-items: center">
+<span style="color: #535353">File name</span><span style="font-weight: 600">firstname.lastname-&lt;type&gt;.pdf</span>
+<span style="color: #535353">SharePoint</span><span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 10px; font-weight: 700; padding: 2px 8px; background: #ece6db; border-radius: 100px">Not connected</span><button type="button" style="height: 30px; padding: 0 12px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 11px; font-weight: 600">Connect</button></span>
+<span style="color: #535353">Folder</span><span style="color: #535353">[Site] › IT › Access records › &lt;year&gt;</span>
+<span style="color: #535353">Save on close</span><span><label style="display: flex; gap: 6px; align-items: center"><input type="checkbox" style="accent-color: #000000; margin: 0">Automatically</label></span>
+</div>
+</section>
+</div>
+
+</div>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() {
+return { templates: [
+{ name: 'Engineer — standard', apps: 'Google Workspace, Slack, GitHub, Supabase, Google Cloud…', used: '17' },
+{ name: 'Designer — standard', apps: 'Google Workspace, Slack, Figma', used: '8' },
+{ name: 'Sales — standard', apps: 'Google Workspace, Slack, HubSpot, Clay', used: '7' },
+{ name: 'Finance — standard', apps: 'Office 365, Slack, Payrexx, Deel', used: '4' }
+] };
+}
+}
+</script>
+</body>
+</html>

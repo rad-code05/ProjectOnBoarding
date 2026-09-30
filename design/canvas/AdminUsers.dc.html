@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Laine Onboarding Rights — Admin: users and roles</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}a{color:#000000}a:hover{color:#cf2e2e}input::placeholder{color:#7e7e7e}</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+<dc-import name="TopBar" role="admin" active="Admin" user-name="Raju Bholani" user-role="Admin · IT owner" initials="RB" hint-size="1440px,60px"></dc-import>
+<div style="flex-grow: 1; display: flex; min-height: 0">
+<dc-import name="AdminNav" active="users" hint-size="240px,940px"></dc-import>
+<main style="flex-grow: 1; box-sizing: border-box; padding: 28px 32px; display: flex; gap: 20px; align-items: flex-start">
+
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; align-items: flex-end">
+<div style="display: flex; flex-direction: column; gap: 4px"><h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 30px">Users &amp; roles</h1><span style="font-size: 12px; color: #535353">Only invited people can sign in. There is no sign-up.</span></div>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; overflow: hidden">
+<div style="display: grid; grid-template-columns: 1.8fr 2fr 1fr 0.8fr 1.1fr 40px; gap: 12px; padding: 11px 18px; border-bottom: 1px solid #dcd4c7; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #535353"><span>Person</span><span>Roles</span><span>Status</span><span>MFA</span><span>Last sign-in</span><span></span></div>
+<sc-for list="{{users}}" as="u" hint-placeholder-count="3">
+<div style="display: grid; grid-template-columns: 1.8fr 2fr 1fr 0.8fr 1.1fr 40px; gap: 12px; align-items: center; padding: 12px 18px; border-bottom: 1px solid #ece6db; font-size: 12px">
+<span style="display: flex; align-items: center; gap: 10px"><span style="width: 30px; height: 30px; border-radius: 100px; background: #F4F0EA; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">{{u.initials}}</span><span style="display: flex; flex-direction: column; gap: 1px"><span style="font-weight: 700">{{u.name}}</span><span style="font-size: 11px; color: #535353">{{u.email}}</span></span></span>
+<span style="display: flex; gap: 4px; flex-wrap: wrap"><sc-for list="{{u.roles}}" as="r" hint-placeholder-count="2"><span style="font-size: 10px; font-weight: 600; padding: 2px 8px; border: 1px solid #000000; border-radius: 100px">{{r}}</span></sc-for></span>
+<span style="{{u.statusStyle}}">{{u.status}}</span>
+<span>{{u.mfa}}</span>
+<span style="color: #535353">{{u.last}}</span>
+<button type="button" aria-label="Edit {{u.name}}" style="width: 30px; height: 30px; border: 1px solid #dcd4c7; border-radius: 100px; background: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"></path></svg></button>
+</div>
+</sc-for>
+</div>
+<section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 18px">Role rules</h2>
+<ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 1.5">
+<li><strong>Approver</strong> can only confirm, return, view reports and export. It never sees drafts.</li>
+<li>Nobody can approve a request they prepared or executed.</li>
+<li>You can't give yourself the Approver role — role changes are logged and shown to approvers.</li>
+<li>At least one active approver must remain.</li>
+</ul>
+</section>
+</div>
+
+<aside aria-label="Invite a person" style="width: 340px; flex-shrink: 0; background: #FFFFFF; border: 1.5px solid #000000; border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 22px">Invite a person</h2>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="in" style="font-size: 12px; font-weight: 600">Full name</label><input id="in" placeholder="First and last name" style="height: 40px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 13px"></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><label for="ie" style="font-size: 12px; font-weight: 600">Work email</label><input id="ie" placeholder="name@laine.ai" style="height: 40px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 13px"></div>
+<fieldset style="border: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+<legend style="font-size: 12px; font-weight: 600; padding-bottom: 6px">Roles</legend>
+<label style="display: flex; gap: 8px; align-items: flex-start; font-size: 12px"><input type="checkbox" checked style="accent-color: #000000; margin: 2px 0 0"><span><strong>Approver</strong><br><span style="color: #535353">Confirm &amp; sign, reports, export</span></span></label>
+<label style="display: flex; gap: 8px; align-items: flex-start; font-size: 12px"><input type="checkbox" style="accent-color: #000000; margin: 2px 0 0"><span><strong>IT operator</strong><br><span style="color: #535353">Create requests, record IT work</span></span></label>
+<label style="display: flex; gap: 8px; align-items: flex-start; font-size: 12px"><input type="checkbox" style="accent-color: #000000; margin: 2px 0 0"><span><strong>Admin</strong><br><span style="color: #535353">Users, catalog, fields, settings</span></span></label>
+<label style="display: flex; gap: 8px; align-items: flex-start; font-size: 12px"><input type="checkbox" style="accent-color: #000000; margin: 2px 0 0"><span><strong>Auditor</strong><br><span style="color: #535353">Read-only records, reports, audit log</span></span></label>
+</fieldset>
+<button type="button" style="height: 44px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">Send invitation</button>
+<p style="margin: 0; font-size: 11px; line-height: 1.5; color: #535353">They receive an email from Clerk with a link to set a password. The invitation expires after 7 days.</p>
+</aside>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+renderVals() {
+const ok = 'font-weight: 600';
+const pending = 'font-weight: 600; font-size: 11px; padding: 2px 8px; background: #f9e4b4; border-radius: 100px; justify-self: start';
+return { users: [
+{ initials: 'RB', name: 'Raju Bholani', email: 'raju@laine.ai', roles: ['Admin', 'Requester', 'IT operator'], status: 'Active', statusStyle: ok, mfa: 'On', last: 'Today, 14:02' },
+{ initials: 'ML', name: 'Moises Larez', email: 'moises@laine.ai', roles: ['Approver'], status: 'Active', statusStyle: ok, mfa: 'On', last: 'Yesterday' },
+{ initials: 'BA', name: '[Backup approver]', email: '[email]', roles: ['Approver'], status: 'Invited', statusStyle: pending, mfa: '—', last: '—' }
+] };
+}
+}
+</script>
+</body>
+</html>
