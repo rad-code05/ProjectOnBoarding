@@ -22,7 +22,7 @@ Say, for example:
 
 The session should then:
 1. Read `CLAUDE.md`, the phase file, and the design/plan documents the step lists under **Read first**.
-2. Check the step's **Blocked by** items; if a decision is still open, ask before building.
+2. Check that the phase's **Depends on** phases are actually built (look for the code, not just ticked boxes). If they aren't, **stop and tell the user** which step to do first. Check open decisions; if one blocks the step, ask before building.
 3. **Verify every library API with Context7** before writing code (the phase file lists which libraries).
 4. Create a branch `phase-N/N.M-short-name`, implement, add tests, run lint / typecheck / tests locally.
 5. Open a pull request (push as `rad-code05`), fill in the checklist, link the step.

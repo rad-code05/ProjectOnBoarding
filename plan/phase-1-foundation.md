@@ -44,7 +44,7 @@
   - *Done when:* each role lands on the right page; wrong role gets 403; tests cover both.
 
 - [ ] **1.7 Core schema & seed data**
-  - Migrations for `employees`, `requests` (state enum, `version` for optimistic locking, all date columns), `request_access_items`, `request_equipment_items`, `request_physical_access_items`, `approvals`, `execution_confirmations`, `signatures`, `signature_assets`, `catalog_categories`, `catalog_apps`, `rbac_templates(+_items)`, `form_versions`, `form_fields`, `field_suggestions`, `employee_access_inventory`, `pdf_documents`, `audit_events` (see `PROJECT_PLAN.md` §11).
+  - Migrations for `employees`, `requests` (state enum, `version` for optimistic locking, all date columns), `request_access_items`, `request_equipment_items`, `request_physical_access_items`, `approvals`, `execution_confirmations`, `signatures`, `signature_assets`, `request_snapshots`, `catalog_categories`, `catalog_apps`, `rbac_templates(+_items)`, `form_versions`, `form_fields`, `field_suggestions`, `employee_access_inventory`, `pdf_documents`, `audit_events` (see `PROJECT_PLAN.md` §11).
   - `audit_events` append-only (RLS insert-only + trigger blocking update/delete). Ticket ID sequence `UAM-YYYY-NNNNNN`.
   - Seed: 26 apps / 4 categories (§4.2), equipment & physical access types, form v4.1 (incl. Country).
   - RLS policies per role for every table + pgTAP tests (approver cannot read drafts, etc.).

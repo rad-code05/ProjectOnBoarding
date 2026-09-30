@@ -26,6 +26,8 @@
 | D10 | Notifications: email (Resend) and/or Slack; v1 or later | 7.2 |
 | D11 | Import past completed forms? | 6.x |
 | D12 | Domain for the app (e.g. `access.laine.ai`) and who owns Vercel/Supabase/Clerk accounts & billing | 1.8 |
+| D13 | Signature legal weight: internal acknowledgment (working assumption) or legally binding e-signature | 3.2, 3.3 |
+| D14 | Add the original form PDF (*User Onboarding and Offboarding Form v4*) to `docs/source/` so the PDF layout can be compared | 3.4 |
 
 ## Exit criteria
 All decisions that block Phase 1 (D1, D2, D12) answered; design board statuses approved or accepted as-is.

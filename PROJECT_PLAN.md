@@ -123,7 +123,7 @@ Catalog rules: each app has its **own action set** (Hexnode differs) and **own p
 | `draft` | Being filled in (manually or by AI) | Open |
 | `in_execution` | Raju setting up / removing access and recording actions | In Progress |
 | `pending_confirmation` | Raju confirmed execution and signed Section 9; waiting for Moises | In Progress |
-| `returned` | Moises sent it back with comments; Raju corrects → `pending_confirmation` again | In Progress |
+| `returned` | Moises sent it back with a comment. Raju's signature is cleared (kept in audit); sections 1–9 unlock; Raju edits, then **must sign again** via Review & sign → `pending_confirmation` | In Progress |
 | `closed` | Moises confirmed, approved, and signed; PDF generated | Closed |
 | `cancelled` | Withdrawn (reason required) | Closed |
 
@@ -337,14 +337,15 @@ Users can hold multiple roles.
 | `request_physical_access_items` | request_id, access type, action, scope, notes |
 | `approvals` | request_id, approver, decision, comments, decided_at |
 | `execution_confirmations` | request_id, checklist items, notes, executed_by, executed_at |
-| `signatures` | request_id, section, signer, signature_asset_id, signed_at, snapshot_hash |
+| `signatures` | request_id, section, signer, role, signature_asset_id, form_version_id, snapshot_id, signed_at (server), cleared_at (set when a returned request clears it) |
+| `request_snapshots` | id, request_id, kind (`it_signature` · `approval` · `closure`), data `jsonb` (full request incl. items, canonicalised with RFC 8785 JSON Canonicalization before hashing), sha256, created_at — immutable |
 | `signature_assets` | owner, storage path, uploaded_at, active |
 | `catalog_categories`, `catalog_apps` | name, actions allowed, permission options, active, order |
 | `rbac_templates`, `rbac_template_items` | template name, document link, app/permission rows |
 | `form_versions`, `form_fields` | versioned schema definitions |
 | `field_suggestions` | proposed definition, proposer, status, admin notes |
 | `employee_access_inventory` | employee, app, permission, granted/removed by request |
-| `pdf_documents` | request_id, storage path, filename, snapshot, hash, generated_at |
+| `pdf_documents` | request_id, snapshot_id (the `closure` snapshot), storage path, filename, pdf sha256, generated_at |
 | `audit_events` | actor, action, entity, entity_id, diff (sanitised), source, created_at — append-only |
 | `settings` | default assignee/approver/reviewer, company timezone, SLA definitions |
 
@@ -552,8 +553,8 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 1. **Auth:** Clerk (recommended) or Supabase Auth? SSO via Google Workspace or Microsoft 365? Invitation-only?
 2. **Approval:** resolved — Moises signs once at the end (Section 5.1). Backup approver: an additional account with the Approver role (Section 10.1); person still to be named. Still open: how are role changes by an admin controlled (Section 10.1)? Is post-provisioning confirmation acceptable to Laine's auditor?
 3. **Monthly metric:** "onboarded" = execution completed (proposed), final review, or closure?
-4. **Signature:** internal acknowledgment (proposed) or legally binding e-signature?
-5. **Edits after approval:** which changes require re-approval and re-signing?
+4. **Signature:** internal acknowledgment (**working assumption** until confirmed) or legally binding e-signature? (plan D13)
+5. **Edits after signing:** *resolved (design)* — any change after Raju signs (including after a return) clears his signature and requires signing again; closed requests are never edited (a new access-modification request is created instead).
 6. **Fields:** Country agreed; revisit the deferred fields in 4.5 after the first weeks of use.
 7. **RBAC templates:** store templates as data (4.4 #1)? Where is the current RBAC document?
 8. **Access inventory for offboarding** (4.4 #2): include in v1?
