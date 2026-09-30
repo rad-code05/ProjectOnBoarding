@@ -6,6 +6,7 @@ UI design for the internal user access management app, styled after [laine.ai](h
 
 | Document | Contents |
 | --- | --- |
+| [colours.md](colours.md) | Colour palette, where each colour is used, and the colour rules |
 | [tokens.md](tokens.md) | Colors, typography, spacing, radii, contrast rules, and the Tailwind v4 / `next/font` setup |
 | [components.md](components.md) | Reusable component inventory: props, states, and where each is used |
 | [sign-in.md](sign-in.md) | Sign-in, wrong password, mobile, new-device code, reset password |

@@ -12,6 +12,8 @@ An internal web app for Laine that replaces the PDF *Laine User Access Managemen
 
 | File | Contents |
 | --- | --- |
+| [ROLES.md](ROLES.md) | People, roles, permissions, what each sees, workflow and signing rules |
+| [design/colours.md](design/colours.md) | Colour palette and colour rules (quick reference) |
 | [plan/](plan/README.md) | **Delivery phases 0–7**, one file each, split into numbered PR-sized steps. Sessions are started as "work on `plan/phase-N-….md` step N.M". |
 | [PROJECT_PLAN.md](PROJECT_PLAN.md) | Full plan: scope, stack, form analysis + app catalog (§4), workflow (§5), AI (§6), extensibility (§7), signatures/PDF (§8), reports (§9), roles/security (§10), data model (§11), engineering practices (§12), phases (§13), acceptance criteria (§14), Context7-verified syntax (§15), risks (§16), **open decisions (§17)** |
 | [design/README.md](design/README.md) | Design index + status of every screen |
@@ -35,6 +37,7 @@ Draft → In execution → (Raju: Review & sign) → Awaiting confirmation → (
 - **No pre-provisioning approval.** Moises signs **once, at the end**. The form's "must not be provisioned before authorization" line is removed.
 - **Never backdate.** All dates/timestamps are server-generated and not editable (user asked about backdating; declined for audit integrity).
 - Nobody approves their own request.
+- **Signature = internal acknowledgment only** (D13, decided): a record that the process was done — not a legal e-signature. PNG signature or initials (PNG or typed), applied only by the signer after confirming, with server time.
 
 ## Stack (verified with Context7 on 2026-09-30 — re-verify when pinning versions)
 Next.js 16 (App Router, TS) · Clerk Core 3 · Supabase (Postgres + Storage + RLS) · Vercel · Vercel AI SDK · Tailwind v4 · Zod · `@react-pdf/renderer` · (later) Resend, Microsoft Graph for SharePoint.

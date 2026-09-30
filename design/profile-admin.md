@@ -5,7 +5,7 @@
 ## My profile — board *My profile · signature upload*
 Opened from the name/avatar in the top bar (every role).
 - **Account card:** name, email, roles, sign-in method + MFA, timezone, member since; **Manage password & MFA** (Clerk). Name/email/roles are admin-managed.
-- **Signature & initials:** two slots — *Signature* and *Initials* — each a PNG (max 1 MB, transparent background recommended). One is **active**; the active one is applied when signing. Replace keeps old versions.
+- **Signature & initials:** an internal record, not a legal e-signature (D13). Two slots — *Signature* (PNG, max 1 MB, transparent background recommended) and *Initials* (PNG **or typed**, up to 4 characters, previewed in Instrument Serif italic). One is **active**; the active one is applied when signing. Replace keeps old versions.
 - **History:** every uploaded version with where it was used, so past PDFs keep the signature used at the time.
 - Server side: PNG only, re-encoded, metadata stripped, stored in a private bucket under the user's ID.
 

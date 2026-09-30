@@ -38,7 +38,7 @@
 <section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 20px 22px; display: flex; flex-direction: column; gap: 18px">
 <div style="display: flex; flex-direction: column; gap: 4px">
 <h2 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 22px">Signature &amp; initials</h2>
-<p style="margin: 0; font-size: 12px; line-height: 1.5; color: #535353">Upload a PNG of your signature or initials. It is applied only by you, after you confirm the summary, with the server date and time. Only one is active at a time.</p>
+<p style="margin: 0; font-size: 12px; line-height: 1.5; color: #535353">An internal record that you carried out or approved the process — not a legal e-signature. Upload a PNG signature, or use initials (PNG or typed). It is applied only by you, after you confirm the summary, with the server date and time. Only one is active at a time.</p>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
@@ -58,6 +58,11 @@
 <input type="file" accept="image/png" aria-label="Upload initials PNG" style="position: absolute; width: 1px; height: 1px; opacity: 0">
 </label>
 <span style="font-size: 11px; color: #535353">PNG only · max 1 MB · transparent background recommended</span>
+<div style="display: flex; align-items: center; gap: 10px">
+<label for="ti" style="font-size: 12px; font-weight: 600; white-space: nowrap">or type initials</label>
+<input id="ti" value="RB" maxlength="4" style="width: 70px; height: 34px; box-sizing: border-box; padding: 0 10px; border: 1px solid #cfc7ba; border-radius: 8px; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 700">
+<span aria-label="Preview of typed initials" style="font-family: 'Instrument Serif', serif; font-style: italic; font-size: 30px; line-height: 1">RB</span>
+</div>
 <label style="display: flex; align-items: center; gap: 8px; font-size: 12px"><input type="radio" name="use" style="accent-color: #000000; margin: 0">Use initials instead of signature</label>
 </div>
 </div>

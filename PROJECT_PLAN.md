@@ -252,7 +252,7 @@ All tool inputs are validated with Zod on the server; every server-side tool re-
 3. On "Confirm and sign", the server attaches the signer's current signature image with a **server-generated timestamp**, and records: signer's user ID, role, request ID, form version, and a SHA-256 hash of the request snapshot.
 4. Once signed, the signed sections are locked; any later change clears the signature and requires re-approval (rule to confirm in Section 17).
 
-Rules: only the signed-in user can apply their own signature; the AI can never sign. Uploads are PNG only, size- and dimension-limited, re-encoded server-side to strip metadata, and stored in a private bucket. The image is a visual mark; the proof is the authenticated audit record. If legally binding e-signatures are required, evaluate a dedicated e-signature provider instead.
+Rules: only the signed-in user can apply their own signature; the AI can never sign. Uploads are PNG only, size- and dimension-limited, re-encoded server-side to strip metadata, and stored in a private bucket. The image is a visual mark; the proof is the authenticated audit record. **Decided (D13):** this is an internal acknowledgment, not a legally binding e-signature — no e-signature provider. Initials may also be typed (rendered in Instrument Serif italic) instead of uploaded.
 
 ### 8.2 PDF export
 - Generated server-side with `@react-pdf/renderer`, laid out to mirror the v4 form (same 11 sections), from a **frozen snapshot** of the request at closure, so it can be regenerated identically.
@@ -553,7 +553,7 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 1. **Auth:** Clerk (recommended) or Supabase Auth? SSO via Google Workspace or Microsoft 365? Invitation-only?
 2. **Approval:** resolved — Moises signs once at the end (Section 5.1). Backup approver: an additional account with the Approver role (Section 10.1); person still to be named. Still open: how are role changes by an admin controlled (Section 10.1)? Is post-provisioning confirmation acceptable to Laine's auditor?
 3. **Monthly metric:** "onboarded" = execution completed (proposed), final review, or closure?
-4. **Signature:** internal acknowledgment (**working assumption** until confirmed) or legally binding e-signature? (plan D13)
+4. **Signature:** *resolved 2026-09-30 (D13)* — **internal acknowledgment only**, a record that the onboarding process was carried out and approved; not a legally binding e-signature, so no e-signature provider. Users sign with an uploaded PNG signature or initials (PNG or typed). See `ROLES.md`.
 5. **Edits after signing:** *resolved (design)* — any change after Raju signs (including after a return) clears his signature and requires signing again; closed requests are never edited (a new access-modification request is created instead).
 6. **Fields:** Country agreed; revisit the deferred fields in 4.5 after the first weeks of use.
 7. **RBAC templates:** store templates as data (4.4 #1)? Where is the current RBAC document?
