@@ -10,7 +10,8 @@ UI design for the internal user access management app, styled after [laine.ai](h
 | [components.md](components.md) | Reusable component inventory: props, states, and where each is used |
 | [sign-in.md](sign-in.md) | Sign-in page: layout, copy, states, behaviour (approved 2026-09-30) |
 | [request-list.md](request-list.md) | Requests list — landing page after sign-in, with **New request** |
-| [main-page.md](main-page.md) | Request form with the AI assistant side panel |
+| [main-page.md](main-page.md) | Request form with the Laine robot assistant |
+| [review-sign.md](review-sign.md) | Review & sign confirmation dialog |
 
 ## Principles
 
@@ -28,5 +29,7 @@ UI design for the internal user access management app, styled after [laine.ai](h
 | Sign-in — device verification code (Clerk `needs_client_trust`) | To design |
 | Requests list (landing page) | Draft, awaiting review |
 | Request form + assistant | Revision 2 (denser, two-column application access), awaiting review |
+| Laine assistant robot (launcher) | Draft |
+| Review & sign dialog (Raju) | Draft, awaiting review |
 | Components sheet | Draft |
-| Reports, audit log, admin, Review & sign dialog, batch review | Not started |
+| Confirm & sign dialog (Moises), reports, audit log, admin, batch review, My profile (signature upload) | Not started |

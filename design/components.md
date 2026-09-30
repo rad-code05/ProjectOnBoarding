@@ -49,6 +49,16 @@ Rules:
 | `PhysicalAccessTable` | `items[]` | Section 7 |
 | `AiSuggestionBanner` | `count`, `onAcceptAll`, `onDismiss` | `Notice` variant `ai` |
 
+## Review & sign (`components/signing/`)
+
+| Component | Props | Notes |
+| --- | --- | --- |
+| `Dialog` | `title`, `eyebrow`, `description`, `onClose`, `footer` | Modal, 780px, 18px radius, dim backdrop; focus trap; Esc closes (UI primitive — lives in `components/ui/`) |
+| `CheckRow` | `ok`, `label`, `fixHref` | Black check when passing; signal text + link when failing |
+| `SummaryCard` | `title`, `rows[]`, `onEdit` | Read-only label/value grid with Edit link |
+| `SignatureBlock` | `signatureUrl`, `signer`, `role`, `section`, `formVersion` | Signature image preview + "will be recorded as"; no editable date |
+| `Checkbox` | `label`, `checked`, `required` | Native checkbox, ink accent color (UI primitive) |
+
 ## Requests list (`components/requests/`)
 
 | Component | Props | Notes |
