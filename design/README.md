@@ -9,7 +9,8 @@ UI design for the internal user access management app, styled after [laine.ai](h
 | [tokens.md](tokens.md) | Colors, typography, spacing, radii, contrast rules, and the Tailwind v4 / `next/font` setup |
 | [components.md](components.md) | Reusable component inventory: props, states, and where each is used |
 | [sign-in.md](sign-in.md) | Sign-in page: layout, copy, states, behaviour (approved 2026-09-30) |
-| [main-page.md](main-page.md) | Main page: request form with the AI assistant side panel (draft for review) |
+| [request-list.md](request-list.md) | Requests list — landing page after sign-in, with **New request** |
+| [main-page.md](main-page.md) | Request form with the AI assistant side panel |
 
 ## Principles
 
@@ -25,6 +26,7 @@ UI design for the internal user access management app, styled after [laine.ai](h
 | --- | --- |
 | Sign-in (desktop, error, mobile) | Approved |
 | Sign-in — device verification code (Clerk `needs_client_trust`) | To design |
-| Main page — request form + assistant | Draft, awaiting review |
+| Requests list (landing page) | Draft, awaiting review |
+| Request form + assistant | Revision 2 (denser, two-column application access), awaiting review |
 | Components sheet | Draft |
-| Request list, reports, audit log, admin, confirmation/sign dialog, batch review | Not started |
+| Reports, audit log, admin, Review & sign dialog, batch review | Not started |

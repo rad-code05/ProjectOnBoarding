@@ -44,10 +44,18 @@ Rules:
 | `FormSection` | `number`, `title`, `summary`, `children` | `Card` wrapper; summary right-aligned ("Complete", "1 required field missing" in signal) |
 | `FieldRenderer` | `field` (from the versioned form schema), `value`, `suggestion`, `error` | Renders the right field type from schema — this is what makes admin-added fields (e.g. Country) appear without code changes |
 | `SuggestedField` | `field`, `suggestion`, `onAccept`, `onReject`, `onEdit` | Dashed ink outline + "Suggested" chip + accept (✓) / reject (✕) `IconButton`s. Editing the value counts as accepting the edited value. |
-| `AccessMatrix` | `items[]`, `catalog`, `onAdd`, `onApplyTemplate` | Application / Action / Permission / Notes; actions and permissions come from each catalog app (Hexnode: Enroll/Remove) |
+| `AccessMatrix` | `items[]`, `catalog`, `onAdd`, `onApplyTemplate` | Two columns of category groups; compact rows: app · Action select · Permission select; notes open per row. Actions and permissions come from each catalog app (Hexnode: Enroll/Remove) |
 | `EquipmentTable` | `items[]` | Section 6 |
 | `PhysicalAccessTable` | `items[]` | Section 7 |
 | `AiSuggestionBanner` | `count`, `onAcceptAll`, `onDismiss` | `Notice` variant `ai` |
+
+## Requests list (`components/requests/`)
+
+| Component | Props | Notes |
+| --- | --- | --- |
+| `SummaryTile` | `label`, `value` | White card, Newsreader number |
+| `SearchField` | `placeholder`, `value`, `onChange` | Pill input with search icon |
+| `RequestTable` | `rows[]`, `onOpen`, pagination | Whole row is a link; SLA countdown in signal under Effective date |
 
 ## Assistant (`components/assistant/`)
 
