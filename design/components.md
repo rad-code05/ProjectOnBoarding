@@ -61,7 +61,9 @@ Rules:
 
 | Component | Props | Notes |
 | --- | --- | --- |
-| `AssistantPanel` | `requestId`, `mode` | Header + mode `SegmentedControl` (This request / Batch onboarding) + message list + composer |
+| `AssistantLauncher` | `pendingCount`, `state`, `onOpen` | Floating 68px robot button bottom-right; badge when `pendingCount > 0`; optional greeting bubble |
+| `RobotAvatar` | `size`, `expression` (`idle` · `happy` · `thinking`) | Inline SVG Laine robot, reused in launcher and panel header |
+| `AssistantPanel` | `requestId`, `mode`, `open`, `onClose` | Closed by default. Header (robot avatar, "Laine assistant", close) + mode `SegmentedControl` + message list + composer |
 | `ChatMessage` | `role`, `parts` | User = black bubble right-aligned; assistant = plain text with "Assistant" eyebrow |
 | `SuggestionCard` | `suggestions[]`, `onAcceptAll`, `onReview` | Sand card with field → value grid |
 | `ChatComposer` | `onSend`, `onAttach` | Textarea (visually hidden label), attach CSV/XLSX, send button, guardrail note |

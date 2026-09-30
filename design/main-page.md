@@ -24,7 +24,10 @@ Opened from **New request** (or a row) on the [requests list](request-list.md). 
    - **02 Employee details** — 3-column grid (9 fields incl. Country).
    - **05 Application access** — two-column `AccessMatrix` (below).
    - **06–11 are collapsed** into one-line rows (see *Collapsed sections* below).
-4. **Right panel (380px) — `AssistantPanel`:** collapse button, mode switch (This request / Batch onboarding), conversation, `SuggestionCard`, composer with CSV/XLSX attach, guardrail line.
+4. **Assistant — closed by default, opened from the Laine robot (decision 2026-09-30):**
+   - **Closed:** the form uses the full width. A round **Laine robot** button floats bottom-right (fixed to the viewport). When the assistant has pending suggestions it shows a signal badge with the count and a small speech bubble ("Hi Raju — 9 suggestions ready").
+   - **Open:** clicking the robot opens the 380px `AssistantPanel` on the right (header: robot avatar, "Laine assistant", close button; mode switch This request / Batch onboarding; conversation; `SuggestionCard`; composer with CSV/XLSX attach; guardrail line). Close returns to the robot.
+   - Open/closed state is remembered per user on that device. **Batch onboarding** on the requests list opens the panel directly in batch mode.
 
 ## Application access matrix
 
@@ -71,6 +74,15 @@ Clicking a section in the left rail opens it and scrolls to it. Locked rows show
 | AI-suggested | Dashed ink outline, "Suggested" chip, accept ✓ / reject ✕ |
 | Required & missing | 2px signal border, `*`, message under the field |
 
-## Open questions
+## Laine robot (assistant launcher)
 
-1. Collapsible assistant panel — drawn with a collapse button. Default assumed: the open/closed state is remembered per user on that device.
+Canvas board: *Laine assistant robot*. Black rounded head, sand face screen, black eyes with highlights, pale-yellow cheeks, signal-red antenna tip. Inline SVG (one component, `RobotAvatar`, with an `expression` prop).
+
+| State | Look |
+| --- | --- |
+| Idle | Default face |
+| Hover / focus | "Happy" arc eyes, bigger smile, 2px black ring, tooltip "Open assistant" |
+| Suggestions ready | Signal badge with count |
+| Thinking | Three dots on the face screen, pulsing (respect `prefers-reduced-motion`) |
+
+Button: 68px circle, white, soft shadow, `aria-label` includes the pending count.
