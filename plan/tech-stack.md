@@ -10,7 +10,8 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | Framework | Next.js (App Router, Server Components, Server Actions, Route Handlers, `proxy.ts`) | `next`, `react`, `react-dom` | next 16.3.7 · react 19.3.0 | S1 |
 | Language | TypeScript (strict) | `typescript` | 7.0.2 ⚠️ | S1 |
 | Styling | Tailwind CSS v4 with `@theme` tokens + `next/font/google` (Raleway, Newsreader, Instrument Serif) | `tailwindcss`, `@tailwindcss/postcss` | 4.3.3 | S3 |
-| Authentication | Clerk (Core 3) — custom sign-in, invitations, restricted sign-up, MFA | `@clerk/nextjs` | 7.9.8 | S5 |
+| Authentication | Clerk (Core 3) — our own sign-in screens on Clerk hooks, invite-only, MFA | `@clerk/nextjs` **7.9.8** (pinned) | 7.9.8 | S5 ✅ |
+| QR code (MFA setup) | Renders the authenticator `otpauth://` URI as an SVG | `qrcode.react` **4.2.0** (pinned) | 4.2.0 | S5 ✅ |
 | Database | Supabase Postgres + Row Level Security, Clerk as third-party auth | `@supabase/supabase-js`, `supabase` (CLI) | 2.117.2 · CLI 2.118.0 | S6 |
 | File storage | Supabase Storage, private buckets (signatures, PDFs) | (same) | — | F05 |
 | Validation | Zod (forms, Server Actions, AI tool inputs) | `zod` | 4.6.5 | S1 |
@@ -70,7 +71,7 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 
 | Variable | Where | Phase |
 | --- | --- | --- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SIGNING_SECRET` | all envs | 1.4, 1.6 |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (Config), `CLERK_SECRET_KEY` (Secret), `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in` (Config), `CLERK_WEBHOOK_SIGNING_SECRET` (S6) | local `.env.local` + Vercel Production & Preview; **not needed in CI** | S5, S6 |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | all envs | S6 |
 | `SUPABASE_SECRET_KEY` (service role — scripts/migrations only, never in request code) | CI / local scripts | S6 |
 | `AI_PROVIDER`, `AI_MODEL`, `ANTHROPIC_API_KEY` (or `OPENROUTER_API_KEY`) | server | F15 |

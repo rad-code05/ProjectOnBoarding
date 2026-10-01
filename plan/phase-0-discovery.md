@@ -27,6 +27,7 @@
 | D11 | Import past completed forms? | R |
 | ~~D12~~ | ✅ **Resolved 2026-10-01:** default `*.vercel.app` URL for now (Laine subdomain before go-live); Vercel, Supabase and Clerk on Raju's personal accounts (consider transfer to Laine before go-live) | — |
 | ~~D13~~ | ✅ **Resolved 2026-09-30:** internal acknowledgment only (record of the process), not legally binding; PNG signature or initials (PNG or typed) | — |
+| D15 | **Clerk plan at go-live:** authenticator-app MFA + backup codes are Clerk *Pro* features (free in the development instance). Keep MFA required (paid plan in production) vs. password + device-trust email code only (free) vs. Microsoft/Google SSO later. Recommendation: keep MFA. | R7 |
 | D14 | Add the original form PDF (*User Onboarding and Offboarding Form v4*) to `docs/source/` so the PDF layout can be compared | F08 |
 
 ## Exit criteria

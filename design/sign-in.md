@@ -41,6 +41,19 @@
 
 Both reuse the shared `BrandPanel` component.
 
+## Built in S5 (2026-10-01) — all screens in our design, none from Clerk's UI
+| Route | Screens |
+| --- | --- |
+| `/sign-in` | Sign in (email + password) → **Two-step check** (authenticator code, or "Use a backup code instead") → or **Check your email** (new-device code) |
+| `/reset-password` | Step 1 work email → Step 2 code + new password → second factor if needed |
+| `/session-tasks` | First sign-in only: **Protect your account** → **Scan the code** (QR + manual key) → **Save your backup codes** (download as .txt, confirm checkbox) → app |
+
+Implementation notes:
+- Code entry is **one input** styled with large, spaced Newsreader digits (instead of six boxes) — works with paste, password managers, iOS/Android one-time-code autofill and screen readers.
+- Wrong email and wrong password show the same message ("Email or password is incorrect.") so the page never reveals which accounts exist.
+- Clerk's *Require MFA* applies from the **next** sign-in after it is switched on.
+- MFA (authenticator app, backup codes) is a Clerk **Pro** feature in production — see decision D15.
+
 ## Copy rules
 - Say "Raju" for account help (per product owner).
 - Never mention sign-up, free trial, or marketing copy from laine.ai.
