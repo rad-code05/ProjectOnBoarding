@@ -550,7 +550,7 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 
 **Resolved 2026-09-30:** roles (Raju = admin + requester + IT operator; Moises = approver + reviewer — Section 10.1); additional field = Country (Section 4.5); application catalog must be editable without code (Section 7).
 
-1. **Auth:** Clerk (recommended) or Supabase Auth? SSO via Google Workspace or Microsoft 365? Invitation-only?
+1. **Auth:** *resolved 2026-10-01 (D1)* — **Clerk**, email + password, **MFA required**, invitation-only (sign-up restricted). No SSO for now; Microsoft 365 / Google SSO can be added later without redesign.
 2. **Approval:** resolved — Moises signs once at the end (Section 5.1). Backup approver: an additional account with the Approver role (Section 10.1); person still to be named. Still open: how are role changes by an admin controlled (Section 10.1)? Is post-provisioning confirmation acceptable to Laine's auditor?
 3. **Monthly metric:** "onboarded" = execution completed (proposed), final review, or closure?
 4. **Signature:** *resolved 2026-09-30 (D13)* — **internal acknowledgment only**, a record that the onboarding process was carried out and approved; not a legally binding e-signature, so no e-signature provider. Users sign with an uploaded PNG signature or initials (PNG or typed). See `ROLES.md`.
@@ -558,10 +558,10 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 6. **Fields:** Country agreed; revisit the deferred fields in 4.5 after the first weeks of use.
 7. **RBAC templates:** store templates as data (4.4 #1)? Where is the current RBAC document?
 8. **Access inventory for offboarding** (4.4 #2): include in v1?
-9. **Data:** Supabase region / data residency; retention for records, signatures, PDFs; backup requirements; company timezone for reports and SLAs.
+9. **Data:** region *resolved 2026-10-01 (D2)* — Supabase **EU – Frankfurt (eu-central-1)**. Still open: retention for records, signatures, PDFs; backup requirements; company timezone for reports and SLAs (D3).
 10. **AI:** provider and model (Claude direct vs. via OpenRouter); may employee personal data be sent; batch input format (CSV, XLSX, pasted text)?
 11. **Notifications:** email (Resend) and/or Slack — v1 or phase 2?
 12. **PDF filenames** for offboarding and access modification (proposed in 8.2); may drafts be exported?
 13. **Existing records:** import past completed forms?
-14. **Owners:** product owner, technical owner, and who approves go-live.
+14. **Owners:** *accounts resolved 2026-10-01 (D12)* — Vercel, Supabase and Clerk are created on **Raju's personal accounts** (like the GitHub repo); app runs on the default `*.vercel.app` URL for now, a Laine subdomain is added before go-live. ⚠️ Before go-live, consider transferring the projects to Laine-owned accounts so the company owns the data (release R7). Still open: who approves go-live.
 15. **SharePoint:** manual upload only, a "Save to SharePoint" button, or automatic save on close? Which site, library and folder? Who can create the Entra app registration and grant `Sites.Selected` access?

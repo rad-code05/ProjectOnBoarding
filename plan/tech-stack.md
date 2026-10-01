@@ -45,14 +45,14 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | Service | Environments | Owner / billing | Needed from |
 | --- | --- | --- | --- |
 | GitHub `rad-code05/ProjectOnBoarding` | — | Rad (personal) | now |
-| Vercel (hosting) | Preview per PR, Production | **D12** | 1.8 |
-| Clerk | Development instance, Production instance | **D12** | S5 |
-| Supabase | `dev` project, `prod` project, region **D2** | **D12** | S6 |
+| Vercel (hosting) — project `laine-onboarding`, https://laine-onboarding.vercel.app | Preview per PR, Production | Raju (personal; Hobby → Pro before go-live) | S4 ✅ |
+| Clerk (email + password + MFA, invite-only — D1) | Development instance, Production instance | Raju (personal) | S5 |
+| Supabase (region EU – Frankfurt — D2) | `dev` project, `prod` project | Raju (personal) | S6 |
 | AI provider (Anthropic or OpenRouter) | one key per environment | **D7** | F15 |
 | Resend | — | D10 | F23 |
 | Microsoft 365 / Entra (app registration) | — | D9 | F22 |
 | Sentry (or alternative) | — | to confirm | R3 |
-| Domain (e.g. `access.laine.ai`) | Production | **D12** | 1.8 |
+| Domain (e.g. `access.laine.ai`) | Production | D12: `*.vercel.app` until go-live | R7 |
 
 ## Developer machine (checked 2026-09-30 on Raju's PC)
 

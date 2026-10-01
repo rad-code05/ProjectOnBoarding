@@ -11,7 +11,7 @@ Security and accessibility are checked **in every feature**; this is the final r
 - [ ] **R4 Data protection** *(D2)* — retention/deletion rules, backups + point-in-time recovery, **restore test done and documented**.
 - [ ] **R5 Import** *(D11, optional)* — past completed forms as closed records.
 - [ ] **R6 Docs** — runbook (incidents, restore, secret rotation), admin guide for Raju, one-page guide for Moises.
-- [ ] **R7 Go-live** — production invites (Raju, Moises, backup), production seed (catalog, form v4.1), smoke test, sign-off by Raju (and Moises for the approver flow). Auditor OK on end-only approval (D6).
+- [ ] **R7 Go-live** — Laine subdomain (e.g. `access.laine.ai`) pointed at Vercel; decide whether to transfer Vercel/Supabase/Clerk from personal to Laine-owned accounts (D12); production invites (Raju, Moises, backup), production seed (catalog, form v4.1), smoke test, sign-off by Raju (and Moises for the approver flow). Auditor OK on end-only approval (D6).
 
 ## Session log
 - (none yet)
