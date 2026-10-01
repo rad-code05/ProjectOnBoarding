@@ -17,6 +17,25 @@ One file per phase. Each phase is split into **numbered steps**; one step = one 
 
 Phases 4 and 5 can run in either order after Phase 3. Until Phase 5, catalog/users/fields come from seed data and the Clerk dashboard.
 
+## Copy-paste prompts
+
+Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads automatically).
+
+**Work on a step**
+> Read CLAUDE.md and plan/README.md, then work on plan/phase-1-foundation.md step 1.1. Check dependencies and open decisions first, verify APIs with Context7, use a branch and open a PR. Update the phase file's checklist and session log when done.
+
+**Continue an unfinished step**
+> Read CLAUDE.md, then continue plan/phase-1-foundation.md step 1.4. Check the session log and the open branch/PR to see where we stopped.
+
+**Answer decisions (Phase 0)**
+> Read CLAUDE.md and plan/phase-0-discovery.md. Go through the open decisions one by one with me and record my answers in PROJECT_PLAN.md §17, the phase 0 file and CLAUDE.md.
+
+**Change a design**
+> Read CLAUDE.md and design/README.md. I want to change the [screen name]: [what to change]. Update the canvas, the spec in design/, and the copy in design/canvas/.
+
+**End of session**
+> Before we stop: tick finished steps, add a session-log line to the phase file, update CLAUDE.md if any decision changed, commit and push.
+
 ## How to start a session
 Say, for example:
 
