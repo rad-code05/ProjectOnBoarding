@@ -40,7 +40,7 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 3. **Verify every library API with Context7** before writing code.
 4. **Raju creates the branch** (`s3-design-foundation`, `f04-it-execution`, …). The session implements the whole slice in the working tree (migrations + RLS + pgTAP, server logic, UI, tests) and runs lint, format, typecheck, tests and build locally.
 5. The session gives Raju the commands (with explanations) to commit, push and open the PR; CI must be green before Raju squash-merges. `main` is protected — nothing goes in without a PR.
-6. Tick the item, add a **Session log** line, update `CLAUDE.md` if a decision changed.
+6. Tick the item, add a **Session log** line, update `CLAUDE.md` if a decision changed, and add the step's lessons and new terms to `Rajulearning/Learn.md` (local only — git-ignored).
 
 ## Definition of done (every step and feature)
 - Works end-to-end for its slice; tests added (unit, RLS/pgTAP, Playwright as relevant).
