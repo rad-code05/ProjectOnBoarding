@@ -28,6 +28,9 @@ coverage/
 playwright-report/
 test-results/
 
+# personal notes (local only, never pushed)
+Rajulearning/
+
 # logs / OS / editor
 *.log
 .DS_Store
