@@ -1,0 +1,12 @@
+# generated / vendored
+.next/
+node_modules/
+coverage/
+pnpm-lock.yaml
+pnpm-workspace.yaml
+next-env.d.ts
+
+# documentation and design sources are written by hand
+*.md
+design/
+plan/
