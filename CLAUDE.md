@@ -73,9 +73,13 @@ Gotchas already found — don't use outdated patterns:
 
 Shared canvas components: `TopBar`, `BrandPanel`, `AdminNav` (imported with `<dc-import>`).
 
-## Next steps
-1. **Phase 0** (`plan/phase-0-discovery.md`): Raju reviews the draft boards and answers decisions D1–D12 (D1, D2, D12 block Phase 1).
-2. Then **Phase 1 — Walking skeleton** (`plan/phase-1-skeleton.md`, steps S1–S7), then features one vertical slice at a time (`plan/features.md`, F01 → F23), go-live after F11 (`plan/release.md`).
+## ▶ Resume here (updated 2026-10-01, end of day)
+- **Done:** S1 app · S2 CI + ruleset · S3 design foundation · S4 Vercel hosting · S5 sign-in (Clerk, our own screens, MFA) — all merged to `main`; production https://laine-onboarding.vercel.app requires sign-in. Last merged PR: #10.
+- **Next: S6 — Database, users & roles** (`plan/phase-1-skeleton.md`). Decided: Supabase **EU – Frankfurt** (D2), Raju's personal account (D12).
+- **Before S6, Raju does:** install **Docker Desktop** (running) · create a **Supabase account**. Then together: create the Supabase project in Frankfurt, connect Clerk as third-party auth, keys into `.env.local` + Vercel.
+- **Then:** S7 app shell (+ Playwright E2E deferred from S5) → features F01… (`plan/features.md`) → go-live after F11 (`plan/release.md`).
+- **Open dependabot PRs:** #3 (grouped minor/patch — fine to merge), #4 `@types/node` 26 and #5 TypeScript 6 (hold — majors).
+- **Open decisions:** see Phase 0 file (D3–D11, D14, D15).
 
 ## How a working session runs
 Read this file → read the phase file and its **Read first** docs → check its **Needs** / decisions (ask if open) → verify APIs with Context7 → branch `s1-create-app` / `f04-it-execution` → implement + tests → PR → tick the item and add a **Session log** line in its plan file (and update this file if a decision changed). Full rules: `plan/README.md`.
