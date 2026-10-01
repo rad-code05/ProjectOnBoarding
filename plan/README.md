@@ -38,8 +38,8 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 1. Read `CLAUDE.md`, this file, the plan file, and the docs listed under **Read first** / **Design**.
 2. Check that everything under **Needs** is actually built (look at the code, not only the ticks). If not, **stop and tell the user** what to do first. If an open decision blocks the work, ask.
 3. **Verify every library API with Context7** before writing code.
-4. Branch `s1-create-app` / `f04-it-execution`; implement the whole slice (migrations + RLS + pgTAP, server logic, UI, tests); run lint, typecheck and tests locally.
-5. Open a pull request (push as `rad-code05`) with the definition-of-done checklist.
+4. **Raju creates the branch** (`s3-design-foundation`, `f04-it-execution`, …). The session implements the whole slice in the working tree (migrations + RLS + pgTAP, server logic, UI, tests) and runs lint, format, typecheck, tests and build locally.
+5. The session gives Raju the commands (with explanations) to commit, push and open the PR; CI must be green before Raju squash-merges. `main` is protected — nothing goes in without a PR.
 6. Tick the item, add a **Session log** line, update `CLAUDE.md` if a decision changed.
 
 ## Definition of done (every step and feature)
