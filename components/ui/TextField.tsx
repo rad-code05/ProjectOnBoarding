@@ -16,6 +16,8 @@ export type TextFieldProps = Omit<ComponentProps<"input">, "size"> & {
   endAdornment?: ReactNode;
   /** Extra element on the right of the label row (e.g. "Forgot password?"). */
   labelAside?: ReactNode;
+  /** Extra classes for the <input> itself (e.g. large spaced digits for codes). */
+  inputClassName?: string;
 };
 
 /** Labelled text input with hint, error and read-only states. */
@@ -26,6 +28,7 @@ export function TextField({
   fieldSize = "md",
   endAdornment,
   labelAside,
+  inputClassName,
   id,
   required,
   readOnly,
@@ -72,8 +75,9 @@ export function TextField({
           aria-describedby={describedBy}
           className={cn(
             "min-w-0 flex-1 bg-transparent px-4 text-[15px] outline-none",
-            fieldSize === "lg" ? "h-[48px]" : "h-[42px]",
+            fieldSize === "lg" ? "h-12" : "h-10.5",
             readOnly && "text-graphite",
+            inputClassName,
           )}
           {...props}
         />

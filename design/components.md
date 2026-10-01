@@ -124,6 +124,8 @@ Rules:
 
 ## Sign-in (`components/auth/`)
 
+**Built in S5:** `AuthLayout` + `AuthHeading`, `BrandPanel` + `BrandHeader` (mobile), `SignInForm`, `TotpStep` + `DeviceCodeStep` (`CodeSteps.tsx`), `ResetPasswordForm`, `SessionTasks` + `SetupMfa`, `SignOutButton`, `useFinishSignIn`, `authErrorMessage` (`authErrors.ts`). `TextField` gained `inputClassName`. Server helper `requireUser()` in `lib/auth.ts`.
+
 | Component | Notes |
 | --- | --- |
 | `SignInForm` | Custom form on Clerk's `useSignIn()` (Core 3): `signIn.password({ emailAddress, password })`, then `signIn.finalize({ navigate })`. Field errors from `errors.fields.identifier` / `errors.fields.password`; submit disabled while `fetchStatus === 'fetching'`. Uses `TextField`, `PasswordField`, `Button`, `InlineError`, `Notice`. |
