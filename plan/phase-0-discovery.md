@@ -14,8 +14,8 @@
 
 | # | Decision | Blocks |
 | --- | --- | --- |
-| D1 | Clerk (recommended) vs Supabase Auth; SSO with Google Workspace or Microsoft 365? MFA required? | S5 |
-| D2 | Supabase region (data residency) and retention for records, signatures, PDFs | S6, R4 |
+| ~~D1~~ | ✅ **Resolved 2026-10-01:** Clerk, email + password, MFA required, invite-only; no SSO for now | — |
+| D2 | ✅ Region **resolved 2026-10-01: EU – Frankfurt**. Still open: retention for records, signatures, PDFs | R4 |
 | D3 | Company timezone for reports and SLAs (assumed Europe/Zurich) | F09, F12 |
 | D4 | Name/email of the backup approver | F18 (can invite via Clerk dashboard earlier) |
 | D5 | How admin role changes are controlled (second admin vs logged + visible to approvers) | F18 |
@@ -25,12 +25,12 @@
 | D9 | SharePoint: download only / Save button / automatic; site, library, folder; who does the Entra app registration | F22 |
 | D10 | Notifications: email (Resend) and/or Slack; v1 or later | F23 |
 | D11 | Import past completed forms? | R |
-| D12 | Domain for the app (e.g. `access.laine.ai`) and who owns Vercel/Supabase/Clerk accounts & billing | S4 |
+| ~~D12~~ | ✅ **Resolved 2026-10-01:** default `*.vercel.app` URL for now (Laine subdomain before go-live); Vercel, Supabase and Clerk on Raju's personal accounts (consider transfer to Laine before go-live) | — |
 | ~~D13~~ | ✅ **Resolved 2026-09-30:** internal acknowledgment only (record of the process), not legally binding; PNG signature or initials (PNG or typed) | — |
 | D14 | Add the original form PDF (*User Onboarding and Offboarding Form v4*) to `docs/source/` so the PDF layout can be compared | F08 |
 
 ## Exit criteria
-D12 answered before S4, D1 before S5, D2 before S6 (S1–S3 can start now); design board statuses approved or accepted as-is.
+D1, D2 (region) and D12 answered ✅ — S4–S6 are unblocked; design board statuses approved or accepted as-is.
 
 ## Session log
 - 2026-09-30 — Plan, roles, workflow, full design drafted; repo created.
