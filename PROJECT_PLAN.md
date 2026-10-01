@@ -383,7 +383,7 @@ proxy.ts             clerkMiddleware()
 
 ## 13. Delivery Plan
 
-> The detailed, step-by-step version of this section lives in [plan/](plan/README.md) (one file per phase). Keep this table as the overview.
+> The detailed, step-by-step version of this section lives in [plan/](plan/README.md) (walking skeleton S1–S7, features F01–F23, release). Keep this table as the overview.
 
 | Phase | Deliverables | Exit criteria |
 | --- | --- | --- |

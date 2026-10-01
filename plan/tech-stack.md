@@ -24,7 +24,9 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | SharePoint (phase 7) | Microsoft Graph via server `fetch` (`Sites.Selected`) — client library optional | `@microsoft/microsoft-graph-client` (optional) | 3.0.7 | F22 |
 | Error monitoring | Sentry with personal-data scrubbing (to confirm in 6.3) | `@sentry/nextjs` | 11.1.0 | R3 |
 
-⚠️ **TypeScript 7** is the new native compiler. Step S1 must check which TypeScript version the pinned Next.js, ESLint and typescript-eslint support, and pin that (possibly the latest 6.x line) rather than blindly taking 7.x.
+**Pinned in S1 (2026-10-01):** next 16.3.8 · react 19.2.8 · typescript 5.9.3 · tailwindcss 4.3.3 · eslint 9.39.5 · vitest 5.0.2 · prettier 3.9.9 · pnpm 12.8.1 — the lockfile is now the source of truth.
+
+⚠️ **TypeScript 7** is the new native compiler (resolved in S1: `create-next-app` installs 5.9.x, so we pinned 5.9.3). Step S1 must check which TypeScript version the pinned Next.js, ESLint and typescript-eslint support, and pin that (possibly the latest 6.x line) rather than blindly taking 7.x.
 
 ## Quality & testing
 

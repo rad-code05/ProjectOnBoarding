@@ -8,7 +8,7 @@
 
 ## Steps
 
-- [ ] **S1 Create the app** — Next.js 16 (TypeScript strict, App Router, Tailwind v4, ESLint), pnpm, Node version pinned, Prettier, folder layout (`PROJECT_PLAN.md` §12), `.env.example`, Vitest with one smoke test, scripts `lint`, `format:check`, `typecheck`, `test`.
+- [x] **S1 Create the app** — Next.js 16 (TypeScript strict, App Router, Tailwind v4, ESLint), pnpm, Node version pinned, Prettier, folder layout (`PROJECT_PLAN.md` §12), `.env.example`, Vitest with one smoke test, scripts `lint`, `format:check`, `typecheck`, `test`.
   *Done when:* `pnpm dev` serves the page; all four scripts pass.
 - [ ] **S2 CI & repo rules** — GitHub Actions running the four scripts + `build` on every PR; Dependabot; PR template with the definition of done; branch protection on `main`.
   *Done when:* a PR shows green checks; `main` requires them.
@@ -24,4 +24,4 @@
   *Done when:* both roles see the right menu and landing page in production.
 
 ## Session log
-- (none yet)
+- 2026-10-01 — **S1 done** (branch `s1-create-app`): `create-next-app` 16.3.8 (TS strict, App Router, Tailwind 4.3.3, ESLint 9 flat config, no `src/`), pnpm 12.8.1 with its supply-chain policy (`pnpm-workspace.yaml`), exact version pins, Prettier + Tailwind plugin (docs/design excluded), Vitest 5 + Testing Library + jsdom (native `resolve.tsconfigPaths`), `.env.example`, `.nvmrc` 24, Next's `AGENTS.md` imported from `CLAUDE.md`. TypeScript pinned to 5.9.3 (not 7). lint/format/typecheck/test/build all pass; dev server serves `/`. Folders like `components/`, `lib/`, `supabase/` are created by the step/feature that first needs them. Next: S2 (CI).
