@@ -85,6 +85,9 @@ Auth details (SSO? MFA), backup approver name, auditor sign-off on end-only appr
 ## Working agreements
 - **Engineering, not vibe coding:** small PRs, CI (lint, typecheck, tests, RLS tests), migrations reviewed, server-side authorization everywhere.
 - **Verify library syntax with Context7** before writing code; don't rely on memory.
+- **Raju does all git & GitHub steps himself (to learn):** branches, `git add/commit/push`, pull requests, merging, CI and repo settings. Claude writes and verifies code/docs in the working tree, then gives the exact commands **with a short explanation of each**. Claude does not run `git checkout/commit/push` or `gh pr` commands; read-only checks (`git status/log/diff`, `gh run list`) are fine. Before editing, check the current branch and that `main` is up to date.
+- **`main` is protected** (ruleset *protect main*): changes only via PR, required CI check **Lint, types, tests, build** (`.github/workflows/ci.yml`), no force push/deletion, squash merge. Secret scanning + push protection are on. Pushing workflow files needs the `workflow` scope on the rad-code05 token (already added).
+- **Windows line endings:** VS Code may save CRLF; run `pnpm format` before committing.
 - **Design canvas:** edit via the Artifact tool at the link above; keep `design/canvas/` in the repo in sync after changes. Artboards reference the logo as an uploaded canvas asset (`/_blob/17b23c9ce6dc5f048942c7b514470f03`); the file itself is `design/assets/laine-logo-white.png`.
 - **Git:** repo https://github.com/rad-code05/ProjectOnBoarding (branch `main`). Push as **rad-code05** (personal account) — never `LaineNeuralNetwork`. This repo has a local credential helper using `gh auth token --user rad-code05`, and commit author name **Rad**. If a fresh clone can't push, re-apply:
   ```sh
