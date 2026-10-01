@@ -22,10 +22,10 @@ Opened by the **Review & sign** button on the request form when Raju has finishe
 - Checks the signer's identity and role again, and that the request is still in the expected state and version.
 - Stores a snapshot of the request and its SHA-256 hash, the signature image reference, signer, role, section, form version and server timestamp.
 - Locks sections 1–9 and fills the **IT half of section 11** (Raju's signature block). Section 10 and the approver half of section 11 stay for the approver.
-- Moves the request to **Awaiting confirmation**; writes an audit event. (Email to approvers comes in plan phase 7.2.)
+- Moves the request to **Awaiting confirmation**; writes an audit event. (Email to approvers comes with feature F23.)
 - Uses the signer's **active** signature asset (signature or initials, whichever is marked active in My profile).
 - The button reads **Sign & send to Moises** when Moises is the only active approver, otherwise **Sign & send for confirmation**.
-- The "no AI suggestions left" check only applies once the assistant exists (plan phase 4); before that it is skipped.
+- The "no AI suggestions left" check only applies once the assistant exists (feature F16); before that it is skipped.
 - Shows a confirmation toast on the form: "Signed and sent to Moises".
 
 ## Moises's version (to design next)

@@ -1,31 +1,29 @@
 # Delivery plan — Laine onboarding rights
 
-**Tech stack:** [tech-stack.md](tech-stack.md) — every framework, library, service, tool and environment variable we use, with versions and the phase that introduces each.
+**Tech stack:** [tech-stack.md](tech-stack.md) — every framework, library, service, tool and environment variable, with versions and the step/feature that introduces each.
 
-One file per phase. Each phase is split into **numbered steps**; one step = one branch = one pull request, sized for one working session.
+We build **feature by feature**: first a thin walking skeleton, then one vertical slice at a time (database + security + server + UI + tests for one feature), each shippable on its own.
 
-| Phase | File | Goal | Status |
+| Stage | File | What | Status |
 | --- | --- | --- | --- |
-| 0 | [phase-0-discovery.md](phase-0-discovery.md) | Close open decisions, sign off the design | In progress |
-| 1 | [phase-1-foundation.md](phase-1-foundation.md) | App skeleton, auth, database, CI, deploys, design system | Not started |
-| 2 | [phase-2-core-workflow.md](phase-2-core-workflow.md) | Requests list, request form, all ticket types, approver flow | Not started |
-| 3 | [phase-3-records.md](phase-3-records.md) | Signatures, Review & sign, Confirm & sign, PDF, audit log, reports | Not started |
-| 4 | [phase-4-ai-assistant.md](phase-4-ai-assistant.md) | Laine robot assistant, suggestions, batch onboarding | Not started |
-| 5 | [phase-5-admin.md](phase-5-admin.md) | Users & roles, applications, form fields, templates & defaults | Not started |
-| 6 | [phase-6-hardening-release.md](phase-6-hardening-release.md) | Security, accessibility, backups, go-live | Not started |
-| 7 | [phase-7-after-launch.md](phase-7-after-launch.md) | SharePoint save, email notifications, reminders (v1.1+) | Not started |
+| Phase 0 | [phase-0-discovery.md](phase-0-discovery.md) | Decisions D1–D14, design review | In progress |
+| Phase 1 | [phase-1-skeleton.md](phase-1-skeleton.md) | **S1–S7** walking skeleton: app, CI, design foundation, hosting, sign-in, users & roles, app shell | Not started |
+| Features | [features.md](features.md) | **F01–F23**, in order. After F08 onboarding works end-to-end; after F11 the app can go live | Not started |
+| Release | [release.md](release.md) | **R1–R7** final review and go-live (after F11) | Not started |
 
-Phases 4 and 5 can run in either order after Phase 3. Until Phase 5, catalog/users/fields come from seed data and the Clerk dashboard.
+One skeleton step or feature = one branch = one pull request = roughly one session. A large feature is split into parts (F06a, F06b) by the session that builds it.
 
 ## Copy-paste prompts
 
 Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads automatically).
 
-**Work on a step**
-> Read CLAUDE.md and plan/README.md, then work on plan/phase-1-foundation.md step 1.1. Check dependencies and open decisions first, verify APIs with Context7, use a branch and open a PR. Update the phase file's checklist and session log when done.
+**Work on a step or feature**
+> Read CLAUDE.md and plan/README.md, then work on S1 in plan/phase-1-skeleton.md. Check what it needs and open decisions first, verify APIs with Context7, use a branch and open a PR. Update the checklist and session log when done.
 
-**Continue an unfinished step**
-> Read CLAUDE.md, then continue plan/phase-1-foundation.md step 1.4. Check the session log and the open branch/PR to see where we stopped.
+(Replace `S1 in plan/phase-1-skeleton.md` with e.g. `F04 in plan/features.md`.)
+
+**Continue unfinished work**
+> Read CLAUDE.md, then continue F04 in plan/features.md. Check the session log and the open branch/PR to see where we stopped.
 
 **Answer decisions (Phase 0)**
 > Read CLAUDE.md and plan/phase-0-discovery.md. Go through the open decisions one by one with me and record my answers in PROJECT_PLAN.md §17, the phase 0 file and CLAUDE.md.
@@ -34,24 +32,20 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 > Read CLAUDE.md and design/README.md. I want to change the [screen name]: [what to change]. Update the canvas, the spec in design/, and the copy in design/canvas/.
 
 **End of session**
-> Before we stop: tick finished steps, add a session-log line to the phase file, update CLAUDE.md if any decision changed, commit and push.
+> Before we stop: tick finished items, add a session-log line to the plan file, update CLAUDE.md if any decision changed, commit and push.
 
-## How to start a session
-Say, for example:
+## What every session does
+1. Read `CLAUDE.md`, this file, the plan file, and the docs listed under **Read first** / **Design**.
+2. Check that everything under **Needs** is actually built (look at the code, not only the ticks). If not, **stop and tell the user** what to do first. If an open decision blocks the work, ask.
+3. **Verify every library API with Context7** before writing code.
+4. Branch `s1-create-app` / `f04-it-execution`; implement the whole slice (migrations + RLS + pgTAP, server logic, UI, tests); run lint, typecheck and tests locally.
+5. Open a pull request (push as `rad-code05`) with the definition-of-done checklist.
+6. Tick the item, add a **Session log** line, update `CLAUDE.md` if a decision changed.
 
-> Read `CLAUDE.md`, then work on `plan/phase-1-foundation.md`, step **1.4**.
-
-The session should then:
-1. Read `CLAUDE.md`, the phase file, and the design/plan documents the step lists under **Read first**.
-2. Check that the phase's **Depends on** phases are actually built (look for the code, not just ticked boxes). If they aren't, **stop and tell the user** which step to do first. Check open decisions; if one blocks the step, ask before building.
-3. **Verify every library API with Context7** before writing code (the phase file lists which libraries).
-4. Create a branch `phase-N/N.M-short-name`, implement, add tests, run lint / typecheck / tests locally.
-5. Open a pull request (push as `rad-code05`), fill in the checklist, link the step.
-6. Update the phase file: tick the step, add a line to **Session log**, and update `CLAUDE.md` if a decision changed.
-
-## Definition of done (every step)
-- Acceptance points of the step met; tests added (unit, RLS/pgTAP, or Playwright as relevant).
-- Authorization enforced on the server (`auth.protect()` + role check + RLS), never only in the UI.
-- Audit events written for every state-changing action.
-- UI uses tokens and shared components from `design/` — no one-off styling.
+## Definition of done (every step and feature)
+- Works end-to-end for its slice; tests added (unit, RLS/pgTAP, Playwright as relevant).
+- Authorization enforced on the server (`requireUser`/`requireRole` + RLS), tested per role.
+- Audit events for every state-changing action.
+- Accessible: keyboard, labels, contrast.
+- UI uses tokens and shared components (`design/`); new shared components documented in `design/components.md`.
 - Migrations reviewed; no secrets in the repo; CI green.
