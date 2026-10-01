@@ -1,3 +1,48 @@
 @import "tailwindcss";
 
-/* Design tokens and fonts are added in S3 (see design/tokens.md). */
+/*
+ * Design tokens — see design/tokens.md and design/colours.md.
+ * `--color-*: initial` removes Tailwind's default palette so only Laine
+ * colours can be used (bg-sand, text-signal, …).
+ */
+@theme {
+  --color-*: initial;
+  --color-sand: #f4f0ea;
+  --color-ink: #000000;
+  --color-stone: #7e7e7e;
+  --color-signal: #cf2e2e;
+  --color-graphite: #535353;
+  --color-paper: #ffffff;
+  --color-line: #dcd4c7;
+  --color-field-border: #cfc7ba;
+  --color-line-subtle: #ece6db;
+  --color-suggest: #f9e4b4;
+  --color-step-border: #8a8378;
+  --color-divider-dark: #333333;
+
+  --radius-pill: 100px;
+  --radius-field: 10px;
+  --radius-card: 14px;
+}
+
+/* Fonts are loaded with next/font in app/fonts.ts and exposed as CSS variables. */
+@theme inline {
+  --font-sans: var(--font-raleway);
+  --font-serif: var(--font-newsreader);
+  --font-accent: var(--font-instrument);
+}
+
+@layer base {
+  body {
+    @apply bg-sand font-sans text-ink;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ink;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-stone;
+  }
+}

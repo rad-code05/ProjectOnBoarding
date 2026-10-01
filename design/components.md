@@ -9,6 +9,8 @@ Rules:
 
 ## UI primitives (`components/ui/`)
 
+**Built in S3:** Button, IconButton, TextField (+ `fieldSize`, `endAdornment`, `labelAside`), PasswordField, InlineError, Notice (`info`/`ai`), Logo, Avatar (+ `initials()`), icons (Lock, Alert, Eye, EyeOff, SignOut, Plus). Preview at `/dev/ui` (dev only). The rest are built by the step/feature that first needs them.
+
 | Component | Props (main) | Variants / states | Used in |
 | --- | --- | --- | --- |
 | `Button` | `variant`, `size`, `disabled`, `loading`, `iconLeft` | `primary` (black pill) · `secondary` (outline pill) · `text` (underlined) · `destructive` (signal outline) · sizes `sm` 36px / `md` 44px / `lg` 52px | Everywhere |

@@ -34,7 +34,7 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | --- | --- | --- |
 | Linting | ESLint (flat config, `eslint-config-next`) | 10.11.0 |
 | Formatting | Prettier (+ Tailwind class sorting plugin) | 3.9.9 |
-| Unit / component tests | Vitest + Testing Library | 5.0.3 · 16.3.3 |
+| Unit / component tests | Vitest + Testing Library (+ `user-event` 14.6.7 for keyboard/mouse, `jest-dom` 7.0.1 for DOM matchers) | 5.0.2 · 16.3.3 |
 | End-to-end tests | Playwright | 1.63.0 |
 | Database / RLS tests | pgTAP via `supabase test db` | (CLI) |
 | CI | GitHub Actions (lint, format, typecheck, tests, build, secret scan, dependency audit) | — |
