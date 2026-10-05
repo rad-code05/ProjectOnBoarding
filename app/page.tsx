@@ -1,10 +1,18 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { SignOutButton } from "@/components/auth/SignOutButton";
-import { requireUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
+
+const ROLE_LABELS = {
+  admin: "Administrator",
+  requester: "Requester",
+  it_operator: "IT operator",
+  approver: "Approver",
+  auditor: "Auditor",
+} as const;
 
 /** Temporary signed-in start page — replaced by the app shell in S7. */
 export default async function Home() {
-  await requireUser();
+  const { roles } = await getCurrentUser();
   const user = await currentUser();
   const name = user?.firstName ?? user?.primaryEmailAddress?.emailAddress;
 
@@ -15,8 +23,19 @@ export default async function Home() {
       </h1>
       <div className="h-[3px] w-12 bg-signal" aria-hidden="true" />
       <p className="text-graphite">
-        Signed in as <strong className="text-ink">{name}</strong>. The app shell
-        arrives in S7.
+        Signed in as <strong className="text-ink">{name}</strong>.{" "}
+        {roles.length > 0 ? (
+          <>
+            Roles:{" "}
+            <strong className="text-ink">
+              {roles.map((role) => ROLE_LABELS[role]).join(", ")}
+            </strong>
+            .
+          </>
+        ) : (
+          <>No roles yet — contact Raju.</>
+        )}{" "}
+        The app shell arrives in S7.
       </p>
       <SignOutButton />
     </main>
