@@ -29,6 +29,10 @@
 | ~~D13~~ | ✅ **Resolved 2026-09-30:** internal acknowledgment only (record of the process), not legally binding; PNG signature or initials (PNG or typed) | — |
 | D15 | **Clerk plan at go-live:** authenticator-app MFA + backup codes are Clerk *Pro* features (free in the development instance). Keep MFA required (paid plan in production) vs. password + device-trust email code only (free) vs. Microsoft/Google SSO later. Recommendation: keep MFA. | R7 |
 | D14 | Add the original form PDF (*User Onboarding and Offboarding Form v4*) to `docs/source/` so the PDF layout can be compared | F08 |
+| D16 | Report metric: "onboarded this month" = execution completed (proposed), final review, or closure? (`PROJECT_PLAN.md` §9.2, §17 #3) | F12 |
+| D17 | RBAC templates: where is the current RBAC document, and store templates as data? (§4.4 #1, §17 #7) | F21 (F02 uses "custom" until then) |
+| D18 | PDF filenames for offboarding / access modification (proposed `-offboarding.pdf`, `-access-modification.pdf`); may drafts be exported (watermarked)? (§8.2, §17 #12) | F08 |
+| D19 | Who signs off go-live (Raju alone, or Raju + Moises / management)? (§17 #14) | R7 |
 
 ## Exit criteria
 D1, D2 (region) and D12 answered ✅ — S4–S6 are unblocked; design board statuses approved or accepted as-is.
