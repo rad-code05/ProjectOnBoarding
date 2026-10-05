@@ -30,3 +30,22 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+  database:
+    name: Database migrations and RLS tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Local Postgres in Docker with all migrations applied from scratch.
+      - run: pnpm db:start
+      - run: pnpm db:lint
+      - run: pnpm db:test
+      # The committed TypeScript types must match the migrations.
+      - run: pnpm db:types && git diff --exit-code lib/supabase/database.types.ts

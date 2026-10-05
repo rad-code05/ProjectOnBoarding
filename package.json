@@ -11,7 +11,13 @@
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:start": "supabase db start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db",
+    "db:lint": "supabase db lint --level warning --fail-on warning",
+    "db:types": "supabase gen types typescript --local --schema public > lib/supabase/database.types.ts && prettier --write lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "7.9.8",
@@ -35,6 +41,7 @@
     "jsdom": "30.1.1",
     "prettier": "3.9.9",
     "prettier-plugin-tailwindcss": "0.8.1",
+    "supabase": "2.119.0",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vitest": "5.0.2"
