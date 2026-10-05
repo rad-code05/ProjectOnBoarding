@@ -1,24 +1,34 @@
 # Delivery plan — Laine onboarding rights
 
+**Start here:** [CONTEXT.md](CONTEXT.md) — the whole picture (what, why, architecture, how we work, where we are).
 **Tech stack:** [tech-stack.md](tech-stack.md) — every framework, library, service, tool and environment variable, with versions and the step/feature that introduces each.
 
 We build **feature by feature**: first a thin walking skeleton, then one vertical slice at a time (database + security + server + UI + tests for one feature), each shippable on its own.
 
 | Stage | File | What | Status |
 | --- | --- | --- | --- |
-| Phase 0 | [phase-0-discovery.md](phase-0-discovery.md) | Decisions D1–D14, design review | In progress |
-| Phase 1 | [phase-1-skeleton.md](phase-1-skeleton.md) | **S1–S7** walking skeleton: app, CI, design foundation, hosting, sign-in, users & roles, app shell | Not started |
+| Phase 0 | [phase-0-discovery.md](phase-0-discovery.md) | Decisions D1–D19, design review | In progress (D1, D2, D12, D13 done) |
+| Phase 1 | [phase-1-skeleton.md](phase-1-skeleton.md) | **S1–S7** walking skeleton: app, CI, design foundation, hosting, sign-in, users & roles, app shell | In progress (S1–S5 done, S6 shipping as 4 small PRs, then S7) |
 | Features | [features.md](features.md) | **F01–F23**, in order. After F08 onboarding works end-to-end; after F11 the app can go live | Not started |
-| Release | [release.md](release.md) | **R1–R7** final review and go-live (after F11) | Not started |
+| Release | [release.md](release.md) | **R1–R7** final review and go-live (after F11), then **Operate** (routine after go-live) | Not started |
 
-One skeleton step or feature = one branch = one pull request = roughly one session. A large feature is split into parts (F06a, F06b) by the session that builds it.
+One skeleton step or feature = one branch = one pull request = roughly one session. A large item is split into parts (S6a, F06a, F06b) **before** building — see the PR size rules below.
+
+## Pull request size rules
+Small PRs are easier to review, safer to merge and easier to undo.
+- **One concern per PR.** Database (migration + RLS + pgTAP) · server/app code · UI · docs-only changes are separate PRs when they're more than a few lines each.
+- **Size:** aim for **≤ ~400 changed lines**, not counting the lockfile and generated files (`database.types.ts`). Bigger → split.
+- **Split at the start of the session:** the session proposes the parts (e.g. S6a database, S6b app code), Raju agrees, then each part gets its own branch and PR, merged in order. A later part branches from `main` **after** the earlier part is merged.
+- **Every PR stays green on its own:** lint, types, tests, build and the database job pass for each part — no "fixed in the next PR".
+- **Docs travel with their change:** the plan tick + session-log line go in the PR that finishes the item; cross-cutting plan/process changes go in their own `docs-…` PR.
+- **Branch names:** `s6a-database`, `s6b-roles-webhook`, `f06a-snapshots`, `docs-project-context`.
 
 ## Copy-paste prompts
 
 Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads automatically).
 
 **Work on a step or feature**
-> Read CLAUDE.md and plan/README.md, then work on S1 in plan/phase-1-skeleton.md. Check what it needs and open decisions first, verify APIs with Context7, use a branch and open a PR. Update the checklist and session log when done.
+> Read plan/CONTEXT.md, CLAUDE.md and plan/README.md, then work on S1 in plan/phase-1-skeleton.md. Check what it needs and open decisions first, propose how to split it into small PRs, verify APIs with Context7. I do the git and GitHub steps myself — give me the commands with explanations. Update the checklist and session log when done.
 
 (Replace `S1 in plan/phase-1-skeleton.md` with e.g. `F04 in plan/features.md`.)
 
@@ -35,7 +45,7 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 > Before we stop: tick finished items, add a session-log line to the plan file, update CLAUDE.md if any decision changed, commit and push.
 
 ## What every session does
-1. Read `CLAUDE.md`, this file, the plan file, and the docs listed under **Read first** / **Design**.
+1. Read `plan/CONTEXT.md`, `CLAUDE.md`, this file, the plan file, and the docs listed under **Read first** / **Design**. Propose the PR split for the item.
 2. Check that everything under **Needs** is actually built (look at the code, not only the ticks). If not, **stop and tell the user** what to do first. If an open decision blocks the work, ask.
 3. **Verify every library API with Context7** before writing code.
 4. **Raju creates the branch** (`s3-design-foundation`, `f04-it-execution`, …). The session implements the whole slice in the working tree (migrations + RLS + pgTAP, server logic, UI, tests) and runs lint, format, typecheck, tests and build locally.
