@@ -4,7 +4,10 @@ import { fontVariables } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Laine onboarding rights",
+  title: {
+    default: "Laine onboarding rights",
+    template: "%s · Laine onboarding rights",
+  },
   description: "Internal user access management for Laine.",
 };
 
