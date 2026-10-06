@@ -95,6 +95,7 @@ Read this file → read the phase file and its **Read first** docs → check its
 ## Working agreements
 - **Engineering, not vibe coding:** small PRs, CI (lint, typecheck, tests, RLS tests), migrations reviewed, server-side authorization everywhere.
 - **Verify library syntax with Context7** before writing code; don't rely on memory.
+- **Briefing at every new phase/step/feature:** before any work, tell Raju in plain words **where we are** (what's done, what's live) and **what we're building in this step and why now** (what it needs, what it unlocks), plus the proposed small-PR split. Add the same to the step-by-step journey in `Rajulearning/Learn.md` (Part 21).
 - **Raju does all git & GitHub steps himself (to learn):** branches, `git add/commit/push`, pull requests, merging, CI and repo settings. Claude writes and verifies code/docs in the working tree, then gives the exact commands **with a short explanation of each**. Claude does not run `git checkout/commit/push` or `gh pr` commands; read-only checks (`git status/log/diff`, `gh run list`) are fine. Before editing, check the current branch and that `main` is up to date.
 - **`main` is protected** (ruleset *protect main*): changes only via PR, required CI check **Lint, types, tests, build** (`.github/workflows/ci.yml`), no force push/deletion, squash merge. Secret scanning + push protection are on. Pushing workflow files needs the `workflow` scope on the rad-code05 token (already added).
 - **Windows line endings:** VS Code may save CRLF; run `pnpm format` before committing.
