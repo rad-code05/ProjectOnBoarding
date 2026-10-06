@@ -1,13 +1,15 @@
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import type { NextRequest } from "next/server";
+import { isSessionEvent, logClerkSessionEvent } from "@/lib/audit/sessions";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { applyClerkUserEvent } from "@/lib/users/sync";
 
 /**
- * Clerk → Supabase user sync. Public on purpose (Clerk calls it, nobody is
- * signed in), so the FIRST thing it does is verify Clerk's signature with
- * CLERK_WEBHOOK_SIGNING_SECRET. Unsigned or tampered requests get 400.
- * A failed database write returns 500 so Clerk retries the event.
+ * Clerk → Supabase: user sync (user.*) and sign-in/out audit (session.*).
+ * Public on purpose (Clerk calls it, nobody is signed in), so the FIRST thing
+ * it does is verify Clerk's signature with CLERK_WEBHOOK_SIGNING_SECRET.
+ * Unsigned or tampered requests get 400. A failed database write returns 500
+ * so Clerk retries the event.
  */
 export async function POST(req: NextRequest) {
   let evt;
@@ -18,7 +20,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await applyClerkUserEvent(createAdminSupabaseClient(), evt);
+    const supabase = createAdminSupabaseClient();
+    const result = isSessionEvent(evt)
+      ? await logClerkSessionEvent(supabase, evt, req.headers.get("svix-id"))
+      : await applyClerkUserEvent(supabase, evt);
     console.info(`Clerk webhook ${evt.type}: ${result}`);
     return new Response("OK", { status: 200 });
   } catch (err) {
