@@ -78,10 +78,10 @@ Built: `app_users`, `user_roles`, `audit_events` (S6). Planned per feature: empl
 7. **Docs stay current:** tick the item + session-log line in its plan file, update `CLAUDE.md` "Resume here", this file if the big picture changes, and Raju's study guide `Rajulearning/Learn.md` (local only).
 
 ## 9. Roadmap and where we are
-| Stage | Items | Status (2026-10-02) |
+| Stage | Items | Status (2026-10-06) |
 | --- | --- | --- |
 | Phase 0 — decisions & design | D1–D19, design review | D1, D2, D12, D13 decided; others open (asked when a feature needs them) |
-| Phase 1 — walking skeleton | S1 app · S2 CI · S3 design foundation · S4 hosting · S5 sign-in · S6 database & roles · S7 app shell | S1–S6 merged (S6 as PRs #12, #13, #15 + S6c); **S7 next** |
+| Phase 1 — walking skeleton | S1 app · S2 CI · S3 design foundation · S4 hosting · S5 sign-in · S6 database & roles · S7 app shell | S1–S6 merged (S6 as PRs #12, #13, #15, #16; Clerk webhook live); **S7 next** |
 | Features | F01–F08 onboarding end-to-end · F09–F11 offboarding, modification, audit page → **go-live possible** · F12–F23 reports, AI, admin, SharePoint, email | not started |
 | Release | R1–R7 security, accessibility, monitoring, backups, docs, automated DB deploys, go-live | after F11 |
 | Operate | Weekly/monthly/quarterly/yearly routine | after go-live |
