@@ -26,6 +26,18 @@ const sizes: Record<ButtonSize, string> = {
   lg: "h-13 px-6 text-[15px]",
 };
 
+/** Pill-button classes, also for links that look like buttons (e.g. "Go to my start page"). */
+export function buttonStyles(
+  variant: ButtonVariant = "primary",
+  size: ButtonSize = "md",
+) {
+  return cn(
+    "inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill font-semibold tracking-[0.01em] transition-colors",
+    sizes[size],
+    variants[variant],
+  );
+}
+
 /** Pill button — see the Components board and design/components.md. */
 export function Button({
   variant = "primary",
@@ -46,9 +58,7 @@ export function Button({
       disabled={isDisabled}
       aria-busy={loading || undefined}
       className={cn(
-        "inline-flex cursor-pointer items-center justify-center gap-2 rounded-pill font-semibold tracking-[0.01em] transition-colors",
-        sizes[size],
-        variants[variant],
+        buttonStyles(variant, size),
         isDisabled &&
           "cursor-not-allowed border-transparent bg-line text-graphite no-underline hover:bg-line",
         fullWidth && "w-full",

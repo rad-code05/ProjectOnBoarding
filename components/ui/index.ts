@@ -1,5 +1,5 @@
 export { Avatar, initials } from "./Avatar";
-export { Button } from "./Button";
+export { Button, buttonStyles } from "./Button";
 export { IconButton } from "./IconButton";
 export {
   AlertIcon,

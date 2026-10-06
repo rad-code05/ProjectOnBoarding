@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { auth } from "@clerk/nextjs/server";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -38,14 +38,14 @@ export const getCurrentUser = cache(async () => {
 
 /**
  * Allows the request only if the signed-in user holds at least one of the
- * given roles; otherwise renders the 404 page (we don't reveal that the page
- * exists). Use in pages, Route Handlers and Server Actions — never rely on
- * hiding a link.
+ * given roles; otherwise sends them to /no-access ("You don't have access").
+ * Our own page instead of Next's forbidden(), which is still experimental.
+ * Use in pages and Server Actions — never rely on hiding a link.
  */
 export async function requireRole(...allowed: [Role, ...Role[]]) {
   const user = await getCurrentUser();
   if (!user.roles.some((role) => allowed.includes(role))) {
-    notFound();
+    redirect("/no-access");
   }
   return user;
 }
