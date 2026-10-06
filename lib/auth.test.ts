@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { protect, eq, notFound } = vi.hoisted(() => ({
+const { protect, eq, redirect } = vi.hoisted(() => ({
   protect: vi.fn(),
   eq: vi.fn(),
-  notFound: vi.fn(() => {
-    throw new Error("NEXT_NOT_FOUND");
+  redirect: vi.fn(() => {
+    throw new Error("NEXT_REDIRECT");
   }),
 }));
 
 vi.mock("server-only", () => ({}));
 vi.mock("@clerk/nextjs/server", () => ({ auth: { protect } }));
-vi.mock("next/navigation", () => ({ notFound }));
+vi.mock("next/navigation", () => ({ redirect }));
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: () => ({
     from: () => ({ select: () => ({ eq }) }),
@@ -43,18 +43,19 @@ describe("roles", () => {
     await expect(requireRole("admin", "approver")).resolves.toMatchObject({
       roles: ["approver"],
     });
-    expect(notFound).not.toHaveBeenCalled();
+    expect(redirect).not.toHaveBeenCalled();
   });
 
-  it("shows 404 to a user without the role", async () => {
+  it("sends a user without the role to /no-access", async () => {
     rolesInDb(["approver"]);
-    await expect(requireRole("admin")).rejects.toThrow("NEXT_NOT_FOUND");
-    expect(notFound).toHaveBeenCalled();
+    await expect(requireRole("admin")).rejects.toThrow("NEXT_REDIRECT");
+    expect(redirect).toHaveBeenCalledWith("/no-access");
   });
 
-  it("shows 404 to a user with no roles (deactivated or not synced)", async () => {
+  it("sends a user with no roles (deactivated or not synced) to /no-access", async () => {
     rolesInDb([]);
-    await expect(requireRole("approver")).rejects.toThrow("NEXT_NOT_FOUND");
+    await expect(requireRole("approver")).rejects.toThrow("NEXT_REDIRECT");
+    expect(redirect).toHaveBeenCalledWith("/no-access");
   });
 
   it("fails loudly when roles cannot be loaded", async () => {
