@@ -2,7 +2,7 @@
 
 > **Read this first in every new session** (then `CLAUDE.md` → "Resume here" for the exact next step).
 > One page that explains *what* we build, *why*, *how* it fits together and *how we work*. Details live in the linked files — this file links, it does not repeat them.
-> Last updated: 2026-10-02.
+> Last updated: 2026-10-06.
 
 ## 1. What we are building
 **Laine onboarding rights** — an internal web app for Laine that replaces the PDF *Laine User Access Management Form v4*.
@@ -81,7 +81,7 @@ Built: `app_users`, `user_roles`, `audit_events` (S6). Planned per feature: empl
 | Stage | Items | Status (2026-10-02) |
 | --- | --- | --- |
 | Phase 0 — decisions & design | D1–D19, design review | D1, D2, D12, D13 decided; others open (asked when a feature needs them) |
-| Phase 1 — walking skeleton | S1 app · S2 CI · S3 design foundation · S4 hosting · S5 sign-in · S6 database & roles · S7 app shell | S1–S5 merged; **S6 built, being split into small PRs**; S7 next |
+| Phase 1 — walking skeleton | S1 app · S2 CI · S3 design foundation · S4 hosting · S5 sign-in · S6 database & roles · S7 app shell | S1–S6 merged (S6 as PRs #12, #13, #15 + S6c); **S7 next** |
 | Features | F01–F08 onboarding end-to-end · F09–F11 offboarding, modification, audit page → **go-live possible** · F12–F23 reports, AI, admin, SharePoint, email | not started |
 | Release | R1–R7 security, accessibility, monitoring, backups, docs, automated DB deploys, go-live | after F11 |
 | Operate | Weekly/monthly/quarterly/yearly routine | after go-live |

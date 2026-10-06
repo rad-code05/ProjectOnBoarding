@@ -328,8 +328,8 @@ Users can hold multiple roles.
 
 | Table | Purpose / key columns |
 | --- | --- |
-| `app_users` | `clerk_user_id text pk`, name, email, active |
-| `user_roles` | `clerk_user_id`, `role` |
+| `app_users` | `clerk_user_id text pk`, email (lower case, unique among active), first/last name, active, created_at/updated_at — **built in S6**; synced by the Clerk webhook, never deleted |
+| `user_roles` | `clerk_user_id`, `role` (enum `app_role`: admin, requester, it_operator, approver, auditor), granted_at, granted_by (no self-grant) — **built in S6** |
 | `employees` | id, first/last/preferred name, work email (unique), department, job title, manager, location, employment type |
 | `requests` | id, `ticket_id` (sequence), type, state, priority, assignee, requester, employee_id, effective_date, SLA fields, provisioning method, rbac_template_id, form_version_id, `custom_fields jsonb`, all date columns, `version` |
 | `request_access_items` | request_id, catalog_app_id or custom name, action, permission, notes, executed_at, executed_by |
@@ -346,7 +346,7 @@ Users can hold multiple roles.
 | `field_suggestions` | proposed definition, proposer, status, admin notes |
 | `employee_access_inventory` | employee, app, permission, granted/removed by request |
 | `pdf_documents` | request_id, snapshot_id (the `closure` snapshot), storage path, filename, pdf sha256, generated_at |
-| `audit_events` | actor, action, entity, entity_id, diff (sanitised), source, created_at — append-only |
+| `audit_events` | actor_id, action (`entity.verb`), entity, entity_id, diff (sanitised), source (user/ai/system), created_at (server) — append-only, enforced by grants + triggers — **built in S6** |
 | `settings` | default assignee/approver/reviewer, company timezone, SLA definitions |
 
 All schema changes are versioned SQL migrations (Supabase CLI) reviewed in pull requests.
