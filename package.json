@@ -17,7 +17,8 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "db:lint": "supabase db lint --level warning --fail-on warning",
-    "db:types": "supabase gen types typescript --local --schema public > lib/supabase/database.types.ts && prettier --write lib/supabase/database.types.ts"
+    "db:types": "supabase gen types typescript --local --schema public > lib/supabase/database.types.ts && prettier --write lib/supabase/database.types.ts",
+    "users:sync": "node --env-file=.env.local scripts/sync-users.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "7.9.8",

@@ -12,7 +12,7 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | Styling | Tailwind CSS v4 with `@theme` tokens + `next/font/google` (Raleway, Newsreader, Instrument Serif) | `tailwindcss`, `@tailwindcss/postcss` | 4.3.3 | S3 |
 | Authentication | Clerk (Core 3) — our own sign-in screens on Clerk hooks, invite-only, MFA | `@clerk/nextjs` **7.9.8** (pinned) | 7.9.8 | S5 ✅ |
 | QR code (MFA setup) | Renders the authenticator `otpauth://` URI as an SVG | `qrcode.react` **4.2.0** (pinned) | 4.2.0 | S5 ✅ |
-| Database | Supabase Postgres + Row Level Security, Clerk as third-party auth | `@supabase/supabase-js`, `supabase` (CLI) | 2.117.2 · CLI 2.118.0 | S6 |
+| Database | Supabase Postgres + Row Level Security, Clerk as third-party auth | `@supabase/supabase-js` **2.117.2**, `supabase` CLI **2.119.0** (dev dep), `server-only` 0.0.1 (pinned) | 2.117.2 · CLI 2.119.0 | S6 ✅ |
 | File storage | Supabase Storage, private buckets (signatures, PDFs) | (same) | — | F05 |
 | Validation | Zod (forms, Server Actions, AI tool inputs) | `zod` | 4.6.5 | S1 |
 | PDF | React-PDF, server-side `renderToBuffer` | `@react-pdf/renderer` | 4.9.0 | F08 |
@@ -48,7 +48,7 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | GitHub `rad-code05/ProjectOnBoarding` | — | Rad (personal) | now |
 | Vercel (hosting) — project `laine-onboarding`, https://laine-onboarding.vercel.app | Preview per PR, Production | Raju (personal; Hobby → Pro before go-live) | S4 ✅ |
 | Clerk (email + password + MFA, invite-only — D1) | Development instance, Production instance | Raju (personal) | S5 |
-| Supabase (region EU – Frankfurt — D2) | `dev` project, `prod` project | Raju (personal) | S6 |
+| Supabase (region EU – Frankfurt — D2) | `laine-onboarding-dev` (Free; paired with the Clerk dev instance, used by local `pnpm dev` and Vercel until go-live) · `laine-onboarding-prod` at R7 (Pro) · local Docker copy for tests | Raju (personal, org "rad-code05's Org") | S6 ✅ |
 | AI provider (Anthropic or OpenRouter) | one key per environment | **D7** | F15 |
 | Resend | — | D10 | F23 |
 | Microsoft 365 / Entra (app registration) | — | D9 | F22 |
@@ -61,8 +61,8 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | --- | --- | --- |
 | Node.js | Current **Active LTS (Node 24)**, pinned in `.nvmrc` | v22.12.0 installed → **upgrade to 24 LTS** |
 | pnpm | Package manager (via Corepack or standalone) | **not installed** |
-| Docker Desktop | Runs local Supabase (`supabase start`) and local pgTAP tests | **not installed** — install, or use the cloud `dev` project only |
-| Supabase CLI | Migrations, local stack, tests | install as dev dependency (`supabase`) |
+| Docker Desktop | Runs local Supabase (`pnpm db:start`) and local pgTAP tests | 29.8.1 ✓ (per-user install, 2026-10-02) |
+| Supabase CLI | Migrations, local stack, tests | dev dependency `supabase` 2.119.0 ✓ (`pnpm exec supabase …`) |
 | GitHub CLI | PRs, auth for `rad-code05` | 2.97.0 ✓ |
 | Git | — | 2.45.2 ✓ |
 | VS Code + Claude Code | Editor | ✓ |
@@ -72,8 +72,9 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | Variable | Where | Phase |
 | --- | --- | --- |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (Config), `CLERK_SECRET_KEY` (Secret), `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in` (Config), `CLERK_WEBHOOK_SIGNING_SECRET` (S6) | local `.env.local` + Vercel Production & Preview; **not needed in CI** | S5, S6 |
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | all envs | S6 |
-| `SUPABASE_SECRET_KEY` (service role — scripts/migrations only, never in request code) | CI / local scripts | S6 |
+| `NEXT_PUBLIC_SUPABASE_URL` (`https://<ref>.supabase.co`, no `/rest/v1`), `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `.env.local` + Vercel Production & Preview; not needed in CI | S6 |
+| `SUPABASE_SECRET_KEY` (bypasses RLS — **only** the Clerk webhook route `app/api/webhooks/clerk` and `scripts/`; never pages or Server Actions). One key per place (`local-dev`, `vercel`) so each can be revoked alone | `.env.local` + Vercel (Sensitive) | S6 |
+| `ROLE_BOOTSTRAP` (`email=role+role; …` for `pnpm users:sync` — keeps real emails out of the public repo) | `.env.local` only | S6 |
 | `AI_PROVIDER`, `AI_MODEL`, `ANTHROPIC_API_KEY` (or `OPENROUTER_API_KEY`) | server | F15 |
 | `RESEND_API_KEY` | server | F23 |
 | `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `SHAREPOINT_SITE_ID`, `SHAREPOINT_FOLDER_ID` | server | F22 |
