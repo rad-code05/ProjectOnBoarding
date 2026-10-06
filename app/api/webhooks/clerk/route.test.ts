@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextRequest } from "next/server";
 
-const { verifyWebhook, applyClerkUserEvent } = vi.hoisted(() => ({
-  verifyWebhook: vi.fn(),
-  applyClerkUserEvent: vi.fn(),
-}));
+const { verifyWebhook, applyClerkUserEvent, logClerkSessionEvent } = vi.hoisted(
+  () => ({
+    verifyWebhook: vi.fn(),
+    applyClerkUserEvent: vi.fn(),
+    logClerkSessionEvent: vi.fn(),
+  }),
+);
 
 vi.mock("server-only", () => ({}));
 vi.mock("@clerk/nextjs/webhooks", () => ({ verifyWebhook }));
@@ -12,10 +15,16 @@ vi.mock("@/lib/supabase/admin", () => ({
   createAdminSupabaseClient: () => ({}),
 }));
 vi.mock("@/lib/users/sync", () => ({ applyClerkUserEvent }));
+vi.mock("@/lib/audit/sessions", () => ({
+  isSessionEvent: (evt: { type: string }) => evt.type.startsWith("session."),
+  logClerkSessionEvent,
+}));
 
 const { POST } = await import("./route");
 const request = () =>
-  new Request("http://localhost/api/webhooks/clerk") as NextRequest;
+  new Request("http://localhost/api/webhooks/clerk", {
+    headers: { "svix-id": "msg_1" },
+  }) as NextRequest;
 
 describe("POST /api/webhooks/clerk", () => {
   beforeEach(() => {
@@ -37,6 +46,20 @@ describe("POST /api/webhooks/clerk", () => {
     const res = await POST(request());
     expect(res.status).toBe(200);
     expect(applyClerkUserEvent).toHaveBeenCalledOnce();
+  });
+
+  it("sends session events to the audit log, not the user sync", async () => {
+    const evt = { type: "session.created", data: {} };
+    verifyWebhook.mockResolvedValue(evt);
+    logClerkSessionEvent.mockResolvedValue("logged");
+    const res = await POST(request());
+    expect(res.status).toBe(200);
+    expect(logClerkSessionEvent).toHaveBeenCalledWith(
+      expect.anything(),
+      evt,
+      "msg_1",
+    );
+    expect(applyClerkUserEvent).not.toHaveBeenCalled();
   });
 
   it("returns 500 when the sync fails, so Clerk retries", async () => {
