@@ -1,4 +1,5 @@
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
+import { openApp } from "./open";
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
@@ -6,16 +7,16 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("approver lands on Approvals with the approver menu", async ({ page }) => {
-  await page.goto("/");
+  await openApp(page, "/");
   await expect(page).toHaveURL(/\/approvals$/);
   await expect(
     page.getByRole("navigation", { name: "Main" }).getByRole("link"),
   ).toHaveText(["Approvals", "Records", "Reports"]);
 });
 
-for (const path of ["/admin", "/requests", "/audit"]) {
+for (const path of ["/admin", "/requests", "/requests/new", "/audit"]) {
   test(`approver opening ${path} gets 403`, async ({ page }) => {
-    await page.goto(path);
+    await openApp(page, path);
     await expect(page).toHaveURL(/\/no-access$/);
     await expect(
       page.getByRole("heading", {

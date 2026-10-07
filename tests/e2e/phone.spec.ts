@@ -1,4 +1,5 @@
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
+import { openApp } from "./open";
 import { expect, test, type Page } from "@playwright/test";
 import { authFile } from "../../playwright.config";
 
@@ -25,7 +26,7 @@ test.describe("admin on a phone", () => {
   test("compact bar, menu with the admin pages, no sideways scroll", async ({
     page,
   }) => {
-    await page.goto("/");
+    await openApp(page, "/");
     await expect(page).toHaveURL(/\/requests$/);
     await expect(
       page.getByRole("heading", { level: 1, name: "Requests" }),
@@ -58,13 +59,28 @@ test.describe("admin on a phone", () => {
     ).toBeVisible();
   });
 
+  test("requests list fits the phone", async ({ page }) => {
+    await openApp(page, "/requests");
+    await expect(
+      page
+        .getByRole("region", { name: "Summary" })
+        .getByText("Awaiting Moises"),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("searchbox", { name: "Search name, email or ticket" }),
+    ).toBeVisible();
+    // Phones get cards or the empty state — never the desktop table.
+    await expect(page.getByRole("table")).not.toBeVisible();
+    await expectNoSideScroll(page);
+  });
+
   test("403 and 404 pages fit the phone", async ({ page }) => {
-    await page.goto("/approvals");
+    await openApp(page, "/approvals");
     await expect(
       page.getByRole("heading", { name: "You don't have access to this page" }),
     ).toBeVisible();
     await expectNoSideScroll(page);
-    await page.goto("/this-page-does-not-exist");
+    await openApp(page, "/this-page-does-not-exist");
     await expect(
       page.getByRole("heading", { name: "Page not found" }),
     ).toBeVisible();
@@ -78,7 +94,7 @@ test.describe("approver on a phone", () => {
   test("lands on Approvals; menu shows the approver pages", async ({
     page,
   }) => {
-    await page.goto("/");
+    await openApp(page, "/");
     await expect(page).toHaveURL(/\/approvals$/);
     await expectNoSideScroll(page);
     const menu = await openMenu(page);

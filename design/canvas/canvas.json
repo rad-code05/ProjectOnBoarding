@@ -245,6 +245,21 @@
       "w": 390,
       "h": 844,
       "title": "Phone · App shell (menu open)"
+    },
+    "RequestListMobile.dc.html": {
+      "x": 940,
+      "y": 13560,
+      "w": 390,
+      "h": 1560,
+      "title": "Phone · Requests list",
+      "is_interactive": true
+    },
+    "RequestListMobileEmpty.dc.html": {
+      "x": 1410,
+      "y": 13560,
+      "w": 390,
+      "h": 844,
+      "title": "Phone · Requests list (empty)"
     }
   },
   "createdOnFiles": {
@@ -298,8 +313,8 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 860,
-      "text": "Mobile-first (D22) — phone app shell",
+      "maxW": 1800,
+      "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
       "y": 13310
@@ -338,7 +353,9 @@
     "States.dc.html",
     "EmailTemplates.dc.html",
     "AppShellMobile.dc.html",
-    "AppShellMobileMenu.dc.html"
+    "AppShellMobileMenu.dc.html",
+    "RequestListMobile.dc.html",
+    "RequestListMobileEmpty.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

@@ -48,16 +48,24 @@ export default defineConfig({
       dependencies: ["setup"],
       use: { storageState: authFile("approver") },
     },
-    // Mobile-first (D22): phone sizes in Chromium. iPhone 17e = the narrowest
-    // current iPhone. Not WebKit: on plain-http localhost WebKit drops Clerk's
-    // `__client_uat` cookie, so the session is lost after the first page
-    // ("session-token-but-no-client-uat") — a test-setup limit, not an app
-    // bug (real iPhones use https). Real Safari: checked by hand on the preview.
+    // Mobile-first (D22): phone SIZES in Chromium — the tests check layout,
+    // menu and navigation at phone widths. iPhone 17e = narrowest iPhone.
+    // Two test-only limits (real iPhones use real Safari on https):
+    //   * WebKit drops Clerk's `__client_uat` cookie on http localhost;
+    //   * a Safari user agent makes Clerk's dev instance take its Safari path,
+    //     which a non-Safari browser can't complete — the saved session is
+    //     lost once its token expires (8/8 failed vs 8/8 passed as Android).
+    // So: iPhone size, touch and pixel density with an Android user agent.
+    // Real Safari is checked by hand on the https preview.
     {
       name: "iphone",
       testMatch: /phone\.spec\.ts/,
       dependencies: ["setup"],
-      use: { ...devices["iPhone 17e"], browserName: "chromium" },
+      use: {
+        ...devices["iPhone 17e"],
+        browserName: "chromium",
+        userAgent: devices["Galaxy S24"].userAgent,
+      },
     },
     {
       name: "galaxy-s24-ultra",

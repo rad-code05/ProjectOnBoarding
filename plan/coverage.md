@@ -23,7 +23,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | A8 | Service/secret key never in request paths (webhook + scripts only) | §3 #4 | S6 | code review rule; `lib/supabase/admin.ts` only imported by webhook + scripts | ✅ |
 | A9 | Wrong role → "no access" (403); unknown page → 404 | `design/records-states.md` | S7b | e2e approver/admin 403, 404 page | ✅ |
 | A10 | Role-based menu and start page (Raju → Requests, approver → Approvals) | ROLES, `approver-view.md` | S7a | e2e admin/approver landing + menu | ✅ |
-| A11 | Approver never sees drafts / in-execution requests | ROLES, `approver-view.md` | F01b (RLS on `requests`), F07 | pgTAP `requests_rls` ("approver sees only the request awaiting confirmation"); e2e in F01c/d | 🟡 database ✅, pages ⏳ |
+| A11 | Approver never sees drafts / in-execution requests | ROLES, `approver-view.md` | F01b (RLS on `requests`), F01c (list via RLS), F07 | pgTAP `requests_rls`; e2e approver → 403 on `/requests` and `/requests/new` | ✅ database + list; F07 adds the approver views |
 | A12 | Nobody approves a request they prepared or executed | ROLES, §10.1 | F07 (server + DB) | pgTAP + e2e (F07 done-when) | ⏳ F07 |
 | A13 | Admin can't grant themselves Approver; role changes controlled | §10.1, D5 | S6 (no self-grant check, audited), F18 | pgTAP (S6); F18 tests | 🟡 ❓ D5 |
 | A14 | At least one active approver must exist | ROLES "rules that never change" | **F18** (assigned 2026-10-07) | F18 tests | ⏳ F18 |
@@ -107,7 +107,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | F-5 | Offboarding SLA, Access by application, Open requests by status | §9.3, `reports.md` | F14 | F14 tests | ⏳ F14 |
 | F-6 | Monthly counts created / submitted / approved / completed / closed by ticket type | §9.3 #1, D21 | later, as a new report type | — | ➖ not now (D21: designed reports are enough for now) |
 | F-7 | CSV + PDF export of any report, permission-checked and **audited** | §9.3 #6, `reports.md` | F12 | F12 tests | ⏳ F12 |
-| F-8 | Summary tiles on the requests list and approvals page | `request-list.md`, `approver-view.md` | F01, F07 | e2e | ⏳ F01 |
+| F-8 | Summary tiles on the requests list and approvals page | `request-list.md`, `approver-view.md` | F01c (list), F07 | e2e "requests list: tiles…" | 🟡 list ✅ ("Onboarded this month" waits for D16/F06), approvals ⏳ F07 |
 
 ## G. AI assistant
 
@@ -156,7 +156,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | --- | --- | --- | --- | --- | --- |
 | J1 | Laine look: tokens, fonts, pill buttons, red = attention only | `design/` | S3 (+ every feature) | unit (components) | ✅ foundation |
 | J2 | App shell: top bar by role, profile link, sign-out — desktop and phone (menu button + full-screen menu) | `components.md`, phone boards | S7a, F01a | unit `TopBar.test.tsx` (desktop + phone menu); e2e desktop + `phone.spec.ts` | ✅ |
-| J3 | Empty states (requests, approvals), loading skeletons (reduced motion), save conflict "Reload and merge", offline banner | `records-states.md` | the feature that owns each page (F01, F07, F22) | e2e | ⏳ (cross-cutting rule in `features.md`) |
+| J3 | Empty states (requests, approvals), loading skeletons (reduced motion), save conflict "Reload and merge", offline banner | `records-states.md` | the feature that owns each page (F01, F07, F22) | e2e + unit | 🟡 requests list empty / no-match states ✅ (F01c); rest ⏳ |
 | J4 | Keyboard + screen reader + contrast (WCAG 2.1 AA) | §12, `design/README.md` | every feature + R2 | unit ARIA tests; R2 pass | 🟡 per feature |
 | J5 | Approvals badge (number waiting) in the approver's menu | `approver-view.md` | **F07** (assigned 2026-10-07) | e2e | ⏳ F07 |
 | J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in + app shell done; ⏳ each new screen |
