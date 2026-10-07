@@ -72,6 +72,248 @@ export type Database = {
         };
         Relationships: [];
       };
+      departments: {
+        Row: {
+          active: boolean;
+          id: number;
+          name: string;
+          sort_order: number;
+        };
+        Insert: {
+          active?: boolean;
+          id?: never;
+          name: string;
+          sort_order?: number;
+        };
+        Update: {
+          active?: boolean;
+          id?: never;
+          name?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
+      employees: {
+        Row: {
+          created_at: string;
+          first_name: string | null;
+          id: string;
+          last_name: string | null;
+          updated_at: string;
+          work_email: string;
+        };
+        Insert: {
+          created_at?: string;
+          first_name?: string | null;
+          id?: string;
+          last_name?: string | null;
+          updated_at?: string;
+          work_email: string;
+        };
+        Update: {
+          created_at?: string;
+          first_name?: string | null;
+          id?: string;
+          last_name?: string | null;
+          updated_at?: string;
+          work_email?: string;
+        };
+        Relationships: [];
+      };
+      form_fields: {
+        Row: {
+          applies_to: Database["public"]["Enums"]["request_type"][];
+          field_type: string;
+          form_version_id: number;
+          help_text: string | null;
+          id: number;
+          key: string;
+          label: string;
+          options: Json | null;
+          required: boolean;
+          section: number;
+          sort_order: number;
+          storage: string;
+        };
+        Insert: {
+          applies_to?: Database["public"]["Enums"]["request_type"][];
+          field_type: string;
+          form_version_id: number;
+          help_text?: string | null;
+          id?: never;
+          key: string;
+          label: string;
+          options?: Json | null;
+          required?: boolean;
+          section: number;
+          sort_order: number;
+          storage?: string;
+        };
+        Update: {
+          applies_to?: Database["public"]["Enums"]["request_type"][];
+          field_type?: string;
+          form_version_id?: number;
+          help_text?: string | null;
+          id?: never;
+          key?: string;
+          label?: string;
+          options?: Json | null;
+          required?: boolean;
+          section?: number;
+          sort_order?: number;
+          storage?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "form_fields_form_version_id_fkey";
+            columns: ["form_version_id"];
+            isOneToOne: false;
+            referencedRelation: "form_versions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      form_versions: {
+        Row: {
+          id: number;
+          is_current: boolean;
+          published_at: string;
+          version: string;
+        };
+        Insert: {
+          id?: never;
+          is_current?: boolean;
+          published_at?: string;
+          version: string;
+        };
+        Update: {
+          id?: never;
+          is_current?: boolean;
+          published_at?: string;
+          version?: string;
+        };
+        Relationships: [];
+      };
+      requests: {
+        Row: {
+          assignee_id: string | null;
+          closed_at: string | null;
+          country: string | null;
+          created_at: string;
+          created_by: string;
+          custom_fields: NonNullable<Json>;
+          department_id: number | null;
+          effective_date: string | null;
+          employee_id: string | null;
+          first_name: string | null;
+          form_version_id: number;
+          id: string;
+          job_title: string | null;
+          last_name: string | null;
+          manager_name: string | null;
+          priority: Database["public"]["Enums"]["request_priority"];
+          requestor_name: string | null;
+          state: Database["public"]["Enums"]["request_state"];
+          ticket_id: string;
+          ticket_number: number;
+          ticket_year: number;
+          type: Database["public"]["Enums"]["request_type"];
+          updated_at: string;
+          version: number;
+          work_email: string | null;
+        };
+        Insert: {
+          assignee_id?: string | null;
+          closed_at?: string | null;
+          country?: string | null;
+          created_at?: string;
+          created_by: string;
+          custom_fields?: NonNullable<Json>;
+          department_id?: number | null;
+          effective_date?: string | null;
+          employee_id?: string | null;
+          first_name?: string | null;
+          form_version_id: number;
+          id?: string;
+          job_title?: string | null;
+          last_name?: string | null;
+          manager_name?: string | null;
+          priority?: Database["public"]["Enums"]["request_priority"];
+          requestor_name?: string | null;
+          state?: Database["public"]["Enums"]["request_state"];
+          ticket_id: string;
+          ticket_number: number;
+          ticket_year: number;
+          type?: Database["public"]["Enums"]["request_type"];
+          updated_at?: string;
+          version?: number;
+          work_email?: string | null;
+        };
+        Update: {
+          assignee_id?: string | null;
+          closed_at?: string | null;
+          country?: string | null;
+          created_at?: string;
+          created_by?: string;
+          custom_fields?: NonNullable<Json>;
+          department_id?: number | null;
+          effective_date?: string | null;
+          employee_id?: string | null;
+          first_name?: string | null;
+          form_version_id?: number;
+          id?: string;
+          job_title?: string | null;
+          last_name?: string | null;
+          manager_name?: string | null;
+          priority?: Database["public"]["Enums"]["request_priority"];
+          requestor_name?: string | null;
+          state?: Database["public"]["Enums"]["request_state"];
+          ticket_id?: string;
+          ticket_number?: number;
+          ticket_year?: number;
+          type?: Database["public"]["Enums"]["request_type"];
+          updated_at?: string;
+          version?: number;
+          work_email?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "requests_assignee_id_fkey";
+            columns: ["assignee_id"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "requests_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "requests_department_id_fkey";
+            columns: ["department_id"];
+            isOneToOne: false;
+            referencedRelation: "departments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "requests_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "requests_form_version_id_fkey";
+            columns: ["form_version_id"];
+            isOneToOne: false;
+            referencedRelation: "form_versions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_roles: {
         Row: {
           clerk_user_id: string;
@@ -118,6 +360,15 @@ export type Database = {
     Enums: {
       app_role: "admin" | "requester" | "it_operator" | "approver" | "auditor";
       audit_source: "user" | "ai" | "system";
+      request_priority: "low" | "medium" | "high";
+      request_state:
+        | "draft"
+        | "in_execution"
+        | "pending_confirmation"
+        | "returned"
+        | "closed"
+        | "cancelled";
+      request_type: "onboarding" | "offboarding" | "access_modification";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -247,6 +498,16 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "requester", "it_operator", "approver", "auditor"],
       audit_source: ["user", "ai", "system"],
+      request_priority: ["low", "medium", "high"],
+      request_state: [
+        "draft",
+        "in_execution",
+        "pending_confirmation",
+        "returned",
+        "closed",
+        "cancelled",
+      ],
+      request_type: ["onboarding", "offboarding", "access_modification"],
     },
   },
 } as const;
