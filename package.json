@@ -11,6 +11,7 @@
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "db:start": "supabase db start",
     "db:stop": "supabase stop",
@@ -30,6 +31,8 @@
     "server-only": "0.0.1"
   },
   "devDependencies": {
+    "@clerk/testing": "2.2.42",
+    "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "4.3.3",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",

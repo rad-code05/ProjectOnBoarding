@@ -36,7 +36,7 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | Linting | ESLint (flat config, `eslint-config-next`) | 10.11.0 |
 | Formatting | Prettier (+ Tailwind class sorting plugin) | 3.9.9 |
 | Unit / component tests | Vitest + Testing Library (+ `user-event` 14.6.7 for keyboard/mouse, `jest-dom` 7.0.1 for DOM matchers) | 5.0.2 · 16.3.3 |
-| End-to-end tests | Playwright | 1.63.0 |
+| End-to-end tests | Playwright (`pnpm test:e2e`, Chromium) + `@clerk/testing` (testing token, ticket sign-in) — S7d | 1.63.0 · 2.2.42 |
 | Database / RLS tests | pgTAP via `supabase test db` | (CLI) |
 | CI | GitHub Actions (lint, format, typecheck, tests, build, secret scan, dependency audit) | — |
 | Dependency updates | Dependabot or Renovate (weekly, grouped) | — |
@@ -71,10 +71,11 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 
 | Variable | Where | Phase |
 | --- | --- | --- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (Config), `CLERK_SECRET_KEY` (Secret), `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in` (Config), `CLERK_WEBHOOK_SIGNING_SECRET` (S6) | local `.env.local` + Vercel Production & Preview; **not needed in CI** | S5, S6 |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (Config), `CLERK_SECRET_KEY` (Secret), `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in` (Config), `CLERK_WEBHOOK_SIGNING_SECRET` (S6) | local `.env.local` + Vercel Production & Preview; the two keys (dev instance only, `sk_test_`/`pk_test_`) also as GitHub **Actions + Dependabot secrets** for the browser tests | S5, S6, S7d |
 | `NEXT_PUBLIC_SUPABASE_URL` (`https://<ref>.supabase.co`, no `/rest/v1`), `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `.env.local` + Vercel Production & Preview; not needed in CI | S6 |
 | `SUPABASE_SECRET_KEY` (bypasses RLS — **only** the Clerk webhook route `app/api/webhooks/clerk` and `scripts/`; never pages or Server Actions). One key per place (`local-dev`, `vercel`) so each can be revoked alone | `.env.local` + Vercel (Sensitive) | S6 |
-| `ROLE_BOOTSTRAP` (`email=role+role; …` for `pnpm users:sync` — keeps real emails out of the public repo) | `.env.local` only | S6 |
+| `ROLE_BOOTSTRAP` (`email=role+role; …` for `pnpm users:sync` — keeps real emails out of the public repo) | `.env.local` only (CI builds it from the test-user variables) | S6 |
+| `E2E_ADMIN_EMAIL`, `E2E_APPROVER_EMAIL` (Clerk dev test users, `+clerk_test`) · `E2E_ADMIN_TOTP_SECRET`, `E2E_APPROVER_TOTP_SECRET` (their authenticator keys — MFA is required for everyone) | `.env.local` + GitHub Actions (emails = variables, keys = secrets; keys also as Dependabot secrets) | S7d |
 | `AI_PROVIDER`, `AI_MODEL`, `ANTHROPIC_API_KEY` (or `OPENROUTER_API_KEY`) | server | F15 |
 | `RESEND_API_KEY` | server | F23 |
 | `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `SHAREPOINT_SITE_ID`, `SHAREPOINT_FOLDER_ID` | server | F22 |
