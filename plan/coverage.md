@@ -23,11 +23,11 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | A8 | Service/secret key never in request paths (webhook + scripts only) | §3 #4 | S6 | code review rule; `lib/supabase/admin.ts` only imported by webhook + scripts | ✅ |
 | A9 | Wrong role → "no access" (403); unknown page → 404 | `design/records-states.md` | S7b | e2e approver/admin 403, 404 page | ✅ |
 | A10 | Role-based menu and start page (Raju → Requests, approver → Approvals) | ROLES, `approver-view.md` | S7a | e2e admin/approver landing + menu | ✅ |
-| A11 | Approver never sees drafts / in-execution requests | ROLES, `approver-view.md` | F01 (RLS on `requests`), F07 | pgTAP + e2e (F01 done-when: "Moises gets 403 on drafts") | ⏳ F01 |
+| A11 | Approver never sees drafts / in-execution requests | ROLES, `approver-view.md` | F01b (RLS on `requests`), F07 | pgTAP `requests_rls` ("approver sees only the request awaiting confirmation"); e2e in F01c/d | 🟡 database ✅, pages ⏳ |
 | A12 | Nobody approves a request they prepared or executed | ROLES, §10.1 | F07 (server + DB) | pgTAP + e2e (F07 done-when) | ⏳ F07 |
 | A13 | Admin can't grant themselves Approver; role changes controlled | §10.1, D5 | S6 (no self-grant check, audited), F18 | pgTAP (S6); F18 tests | 🟡 ❓ D5 |
 | A14 | At least one active approver must exist | ROLES "rules that never change" | **F18** (assigned 2026-10-07) | F18 tests | ⏳ F18 |
-| A15 | Concurrency: stale saves rejected (`version`) | §10.2 | F01 | pgTAP/unit (F01) | ⏳ F01 |
+| A15 | Concurrency: stale saves rejected (`version`) | §10.2 | F01b (DB), F01d (save + conflict message) | pgTAP "a save with an outdated version changes nothing" | 🟡 database ✅, UI ⏳ F01d |
 | A16 | Secrets only in env settings; secret scanning + push protection | §10.2 | S2 (GitHub settings) | GitHub secret scanning on | ✅ |
 | A17 | Upload validation (PNG only, size/dimensions, re-encode, private bucket) | §8.1 | F05 | F05 tests | ⏳ F05 |
 | A18 | Authorization matrix test: every route × role | R1 | R1 (+ e2e grows per feature) | e2e | ⏳ R1 |
@@ -40,7 +40,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | B1 | Sec. 1 Ticket info: type, auto ticket ID `UAM-YYYY-NNNNNN`, status derived from state, priority, assignee, opened/closed (server time) | §4.1 | F01 (+ F04 status) | F01 tests | ⏳ F01 |
 | B2 | Sec. 2 Employee: first/last name (split), job title, department, **Manager and Requestor as separate fields**, effective date, **Country** (required) | §4.1, §4.4 #4–5, §4.5 | F01 | F01 tests | ⏳ F01 |
 | B3 | Employment event derived from ticket type (not asked twice) | §4.4 #3 | F01 | F01 tests | ⏳ F01 |
-| B4 | Work email as stable employee key (unique) | §4.4 #6, §4.5 | F01 (`employees`) | pgTAP (F01) | ⏳ F01 |
+| B4 | Work email as stable employee key (unique) | §4.4 #6, §4.5 | F01b (`employees`, linked by trigger) | pgTAP "a work email creates and links the employee" | ✅ |
 | B5 | Sec. 3 → *Final authorization & confirmation* by Moises at the end; "must not be provisioned before…" line removed | §4.1, §5.1 | F07 (+ F08 PDF wording) | F07/F08 tests | ⏳ F07 |
 | B6 | Sec. 4 Provisioning method: RBAC template or custom, template name, RBAC document link | §4.1 | F02 (custom), F21 (templates) | F02/F21 tests | ⏳ ❓ D17 |
 | B7 | Sec. 5 Application access matrix from the catalog: per-app actions + permissions (Hexnode Enroll/Remove), notes, "Add other application" | §4.1, §4.2 | F02 | F02 done-when | ⏳ F02 |
@@ -133,7 +133,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | H3 | **Equipment types and physical/logical access types** editable the same way | §7 | **F19** (assigned 2026-10-07) | F19 tests | ⏳ F19 |
 | H4 | Form fields & versions: draft/publish, request keeps its version, `custom_fields jsonb`; old requests/PDFs unchanged | §7, §14 | F01 (v4.1 seeded), F20 | F20 done-when | ⏳ F20 |
 | H5 | RBAC templates as data; applying one pre-fills the matrix | §4.4 #1 | F21 | F21 tests | ⏳ ❓ D17 |
-| H6a | **Departments** as an admin-editable list (seed: Engineering, Tech, Sales, Operations, Marketing, Compliance, Admin); retire, never delete | Raju 2026-10-07 | F01 (table + seed), F21 (editing screen) | F01/F21 tests | ⏳ F01 |
+| H6a | **Departments** as an admin-editable list (seed: Engineering, Tech, Sales, Operations, Marketing, Compliance, Admin); retire, never delete | Raju 2026-10-07 | F01b (table + seed), F21 (editing screen) | pgTAP "the seven departments are seeded" | 🟡 list ✅, editing ⏳ F21 |
 | H6 | Defaults: IT owner, primary approver, timezone, ticket prefix, SLA definitions, PDF naming | `profile-admin.md` | F21 | F21 tests | ⏳ F21 |
 | H7 | Every catalog/field/role change audit-logged; applies to new requests only | §7 | F18–F21 | pgTAP | ⏳ |
 
