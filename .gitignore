@@ -26,6 +26,8 @@ supabase/.temp
 # testing
 coverage/
 playwright-report/
+# signed-in test sessions (Playwright storage state) — never commit
+playwright/.clerk/
 test-results/
 
 # personal notes (local only, never pushed)

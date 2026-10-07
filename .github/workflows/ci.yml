@@ -49,3 +49,49 @@ jobs:
       - run: pnpm db:test
       # The committed TypeScript types must match the migrations.
       - run: pnpm db:types && git diff --exit-code lib/supabase/database.types.ts
+
+  e2e:
+    name: Browser tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Clerk *dev* instance (GitHub secrets). Test users: GitHub variables.
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
+      E2E_ADMIN_EMAIL: ${{ vars.E2E_ADMIN_EMAIL }}
+      E2E_APPROVER_EMAIL: ${{ vars.E2E_APPROVER_EMAIL }}
+      # Authenticator keys of the test users (MFA is required for everyone).
+      E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_ADMIN_TOTP_SECRET }}
+      E2E_APPROVER_TOTP_SECRET: ${{ secrets.E2E_APPROVER_TOTP_SECRET }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Local Supabase (database + API) with all migrations — never the cloud DB.
+      - run: pnpm exec supabase start -x studio,imgproxy,realtime,edge-runtime,logflare,vector,mailpit,storage-api,supavisor,postgres-meta
+      - name: Point the app at the local Supabase
+        run: |
+          eval "$(pnpm exec supabase status -o env)"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY"
+            echo "SUPABASE_SECRET_KEY=$SECRET_KEY"
+          } >> "$GITHUB_ENV"
+      - name: Give the test users their roles
+        run: node scripts/sync-users.mjs
+        env:
+          ROLE_BOOTSTRAP: "${{ vars.E2E_ADMIN_EMAIL }}=admin+requester+it_operator; ${{ vars.E2E_APPROVER_EMAIL }}=approver"
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
