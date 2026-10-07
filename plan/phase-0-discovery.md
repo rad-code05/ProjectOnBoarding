@@ -17,7 +17,7 @@
 | ~~D1~~ | ✅ **Resolved 2026-10-01:** Clerk, email + password, MFA required, invite-only; no SSO for now | — |
 | D2 | ✅ Region **resolved 2026-10-01: EU – Frankfurt**. Still open: retention for records, signatures, PDFs | R4 |
 | D3 | Company timezone for reports and SLAs (assumed Europe/Zurich) | F09, F12 |
-| D4 | Name/email of the backup approver | F18 (can invite via Clerk dashboard earlier) |
+| ~~D4~~ | ✅ **Resolved 2026-10-07:** backup approver = **Celine** (account + email in Clerk, never in the repo). App users for now: Raju, Moises, Celine; more can be added later | — (Clerk invite before F07 tests) |
 | D5 | How admin role changes are controlled (second admin vs logged + visible to approvers) | F18 |
 | D6 | Auditor OK with end-only approval (no pre-provisioning approval)? | R |
 | D7 | AI provider & model (Claude direct vs via OpenRouter), may employee data be sent, retention | F15 |

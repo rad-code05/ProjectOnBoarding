@@ -8,7 +8,7 @@ Who uses the app, what each role can do, and how signing works. Decided with the
 | --- | --- | --- |
 | **Raju Bholani** | Admin · Requester · IT operator | Creates requests (by hand or with the Laine assistant), does the IT work, signs section 9, runs Admin. Main user. |
 | **Moises Larez** | Approver | Confirms and signs at the end (or returns to Raju), views reports, exports PDFs. Nothing else. |
-| **Backup approver** (name TBD) | Approver | Same rights as Moises, for when he is away. |
+| **Celine** (backup approver, decided 2026-10-07) | Approver | Same rights as Moises, for when he is away. |
 
 Accounts are created by Raju only (invitation). There is **no sign-up page**. Account help: "contact Raju".
 

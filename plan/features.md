@@ -9,8 +9,9 @@ Every feature's done-when also includes: accessible (keyboard + screen reader), 
 ---
 
 ### F01 — Requests list & onboarding draft
-**Needs:** S7. **Design:** `design/request-list.md`, `design/main-page.md` (sections 1–2) + **phone layouts** for both (D22). **First part (F01a): mobile app shell** — the top bar today is desktop-only; on phones it needs a compact bar with a menu button, plus a Playwright phone project (iPhone + Galaxy S24 Ultra viewports).
-**Builds:** tables `employees`, `requests` (ticket ID `UAM-YYYY-NNNNNN`, `version`), `form_versions`/`form_fields` seeded with v4.1 (incl. Country); `/requests` list (search, filters, tiles); **New request**; form engine (`FieldRenderer`) for sections 1–2; autosave draft with optimistic locking; audit events per change.
+**Needs:** S7. **Design:** `design/request-list.md`, `design/main-page.md` (sections 1–2) + **phone layouts** for both (D22). **Split (2026-10-07):** - [x] **F01a mobile app shell** (this PR) · - [ ] **F01b database** · - [ ] **F01c requests list** · - [ ] **F01d new request + form sections 1–2**.
+**Decided 2026-10-07:** ticket ID `UAM-YYYY-NNNNNN` with the number **restarting each year** (`UAM-2027-000001`), year from the server date in the company timezone; **department = admin-editable list** (seed: Engineering, Tech, Sales, Operations, Marketing, Compliance, Admin — `departments` table, data not code; editing screen in F21, adding one before F21 = a seed migration); **manager and requestor = typed names** (only Raju, Moises and Celine use the app).
+**Builds:** tables `employees`, `departments`, `requests` (ticket ID `UAM-YYYY-NNNNNN` from a per-year counter, `version`), `form_versions`/`form_fields` seeded with v4.1 (incl. Country); `/requests` list (search, filters, tiles); **New request**; form engine (`FieldRenderer`) for sections 1–2; autosave draft with optimistic locking; audit events per change.
 **Done when:** Raju creates Anna Keller as a draft and finds her in the list; Moises gets 403 on drafts.
 
 ### F02 — Application access
@@ -82,7 +83,7 @@ Catalog editor (add/rename/move/retire) for **applications, equipment types and 
 Draft/publish versions, field suggestions from the assistant.
 
 ### F21 — Admin: templates & defaults
-`rbac_templates`; apply a template on a request; defaults, SLA settings, PDF naming.
+`rbac_templates`; apply a template on a request; defaults, SLA settings, PDF naming; **departments list** (add / rename / retire — retired ones stay on old requests).
 
 ### F22 — Save to SharePoint
 **Decision:** D9. Microsoft Graph upload with `Sites.Selected`; status + retry; optional auto-save on close.
@@ -91,4 +92,4 @@ Draft/publish versions, field suggestions from the assistant.
 **Decision:** D10. Resend templates (approver waiting, returned, SLA due); scheduled SLA reminders.
 
 ## Session log
-- (none yet)
+- 2026-10-07 — **F01a mobile app shell**: phone boards *Phone · App shell (menu closed / open)* approved by Raju on the canvas (copied to `design/canvas/`). `TopBar` is mobile-first: below `md` (768 px) a 56 px bar (logo, "Onboarding rights", avatar → My profile, 44 px menu button) and a full-screen menu (`#phone-menu`: Newsreader 28 px links, current = white + signal dot, profile row, Sign out; focus moves in, Esc closes and returns focus, body scroll locked, choosing a page closes it); from `md` the desktop bar. New icons `MenuIcon`, `CloseIcon`, `ChevronRightIcon`; phone padding in `AppShell`/`PagePlaceholder`. Tests: 77 unit (4 new); Playwright projects **iphone** (iPhone 17e, 390 px, **WebKit**) and **galaxy-s24-ultra** (412 px, Chromium) running `phone.spec.ts` (menu per role, navigation, Esc, no sideways scroll on pages/403/404) — 22 browser tests. Lessons: (1) the phone menu first closed itself inside the link's click, removing the link mid-navigation — slow WebKit sometimes lost the navigation; now the menu belongs to the page it was opened on and closes when the URL changes (derived state, no effect). (2) WebKit is slow under load, very slow on Windows → `workers` (CI 2, local 4), `expect` 10 s, and the `iphone` project runs **after** all others with a 60 s test timeout. Three full runs green (22/22). CI installs Chromium + WebKit. Unit tests: 78.
