@@ -87,7 +87,7 @@ jobs:
         env:
           ROLE_BOOTSTRAP: "${{ vars.E2E_ADMIN_EMAIL }}=admin+requester+it_operator; ${{ vars.E2E_APPROVER_EMAIL }}=approver"
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium webkit
+      - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v7
         if: failure()
