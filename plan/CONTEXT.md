@@ -96,6 +96,7 @@ Decided: **D1** Clerk email+password+MFA invite-only · **D2** Supabase Frankfur
 | Exact next step, gotchas, working agreements | `CLAUDE.md` |
 | How plan items work, prompts, PR rules, definition of done | `plan/README.md` |
 | The items themselves | `plan/phase-0-discovery.md`, `plan/phase-1-skeleton.md`, `plan/features.md`, `plan/release.md` |
+| Did we miss anything? | `plan/coverage.md` — every requirement → step → proof → status |
 | Libraries, services, env vars | `plan/tech-stack.md` |
 | Full requirements and analysis | `PROJECT_PLAN.md` |
 | Roles and signing | `ROLES.md` |

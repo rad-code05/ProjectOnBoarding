@@ -33,6 +33,9 @@
 | D17 | RBAC templates: where is the current RBAC document, and store templates as data? (§4.4 #1, §17 #7) | F21 (F02 uses "custom" until then) |
 | D18 | PDF filenames for offboarding / access modification (proposed `-offboarding.pdf`, `-access-modification.pdf`); may drafts be exported (watermarked)? (§8.2, §17 #12) | F08 |
 | D19 | Who signs off go-live (Raju alone, or Raju + Moises / management)? (§17 #14) | R7 |
+| ~~D20~~ | ✅ **Resolved 2026-10-07: yes** — access inventory in v1; offboarding pre-fills everything the person holds (from closed requests) | — (F09) |
+| ~~D21~~ | ✅ **Resolved 2026-10-07:** the designed reports are enough for now; "monthly counts by ticket type" (§9.3 #1) may be added later as a new report type (the report list is data-driven) | — |
+| ~~D22~~ | ✅ **Resolved 2026-10-07: desktop and phone, mobile-first.** Every screen must work on iPhone (regular ~390–393 px, Plus/Pro Max ~428–440 px) and Samsung Galaxy S24 Ultra (~412 px), as well as desktop. Mobile layouts are designed per screen before it is built; browser tests run on a phone viewport too. | S7 shell (mobile top bar), every feature |
 
 ## Exit criteria
 D1, D2 (region) and D12 answered ✅ — S4–S6 are unblocked; design board statuses approved or accepted as-is.
