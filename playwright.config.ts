@@ -21,8 +21,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  // A few browsers at a time and 10 s per check: WebKit (iPhone) is slow when
-  // many tests share one machine, which made checks time out at the 5 s default.
+  // A few browsers at a time and 10 s per check: browsers are slow when many
+  // tests share one machine (the 5 s default timed out).
   workers: process.env.CI ? 2 : 4,
   expect: { timeout: 10_000 },
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
@@ -48,22 +48,16 @@ export default defineConfig({
       dependencies: ["setup"],
       use: { storageState: authFile("approver") },
     },
-    // Mobile-first (D22): the narrowest current iPhone in WebKit (Safari's
-    // engine) and the Galaxy S24 Ultra in Chromium (Android Chrome's engine).
+    // Mobile-first (D22): phone sizes in Chromium. iPhone 17e = the narrowest
+    // current iPhone. Not WebKit: on plain-http localhost WebKit drops Clerk's
+    // `__client_uat` cookie, so the session is lost after the first page
+    // ("session-token-but-no-client-uat") — a test-setup limit, not an app
+    // bug (real iPhones use https). Real Safari: checked by hand on the preview.
     {
       name: "iphone",
       testMatch: /phone\.spec\.ts/,
-      // WebKit is slow under load (very slow on Windows): run it after all
-      // other projects, alone, with more time per test.
-      dependencies: [
-        "setup",
-        "signed-out",
-        "admin",
-        "approver",
-        "galaxy-s24-ultra",
-      ],
-      timeout: 60_000,
-      use: { ...devices["iPhone 17e"] },
+      dependencies: ["setup"],
+      use: { ...devices["iPhone 17e"], browserName: "chromium" },
     },
     {
       name: "galaxy-s24-ultra",
