@@ -26,7 +26,8 @@ UI design for the internal user access management app, styled after [laine.ai](h
 2. **Red means attention.** `#cf2e2e` is used only for errors, required-but-missing, due SLAs and the current-location marker — never decoration beyond the brand rule on the sign-in panel.
 3. **AI is always visibly separate.** Anything the assistant proposes has a dashed outline and a "Suggested"/"AI" chip until a person accepts it.
 4. **Accessible by default.** Real `<button>`, `<a>`, `<label>` + `<input>`; text contrast ≥ 4.5:1; errors are announced with `aria-invalid` / `aria-describedby`.
-5. **Build once, reuse everywhere.** Every visual element maps to one component in [components.md](components.md). On the canvas, `TopBar`, `BrandPanel` and `AdminNav` are real shared components imported by the newer boards.
+5. **Mobile-first (decision D22, 2026-10-07).** Every screen works on phones — iPhone regular (~390–393 px), Plus / Pro Max (~428–440 px), Samsung Galaxy S24 Ultra (~412 px) — and on desktop (boards are drawn at 1440 px). Each screen gets a phone layout on the canvas before it is built.
+6. **Build once, reuse everywhere.** Every visual element maps to one component in [components.md](components.md). On the canvas, `TopBar`, `BrandPanel` and `AdminNav` are real shared components imported by the newer boards.
 
 ## Status (2026-09-30)
 

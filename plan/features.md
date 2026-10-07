@@ -4,12 +4,12 @@ Each feature is a **vertical slice**: its own migrations + RLS + pgTAP tests, se
 
 Order matters: each feature lists what it needs. **After F08 the onboarding flow works end-to-end; after F11 the app can go live** (`release.md`). Later features ship after go-live.
 
-Every feature's done-when also includes: accessible (keyboard + screen reader), authorization tested per role, no secrets, docs/specs updated.
+Every feature's done-when also includes: accessible (keyboard + screen reader), authorization tested per role, no secrets, docs/specs updated, **empty / loading / error states** for the pages it adds (`design/records-states.md`), and its rows in **`plan/coverage.md`** updated (status + proof). **Mobile-first (D22):** every page works at phone widths (~390–440 px: iPhone regular/Plus/Pro Max, Galaxy S24 Ultra) and on desktop; the phone layout is designed before the screen is built, and its browser tests also run on a phone viewport.
 
 ---
 
 ### F01 — Requests list & onboarding draft
-**Needs:** S7. **Design:** `design/request-list.md`, `design/main-page.md` (sections 1–2).
+**Needs:** S7. **Design:** `design/request-list.md`, `design/main-page.md` (sections 1–2) + **phone layouts** for both (D22). **First part (F01a): mobile app shell** — the top bar today is desktop-only; on phones it needs a compact bar with a menu button, plus a Playwright phone project (iPhone + Galaxy S24 Ultra viewports).
 **Builds:** tables `employees`, `requests` (ticket ID `UAM-YYYY-NNNNNN`, `version`), `form_versions`/`form_fields` seeded with v4.1 (incl. Country); `/requests` list (search, filters, tiles); **New request**; form engine (`FieldRenderer`) for sections 1–2; autosave draft with optimistic locking; audit events per change.
 **Done when:** Raju creates Anna Keller as a draft and finds her in the list; Moises gets 403 on drafts.
 
@@ -28,7 +28,7 @@ Every feature's done-when also includes: accessible (keyboard + screen reader), 
 
 ### F05 — My profile & signatures
 **Needs:** S7. **Design:** `design/profile-admin.md` (profile).
-**Builds:** `signature_assets`, private Storage bucket + policies, PNG upload (sharp re-encode), typed initials, active asset, history.
+**Builds:** `signature_assets`, private Storage bucket + policies, PNG upload (sharp re-encode), typed initials, active asset, history; account card with **Manage password & MFA** in our own screens (change password, reset authenticator, new backup codes — Clerk custom flows).
 
 ### F06 — Review & sign (Raju)
 **Needs:** F04, F05. **Design:** `design/review-sign.md`.
@@ -36,7 +36,7 @@ Every feature's done-when also includes: accessible (keyboard + screen reader), 
 
 ### F07 — Approvals (Moises)
 **Needs:** F06. **Design:** `design/approver-view.md`, `design/request-variants.md` (read-only, returned).
-**Builds:** `approvals`; `/approvals`; read-only request; **Confirm & sign** (sections 3, 10, approver half of 11) → closed; **Return to Raju** with comment → returned → Raju edits and signs again.
+**Builds:** `approvals`; `/approvals` (tiles, **badge with the number waiting** in the menu, empty state); read-only request; **Confirm & sign** (sections 3, 10, approver half of 11) → closed; **Return to Raju** with comment (+ **flagged items**) → returned view with the comment, "Go to…" and **Reply to Moises** → Raju edits and signs again. Queue visible to every approver; first to confirm closes.
 **Done when:** the full loop works for both outcomes; nobody can approve their own request.
 
 ### F08 — PDF record & export
@@ -46,13 +46,13 @@ Every feature's done-when also includes: accessible (keyboard + screen reader), 
 
 ### F09 — Offboarding
 **Needs:** F08. **Design:** `design/request-variants.md`.
-**Builds:** `employee_access_inventory` (from closed requests), offboarding variant: SLA panel (timezone **D3**), pre-filled removals, equipment return, handover, missed-SLA reason.
+**Builds (D20 ✅ in v1):** `employee_access_inventory` (from closed requests), offboarding variant: SLA panel (timezone **D3**), pre-filled removals, equipment return, handover, missed-SLA reason.
 
 ### F10 — Access modification
 **Needs:** F09. Inventory rows kept / changed / removed + add from catalog.
 
 ### F11 — Audit log page
-**Needs:** F01 (events are written from F01 on). **Design:** `design/profile-admin.md` (audit log). Filters, before/after details, CSV export. ✅ *Go-live possible — see `release.md`.*
+**Needs:** F01 (events are written from F01 on). **Design:** `design/profile-admin.md` (audit log). Filters, before/after details, CSV export (audited), **per-request activity timeline** (request page + "Recent activity" on the closed page), filter/hide the e2e test users (`e2e.*+clerk_test`). ✅ *Go-live possible — see `release.md`.*
 
 ### F12 — Reports I
 **Needs:** F08. **Design:** `design/reports.md`. Report side panel, "All users list", "Onboarded by month" (chart + table), CSV/PDF export, definitions.
@@ -67,16 +67,16 @@ Every feature's done-when also includes: accessible (keyboard + screen reader), 
 **Needs:** F02. **Decision:** D7. **Design:** `design/main-page.md` (robot). `/api/chat`, rate limit + spend cap, robot launcher + panel (closed by default).
 
 ### F16 — Field suggestions
-`proposeFieldValues` → suggested fields, accept/reject, audit `source = ai`; enables the AI check in Review & sign.
+`proposeFieldValues` → suggested fields, accept/reject, audit `source = ai`; read-only tools `getRequestSummary` / `getCatalog` ("what's still missing?"); enables the AI check in Review & sign.
 
 ### F17 — Batch onboarding
 **Decision:** D8. **Design:** `design/request-variants.md` (batch). Upload, parse, batch grid with checks, `createDraftRequests` (`needsApproval`); safety tests (no forbidden tools, prompt injection).
 
 ### F18 — Admin: users & roles
-**Decision:** D4, D5. Clerk invitations, role editing with segregation-of-duties rules.
+**Decision:** D4, D5. Clerk invitations, role editing with segregation-of-duties rules; **at least one active approver must always exist** (block removing/deactivating the last one).
 
 ### F19 — Admin: applications
-Catalog editor (add/rename/move/retire), assistant catalog suggestions.
+Catalog editor (add/rename/move/retire) for **applications, equipment types and physical/logical access types** (§7), assistant catalog suggestions.
 
 ### F20 — Admin: form fields & versions
 Draft/publish versions, field suggestions from the assistant.

@@ -552,12 +552,13 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 
 1. **Auth:** *resolved 2026-10-01 (D1)* — **Clerk**, email + password, **MFA required**, invitation-only (sign-up restricted). No SSO for now; Microsoft 365 / Google SSO can be added later without redesign.
 2. **Approval:** resolved — Moises signs once at the end (Section 5.1). Backup approver: an additional account with the Approver role (Section 10.1); person still to be named. Still open: how are role changes by an admin controlled (Section 10.1)? Is post-provisioning confirmation acceptable to Laine's auditor?
-3. **Monthly metric:** "onboarded" = execution completed (proposed), final review, or closure?
+3. **Monthly metric:** "onboarded" = execution completed (proposed), final review, or closure? (D16) — *2026-10-07 (D21):* the designed report list is enough for now; "monthly counts by ticket type" (§9.3 #1) can be added later.
 4. **Signature:** *resolved 2026-09-30 (D13)* — **internal acknowledgment only**, a record that the onboarding process was carried out and approved; not a legally binding e-signature, so no e-signature provider. Users sign with an uploaded PNG signature or initials (PNG or typed). See `ROLES.md`.
 5. **Edits after signing:** *resolved (design)* — any change after Raju signs (including after a return) clears his signature and requires signing again; closed requests are never edited (a new access-modification request is created instead).
 6. **Fields:** Country agreed; revisit the deferred fields in 4.5 after the first weeks of use.
+6a. **Devices:** *resolved 2026-10-07 (D22)* — **mobile-first, desktop and phone**: iPhone regular / Plus / Pro Max and Samsung Galaxy S24 Ultra widths (~390–440 px) as well as desktop.
 7. **RBAC templates:** store templates as data (4.4 #1)? Where is the current RBAC document?
-8. **Access inventory for offboarding** (4.4 #2): include in v1?
+8. **Access inventory for offboarding** (4.4 #2): *resolved 2026-10-07 (D20)* — **yes, in v1** (F09).
 9. **Data:** region *resolved 2026-10-01 (D2)* — Supabase **EU – Frankfurt (eu-central-1)**. Still open: retention for records, signatures, PDFs; backup requirements; company timezone for reports and SLAs (D3).
 10. **AI:** provider and model (Claude direct vs. via OpenRouter); may employee personal data be sent; batch input format (CSV, XLSX, pasted text)?
 11. **Notifications:** email (Resend) and/or Slack — v1 or phase 2?

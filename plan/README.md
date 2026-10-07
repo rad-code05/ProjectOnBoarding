@@ -21,6 +21,7 @@ Small PRs are easier to review, safer to merge and easier to undo.
 - **Split at the start of the session:** the session proposes the parts (e.g. S6a database, S6b app code), Raju agrees, then each part gets its own branch and PR, merged in order. A later part branches from `main` **after** the earlier part is merged.
 - **Every PR stays green on its own:** lint, types, tests, build and the database job pass for each part — no "fixed in the next PR".
 - **Docs travel with their change:** the plan tick + session-log line go in the PR that finishes the item; cross-cutting plan/process changes go in their own `docs-…` PR.
+- **Coverage map:** each feature PR updates its rows in [`coverage.md`](coverage.md) (status + what proves it), so nothing in the plan or design is forgotten.
 - **Branch names:** `s6a-database`, `s6b-roles-webhook`, `f06a-snapshots`, `docs-project-context`.
 
 ## Copy-paste prompts
@@ -34,6 +35,9 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 
 **Continue unfinished work**
 > Read CLAUDE.md, then continue F04 in plan/features.md. Check the session log and the open branch/PR to see where we stopped.
+
+**Check the state** (after a break or a disconnect)
+> Read CLAUDE.md and check everything: git status, branches, open PRs, CI, and whether the notes in CLAUDE.md match reality.
 
 **Answer decisions (Phase 0)**
 > Read CLAUDE.md and plan/phase-0-discovery.md. Go through the open decisions one by one with me and record my answers in PROJECT_PLAN.md §17, the phase 0 file and CLAUDE.md.
