@@ -3,9 +3,12 @@ export { Button, buttonStyles } from "./Button";
 export { IconButton } from "./IconButton";
 export {
   AlertIcon,
+  ChevronRightIcon,
+  CloseIcon,
   EyeIcon,
   EyeOffIcon,
   LockIcon,
+  MenuIcon,
   PlusIcon,
   SignOutIcon,
 } from "./icons";

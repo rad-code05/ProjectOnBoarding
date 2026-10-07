@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>App shell · Phone menu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#FFFFFF;background:#000000}
+a{color:#FFFFFF}a:hover{color:#FFFFFF}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #000000; color: #FFFFFF">
+
+<header style="height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 0 8px 0 16px; background: #000000; border-bottom: 1px solid #333333; display: flex; align-items: center; gap: 12px">
+<img src="/_blob/17b23c9ce6dc5f048942c7b514470f03" alt="Laine" style="width: 60px; height: 22px; display: block; flex-shrink: 0">
+<div style="width: 1px; height: 18px; background: #333333; flex-shrink: 0"></div>
+<span style="flex-grow: 1; min-width: 0; font-family: Newsreader, serif; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Onboarding rights</span>
+<button type="button" aria-label="Close menu" aria-expanded="true" aria-controls="phone-menu" style="width: 44px; height: 44px; flex-shrink: 0; box-sizing: border-box; border: 1px solid #333333; border-radius: 100px; background: #000000; display: flex; align-items: center; justify-content: center; padding: 0">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg>
+</button>
+</header>
+
+<nav id="phone-menu" aria-label="Main" style="flex-grow: 1; box-sizing: border-box; padding: 20px 16px 24px; display: flex; flex-direction: column">
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="4">
+<a href="{{n.href}}" aria-current="{{n.current}}" style="min-height: 60px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333333; text-decoration: none">
+<span style="{{n.labelStyle}}">{{n.label}}</span>
+<span style="{{n.markStyle}}"></span>
+</a>
+</sc-for>
+
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 16px">
+<a href="Profile.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 56px; text-decoration: none">
+<span style="width: 40px; height: 40px; border-radius: 100px; background: #F4F0EA; color: #000000; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0">{{initials}}</span>
+<span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+<span style="font-size: 15px; font-weight: 600; color: #FFFFFF">{{userName}}</span>
+<span style="font-size: 12px; color: #7e7e7e">{{userRole}} · My profile</span>
+</span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7e7e7e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+</a>
+<button type="button" style="height: 48px; box-sizing: border-box; border: 1px solid #333333; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+Sign out
+</button>
+</div>
+</nav>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"role":{"editor":"enum","options":["admin","approver"],"default":"admin"},"active":{"editor":"text","default":"Requests"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const approver = (this.props.role ?? 'admin') === 'approver';
+const active = this.props.active ?? (approver ? 'Approvals' : 'Requests');
+const items = approver
+? [['Approvals', 'ApproverHome.dc.html'], ['Records', 'ClosedRequest.dc.html'], ['Reports', 'Reports.dc.html']]
+: [['Requests', 'RequestList.dc.html'], ['Reports', 'Reports.dc.html'], ['Audit log', 'AuditLog.dc.html'], ['Admin', 'AdminUsers.dc.html']];
+const nav = items.map((i) => {
+const on = i[0] === active;
+return {
+label: i[0],
+href: i[1],
+current: on ? 'page' : 'false',
+labelStyle: 'font-family: Newsreader, serif; font-size: 28px; line-height: 1.1; color: ' + (on ? '#FFFFFF' : '#7e7e7e'),
+markStyle: on ? 'width: 8px; height: 8px; border-radius: 100px; background: #cf2e2e; flex-shrink: 0' : 'display: none'
+};
+});
+return {
+nav: nav,
+userName: approver ? 'Moises Larez' : 'Raju Bholani',
+initials: approver ? 'ML' : 'RB',
+userRole: approver ? 'Approver' : 'Admin · IT operator'
+};
+}
+}
+</script>
+</body>
+</html>

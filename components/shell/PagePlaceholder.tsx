@@ -14,7 +14,9 @@ export function PagePlaceholder({
 }: PagePlaceholderProps) {
   return (
     <div className="flex flex-col gap-3">
-      <h1 className="font-serif text-4xl tracking-tight">{title}</h1>
+      <h1 className="font-serif text-[34px] leading-tight tracking-tight md:text-4xl">
+        {title}
+      </h1>
       <div className="h-[3px] w-12 bg-signal" aria-hidden="true" />
       <p className="max-w-prose text-sm text-graphite">{description}</p>
       <p className="text-xs text-graphite">Coming with {feature}.</p>

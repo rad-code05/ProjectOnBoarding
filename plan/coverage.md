@@ -133,6 +133,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | H3 | **Equipment types and physical/logical access types** editable the same way | §7 | **F19** (assigned 2026-10-07) | F19 tests | ⏳ F19 |
 | H4 | Form fields & versions: draft/publish, request keeps its version, `custom_fields jsonb`; old requests/PDFs unchanged | §7, §14 | F01 (v4.1 seeded), F20 | F20 done-when | ⏳ F20 |
 | H5 | RBAC templates as data; applying one pre-fills the matrix | §4.4 #1 | F21 | F21 tests | ⏳ ❓ D17 |
+| H6a | **Departments** as an admin-editable list (seed: Engineering, Tech, Sales, Operations, Marketing, Compliance, Admin); retire, never delete | Raju 2026-10-07 | F01 (table + seed), F21 (editing screen) | F01/F21 tests | ⏳ F01 |
 | H6 | Defaults: IT owner, primary approver, timezone, ticket prefix, SLA definitions, PDF naming | `profile-admin.md` | F21 | F21 tests | ⏳ F21 |
 | H7 | Every catalog/field/role change audit-logged; applies to new requests only | §7 | F18–F21 | pgTAP | ⏳ |
 
@@ -154,11 +155,11 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
 | J1 | Laine look: tokens, fonts, pill buttons, red = attention only | `design/` | S3 (+ every feature) | unit (components) | ✅ foundation |
-| J2 | App shell: top bar by role, profile link, sign-out | `components.md` | S7a | unit `TopBar.test.tsx`; e2e | ✅ |
+| J2 | App shell: top bar by role, profile link, sign-out — desktop and phone (menu button + full-screen menu) | `components.md`, phone boards | S7a, F01a | unit `TopBar.test.tsx` (desktop + phone menu); e2e desktop + `phone.spec.ts` | ✅ |
 | J3 | Empty states (requests, approvals), loading skeletons (reduced motion), save conflict "Reload and merge", offline banner | `records-states.md` | the feature that owns each page (F01, F07, F22) | e2e | ⏳ (cross-cutting rule in `features.md`) |
 | J4 | Keyboard + screen reader + contrast (WCAG 2.1 AA) | §12, `design/README.md` | every feature + R2 | unit ARIA tests; R2 pass | 🟡 per feature |
 | J5 | Approvals badge (number waiting) in the approver's menu | `approver-view.md` | **F07** (assigned 2026-10-07) | e2e | ⏳ F07 |
-| J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell → **F01a**; every feature designs + tests its phone layout | e2e phone project (from F01a) | 🟡 sign-in only |
+| J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in + app shell done; ⏳ each new screen |
 | J7 | Design boards still "draft, awaiting review" | phase 0 step 0.4 | reviewed per feature before building its screens | — | 🟡 |
 
 ## K. Engineering practice
@@ -186,7 +187,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | L4 | Laine subdomain, Clerk + Supabase production, paid plans (Vercel/Clerk/Supabase Pro) | R7, D12, D15 | R7 | — | ⏳ ❓ D19 sign-off |
 | L5 | Auditor accepts end-only approval | §5.1, D6 | before R7 | — | ❓ D6 |
 | L6 | Import past completed forms | §17 #13 | R5 | — | ❓ D11 |
-| L7 | Backup approver account | §10.1, D4 | F18 (or Clerk dashboard earlier) | — | ❓ D4 |
+| L7 | Backup approver account (**Celine**, D4 ✅) | §10.1, D4 | Clerk dashboard + `users:sync` before F07 tests | — | ⏳ create account |
 | L8 | Moises's real account (approver) | ROLES | before F07 testing | — | ⏳ (create in Clerk + `users:sync`) |
 
 ## M. Later (phase 2) and out of scope

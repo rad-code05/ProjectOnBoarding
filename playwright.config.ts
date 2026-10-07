@@ -21,6 +21,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
+  // A few browsers at a time and 10 s per check: WebKit (iPhone) is slow when
+  // many tests share one machine, which made checks time out at the 5 s default.
+  workers: process.env.CI ? 2 : 4,
+  expect: { timeout: 10_000 },
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   // Gets a Clerk testing token once, before any browser starts.
   globalSetup: "./tests/e2e/global-setup.ts",
@@ -43,6 +47,33 @@ export default defineConfig({
       testMatch: /approver\.spec\.ts/,
       dependencies: ["setup"],
       use: { storageState: authFile("approver") },
+    },
+    // Mobile-first (D22): the narrowest current iPhone in WebKit (Safari's
+    // engine) and the Galaxy S24 Ultra in Chromium (Android Chrome's engine).
+    {
+      name: "iphone",
+      testMatch: /phone\.spec\.ts/,
+      // WebKit is slow under load (very slow on Windows): run it after all
+      // other projects, alone, with more time per test.
+      dependencies: [
+        "setup",
+        "signed-out",
+        "admin",
+        "approver",
+        "galaxy-s24-ultra",
+      ],
+      timeout: 60_000,
+      use: { ...devices["iPhone 17e"] },
+    },
+    {
+      name: "galaxy-s24-ultra",
+      testMatch: /phone\.spec\.ts/,
+      dependencies: ["setup"],
+      use: {
+        ...devices["Galaxy S24"],
+        viewport: { width: 412, height: 915 },
+        deviceScaleFactor: 3.5,
+      },
     },
   ],
   // Runs the production build (`pnpm build` first).

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { TopBar } from "./TopBar";
@@ -66,6 +66,86 @@ describe("TopBar", () => {
     await userEvent
       .setup()
       .click(screen.getByRole("button", { name: "Sign out" }));
+    expect(signOut).toHaveBeenCalledWith({ redirectUrl: "/sign-in" });
+  });
+});
+
+describe("TopBar phone menu", () => {
+  beforeEach(() => {
+    signOut.mockReset();
+    pathname = "/reports";
+  });
+
+  test("opens a full menu with the role's pages and marks the current one", async () => {
+    renderBar();
+    const button = screen.getByRole("button", { name: "Open menu" });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    expect(document.getElementById("phone-menu")).toBeNull();
+
+    await userEvent.setup().click(button);
+
+    const menu = document.getElementById("phone-menu")!;
+    const links = within(menu)
+      .getByRole("navigation", { name: "Main" })
+      .querySelectorAll("a");
+    expect(Array.from(links).map((a) => a.textContent)).toEqual([
+      "Requests",
+      "Reports",
+      "Audit log",
+      "Admin",
+    ]);
+    expect(within(menu).getByRole("link", { name: "Reports" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(screen.getByRole("button", { name: "Close menu" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    // Focus moves into the menu.
+    expect(within(menu).getByRole("link", { name: "Requests" })).toHaveFocus();
+  });
+
+  test("Esc closes the menu and returns focus to the menu button", async () => {
+    renderBar();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    await user.keyboard("{Escape}");
+    expect(document.getElementById("phone-menu")).toBeNull();
+    expect(screen.getByRole("button", { name: "Open menu" })).toHaveFocus();
+  });
+
+  test("the menu closes once the new page is shown", async () => {
+    const { rerender } = render(
+      <TopBar items={adminItems} userName="Raju Bholani" userRole="Admin" />,
+    );
+    await userEvent
+      .setup()
+      .click(screen.getByRole("button", { name: "Open menu" }));
+    expect(document.getElementById("phone-menu")).not.toBeNull();
+    // Navigation finished: the URL is now /admin.
+    pathname = "/admin";
+    rerender(
+      <TopBar items={adminItems} userName="Raju Bholani" userRole="Admin" />,
+    );
+    expect(document.getElementById("phone-menu")).toBeNull();
+  });
+
+  test("choosing the page you are on closes the menu", async () => {
+    renderBar();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    const menu = document.getElementById("phone-menu")!;
+    await user.click(within(menu).getByRole("link", { name: "Reports" }));
+    expect(document.getElementById("phone-menu")).toBeNull();
+  });
+
+  test("signs out from the menu", async () => {
+    renderBar();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    const menu = document.getElementById("phone-menu")!;
+    await user.click(within(menu).getByRole("button", { name: "Sign out" }));
     expect(signOut).toHaveBeenCalledWith({ redirectUrl: "/sign-in" });
   });
 });
