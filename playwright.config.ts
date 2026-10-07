@@ -62,7 +62,8 @@ export default defineConfig({
         "approver",
         "galaxy-s24-ultra",
       ],
-      timeout: 60_000,
+      timeout: 120_000,
+      expect: { timeout: 20_000 },
       use: { ...devices["iPhone 17e"] },
     },
     {

@@ -2,6 +2,10 @@ import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { authFile } from "../../playwright.config";
 
+// One phone browser at a time: WebKit gets very slow when two share a machine
+// (a page load took 19 s), which made steps time out — not an app problem.
+test.describe.configure({ mode: "serial" });
+
 test.beforeEach(async ({ page }) => {
   await setupClerkTestingToken({ page });
 });
