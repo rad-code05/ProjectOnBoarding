@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/cn";
 import type { AccessChoices, OtherApp } from "@/lib/requests/access";
 import type { DraftFieldKey } from "@/lib/requests/draft";
+import type { EquipmentItem, PhysicalChoices } from "@/lib/requests/equipment";
 import type { FormField } from "@/lib/requests/fields";
 import type { RequestFormData } from "@/lib/requests/form";
 import {
@@ -22,7 +23,9 @@ import { SECTIONS, fillNote, lockedNote } from "@/lib/requests/sections";
 import { ChangedElsewhere } from "./ChangedElsewhere";
 import { CollapsedSection } from "./CollapsedSection";
 import { AccessSection } from "./AccessSection";
+import { EquipmentSection } from "./EquipmentSection";
 import { FieldRenderer } from "./FieldRenderer";
+import { PhysicalSection } from "./PhysicalSection";
 import { ProvisioningSection } from "./ProvisioningSection";
 import { SectionNav, type SectionNavItem } from "./SectionNav";
 import { useAutosave, type SaveStatus } from "./useAutosave";
@@ -68,6 +71,8 @@ export function RequestForm({ form }: { form: RequestFormData }) {
   const [openSections, setOpenSections] = useState<number[]>([]);
   const [access, setAccess] = useState<AccessChoices>(form.access);
   const [others, setOthers] = useState<OtherApp[]>(form.others);
+  const [equipment, setEquipment] = useState<EquipmentItem[]>(form.equipment);
+  const [physical, setPhysical] = useState<PhysicalChoices>(form.physical);
   const conflict = status.kind === "conflict";
   const disabled = !form.editable || conflict;
 
@@ -112,6 +117,22 @@ export function RequestForm({ form }: { form: RequestFormData }) {
         ...section,
         state: count > 0 ? "complete" : "empty",
         note: `${count} app${count === 1 ? "" : "s"} set`,
+      };
+    }
+    if (section.number === 6) {
+      const count = equipment.length;
+      return {
+        ...section,
+        state: count > 0 ? "complete" : "empty",
+        note: count === 1 ? "1 item" : `${count} items`,
+      };
+    }
+    if (section.number === 7) {
+      const count = form.physicalTypes.filter((t) => physical[t.id]).length;
+      return {
+        ...section,
+        state: count > 0 ? "complete" : "empty",
+        note: `${count} of ${form.physicalTypes.length} set`,
       };
     }
     if (FIELD_SECTIONS.includes(section.number)) {
@@ -237,6 +258,24 @@ export function RequestForm({ form }: { form: RequestFormData }) {
               onAccessChange={setAccess}
               others={others}
               onOthersChange={setOthers}
+              disabled={disabled}
+            />
+          ) : number === 6 ? (
+            <EquipmentSection
+              key={number}
+              requestId={form.id}
+              types={form.equipmentTypes}
+              items={equipment}
+              onItemsChange={setEquipment}
+              disabled={disabled}
+            />
+          ) : number === 7 ? (
+            <PhysicalSection
+              key={number}
+              requestId={form.id}
+              types={form.physicalTypes}
+              choices={physical}
+              onChoicesChange={setPhysical}
               disabled={disabled}
             />
           ) : !FIELD_SECTIONS.includes(number) ? (

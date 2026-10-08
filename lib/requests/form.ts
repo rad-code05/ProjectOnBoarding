@@ -3,6 +3,12 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { countryOptions } from "./countries";
 import type { AccessChoices, CatalogCategory, OtherApp } from "./access";
 import type { DraftFormValues } from "./draft";
+import type {
+  EquipmentItem,
+  EquipmentType,
+  PhysicalChoices,
+  PhysicalType,
+} from "./equipment";
 import type { Choice, FieldType, FormField } from "./fields";
 import { formatDay, formatTime } from "./format";
 import {
@@ -33,6 +39,11 @@ export type RequestFormData = {
   access: AccessChoices;
   /** Section 5: applications typed on this request ("Other"). */
   others: OtherApp[];
+  /** Sections 6–7: their types and this request's rows. */
+  equipmentTypes: EquipmentType[];
+  equipment: EquipmentItem[];
+  physicalTypes: PhysicalType[];
+  physical: PhysicalChoices;
 };
 
 const EDITABLE_STATES: RequestState[] = ["draft", "in_execution", "returned"];
@@ -64,7 +75,17 @@ export async function loadRequestForm(
   if (error) throw new Error(`Could not load the request: ${error.message}`);
   if (!request) return null;
 
-  const [fields, departments, operators, catalog, items] = await Promise.all([
+  const [
+    fields,
+    departments,
+    operators,
+    catalog,
+    items,
+    equipmentTypes,
+    equipment,
+    physicalTypes,
+    physical,
+  ] = await Promise.all([
     supabase
       .from("form_fields")
       .select("key, label, section, field_type, required, help_text, options")
@@ -98,8 +119,37 @@ export async function loadRequestForm(
       .select("id, app_id, app_name, action, permission, notes")
       .eq("request_id", request.id)
       .order("created_at"),
+    supabase
+      .from("equipment_types")
+      .select("id, name, actions, needs_description")
+      .eq("active", true)
+      .order("sort_order"),
+    supabase
+      .from("request_equipment_items")
+      .select("id, type_id, type_name, action, description, asset_tag, notes")
+      .eq("request_id", request.id)
+      .order("created_at"),
+    supabase
+      .from("physical_access_types")
+      .select("id, name, actions, scopes")
+      .eq("active", true)
+      .order("sort_order"),
+    supabase
+      .from("request_physical_access_items")
+      .select("type_id, action, scope, notes")
+      .eq("request_id", request.id),
   ]);
-  for (const result of [fields, departments, operators, catalog, items]) {
+  for (const result of [
+    fields,
+    departments,
+    operators,
+    catalog,
+    items,
+    equipmentTypes,
+    equipment,
+    physicalTypes,
+    physical,
+  ]) {
     if (result.error) {
       throw new Error(`Could not load the form: ${result.error.message}`);
     }
@@ -207,6 +257,28 @@ export async function loadRequestForm(
               ],
             ],
       ),
+    ),
+    equipmentTypes: (equipmentTypes.data ?? []).map((type) => ({
+      id: type.id,
+      name: type.name,
+      actions: type.actions,
+      needsDescription: type.needs_description,
+    })),
+    equipment: (equipment.data ?? []).map((item) => ({
+      id: item.id,
+      typeId: item.type_id,
+      typeName: item.type_name,
+      action: item.action,
+      description: item.description,
+      assetTag: item.asset_tag,
+      notes: item.notes,
+    })),
+    physicalTypes: physicalTypes.data ?? [],
+    physical: Object.fromEntries(
+      (physical.data ?? []).map((row) => [
+        row.type_id,
+        { action: row.action, scope: row.scope, notes: row.notes },
+      ]),
     ),
     others: (items.data ?? [])
       .filter((item) => item.app_id === null)
