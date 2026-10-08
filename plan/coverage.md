@@ -23,11 +23,11 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | A8 | Service/secret key never in request paths (webhook + scripts only) | §3 #4 | S6 | code review rule; `lib/supabase/admin.ts` only imported by webhook + scripts | ✅ |
 | A9 | Wrong role → "no access" (403); unknown page → 404 | `design/records-states.md` | S7b | e2e approver/admin 403, 404 page | ✅ |
 | A10 | Role-based menu and start page (Raju → Requests, approver → Approvals) | ROLES, `approver-view.md` | S7a | e2e admin/approver landing + menu | ✅ |
-| A11 | Approver never sees drafts / in-execution requests | ROLES, `approver-view.md` | F01b (RLS on `requests`), F01c (list via RLS), F07 | pgTAP `requests_rls`; e2e approver → 403 on `/requests` and `/requests/new` | ✅ database + list; F07 adds the approver views |
+| A11 | Approver never sees drafts / in-execution requests | ROLES, `approver-view.md` | F01b (RLS on `requests`), F01c (list via RLS), F07 | pgTAP `requests_rls`; e2e approver → 403 on `/requests` and on a request page `/requests/[id]` | ✅ database + list + request page; F07 adds the approver views |
 | A12 | Nobody approves a request they prepared or executed | ROLES, §10.1 | F07 (server + DB) | pgTAP + e2e (F07 done-when) | ⏳ F07 |
 | A13 | Admin can't grant themselves Approver; role changes controlled | §10.1, D5 | S6 (no self-grant check, audited), F18 | pgTAP (S6); F18 tests | 🟡 ❓ D5 |
 | A14 | At least one active approver must exist | ROLES "rules that never change" | **F18** (assigned 2026-10-07) | F18 tests | ⏳ F18 |
-| A15 | Concurrency: stale saves rejected (`version`) | §10.2 | F01b (DB), F01d (save + conflict message) | pgTAP "a save with an outdated version changes nothing" | 🟡 database ✅, UI ⏳ F01d |
+| A15 | Concurrency: stale saves rejected (`version`) | §10.2 | F01b (DB), F01d (save + conflict message) | pgTAP "a save with an outdated version changes nothing"; Save draft sends the loaded `version` (`saveDraft`) | 🟡 database + save ✅ (plain message + reload); designed banner ⏳ F01d-3 |
 | A16 | Secrets only in env settings; secret scanning + push protection | §10.2 | S2 (GitHub settings) | GitHub secret scanning on | ✅ |
 | A17 | Upload validation (PNG only, size/dimensions, re-encode, private bucket) | §8.1 | F05 | F05 tests | ⏳ F05 |
 | A18 | Authorization matrix test: every route × role | R1 | R1 (+ e2e grows per feature) | e2e | ⏳ R1 |
@@ -37,9 +37,9 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
-| B1 | Sec. 1 Ticket info: type, auto ticket ID `UAM-YYYY-NNNNNN`, status derived from state, priority, assignee, opened/closed (server time) | §4.1 | F01 (+ F04 status) | F01 tests | ⏳ F01 |
-| B2 | Sec. 2 Employee: first/last name (split), job title, department, **Manager and Requestor as separate fields**, effective date, **Country** (required) | §4.1, §4.4 #4–5, §4.5 | F01 | F01 tests | ⏳ F01 |
-| B3 | Employment event derived from ticket type (not asked twice) | §4.4 #3 | F01 | F01 tests | ⏳ F01 |
+| B1 | Sec. 1 Ticket info: type, auto ticket ID `UAM-YYYY-NNNNNN`, status derived from state, priority, assignee, opened/closed (server time) | §4.1 | F01 (+ F04 status) | e2e "New request creates a draft…" (ticket ID shown); unit `FieldRenderer` (system fields) | ✅ F01d (status from F04) |
+| B2 | Sec. 2 Employee: first/last name (split), job title, department, **Manager and Requestor as separate fields**, effective date, **Country** (required) | §4.1, §4.4 #4–5, §4.5 | F01 | unit `draft.test.ts` (validation, columns); e2e Anna Keller saved + found in the list | ✅ F01d (required check at Review & sign → F06) |
+| B3 | Employment event derived from ticket type (not asked twice) | §4.4 #3 | F01 | system field `employment_event` follows the type switch (`EMPLOYMENT_EVENTS`) | ✅ F01d |
 | B4 | Work email as stable employee key (unique) | §4.4 #6, §4.5 | F01b (`employees`, linked by trigger) | pgTAP "a work email creates and links the employee" | ✅ |
 | B5 | Sec. 3 → *Final authorization & confirmation* by Moises at the end; "must not be provisioned before…" line removed | §4.1, §5.1 | F07 (+ F08 PDF wording) | F07/F08 tests | ⏳ F07 |
 | B6 | Sec. 4 Provisioning method: RBAC template or custom, template name, RBAC document link | §4.1 | F02 (custom), F21 (templates) | F02/F21 tests | ⏳ ❓ D17 |
@@ -159,7 +159,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | J3 | Empty states (requests, approvals), loading skeletons (reduced motion), save conflict "Reload and merge", offline banner | `records-states.md` | the feature that owns each page (F01, F07, F22) | e2e + unit | 🟡 requests list empty / no-match states ✅ (F01c); rest ⏳ |
 | J4 | Keyboard + screen reader + contrast (WCAG 2.1 AA) | §12, `design/README.md` | every feature + R2 | unit ARIA tests; R2 pass | 🟡 per feature |
 | J5 | Approvals badge (number waiting) in the approver's menu | `approver-view.md` | **F07** (assigned 2026-10-07) | e2e | ⏳ F07 |
-| J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in + app shell done; ⏳ each new screen |
+| J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); list (F01c); request form (F01d); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in, app shell, requests list, request form done (form: 16 px fields, no sideways scroll); ⏳ each new screen |
 | J7 | Design boards still "draft, awaiting review" | phase 0 step 0.4 | reviewed per feature before building its screens | — | 🟡 |
 
 ## K. Engineering practice

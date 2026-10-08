@@ -19,6 +19,13 @@ export const STATE_LABELS: Record<RequestState, string> = {
   cancelled: "Cancelled",
 };
 
+/** Section 2 "Employment event" — follows the ticket type. */
+export const EMPLOYMENT_EVENTS: Record<RequestType, string> = {
+  onboarding: "Start",
+  offboarding: "Leave",
+  access_modification: "Change",
+};
+
 export const REQUEST_TYPES = Object.keys(TYPE_LABELS) as RequestType[];
 export const REQUEST_STATES = Object.keys(STATE_LABELS) as RequestState[];
 

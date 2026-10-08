@@ -6,6 +6,30 @@ const dayMonthYear = new Intl.DateTimeFormat("en-GB", {
 });
 const relative = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
+/** Company timezone — D3 is still open; the database assumes the same. */
+const COMPANY_TIMEZONE = "Europe/Zurich";
+const companyDay = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: COMPANY_TIMEZONE,
+});
+const companyTime = new Intl.DateTimeFormat("en-GB", {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: COMPANY_TIMEZONE,
+});
+
+/** A server timestamp → "7 Oct 2026" in the company timezone. */
+export function formatDay(iso: string | null): string {
+  return iso ? companyDay.format(new Date(iso)) : "—";
+}
+
+/** A server timestamp → "14:12" in the company timezone. */
+export function formatTime(iso: string): string {
+  return companyTime.format(new Date(iso));
+}
+
 /** "2026-10-14" (a date without time) → "14 Oct 2026". */
 export function formatDate(date: string | null): string {
   if (!date) return "—";
