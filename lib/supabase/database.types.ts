@@ -72,6 +72,65 @@ export type Database = {
         };
         Relationships: [];
       };
+      catalog_apps: {
+        Row: {
+          actions: string[];
+          active: boolean;
+          category_id: number;
+          id: number;
+          name: string;
+          permissions: string[];
+          sort_order: number;
+        };
+        Insert: {
+          actions: string[];
+          active?: boolean;
+          category_id: number;
+          id?: never;
+          name: string;
+          permissions: string[];
+          sort_order?: number;
+        };
+        Update: {
+          actions?: string[];
+          active?: boolean;
+          category_id?: number;
+          id?: never;
+          name?: string;
+          permissions?: string[];
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "catalog_apps_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "catalog_categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      catalog_categories: {
+        Row: {
+          active: boolean;
+          id: number;
+          name: string;
+          sort_order: number;
+        };
+        Insert: {
+          active?: boolean;
+          id?: never;
+          name: string;
+          sort_order?: number;
+        };
+        Update: {
+          active?: boolean;
+          id?: never;
+          name?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       departments: {
         Row: {
           active: boolean;
@@ -193,6 +252,60 @@ export type Database = {
           version?: string;
         };
         Relationships: [];
+      };
+      request_access_items: {
+        Row: {
+          action: string;
+          app_id: number | null;
+          app_name: string;
+          category_name: string;
+          created_at: string;
+          id: string;
+          notes: string | null;
+          permission: string | null;
+          request_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          action: string;
+          app_id?: number | null;
+          app_name: string;
+          category_name: string;
+          created_at?: string;
+          id?: string;
+          notes?: string | null;
+          permission?: string | null;
+          request_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          action?: string;
+          app_id?: number | null;
+          app_name?: string;
+          category_name?: string;
+          created_at?: string;
+          id?: string;
+          notes?: string | null;
+          permission?: string | null;
+          request_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "request_access_items_app_id_fkey";
+            columns: ["app_id"];
+            isOneToOne: false;
+            referencedRelation: "catalog_apps";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "request_access_items_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       requests: {
         Row: {
