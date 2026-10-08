@@ -15,6 +15,8 @@ export type FormField = {
   label: string;
   section: number;
   field_type: FieldType;
+  /** Must be filled before Review & sign (checked in F06). */
+  required: boolean;
   help_text: string | null;
 };
 
