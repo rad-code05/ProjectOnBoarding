@@ -274,6 +274,20 @@
       "w": 390,
       "h": 844,
       "title": "Phone · Request form (changed elsewhere)"
+    },
+    "AccessMobile.dc.html": {
+      "x": 2820,
+      "y": 13560,
+      "w": 390,
+      "h": 2560,
+      "title": "Phone · Sections 4–5 (application access)"
+    },
+    "AccessMobileSheet.dc.html": {
+      "x": 3290,
+      "y": 13560,
+      "w": 390,
+      "h": 844,
+      "title": "Phone · Edit an app (bottom sheet)"
     }
   },
   "createdOnFiles": {
@@ -327,7 +341,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 2740,
+      "maxW": 3680,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -371,7 +385,9 @@
     "RequestListMobile.dc.html",
     "RequestListMobileEmpty.dc.html",
     "RequestFormMobile.dc.html",
-    "RequestFormMobileConflict.dc.html"
+    "RequestFormMobileConflict.dc.html",
+    "AccessMobile.dc.html",
+    "AccessMobileSheet.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

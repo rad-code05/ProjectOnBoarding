@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { countryOptions } from "./countries";
+import type { AccessChoices, CatalogCategory } from "./access";
 import type { DraftFormValues } from "./draft";
 import type { Choice, FieldType, FormField } from "./fields";
 import { formatDay, formatTime } from "./format";
@@ -27,6 +28,9 @@ export type RequestFormData = {
   system: Record<string, string>;
   /** Choices for select-like fields, by key. */
   choices: Record<string, Choice[]>;
+  /** Section 5: the catalog (active apps) and this request's choices. */
+  catalog: CatalogCategory[];
+  access: AccessChoices;
 };
 
 const EDITABLE_STATES: RequestState[] = ["draft", "in_execution", "returned"];
@@ -58,7 +62,7 @@ export async function loadRequestForm(
   if (error) throw new Error(`Could not load the request: ${error.message}`);
   if (!request) return null;
 
-  const [fields, departments, operators] = await Promise.all([
+  const [fields, departments, operators, catalog, items] = await Promise.all([
     supabase
       .from("form_fields")
       .select("key, label, section, field_type, required, help_text, options")
@@ -79,8 +83,21 @@ export async function loadRequestForm(
       )
       .eq("role", "it_operator")
       .eq("app_users.active", true),
+    supabase
+      .from("catalog_categories")
+      .select(
+        "id, name, catalog_apps(id, name, actions, permissions, active, sort_order)",
+      )
+      .eq("active", true)
+      .order("sort_order")
+      .order("sort_order", { referencedTable: "catalog_apps" }),
+    supabase
+      .from("request_access_items")
+      .select("app_id, action, permission, notes")
+      .eq("request_id", request.id)
+      .not("app_id", "is", null),
   ]);
-  for (const result of [fields, departments, operators]) {
+  for (const result of [fields, departments, operators, catalog, items]) {
     if (result.error) {
       throw new Error(`Could not load the form: ${result.error.message}`);
     }
@@ -161,5 +178,23 @@ export async function loadRequestForm(
       employment_event: EMPLOYMENT_EVENTS[request.type],
     },
     choices,
+    catalog: (catalog.data ?? []).map((category) => ({
+      id: category.id,
+      name: category.name,
+      apps: category.catalog_apps
+        .filter((app) => app.active)
+        .map(({ id, name, actions, permissions }) => ({
+          id,
+          name,
+          actions,
+          permissions,
+        })),
+    })),
+    access: Object.fromEntries(
+      (items.data ?? []).map((item) => [
+        item.app_id,
+        { action: item.action, permission: item.permission, notes: item.notes },
+      ]),
+    ),
   };
 }
