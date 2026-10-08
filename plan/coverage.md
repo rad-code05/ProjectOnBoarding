@@ -49,7 +49,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | B10 | Sec. 6 Equipment: several items, laptop/phone/other (other needs description), issue/return, asset tag | §4.1 | F03 | pgTAP several items, Issue / Return only, Other needs a description; e2e "Raju records equipment…" | ✅ F03 |
 | B11 | Sec. 7 Physical & logical access (office, VPN, shared drives) | §4.1 | F03 | pgTAP one row per type, actions / scopes per type; e2e office access Grant · Badge | ✅ F03 |
 | B12 | Sec. 8 Removal SLA: deadline computed, "within SLA" computed (not self-reported), reason required if missed | §4.1, §4.4 #7, §5.2 | F09 | F09 tests | ⏳ ❓ D3 timezone |
-| B13 | Sec. 9 IT execution checklist per ticket type; executed by = signed-in user | §4.1 | F04 | F04 tests | ⏳ F04 |
+| B13 | Sec. 9 IT execution checklist per ticket type; executed by = signed-in user | §4.1 | F04 | pgTAP checklist per type, executed by = signed-in user | 🟡 database ✅ (F04a); UI ⏳ F04b |
 | B14 | Sec. 10 Final review & closure | §4.1 | F07 | F07 tests | ⏳ F07 |
 | B15 | Sec. 11 Signatures (IT half, approver half) | §4.1, §8 | F06, F07 | F06/F07 tests | ⏳ F06 |
 | B16 | Default names (assignee Raju, approver Moises) are admin settings, not hard-coded | §4.1 | F21 (defaults) — F01 uses a seeded default | F21 tests | ⏳ F21 |
@@ -61,14 +61,14 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
-| C1 | States `draft → in_execution → pending_confirmation → closed`, `returned`, `cancelled`; **enforced in the database** | §4.3, §14 | F04 | pgTAP (F04 done-when) | ⏳ F04 |
+| C1 | States `draft → in_execution → pending_confirmation → closed`, `returned`, `cancelled`; **enforced in the database** | §4.3, §14 | F04 | pgTAP `workflow_rls` — invalid moves rejected (F04 done-when) | ✅ F04a |
 | C2 | No approval gate before provisioning (Moises signs once, at the end) | §5.1, ROLES | F04/F07 | F07 tests | ⏳ F07 |
-| C3 | Every transition writes an audit event | §4.3 | F04 | pgTAP | ⏳ F04 |
-| C4 | Cancel with required reason | §4.3 | F04 | F04 tests | ⏳ F04 |
+| C3 | Every transition writes an audit event | §4.3 | F04 | pgTAP "the move is audited (from → to)" | ✅ F04a |
+| C4 | Cancel with required reason | §4.3 | F04 | pgTAP "cancelling needs a reason", who / when / why recorded | 🟡 database ✅ (F04a); UI ⏳ F04b |
 | C5 | Return to Raju with required comment → returned; Raju's signature cleared (kept in audit); sections 1–9 unlock; must sign again | §4.3, ROLES | F07 | F07 done-when | ⏳ F07 |
 | C6 | Returned view: Moises's comment, **flagged items**, "Go to…" and **Reply to Moises** | `design/request-variants.md` | **F07** (assigned 2026-10-07) | F07 tests | ⏳ F07 |
 | C7 | Any change after Raju signs clears his signature | §8.1 #4, §17 #5 | F06 | F06 tests | ⏳ F06 |
-| C8 | Closed requests are never edited — changes go through a new access-modification request | §17 #5 | F04 (DB rule), F10 | pgTAP | ⏳ F04 |
+| C8 | Closed requests are never edited — changes go through a new access-modification request | §17 #5 | F04 (DB rule), F10 | pgTAP — only open states editable; cancelled / closed stay so | ✅ database (F04a); new access-modification request ⏳ F10 |
 | C9 | Pending confirmations visible to **all** approvers; first to confirm closes; PDF records who | §10.1 | F07, F08 | F07 tests | ⏳ F07 |
 | C10 | Offboarding: SLA required at creation, inventory pre-fills removals, countdown on request + list, missed reason before close | §5.2, `request-variants.md` | F09 | F09 tests | ⏳ F09 |
 | C11 | Access inventory per employee (built from closed requests) | §4.4 #2, D20 ✅ | F09 | F09 tests | ⏳ F09 (in v1 — D20) |
