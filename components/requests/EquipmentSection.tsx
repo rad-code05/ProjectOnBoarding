@@ -274,7 +274,7 @@ export function EquipmentSection({
     <section
       id="s6"
       aria-labelledby="s6-title"
-      className="flex scroll-mt-28 flex-col gap-2.5 rounded-card border border-line bg-paper pt-4 pb-3 md:col-span-2 md:scroll-mt-6 md:px-1"
+      className="flex flex-col gap-2.5 rounded-card border border-line bg-paper pt-4 pb-3 md:col-span-2 md:px-1"
     >
       <div className="flex items-baseline gap-2.5 px-4">
         <span className="text-xs font-semibold text-graphite md:text-[11px]">

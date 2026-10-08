@@ -293,7 +293,7 @@ export function RequestForm({ form }: { form: RequestFormData }) {
               id={`s${number}`}
               aria-labelledby={`s${number}-title`}
               className={cn(
-                "flex scroll-mt-28 flex-col gap-3.5 rounded-card border border-line bg-paper p-4 md:col-span-2 md:scroll-mt-6 md:px-5",
+                "flex flex-col gap-3.5 rounded-card border border-line bg-paper p-4 md:col-span-2 md:px-5",
                 conflict && "opacity-55",
               )}
             >

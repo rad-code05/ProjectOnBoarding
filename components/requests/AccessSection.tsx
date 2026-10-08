@@ -161,7 +161,7 @@ export function AccessSection({
     <section
       id="s5"
       aria-labelledby="s5-title"
-      className="flex scroll-mt-28 flex-col gap-3 rounded-card border border-line bg-paper pt-4 pb-2 md:col-span-2 md:scroll-mt-6 md:px-1"
+      className="flex flex-col gap-3 rounded-card border border-line bg-paper pt-4 pb-2 md:col-span-2 md:px-1"
     >
       <div className="flex items-baseline gap-2.5 px-4">
         <span className="text-xs font-semibold text-graphite md:text-[11px]">

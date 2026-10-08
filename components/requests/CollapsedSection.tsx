@@ -24,7 +24,7 @@ export function CollapsedSection({
   return (
     <section
       id={`s${section.number}`}
-      className="scroll-mt-28 rounded-card border border-line bg-paper md:col-span-2 md:scroll-mt-6"
+      className="rounded-card border border-line bg-paper md:col-span-2"
     >
       <h2>
         <button

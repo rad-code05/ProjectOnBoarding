@@ -33,6 +33,22 @@
 }
 
 @layer base {
+  /*
+   * Keep anything scrolled into view (section chips, keyboard focus, search
+   * results) clear of the sticky bars: on a phone the ticket bar + section
+   * chips at the top and the Save / Review bar at the bottom.
+   */
+  html {
+    scroll-padding-top: 9rem;
+    scroll-padding-bottom: 6rem;
+  }
+  @media (width >= 48rem) {
+    html {
+      scroll-padding-top: 1.5rem;
+      scroll-padding-bottom: 0;
+    }
+  }
+
   body {
     @apply bg-sand font-sans text-ink;
   }
