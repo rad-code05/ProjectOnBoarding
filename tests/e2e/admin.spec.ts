@@ -231,3 +231,70 @@ test("Raju records equipment (Other needs a description) and office access", asy
     page.getByRole("button", { name: "Office access: Grant · Badge. Change" }),
   ).toBeVisible();
 });
+
+test("Raju starts execution and ticks section 9; the start time is recorded", async ({
+  page,
+}) => {
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: "New request" }).first().click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+
+  await page.getByRole("button", { name: "Start execution" }).click();
+  const sheet = page.getByRole("dialog", { name: "Start execution?" });
+  await sheet.getByRole("button", { name: "Start execution" }).click();
+  await expect(page.getByRole("group", { name: "Status" })).toHaveText(
+    "In execution",
+  );
+
+  const section9 = page.getByRole("region", {
+    name: "IT execution confirmation",
+  });
+  await expect(section9.getByRole("status")).toHaveText("0 of 3 done");
+  await expect(
+    section9.getByText(/\d{1,2} \w{3} \d{4}, \d\d:\d\d/),
+  ).toBeVisible();
+  for (const item of [
+    "All authorised access provisioned or modified",
+    "Devices issued and enrolled (MDM)",
+    "Security controls applied (MFA, MDM, EDR)",
+  ]) {
+    await section9.getByRole("checkbox", { name: item }).check();
+    await expect(section9.getByRole("status")).not.toHaveText("Saving…");
+  }
+  await expect(section9.getByRole("status")).toHaveText("3 of 3 done");
+
+  await openApp(page, page.url());
+  await expect(
+    section9.getByRole("checkbox", {
+      name: "Security controls applied (MFA, MDM, EDR)",
+    }),
+  ).toBeChecked();
+  await expect(
+    page.getByRole("button", { name: "Start execution" }),
+  ).toHaveCount(0);
+});
+
+test("Raju cancels a request with a reason; it becomes read-only", async ({
+  page,
+}) => {
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: "New request" }).first().click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+
+  await page.getByRole("button", { name: "Cancel this request…" }).click();
+  const sheet = page.getByRole("dialog", { name: "Cancel this request?" });
+  await expect(
+    sheet.getByRole("button", { name: "Cancel request" }),
+  ).toBeDisabled();
+  await sheet.getByLabel(/^Reason/).fill("Candidate withdrew");
+  await sheet.getByRole("button", { name: "Cancel request" }).click();
+
+  await expect(page.getByRole("group", { name: "Status" })).toHaveText(
+    "Cancelled",
+  );
+  await expect(page.getByText("Reason: Candidate withdrew")).toBeVisible();
+  await expect(page.getByLabel("First name")).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Cancel this request…" }),
+  ).toHaveCount(0);
+});

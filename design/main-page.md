@@ -59,6 +59,15 @@ Canvas boards: *Phone · Sections 6–7 (equipment & physical access)* and *Phon
 - **Section 7 — Physical & logical access:** "N of 3 set"; one row per type (Office access, VPN / secure access, Shared drives) with "Grant · Badge" or "Not set"; a row opens the application sheet with **Scope** instead of Permission. Desktop shows the three rows side by side.
 - **Change from the 2026-09-30 desktop design:** sections 6–7 are now open sections (like 4–5) instead of collapsed rows — they are short, and Raju fills them while preparing the request. Collapsed rows remain for 3 and 8–11.
 
+## Workflow on a phone — section 9, Start execution, Cancel (D22 — approved 2026-10-08)
+
+Canvas boards: *Phone · In execution (section 9)*, *Phone · Start execution (confirm)*, *Phone · Cancel request (reason)*.
+
+- **Draft:** bottom bar **Save draft** + **Start execution**. Start execution opens a sheet (start time recorded by the system, section 9 opens, sections 1–7 stay editable, can't be undone — cancel instead) with **Not yet** / **Start execution**.
+- **In execution / Returned:** bottom bar **Save** + **Review & sign** (enabled in F06). **Section 9 — IT execution confirmation** opens: checklist of the ticket type as large tappable rows (ticked = sand), **Implementation notes**, read-only **Executed by** and **Execution started**, "Names and times are recorded by the system and can't be changed." Status "N of 3 done".
+- **Cancel this request…** (signal-red text link at the end of the form, any open state) opens a sheet: what happens (stays in the list as Cancelled, read-only, who / when / why recorded), **Reason** (required), **Keep request** / **Cancel request** (destructive).
+- **Cancelled:** a graphite-outlined note at the top ("Cancelled · date, time · name" + reason); every field read-only; no buttons. **Returned:** a signal-outlined note with the approver's comment (F07 fills it).
+
 ## Application access matrix
 
 - Grouped by catalog category, split across two columns so the full list fits without scrolling far.

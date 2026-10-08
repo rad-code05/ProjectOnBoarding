@@ -19,16 +19,19 @@ import {
   TYPE_LABELS,
   personName,
 } from "@/lib/requests/labels";
+import { EXECUTION_EDITABLE, doneCount } from "@/lib/requests/execution";
 import { SECTIONS, fillNote, lockedNote } from "@/lib/requests/sections";
 import { ChangedElsewhere } from "./ChangedElsewhere";
 import { CollapsedSection } from "./CollapsedSection";
 import { AccessSection } from "./AccessSection";
 import { EquipmentSection } from "./EquipmentSection";
+import { ExecutionSection } from "./ExecutionSection";
 import { FieldRenderer } from "./FieldRenderer";
 import { PhysicalSection } from "./PhysicalSection";
 import { ProvisioningSection } from "./ProvisioningSection";
 import { SectionNav, type SectionNavItem } from "./SectionNav";
 import { useAutosave, type SaveStatus } from "./useAutosave";
+import { CancelRequestSheet, StartExecutionSheet } from "./WorkflowSheets";
 
 /** Sections with fields so far; the rest are collapsed rows. */
 const FIELD_SECTIONS = [1, 2];
@@ -73,6 +76,15 @@ export function RequestForm({ form }: { form: RequestFormData }) {
   const [others, setOthers] = useState<OtherApp[]>(form.others);
   const [equipment, setEquipment] = useState<EquipmentItem[]>(form.equipment);
   const [physical, setPhysical] = useState<PhysicalChoices>(form.physical);
+  const [checks, setChecks] = useState(form.execution.checks);
+  const [sheet, setSheet] = useState<"start" | "cancel" | null>(null);
+  const started = Boolean(form.workflow.executionStartedLabel);
+  const cancellable = [
+    "draft",
+    "in_execution",
+    "pending_confirmation",
+    "returned",
+  ].includes(form.state);
   const conflict = status.kind === "conflict";
   const disabled = !form.editable || conflict;
 
@@ -107,7 +119,15 @@ export function RequestForm({ form }: { form: RequestFormData }) {
     ).length;
 
   const navItems: SectionNavItem[] = SECTIONS.map((section) => {
-    const locked = lockedNote(section.number, values.type);
+    const locked = lockedNote(section.number, values.type, started);
+    if (section.number === 9 && !locked) {
+      const done = doneCount(form.checklist, checks);
+      return {
+        ...section,
+        state: done === form.checklist.length ? "complete" : "todo",
+        note: `${done} of ${form.checklist.length} done`,
+      };
+    }
     if (section.number === 4) {
       return { ...section, state: "complete", note: "Custom / exception" };
     }
@@ -150,6 +170,7 @@ export function RequestForm({ form }: { form: RequestFormData }) {
 
   const typeField = form.fields.find((field) => field.key === "type");
   const name = personName(values.first_name, values.last_name);
+  const subtitle = [name, form.ticketId].filter(Boolean).join(" · ");
   const unsaved = form.fields
     .filter(
       (field) =>
@@ -239,6 +260,35 @@ export function RequestForm({ form }: { form: RequestFormData }) {
           )}
         </header>
 
+        {form.state === "cancelled" && (
+          <div
+            role="note"
+            className="flex flex-col gap-1 rounded-card border-2 border-graphite bg-paper px-4 py-3 md:col-span-2"
+          >
+            <span className="text-sm font-bold">
+              Cancelled
+              {form.workflow.cancelledLabel
+                ? ` · ${form.workflow.cancelledLabel}`
+                : ""}
+            </span>
+            {form.workflow.cancelReason && (
+              <span className="text-sm text-graphite">
+                Reason: {form.workflow.cancelReason}
+              </span>
+            )}
+          </div>
+        )}
+        {form.state === "returned" && form.workflow.returnReason && (
+          <div
+            role="note"
+            className="flex flex-col gap-1 rounded-card border-2 border-signal bg-paper px-4 py-3 md:col-span-2"
+          >
+            <span className="text-sm font-bold text-signal">
+              Returned by the approver
+            </span>
+            <span className="text-sm">{form.workflow.returnReason}</span>
+          </div>
+        )}
         {conflict && <ChangedElsewhere changes={unsaved} />}
         {status.kind === "error" && (
           <InlineError live className="md:col-span-2">
@@ -278,11 +328,22 @@ export function RequestForm({ form }: { form: RequestFormData }) {
               onChoicesChange={setPhysical}
               disabled={disabled}
             />
+          ) : number === 9 && started ? (
+            <ExecutionSection
+              key={number}
+              requestId={form.id}
+              items={form.checklist}
+              record={form.execution}
+              editable={EXECUTION_EDITABLE.includes(form.state)}
+              startedLabel={form.workflow.executionStartedLabel}
+              checks={checks}
+              onChecksChange={setChecks}
+            />
           ) : !FIELD_SECTIONS.includes(number) ? (
             <CollapsedSection
               key={number}
               section={SECTIONS[number - 1]}
-              locked={lockedNote(number, values.type)}
+              locked={lockedNote(number, values.type, started)}
               note="Not started"
               open={openSections.includes(number)}
               onToggle={() => toggle(number)}
@@ -333,6 +394,19 @@ export function RequestForm({ form }: { form: RequestFormData }) {
           ),
         )}
 
+        {cancellable && (
+          <div className="flex justify-center md:col-span-2 md:justify-start">
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              onClick={() => setSheet("cancel")}
+              className="h-11 px-3 text-sm font-semibold text-signal underline underline-offset-[3px] md:h-auto md:px-0 md:text-xs"
+            >
+              Cancel this request…
+            </button>
+          </div>
+        )}
+
         {form.editable && (
           <div className="sticky bottom-0 order-last -mx-4 grid grid-cols-2 gap-2 border-t border-line bg-sand px-4 pt-3 pb-5 md:static md:order-0 md:col-start-2 md:row-start-1 md:mx-0 md:flex md:border-0 md:p-0">
             <Button
@@ -341,14 +415,39 @@ export function RequestForm({ form }: { form: RequestFormData }) {
               disabled={conflict}
               loading={status.kind === "saving"}
             >
-              Save draft
+              {form.state === "draft" ? "Save draft" : "Save"}
             </Button>
-            <Button disabled title="Review & sign arrives with F06">
-              Review &amp; sign
-            </Button>
+            {form.state === "draft" ? (
+              <Button
+                disabled={conflict}
+                aria-haspopup="dialog"
+                onClick={() => setSheet("start")}
+              >
+                Start execution
+              </Button>
+            ) : (
+              <Button disabled title="Review & sign arrives with F06">
+                Review &amp; sign
+              </Button>
+            )}
           </div>
         )}
       </form>
+
+      {sheet === "start" && (
+        <StartExecutionSheet
+          requestId={form.id}
+          subtitle={subtitle}
+          onClose={() => setSheet(null)}
+        />
+      )}
+      {sheet === "cancel" && (
+        <CancelRequestSheet
+          requestId={form.id}
+          subtitle={subtitle}
+          onClose={() => setSheet(null)}
+        />
+      )}
     </div>
   );
 }

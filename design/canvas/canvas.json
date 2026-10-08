@@ -2,6 +2,20 @@
   "v": 3,
   "attachments": {},
   "boards": {
+    "AccessMobile.dc.html": {
+      "h": 2560,
+      "title": "Phone · Sections 4–5 (application access)",
+      "w": 390,
+      "x": 2820,
+      "y": 13560
+    },
+    "AccessMobileSheet.dc.html": {
+      "h": 844,
+      "title": "Phone · Edit an app (bottom sheet)",
+      "w": 390,
+      "x": 3290,
+      "y": 13560
+    },
     "AdminCatalog.dc.html": {
       "h": 1000,
       "is_interactive": true,
@@ -40,6 +54,20 @@
       "w": 1440,
       "x": 1520,
       "y": 7700
+    },
+    "AppShellMobile.dc.html": {
+      "h": 844,
+      "title": "Phone · App shell (menu closed)",
+      "w": 390,
+      "x": 0,
+      "y": 13560
+    },
+    "AppShellMobileMenu.dc.html": {
+      "h": 844,
+      "title": "Phone · App shell (menu open)",
+      "w": 390,
+      "x": 470,
+      "y": 13560
     },
     "ApproverHome.dc.html": {
       "h": 1000,
@@ -107,6 +135,20 @@
       "x": 3268,
       "y": 12060
     },
+    "EquipmentMobile.dc.html": {
+      "h": 1400,
+      "title": "Phone · Sections 6–7 (equipment & physical access)",
+      "w": 390,
+      "x": 3760,
+      "y": 13560
+    },
+    "EquipmentMobileSheet.dc.html": {
+      "h": 844,
+      "title": "Phone · Add equipment (bottom sheet)",
+      "w": 390,
+      "x": 4208,
+      "y": 13560
+    },
     "Main.dc.html": {
       "h": 900,
       "title": "Sign-in · Desktop",
@@ -160,6 +202,20 @@
       "x": 1520,
       "y": 2840
     },
+    "RequestFormMobile.dc.html": {
+      "h": 2240,
+      "title": "Phone · Request form (sections 1–2)",
+      "w": 390,
+      "x": 1880,
+      "y": 13560
+    },
+    "RequestFormMobileConflict.dc.html": {
+      "h": 844,
+      "title": "Phone · Request form (changed elsewhere)",
+      "w": 390,
+      "x": 2350,
+      "y": 13560
+    },
     "RequestList.dc.html": {
       "h": 960,
       "is_interactive": true,
@@ -167,6 +223,21 @@
       "w": 1440,
       "x": 0,
       "y": 1020
+    },
+    "RequestListMobile.dc.html": {
+      "h": 1560,
+      "is_interactive": true,
+      "title": "Phone · Requests list",
+      "w": 390,
+      "x": 940,
+      "y": 13560
+    },
+    "RequestListMobileEmpty.dc.html": {
+      "h": 844,
+      "title": "Phone · Requests list (empty)",
+      "w": 390,
+      "x": 1410,
+      "y": 13560
     },
     "RequestReadOnly.dc.html": {
       "h": 1100,
@@ -232,76 +303,26 @@
       "x": 3740,
       "y": 6120
     },
-    "AppShellMobile.dc.html": {
-      "x": 0,
+    "ExecutionMobile.dc.html": {
+      "x": 4680,
+      "y": 13560,
+      "w": 390,
+      "h": 1060,
+      "title": "Phone · In execution (section 9)"
+    },
+    "StartExecutionMobile.dc.html": {
+      "x": 5150,
       "y": 13560,
       "w": 390,
       "h": 844,
-      "title": "Phone · App shell (menu closed)"
+      "title": "Phone · Start execution (confirm)"
     },
-    "AppShellMobileMenu.dc.html": {
-      "x": 470,
+    "CancelRequestMobile.dc.html": {
+      "x": 5620,
       "y": 13560,
       "w": 390,
       "h": 844,
-      "title": "Phone · App shell (menu open)"
-    },
-    "RequestListMobile.dc.html": {
-      "x": 940,
-      "y": 13560,
-      "w": 390,
-      "h": 1560,
-      "title": "Phone · Requests list",
-      "is_interactive": true
-    },
-    "RequestListMobileEmpty.dc.html": {
-      "x": 1410,
-      "y": 13560,
-      "w": 390,
-      "h": 844,
-      "title": "Phone · Requests list (empty)"
-    },
-    "RequestFormMobile.dc.html": {
-      "x": 1880,
-      "y": 13560,
-      "w": 390,
-      "h": 2240,
-      "title": "Phone · Request form (sections 1–2)"
-    },
-    "RequestFormMobileConflict.dc.html": {
-      "x": 2350,
-      "y": 13560,
-      "w": 390,
-      "h": 844,
-      "title": "Phone · Request form (changed elsewhere)"
-    },
-    "AccessMobile.dc.html": {
-      "x": 2820,
-      "y": 13560,
-      "w": 390,
-      "h": 2560,
-      "title": "Phone · Sections 4–5 (application access)"
-    },
-    "AccessMobileSheet.dc.html": {
-      "x": 3290,
-      "y": 13560,
-      "w": 390,
-      "h": 844,
-      "title": "Phone · Edit an app (bottom sheet)"
-    },
-    "EquipmentMobile.dc.html": {
-      "x": 3760,
-      "y": 13560,
-      "w": 390,
-      "h": 1400,
-      "title": "Phone · Sections 6–7 (equipment & physical access)"
-    },
-    "EquipmentMobileSheet.dc.html": {
-      "x": 4230,
-      "y": 13560,
-      "w": 390,
-      "h": 844,
-      "title": "Phone · Add equipment (bottom sheet)"
+      "title": "Phone · Cancel request (reason)"
     }
   },
   "createdOnFiles": {
@@ -320,6 +341,14 @@
       "w": 240,
       "x": 0,
       "y": 7450
+    },
+    "mobileRow": {
+      "kind": "title1",
+      "maxW": 6010,
+      "text": "Mobile-first (D22) — phone screens",
+      "w": 240,
+      "x": 0,
+      "y": 13310
     },
     "moisesRow": {
       "kind": "title1",
@@ -352,14 +381,6 @@
       "w": 240,
       "x": 0,
       "y": 10070
-    },
-    "mobileRow": {
-      "kind": "title1",
-      "maxW": 4620,
-      "text": "Mobile-first (D22) — phone screens",
-      "w": 240,
-      "x": 0,
-      "y": 13310
     }
   },
   "order": [
@@ -403,7 +424,10 @@
     "AccessMobile.dc.html",
     "AccessMobileSheet.dc.html",
     "EquipmentMobile.dc.html",
-    "EquipmentMobileSheet.dc.html"
+    "EquipmentMobileSheet.dc.html",
+    "ExecutionMobile.dc.html",
+    "StartExecutionMobile.dc.html",
+    "CancelRequestMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

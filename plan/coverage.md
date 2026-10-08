@@ -49,11 +49,11 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | B10 | Sec. 6 Equipment: several items, laptop/phone/other (other needs description), issue/return, asset tag | §4.1 | F03 | pgTAP several items, Issue / Return only, Other needs a description; e2e "Raju records equipment…" | ✅ F03 |
 | B11 | Sec. 7 Physical & logical access (office, VPN, shared drives) | §4.1 | F03 | pgTAP one row per type, actions / scopes per type; e2e office access Grant · Badge | ✅ F03 |
 | B12 | Sec. 8 Removal SLA: deadline computed, "within SLA" computed (not self-reported), reason required if missed | §4.1, §4.4 #7, §5.2 | F09 | F09 tests | ⏳ ❓ D3 timezone |
-| B13 | Sec. 9 IT execution checklist per ticket type; executed by = signed-in user | §4.1 | F04 | pgTAP checklist per type, executed by = signed-in user | 🟡 database ✅ (F04a); UI ⏳ F04b |
+| B13 | Sec. 9 IT execution checklist per ticket type; executed by = signed-in user | §4.1 | F04 | pgTAP checklist per type, executed by = signed-in user; e2e "Raju starts execution and ticks section 9…" | ✅ F04 |
 | B14 | Sec. 10 Final review & closure | §4.1 | F07 | F07 tests | ⏳ F07 |
 | B15 | Sec. 11 Signatures (IT half, approver half) | §4.1, §8 | F06, F07 | F06/F07 tests | ⏳ F06 |
 | B16 | Default names (assignee Raju, approver Moises) are admin settings, not hard-coded | §4.1 | F21 (defaults) — F01 uses a seeded default | F21 tests | ⏳ F21 |
-| B17 | Sections 6–11 collapsed until relevant; section states in the rail | `design/main-page.md` | F03, F04 | e2e | 🟡 rail/chips states ✅ (F01d-3); 6–7 open sections (F03, design note), 3 and 8–11 collapsed; workflow rules ⏳ F04 |
+| B17 | Sections 6–11 collapsed until relevant; section states in the rail | `design/main-page.md` | F03, F04 | e2e | ✅ rail/chips states (F01d-3); 6–7 open (F03); section 9 unlocks when execution starts (F04); 3, 8, 10, 11 collapsed until their step |
 | B18 | Dense two-column layout; AI-suggested fields dashed | `design/main-page.md` | F01–F02, F16 | e2e / visual check | ⏳ |
 | B19 | Deferred extra fields (preferred name, employment type, contract end, handover…) addable later **without code** | §4.5 | F20 (field catalog) | F20 done-when | ⏳ F20 (handover + last working day used in F09) |
 
@@ -64,7 +64,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | C1 | States `draft → in_execution → pending_confirmation → closed`, `returned`, `cancelled`; **enforced in the database** | §4.3, §14 | F04 | pgTAP `workflow_rls` — invalid moves rejected (F04 done-when) | ✅ F04a |
 | C2 | No approval gate before provisioning (Moises signs once, at the end) | §5.1, ROLES | F04/F07 | F07 tests | ⏳ F07 |
 | C3 | Every transition writes an audit event | §4.3 | F04 | pgTAP "the move is audited (from → to)" | ✅ F04a |
-| C4 | Cancel with required reason | §4.3 | F04 | pgTAP "cancelling needs a reason", who / when / why recorded | 🟡 database ✅ (F04a); UI ⏳ F04b |
+| C4 | Cancel with required reason | §4.3 | F04 | pgTAP "cancelling needs a reason", who / when / why recorded; e2e "Raju cancels a request with a reason…" | ✅ F04 |
 | C5 | Return to Raju with required comment → returned; Raju's signature cleared (kept in audit); sections 1–9 unlock; must sign again | §4.3, ROLES | F07 | F07 done-when | ⏳ F07 |
 | C6 | Returned view: Moises's comment, **flagged items**, "Go to…" and **Reply to Moises** | `design/request-variants.md` | **F07** (assigned 2026-10-07) | F07 tests | ⏳ F07 |
 | C7 | Any change after Raju signs clears his signature | §8.1 #4, §17 #5 | F06 | F06 tests | ⏳ F06 |

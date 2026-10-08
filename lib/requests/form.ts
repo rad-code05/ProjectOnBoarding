@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { countryOptions } from "./countries";
 import type { AccessChoices, CatalogCategory, OtherApp } from "./access";
 import type { DraftFormValues } from "./draft";
+import type { ChecklistItem, ExecutionRecord, WorkflowInfo } from "./execution";
 import type {
   EquipmentItem,
   EquipmentType,
@@ -13,6 +14,7 @@ import type { Choice, FieldType, FormField } from "./fields";
 import { formatDay, formatTime } from "./format";
 import {
   EMPLOYMENT_EVENTS,
+  personName,
   STATE_LABELS,
   TYPE_LABELS,
   type RequestState,
@@ -26,6 +28,10 @@ export type RequestFormData = {
   version: number;
   /** Only open requests can be changed (RLS says the same). */
   editable: boolean;
+  /** Section 9 and the workflow banner. */
+  checklist: ChecklistItem[];
+  execution: ExecutionRecord;
+  workflow: WorkflowInfo;
   createdLabel: string;
   savedLabel: string | null;
   fields: FormField[];
@@ -68,7 +74,7 @@ export async function loadRequestForm(
   const { data: request, error } = await supabase
     .from("requests")
     .select(
-      "id, ticket_id, type, state, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, form_version_id, version, created_at, updated_at, closed_at",
+      "id, ticket_id, type, state, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -85,6 +91,8 @@ export async function loadRequestForm(
     equipment,
     physicalTypes,
     physical,
+    checklist,
+    execution,
   ] = await Promise.all([
     supabase
       .from("form_fields")
@@ -138,6 +146,19 @@ export async function loadRequestForm(
       .from("request_physical_access_items")
       .select("type_id, action, scope, notes")
       .eq("request_id", request.id),
+    supabase
+      .from("execution_checklist_items")
+      .select("key, label")
+      .eq("active", true)
+      .contains("applies_to", [request.type])
+      .order("sort_order"),
+    supabase
+      .from("execution_confirmations")
+      .select(
+        "checks, notes, executor:app_users!execution_confirmations_executed_by_fkey(first_name, last_name)",
+      )
+      .eq("request_id", request.id)
+      .maybeSingle(),
   ]);
   for (const result of [
     fields,
@@ -149,6 +170,8 @@ export async function loadRequestForm(
     equipment,
     physicalTypes,
     physical,
+    checklist,
+    execution,
   ]) {
     if (result.error) {
       throw new Error(`Could not load the form: ${result.error.message}`);
@@ -274,6 +297,35 @@ export async function loadRequestForm(
       notes: item.notes,
     })),
     physicalTypes: physicalTypes.data ?? [],
+    checklist: checklist.data ?? [],
+    execution: {
+      checks: (execution.data?.checks ?? {}) as Record<string, boolean>,
+      notes: execution.data?.notes ?? null,
+      executedBy: execution.data
+        ? personName(
+            execution.data.executor?.first_name,
+            execution.data.executor?.last_name,
+          ) || "IT operator"
+        : null,
+    },
+    workflow: {
+      executionStartedLabel: request.execution_started_at
+        ? `${formatDay(request.execution_started_at)}, ${formatTime(request.execution_started_at)}`
+        : null,
+      cancelledLabel: request.cancelled_at
+        ? [
+            `${formatDay(request.cancelled_at)}, ${formatTime(request.cancelled_at)}`,
+            personName(
+              request.canceller?.first_name,
+              request.canceller?.last_name,
+            ),
+          ]
+            .filter(Boolean)
+            .join(" · ")
+        : null,
+      cancelReason: request.cancel_reason,
+      returnReason: request.return_reason,
+    },
     physical: Object.fromEntries(
       (physical.data ?? []).map((row) => [
         row.type_id,

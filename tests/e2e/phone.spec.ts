@@ -111,6 +111,14 @@ test.describe("admin on a phone", () => {
         name: /^Laptop · macOS, Issue, Asset LN-0042/,
       }),
     ).toBeVisible();
+
+    // Start execution asks first, in a sheet that fits the phone.
+    await page.getByRole("button", { name: "Start execution" }).click();
+    const start = page.getByRole("dialog", { name: "Start execution?" });
+    await expect(start.getByRole("button", { name: "Not yet" })).toBeVisible();
+    await expectNoSideScroll(page);
+    await start.getByRole("button", { name: "Not yet" }).click();
+    await expect(start).toHaveCount(0);
     await expectNoSideScroll(page);
 
     // Section 5 on a phone: a row opens the edit sheet.
