@@ -94,7 +94,23 @@ test.describe("admin on a phone", () => {
     // Section chips jump to a section and open it.
     const sections = page.getByRole("navigation", { name: "Form sections" });
     await sections.getByRole("link", { name: "6 Equipment" }).click();
-    await expect(page.getByText(/Coming with F03/)).toBeInViewport();
+    await expect(
+      page.getByRole("heading", { name: "IT equipment" }),
+    ).toBeInViewport();
+
+    // Section 6 on a phone: Add equipment opens the sheet.
+    await page.getByRole("button", { name: "Add equipment" }).click();
+    const equipmentSheet = page.getByRole("dialog", { name: "Add equipment" });
+    await equipmentSheet.getByText("Laptop · macOS", { exact: true }).click();
+    await equipmentSheet.getByText("Issue", { exact: true }).click();
+    await equipmentSheet.getByLabel("Asset tag / serial").fill("LN-0042");
+    await equipmentSheet.getByRole("button", { name: "Done" }).click();
+    await expect(equipmentSheet).toHaveCount(0);
+    await expect(
+      page.getByRole("button", {
+        name: /^Laptop · macOS, Issue, Asset LN-0042/,
+      }),
+    ).toBeVisible();
     await expectNoSideScroll(page);
 
     // Section 5 on a phone: a row opens the edit sheet.

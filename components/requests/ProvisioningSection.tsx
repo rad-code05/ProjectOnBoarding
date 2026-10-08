@@ -8,7 +8,7 @@ export function ProvisioningSection() {
     <section
       id="s4"
       aria-labelledby="s4-title"
-      className="flex scroll-mt-28 flex-col gap-3 rounded-card border border-line bg-paper p-4 md:col-span-2 md:scroll-mt-6 md:px-5"
+      className="flex flex-col gap-3 rounded-card border border-line bg-paper p-4 md:col-span-2 md:px-5"
     >
       <div className="flex items-baseline gap-2.5">
         <span className="text-xs font-semibold text-graphite md:text-[11px]">

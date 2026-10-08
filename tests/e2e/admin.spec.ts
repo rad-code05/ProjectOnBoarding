@@ -185,3 +185,49 @@ test("Raju adds an Other application (Notion) and it stays on the request", asyn
   await openApp(page, page.url());
   await expect(row).toBeVisible();
 });
+
+test("Raju records equipment (Other needs a description) and office access", async ({
+  page,
+}) => {
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: "New request" }).first().click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+
+  // Section 6: "Other" equipment needs a description before Done works.
+  await page.getByRole("button", { name: "Add equipment" }).click();
+  const sheet = page.getByRole("dialog");
+  await sheet.getByText("Other", { exact: true }).click();
+  await sheet.getByText("Issue", { exact: true }).click();
+  await expect(sheet.getByRole("button", { name: "Done" })).toBeDisabled();
+  await sheet.getByLabel(/^Description/).fill("Monitor 27″");
+  await sheet.getByRole("button", { name: "Done" }).click();
+  await expect(
+    page.getByRole("button", { name: /^Other, Issue, Monitor 27″/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "IT equipment" }).getByRole("status"),
+  ).toHaveText("1 item");
+
+  // Section 7: office access with a badge.
+  await page
+    .getByRole("button", { name: "Office access: not set. Change" })
+    .click();
+  const access = page.getByRole("dialog", { name: "Office access" });
+  await access.getByText("Grant", { exact: true }).click();
+  await access.getByText("Badge", { exact: true }).click();
+  await access.getByRole("button", { name: "Done" }).click();
+  await expect(
+    page
+      .getByRole("region", { name: "Physical & logical access" })
+      .getByRole("status"),
+  ).toHaveText("1 of 3 set");
+
+  // Both are stored: still there after a reload.
+  await openApp(page, page.url());
+  await expect(
+    page.getByRole("button", { name: /^Other, Issue, Monitor 27″/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Office access: Grant · Badge. Change" }),
+  ).toBeVisible();
+});

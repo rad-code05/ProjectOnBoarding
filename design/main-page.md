@@ -50,6 +50,15 @@ Canvas boards: *Phone · Sections 4–5 (application access)* and *Phone · Edit
 - **Edit sheet:** tapping a row slides up a sheet (native dialog: focus stays inside, Esc closes): category eyebrow, app name, **Action** as one segmented row with that app's actions (Hexnode: Enroll / Remove), **Permission** as pills with that app's options, **Notes** (optional), **Clear** (removes the app from the request) and **Done**. On desktop the same window opens centred when the app name is clicked (for notes).
 - Desktop keeps the two-column grid (below) with Action / Permission selects per row; the same search and filter sit above it.
 
+## Sections 6–7 on a phone (D22 — approved 2026-10-08)
+
+Canvas boards: *Phone · Sections 6–7 (equipment & physical access)* and *Phone · Add equipment (bottom sheet)*.
+
+- **Section 6 — IT equipment:** status "N items" (Saving… while storing); one 64 px row per item — type in bold (Laptop · macOS), asset tag and description underneath, an **Issue / Return** badge, chevron; tapping opens the sheet. **Add equipment** below. Several items allowed.
+- **Add equipment sheet:** **Type** as 2×2 pills (Laptop · Windows, Laptop · macOS, Mobile phone, Other), **Action** Issue / Return, **Description** (required for Other) and **Asset tag / serial** side by side, **Notes**, **Remove** (disabled for a new item) and **Done** (enabled once type, action and — for Other — a description are set).
+- **Section 7 — Physical & logical access:** "N of 3 set"; one row per type (Office access, VPN / secure access, Shared drives) with "Grant · Badge" or "Not set"; a row opens the application sheet with **Scope** instead of Permission. Desktop shows the three rows side by side.
+- **Change from the 2026-09-30 desktop design:** sections 6–7 are now open sections (like 4–5) instead of collapsed rows — they are short, and Raju fills them while preparing the request. Collapsed rows remain for 3 and 8–11.
+
 ## Application access matrix
 
 - Grouped by catalog category, split across two columns so the full list fits without scrolling far.

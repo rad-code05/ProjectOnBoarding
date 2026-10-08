@@ -17,6 +17,7 @@ export { InlineError } from "./InlineError";
 export { Logo } from "./Logo";
 export { Notice } from "./Notice";
 export { PasswordField } from "./PasswordField";
+export { Sheet, sheetPill } from "./Sheet";
 export { StatusPill } from "./StatusPill";
 export { SummaryTile } from "./SummaryTile";
 export { TextField } from "./TextField";

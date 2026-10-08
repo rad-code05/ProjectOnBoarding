@@ -46,14 +46,14 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | B7 | Sec. 5 Application access matrix from the catalog: per-app actions + permissions (Hexnode Enroll/Remove), notes, "Add other application" | §4.1, §4.2 | F02 | pgTAP actions/permissions per app, one row per app, Other apps; F02 done-when (UI) | 🟡 database ✅ (F02a); UI ✅ (F02b, e2e "Raju sets Slack, Figma and Google Workspace…"); Add other application ✅ (F02c, e2e "Raju adds an Other application") |
 | B8 | Seed catalog: 4 categories, 26 apps | §4.2 | F02 | pgTAP "the 26 applications of form v4 are seeded", Hexnode Enroll/Remove | ✅ F02a |
 | B9 | Each request keeps a snapshot of the catalog entries it used | §7 | F02 | pgTAP "the row keeps a copy of the catalog name and category" | ✅ F02a (database) |
-| B10 | Sec. 6 Equipment: several items, laptop/phone/other (other needs description), issue/return, asset tag | §4.1 | F03 | pgTAP several items, Issue / Return only, Other needs a description | 🟡 database ✅ (F03a); UI ⏳ F03b |
-| B11 | Sec. 7 Physical & logical access (office, VPN, shared drives) | §4.1 | F03 | pgTAP one row per type, actions / scopes per type | 🟡 database ✅ (F03a); UI ⏳ F03b |
+| B10 | Sec. 6 Equipment: several items, laptop/phone/other (other needs description), issue/return, asset tag | §4.1 | F03 | pgTAP several items, Issue / Return only, Other needs a description; e2e "Raju records equipment…" | ✅ F03 |
+| B11 | Sec. 7 Physical & logical access (office, VPN, shared drives) | §4.1 | F03 | pgTAP one row per type, actions / scopes per type; e2e office access Grant · Badge | ✅ F03 |
 | B12 | Sec. 8 Removal SLA: deadline computed, "within SLA" computed (not self-reported), reason required if missed | §4.1, §4.4 #7, §5.2 | F09 | F09 tests | ⏳ ❓ D3 timezone |
 | B13 | Sec. 9 IT execution checklist per ticket type; executed by = signed-in user | §4.1 | F04 | F04 tests | ⏳ F04 |
 | B14 | Sec. 10 Final review & closure | §4.1 | F07 | F07 tests | ⏳ F07 |
 | B15 | Sec. 11 Signatures (IT half, approver half) | §4.1, §8 | F06, F07 | F06/F07 tests | ⏳ F06 |
 | B16 | Default names (assignee Raju, approver Moises) are admin settings, not hard-coded | §4.1 | F21 (defaults) — F01 uses a seeded default | F21 tests | ⏳ F21 |
-| B17 | Sections 6–11 collapsed until relevant; section states in the rail | `design/main-page.md` | F03, F04 | e2e | ⏳ F04 |
+| B17 | Sections 6–11 collapsed until relevant; section states in the rail | `design/main-page.md` | F03, F04 | e2e | 🟡 rail/chips states ✅ (F01d-3); 6–7 open sections (F03, design note), 3 and 8–11 collapsed; workflow rules ⏳ F04 |
 | B18 | Dense two-column layout; AI-suggested fields dashed | `design/main-page.md` | F01–F02, F16 | e2e / visual check | ⏳ |
 | B19 | Deferred extra fields (preferred name, employment type, contract end, handover…) addable later **without code** | §4.5 | F20 (field catalog) | F20 done-when | ⏳ F20 (handover + last working day used in F09) |
 
@@ -159,7 +159,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | J3 | Empty states (requests, approvals), loading skeletons (reduced motion), save conflict "Reload and merge", offline banner | `records-states.md` | the feature that owns each page (F01, F07, F22) | e2e + unit | 🟡 requests list empty / no-match states ✅ (F01c); save conflict box ✅ (F01d-3); rest ⏳ |
 | J4 | Keyboard + screen reader + contrast (WCAG 2.1 AA) | §12, `design/README.md` | every feature + R2 | unit ARIA tests; R2 pass | 🟡 per feature |
 | J5 | Approvals badge (number waiting) in the approver's menu | `approver-view.md` | **F07** (assigned 2026-10-07) | e2e | ⏳ F07 |
-| J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); list (F01c); request form (F01d); sections 4–5 + edit sheet (F02b); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in, app shell, requests list, request form done (form: 16 px fields, no sideways scroll); ⏳ each new screen |
+| J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); list (F01c); request form (F01d); sections 4–5 + edit sheet (F02b); sections 6–7 + add-equipment sheet (F03b); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in, app shell, requests list, request form done (form: 16 px fields, no sideways scroll); ⏳ each new screen |
 | J7 | Design boards still "draft, awaiting review" | phase 0 step 0.4 | reviewed per feature before building its screens | — | 🟡 |
 
 ## K. Engineering practice

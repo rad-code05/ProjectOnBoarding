@@ -18,6 +18,10 @@ import {
   type DraftFormValues,
   type SaveDraftResult,
 } from "@/lib/requests/draft";
+import {
+  saveEquipmentSchema,
+  setPhysicalSchema,
+} from "@/lib/requests/equipment";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { TablesInsert } from "@/lib/supabase/database.types";
 
@@ -233,5 +237,131 @@ export async function removeOther(input: {
     .eq("id", parsed.data.itemId)
     .eq("request_id", parsed.data.requestId)
     .is("app_id", null);
+  return error ? accessError(error.code) : { ok: true };
+}
+
+/** Section 6: adds or changes one piece of equipment (audited). */
+export async function saveEquipment(input: {
+  requestId: string;
+  itemId: string | null;
+  typeId: number;
+  action: string;
+  description: string | null;
+  assetTag: string | null;
+  notes: string | null;
+}): Promise<SaveOtherResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = saveEquipmentSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, message: "Choose a type and an action." };
+  }
+  const { requestId, itemId, typeId, action, description, assetTag, notes } =
+    parsed.data;
+  const values = {
+    type_id: typeId,
+    action,
+    description,
+    asset_tag: assetTag,
+    notes,
+  };
+  const supabase = createServerSupabaseClient();
+  const { data, error } = itemId
+    ? await supabase
+        .from("request_equipment_items")
+        .update(values)
+        .eq("id", itemId)
+        .eq("request_id", requestId)
+        .select("id")
+        .single()
+    : await supabase
+        .from("request_equipment_items")
+        // The type name is copied by the database (trigger).
+        .insert({
+          request_id: requestId,
+          ...values,
+        } as TablesInsert<"request_equipment_items">)
+        .select("id")
+        .single();
+  if (error?.code === "23514") {
+    return {
+      ok: false,
+      message: "Check the type, action and description (Other needs one).",
+    };
+  }
+  if (error) return accessError(error.code);
+  return { ok: true, id: data.id };
+}
+
+/** Section 6: removes one piece of equipment from the request (audited). */
+export async function removeEquipment(input: {
+  requestId: string;
+  itemId: string;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = z
+    .object({ requestId: z.uuid(), itemId: z.uuid() })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Unknown item." };
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase
+    .from("request_equipment_items")
+    .delete()
+    .eq("id", parsed.data.itemId)
+    .eq("request_id", parsed.data.requestId);
+  return error ? accessError(error.code) : { ok: true };
+}
+
+/** Section 7: sets one access type's action / scope / notes (audited). */
+export async function setPhysical(input: {
+  requestId: string;
+  typeId: number;
+  action: string;
+  scope: string | null;
+  notes: string | null;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = setPhysicalSchema.safeParse(input);
+  if (!parsed.success)
+    return { ok: false, message: "That choice isn't valid." };
+  const { requestId, typeId, action, scope, notes } = parsed.data;
+  const supabase = createServerSupabaseClient();
+  const existing = await supabase
+    .from("request_physical_access_items")
+    .select("id")
+    .eq("request_id", requestId)
+    .eq("type_id", typeId)
+    .maybeSingle();
+  if (existing.error) return accessError(existing.error.code);
+  const { error } = existing.data
+    ? await supabase
+        .from("request_physical_access_items")
+        .update({ action, scope, notes })
+        .eq("id", existing.data.id)
+    : await supabase.from("request_physical_access_items").insert({
+        request_id: requestId,
+        type_id: typeId,
+        action,
+        scope,
+        notes,
+      } as TablesInsert<"request_physical_access_items">);
+  return error ? accessError(error.code) : { ok: true };
+}
+
+/** Section 7 "Clear": the access type is no longer on the request (audited). */
+export async function clearPhysical(input: {
+  requestId: string;
+  typeId: number;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = z
+    .object({ requestId: z.uuid(), typeId: z.int().positive() })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Unknown access type." };
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase
+    .from("request_physical_access_items")
+    .delete()
+    .eq("request_id", parsed.data.requestId)
+    .eq("type_id", parsed.data.typeId);
   return error ? accessError(error.code) : { ok: true };
 }

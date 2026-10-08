@@ -288,6 +288,20 @@
       "w": 390,
       "h": 844,
       "title": "Phone · Edit an app (bottom sheet)"
+    },
+    "EquipmentMobile.dc.html": {
+      "x": 3760,
+      "y": 13560,
+      "w": 390,
+      "h": 1400,
+      "title": "Phone · Sections 6–7 (equipment & physical access)"
+    },
+    "EquipmentMobileSheet.dc.html": {
+      "x": 4230,
+      "y": 13560,
+      "w": 390,
+      "h": 844,
+      "title": "Phone · Add equipment (bottom sheet)"
     }
   },
   "createdOnFiles": {
@@ -341,7 +355,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 3680,
+      "maxW": 4620,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -387,7 +401,9 @@
     "RequestFormMobile.dc.html",
     "RequestFormMobileConflict.dc.html",
     "AccessMobile.dc.html",
-    "AccessMobileSheet.dc.html"
+    "AccessMobileSheet.dc.html",
+    "EquipmentMobile.dc.html",
+    "EquipmentMobileSheet.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
