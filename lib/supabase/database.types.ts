@@ -206,6 +206,75 @@ export type Database = {
         };
         Relationships: [];
       };
+      execution_checklist_items: {
+        Row: {
+          active: boolean;
+          applies_to: Database["public"]["Enums"]["request_type"][];
+          id: number;
+          key: string;
+          label: string;
+          sort_order: number;
+        };
+        Insert: {
+          active?: boolean;
+          applies_to: Database["public"]["Enums"]["request_type"][];
+          id?: never;
+          key: string;
+          label: string;
+          sort_order?: number;
+        };
+        Update: {
+          active?: boolean;
+          applies_to?: Database["public"]["Enums"]["request_type"][];
+          id?: never;
+          key?: string;
+          label?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
+      execution_confirmations: {
+        Row: {
+          checks: NonNullable<Json>;
+          created_at: string;
+          executed_by: string;
+          notes: string | null;
+          request_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          checks?: NonNullable<Json>;
+          created_at?: string;
+          executed_by: string;
+          notes?: string | null;
+          request_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          checks?: NonNullable<Json>;
+          created_at?: string;
+          executed_by?: string;
+          notes?: string | null;
+          request_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "execution_confirmations_executed_by_fkey";
+            columns: ["executed_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "execution_confirmations_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: true;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       form_fields: {
         Row: {
           applies_to: Database["public"]["Enums"]["request_type"][];
@@ -469,6 +538,9 @@ export type Database = {
       requests: {
         Row: {
           assignee_id: string | null;
+          cancel_reason: string | null;
+          cancelled_at: string | null;
+          cancelled_by: string | null;
           closed_at: string | null;
           country: string | null;
           created_at: string;
@@ -477,6 +549,7 @@ export type Database = {
           department_id: number | null;
           effective_date: string | null;
           employee_id: string | null;
+          execution_started_at: string | null;
           first_name: string | null;
           form_version_id: number;
           id: string;
@@ -485,7 +558,9 @@ export type Database = {
           manager_name: string | null;
           priority: Database["public"]["Enums"]["request_priority"];
           requestor_name: string | null;
+          return_reason: string | null;
           state: Database["public"]["Enums"]["request_state"];
+          state_changed_at: string | null;
           ticket_id: string;
           ticket_number: number;
           ticket_year: number;
@@ -496,6 +571,9 @@ export type Database = {
         };
         Insert: {
           assignee_id?: string | null;
+          cancel_reason?: string | null;
+          cancelled_at?: string | null;
+          cancelled_by?: string | null;
           closed_at?: string | null;
           country?: string | null;
           created_at?: string;
@@ -504,6 +582,7 @@ export type Database = {
           department_id?: number | null;
           effective_date?: string | null;
           employee_id?: string | null;
+          execution_started_at?: string | null;
           first_name?: string | null;
           form_version_id: number;
           id?: string;
@@ -512,7 +591,9 @@ export type Database = {
           manager_name?: string | null;
           priority?: Database["public"]["Enums"]["request_priority"];
           requestor_name?: string | null;
+          return_reason?: string | null;
           state?: Database["public"]["Enums"]["request_state"];
+          state_changed_at?: string | null;
           ticket_id: string;
           ticket_number: number;
           ticket_year: number;
@@ -523,6 +604,9 @@ export type Database = {
         };
         Update: {
           assignee_id?: string | null;
+          cancel_reason?: string | null;
+          cancelled_at?: string | null;
+          cancelled_by?: string | null;
           closed_at?: string | null;
           country?: string | null;
           created_at?: string;
@@ -531,6 +615,7 @@ export type Database = {
           department_id?: number | null;
           effective_date?: string | null;
           employee_id?: string | null;
+          execution_started_at?: string | null;
           first_name?: string | null;
           form_version_id?: number;
           id?: string;
@@ -539,7 +624,9 @@ export type Database = {
           manager_name?: string | null;
           priority?: Database["public"]["Enums"]["request_priority"];
           requestor_name?: string | null;
+          return_reason?: string | null;
           state?: Database["public"]["Enums"]["request_state"];
+          state_changed_at?: string | null;
           ticket_id?: string;
           ticket_number?: number;
           ticket_year?: number;
@@ -552,6 +639,13 @@ export type Database = {
           {
             foreignKeyName: "requests_assignee_id_fkey";
             columns: ["assignee_id"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "requests_cancelled_by_fkey";
+            columns: ["cancelled_by"];
             isOneToOne: false;
             referencedRelation: "app_users";
             referencedColumns: ["clerk_user_id"];
@@ -627,7 +721,14 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      transition_request: {
+        Args: {
+          p_reason?: string;
+          p_request_id: string;
+          p_to: Database["public"]["Enums"]["request_state"];
+        };
+        Returns: Database["public"]["Enums"]["request_state"];
+      };
     };
     Enums: {
       app_role: "admin" | "requester" | "it_operator" | "approver" | "auditor";
