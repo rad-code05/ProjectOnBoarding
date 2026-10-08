@@ -90,6 +90,12 @@ test.describe("admin on a phone", () => {
       page.getByRole("button", { name: "Save draft" }),
     ).toBeInViewport();
     await expectNoSideScroll(page);
+
+    // Section chips jump to a section and open it.
+    const sections = page.getByRole("navigation", { name: "Form sections" });
+    await sections.getByRole("link", { name: "5 Access" }).click();
+    await expect(page.getByText(/Coming with F02/)).toBeInViewport();
+    await expectNoSideScroll(page);
   });
 
   test("403 and 404 pages fit the phone", async ({ page }) => {

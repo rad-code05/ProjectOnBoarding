@@ -3,6 +3,7 @@ export { Button, buttonStyles } from "./Button";
 export { IconButton } from "./IconButton";
 export {
   AlertIcon,
+  CheckIcon,
   ChevronRightIcon,
   CloseIcon,
   EyeIcon,

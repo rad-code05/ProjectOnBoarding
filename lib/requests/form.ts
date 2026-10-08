@@ -61,7 +61,7 @@ export async function loadRequestForm(
   const [fields, departments, operators] = await Promise.all([
     supabase
       .from("form_fields")
-      .select("key, label, section, field_type, help_text, options")
+      .select("key, label, section, field_type, required, help_text, options")
       .eq("form_version_id", request.form_version_id)
       .in("section", [1, 2])
       .contains("applies_to", [request.type])
@@ -136,6 +136,7 @@ export async function loadRequestForm(
       label: field.label,
       section: field.section,
       field_type: field.field_type as FieldType,
+      required: field.required,
       help_text: field.help_text,
     })),
     values: {

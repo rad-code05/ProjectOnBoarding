@@ -89,7 +89,7 @@ test("New request creates a draft; Raju saves Anna Keller and finds her", async 
 
   await page.getByLabel("Work email").fill("anna.keller@laine.ai");
   await page.getByLabel("Country").selectOption("CH");
-  await page.getByRole("button", { name: "Save draft" }).click();
+  // No click: the form saves on its own after a short pause.
   await expect(page.getByRole("status")).toHaveText(/^Saved \d\d:\d\d/);
   await expect(
     page.getByRole("heading", { level: 1, name: "Anna Keller" }),
@@ -99,4 +99,33 @@ test("New request creates a draft; Raju saves Anna Keller and finds her", async 
   await expect(
     page.getByRole("table").getByRole("row", { name: /Anna Keller/ }),
   ).toContainText(ticketId);
+});
+
+test("two tabs: the later save is refused and says 'changed somewhere else'", async ({
+  page,
+  context,
+}) => {
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: "New request" }).first().click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  const other = await context.newPage();
+  await setupClerkTestingToken({ page: other });
+  await openApp(other, page.url());
+
+  await page.getByLabel("First name").fill("Anna");
+  await expect(page.getByRole("status")).toHaveText(/^Saved/);
+
+  await other.getByLabel("Job title / role").fill("Senior Product Designer");
+  await expect(
+    other.getByRole("heading", {
+      name: "This request was changed somewhere else",
+    }),
+  ).toBeVisible();
+  await expect(
+    other.getByText("Job title / role: Senior Product Designer"),
+  ).toBeVisible();
+  await expect(other.getByLabel("Job title / role")).toBeDisabled();
+
+  await other.getByRole("button", { name: "Load the latest version" }).click();
+  await expect(other.getByLabel("First name")).toHaveValue("Anna");
 });

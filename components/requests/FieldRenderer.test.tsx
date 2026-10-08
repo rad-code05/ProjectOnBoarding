@@ -9,6 +9,7 @@ const field = (overrides: Partial<FormField>): FormField => ({
   label: "Job title / role",
   section: 2,
   field_type: "text",
+  required: true,
   help_text: null,
   ...overrides,
 });
