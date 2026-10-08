@@ -1,7 +1,7 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { countryOptions } from "./countries";
-import type { AccessChoices, CatalogCategory } from "./access";
+import type { AccessChoices, CatalogCategory, OtherApp } from "./access";
 import type { DraftFormValues } from "./draft";
 import type { Choice, FieldType, FormField } from "./fields";
 import { formatDay, formatTime } from "./format";
@@ -31,6 +31,8 @@ export type RequestFormData = {
   /** Section 5: the catalog (active apps) and this request's choices. */
   catalog: CatalogCategory[];
   access: AccessChoices;
+  /** Section 5: applications typed on this request ("Other"). */
+  others: OtherApp[];
 };
 
 const EDITABLE_STATES: RequestState[] = ["draft", "in_execution", "returned"];
@@ -93,9 +95,9 @@ export async function loadRequestForm(
       .order("sort_order", { referencedTable: "catalog_apps" }),
     supabase
       .from("request_access_items")
-      .select("app_id, action, permission, notes")
+      .select("id, app_id, app_name, action, permission, notes")
       .eq("request_id", request.id)
-      .not("app_id", "is", null),
+      .order("created_at"),
   ]);
   for (const result of [fields, departments, operators, catalog, items]) {
     if (result.error) {
@@ -191,10 +193,29 @@ export async function loadRequestForm(
         })),
     })),
     access: Object.fromEntries(
-      (items.data ?? []).map((item) => [
-        item.app_id,
-        { action: item.action, permission: item.permission, notes: item.notes },
-      ]),
+      (items.data ?? []).flatMap((item) =>
+        item.app_id === null
+          ? []
+          : [
+              [
+                item.app_id,
+                {
+                  action: item.action,
+                  permission: item.permission,
+                  notes: item.notes,
+                },
+              ],
+            ],
+      ),
     ),
+    others: (items.data ?? [])
+      .filter((item) => item.app_id === null)
+      .map((item) => ({
+        id: item.id,
+        name: item.app_name,
+        action: item.action,
+        permission: item.permission,
+        notes: item.notes,
+      })),
   };
 }

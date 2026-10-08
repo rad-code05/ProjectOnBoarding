@@ -6,6 +6,7 @@ import {
   choiceLabel,
   filterCatalog,
   type AccessChoices,
+  type OtherApp,
   type CatalogCategory,
 } from "@/lib/requests/access";
 import { AccessSection } from "./AccessSection";
@@ -16,6 +17,8 @@ const setAccess = vi.fn<(input: unknown) => Promise<{ ok: true }>>(
 vi.mock("@/app/(app)/requests/actions", () => ({
   setAccess: (input: unknown) => setAccess(input),
   clearAccess: vi.fn(async () => ({ ok: true })),
+  saveOther: vi.fn(async () => ({ ok: true, id: "x" })),
+  removeOther: vi.fn(async () => ({ ok: true })),
 }));
 
 const catalog: CatalogCategory[] = [
@@ -79,14 +82,23 @@ describe("access helpers", () => {
   });
 });
 
-function Harness({ initial = {} }: { initial?: AccessChoices }) {
+function Harness({
+  initial = {},
+  initialOthers = [],
+}: {
+  initial?: AccessChoices;
+  initialOthers?: OtherApp[];
+}) {
   const [access, setAccessState] = useState(initial);
+  const [others, setOthers] = useState(initialOthers);
   return (
     <AccessSection
       requestId="0b8f6a3e-5d2c-4f1a-9e7b-2c3d4e5f6a7b"
       catalog={catalog}
       access={access}
       onAccessChange={setAccessState}
+      others={others}
+      onOthersChange={setOthers}
       disabled={false}
     />
   );
@@ -111,12 +123,36 @@ describe("AccessSection", () => {
     expect(setAccess).toHaveBeenCalledWith(
       expect.objectContaining({ appId: 3, action: "Grant", permission: null }),
     );
-    expect(screen.getByText("1 of 3 set")).toBeInTheDocument();
+    expect(await screen.findByText("1 of 3 set")).toBeInTheDocument();
     expect(screen.getByLabelText("Slack permission")).toBeEnabled();
   });
 
   test("permission waits until an action is chosen", () => {
     render(<Harness />);
     expect(screen.getByLabelText("Figma permission")).toBeDisabled();
+  });
+
+  test("other applications are listed under Other and counted", () => {
+    render(
+      <Harness
+        initialOthers={[
+          {
+            id: "11111111-1111-4111-8111-111111111111",
+            name: "Notion",
+            action: "Grant",
+            permission: "Member",
+            notes: null,
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByRole("heading", { name: "Other" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Notion: Grant · Member. Change" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("0 of 3 set · 1 other")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Add other application" }),
+    ).toBeEnabled();
   });
 });

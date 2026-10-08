@@ -70,3 +70,32 @@ export function filterCatalog(
     }))
     .filter((category) => category.apps.length > 0);
 }
+
+/** Actions an "Other" app can take (same as the database check). */
+export const OTHER_ACTIONS = ["Grant", "Modify", "Remove"];
+
+/** An application typed on this request (not in the catalog). */
+export type OtherApp = AccessChoice & { id: string; name: string };
+
+export const saveOtherSchema = z.object({
+  requestId: z.uuid(),
+  /** null = add a new one. */
+  itemId: z.uuid().nullable(),
+  name: z.string().trim().min(1, "Give the application a name.").max(80),
+  action: z.enum(["Grant", "Modify", "Remove"]),
+  permission: z
+    .string()
+    .trim()
+    .max(80)
+    .nullable()
+    .transform((value) => value || null),
+  notes: z
+    .string()
+    .trim()
+    .max(500)
+    .nullable()
+    .transform((value) => value || null),
+});
+
+export type SaveOtherResult =
+  { ok: true; id: string } | { ok: false; message: string };

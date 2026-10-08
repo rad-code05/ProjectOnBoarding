@@ -9,7 +9,7 @@ import {
   StatusPill,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import type { AccessChoices } from "@/lib/requests/access";
+import type { AccessChoices, OtherApp } from "@/lib/requests/access";
 import type { DraftFieldKey } from "@/lib/requests/draft";
 import type { FormField } from "@/lib/requests/fields";
 import type { RequestFormData } from "@/lib/requests/form";
@@ -67,6 +67,7 @@ export function RequestForm({ form }: { form: RequestFormData }) {
   });
   const [openSections, setOpenSections] = useState<number[]>([]);
   const [access, setAccess] = useState<AccessChoices>(form.access);
+  const [others, setOthers] = useState<OtherApp[]>(form.others);
   const conflict = status.kind === "conflict";
   const disabled = !form.editable || conflict;
 
@@ -106,7 +107,7 @@ export function RequestForm({ form }: { form: RequestFormData }) {
       return { ...section, state: "complete", note: "Custom / exception" };
     }
     if (section.number === 5) {
-      const count = Object.keys(access).length;
+      const count = Object.keys(access).length + others.length;
       return {
         ...section,
         state: count > 0 ? "complete" : "empty",
@@ -234,6 +235,8 @@ export function RequestForm({ form }: { form: RequestFormData }) {
               catalog={form.catalog}
               access={access}
               onAccessChange={setAccess}
+              others={others}
+              onOthersChange={setOthers}
               disabled={disabled}
             />
           ) : !FIELD_SECTIONS.includes(number) ? (
