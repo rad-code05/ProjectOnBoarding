@@ -2,8 +2,10 @@ import Link from "next/link";
 import { EmptyRequestsSwitch } from "@/components/requests/EmptyRequestsSwitch";
 import { RequestFilters } from "@/components/requests/RequestFilters";
 import { RequestList } from "@/components/requests/RequestList";
-import { Button, PlusIcon, SummaryTile, buttonStyles } from "@/components/ui";
+import { NewRequestButton } from "@/components/requests/NewRequestButton";
+import { Button, SummaryTile, buttonStyles } from "@/components/ui";
 import { requireRole } from "@/lib/auth";
+import { createDraft } from "./actions";
 import { PAGES } from "@/lib/navigation";
 import {
   PAGE_SIZE,
@@ -50,13 +52,9 @@ export default async function RequestsPage({
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 md:flex">
-          <Link
-            href="/requests/new"
-            className={`${buttonStyles("primary", "md")} md:order-2 md:h-10 md:text-[13px]`}
-          >
-            <PlusIcon />
-            New request
-          </Link>
+          <form action={createDraft} className="md:order-2">
+            <NewRequestButton fullWidth className="md:h-10 md:text-[13px]" />
+          </form>
           <Button
             variant="secondary"
             disabled

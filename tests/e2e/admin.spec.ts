@@ -41,9 +41,7 @@ test("admin is not an approver: Approvals shows 403", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("requests list: tiles, filters in the address, New request", async ({
-  page,
-}) => {
+test("requests list: tiles and filters in the address", async ({ page }) => {
   await openApp(page, "/requests");
   for (const label of [
     "Drafts",
@@ -67,10 +65,38 @@ test("requests list: tiles, filters in the address, New request", async ({
   await page.getByRole("radio", { name: "Offboarding" }).click();
   await expect(page).toHaveURL(/\/requests\?type=offboarding$/);
   await expect(page.getByRole("radio", { name: "Offboarding" })).toBeChecked();
+});
 
-  await page.getByRole("link", { name: "New request" }).first().click();
-  await expect(page).toHaveURL(/\/requests\/new$/);
+test("New request creates a draft; Raju saves Anna Keller and finds her", async ({
+  page,
+}) => {
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: "New request" }).first().click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
   await expect(
     page.getByRole("heading", { level: 1, name: "New request" }),
   ).toBeVisible();
+  const ticketId = await page
+    .getByText(/^UAM-\d{4}-\d{6}$/)
+    .first()
+    .innerText();
+
+  await page.getByLabel("First name").fill("Anna");
+  await page.getByLabel("Last name").fill("Keller");
+  await page.getByLabel("Work email").fill("not-an-email");
+  await page.getByRole("button", { name: "Save draft" }).click();
+  await expect(page.getByText(/Enter a valid email address/)).toBeVisible();
+
+  await page.getByLabel("Work email").fill("anna.keller@laine.ai");
+  await page.getByLabel("Country").selectOption("CH");
+  await page.getByRole("button", { name: "Save draft" }).click();
+  await expect(page.getByRole("status")).toHaveText(/^Saved \d\d:\d\d/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Anna Keller" }),
+  ).toBeVisible();
+
+  await openApp(page, `/requests?q=${ticketId}`);
+  await expect(
+    page.getByRole("table").getByRole("row", { name: /Anna Keller/ }),
+  ).toContainText(ticketId);
 });

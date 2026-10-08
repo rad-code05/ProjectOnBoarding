@@ -74,6 +74,24 @@ test.describe("admin on a phone", () => {
     await expectNoSideScroll(page);
   });
 
+  test("request form fits the phone; fields are big enough not to zoom", async ({
+    page,
+  }) => {
+    await openApp(page, "/requests");
+    await page.getByRole("button", { name: "New request" }).first().click();
+    await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+    const firstName = page.getByLabel("First name");
+    await expect(firstName).toBeVisible();
+    // iPhone zooms into inputs with text under 16px.
+    expect(
+      await firstName.evaluate((el) => getComputedStyle(el).fontSize),
+    ).toBe("16px");
+    await expect(
+      page.getByRole("button", { name: "Save draft" }),
+    ).toBeInViewport();
+    await expectNoSideScroll(page);
+  });
+
   test("403 and 404 pages fit the phone", async ({ page }) => {
     await openApp(page, "/approvals");
     await expect(

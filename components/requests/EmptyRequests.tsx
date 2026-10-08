@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { PlusIcon, buttonStyles } from "@/components/ui";
+import { createDraft } from "@/app/(app)/requests/actions";
+import { buttonStyles } from "@/components/ui";
+import { NewRequestButton } from "./NewRequestButton";
 
 function HappyRobot() {
   return (
@@ -69,10 +71,9 @@ export function NoRequestsYet() {
         Start the first onboarding. You can save it as a draft and come back to
         it at any time.
       </p>
-      <Link href="/requests/new" className={buttonStyles("primary", "md")}>
-        <PlusIcon />
-        New request
-      </Link>
+      <form action={createDraft}>
+        <NewRequestButton />
+      </form>
     </section>
   );
 }

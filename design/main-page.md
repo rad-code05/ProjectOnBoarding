@@ -29,6 +29,18 @@ Opened from **New request** (or a row) on the [requests list](request-list.md). 
    - **Open:** clicking the robot opens the 380px `AssistantPanel` on the right (header: robot avatar, "Laine assistant", close button; mode switch This request / Batch onboarding; conversation; `SuggestionCard`; composer with CSV/XLSX attach; guardrail line). Close returns to the robot.
    - Open/closed state is remembered per user on that device. **Batch onboarding** on the requests list opens the panel directly in batch mode.
 
+## Phone layout (D22 — approved 2026-10-07)
+
+Canvas boards: *Phone · Request form (sections 1–2)* and *Phone · Request form (changed elsewhere)*, 390 px wide.
+
+- **Top:** the phone `TopBar` (logo, app name, avatar, menu). Under it a sticky bar: **‹ Requests** (back to the list) · ticket ID · `StatusPill`.
+- **Section chips** replace the left rail: one row of chips, scrolls sideways (`1 Ticket` with a check, `2 Employee` with the attention dot, `3 Authorization` with a lock …), same state marks as the rail; tapping a chip jumps to the section.
+- **Header:** eyebrow, employee name (or "New request" while empty), save status ("Saved 14:14 · created …"), then the ticket-type switch (scrolls sideways if needed).
+- **Sections 1–2 open** as cards; **all other sections collapsed** on a phone (3–11 as 56 px rows with a status note; lock icon when another role or a later stage owns them). Desktop keeps 1, 2, 4, 5 open.
+- **Fields:** 48 px high, **16 px text** (smaller text makes iPhone zoom in), labels 12 px. Two columns: names, department + country, effective date + employment event side by side; other text fields full width. Missing required: 2 px signal border + message under the field.
+- **Actions:** sticky bottom bar with **Save draft** and **Review & sign**; the Laine robot floats just above it, bottom-right.
+- **Changed elsewhere:** if the request was saved from another tab or device in between, nothing is overwritten. A signal-outlined box explains it, shows the unsaved change ("Job title / role: Senior Product Designer") and offers **Load the latest version** / **Copy my change**; the form below is dimmed and the action buttons are disabled.
+
 ## Application access matrix
 
 - Grouped by catalog category, split across two columns so the full list fits without scrolling far.

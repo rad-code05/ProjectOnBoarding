@@ -60,6 +60,8 @@ Rules:
 
 ## Request form (`components/request/`)
 
+**Built in F01d (in `components/requests/`):** `RequestForm` (header with ticket bar, ticket-type switch from the `type` field, sections 1–2, Save draft with version check; on a phone the buttons sit in a sticky bottom bar), `FieldRenderer` (field types `text` · `email` · `date` · `select` · `department` · `country` · `user` · `system`; 48 px / 16 px fields on phones so iPhone doesn't zoom, 36 px / 13 px on desktop; `phoneSpan()` puts text fields full width and lists/dates/names two per row), `NewRequestButton` (submit button of the create-draft form — a POST, so no draft is ever created by a link prefetch). Still to build: `SectionNav` chips, collapsed sections, conflict banner (F01d-2), `SuggestedField` (F15).
+
 | Component | Props | Notes |
 | --- | --- | --- |
 | `RequestHeader` | `request`, `onSave`, `onReviewAndSign` | Eyebrow (type), employee name as title, created/saved meta, Save draft + Review & sign buttons |
