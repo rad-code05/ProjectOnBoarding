@@ -41,6 +41,15 @@ Canvas boards: *Phone · Request form (sections 1–2)* and *Phone · Request fo
 - **Actions:** sticky bottom bar with **Save draft** and **Review & sign**; the Laine robot floats just above it, bottom-right.
 - **Changed elsewhere:** if the request was saved from another tab or device in between, nothing is overwritten. A signal-outlined box explains it, shows the unsaved change ("Job title / role: Senior Product Designer") and offers **Load the latest version** / **Copy my change**; the form below is dimmed and the action buttons are disabled.
 
+## Sections 4–5 on a phone (D22 — approved 2026-10-08)
+
+Canvas boards: *Phone · Sections 4–5 (application access)* and *Phone · Edit an app (bottom sheet)*.
+
+- **Section 4 — Provisioning method:** two choice cards. **Custom / exception** is selected; **RBAC template** is greyed out until templates exist (D17, Admin · Templates in F21).
+- **Section 5 — Application access:** header "N of 26 set" (shows "Saving…" while a choice is being stored), **Find an app** search, **All 26 / Set · N** switch, apps grouped under the category headings ("3 of 8 set"), one 52 px row per app: dot (filled = set), name, value ("Grant · Editor" bold, or "Not set" graphite), chevron. **Add other application** at the bottom (F02c).
+- **Edit sheet:** tapping a row slides up a sheet (native dialog: focus stays inside, Esc closes): category eyebrow, app name, **Action** as one segmented row with that app's actions (Hexnode: Enroll / Remove), **Permission** as pills with that app's options, **Notes** (optional), **Clear** (removes the app from the request) and **Done**. On desktop the same window opens centred when the app name is clicked (for notes).
+- Desktop keeps the two-column grid (below) with Action / Permission selects per row; the same search and filter sit above it.
+
 ## Application access matrix
 
 - Grouped by catalog category, split across two columns so the full list fits without scrolling far.

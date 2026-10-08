@@ -93,8 +93,20 @@ test.describe("admin on a phone", () => {
 
     // Section chips jump to a section and open it.
     const sections = page.getByRole("navigation", { name: "Form sections" });
-    await sections.getByRole("link", { name: "5 Access" }).click();
-    await expect(page.getByText(/Coming with F02/)).toBeInViewport();
+    await sections.getByRole("link", { name: "6 Equipment" }).click();
+    await expect(page.getByText(/Coming with F03/)).toBeInViewport();
+    await expectNoSideScroll(page);
+
+    // Section 5 on a phone: a row opens the edit sheet.
+    await page.getByRole("button", { name: /^Figma: not set/ }).click();
+    const sheet = page.getByRole("dialog", { name: "Figma" });
+    await sheet.getByText("Grant", { exact: true }).click();
+    await sheet.getByText("Editor", { exact: true }).click();
+    await sheet.getByRole("button", { name: "Done" }).click();
+    await expect(sheet).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: /^Figma: Grant · Editor/ }),
+    ).toBeVisible();
     await expectNoSideScroll(page);
   });
 

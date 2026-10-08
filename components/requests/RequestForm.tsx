@@ -9,6 +9,7 @@ import {
   StatusPill,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import type { AccessChoices } from "@/lib/requests/access";
 import type { DraftFieldKey } from "@/lib/requests/draft";
 import type { FormField } from "@/lib/requests/fields";
 import type { RequestFormData } from "@/lib/requests/form";
@@ -20,7 +21,9 @@ import {
 import { SECTIONS, fillNote, lockedNote } from "@/lib/requests/sections";
 import { ChangedElsewhere } from "./ChangedElsewhere";
 import { CollapsedSection } from "./CollapsedSection";
+import { AccessSection } from "./AccessSection";
 import { FieldRenderer } from "./FieldRenderer";
+import { ProvisioningSection } from "./ProvisioningSection";
 import { SectionNav, type SectionNavItem } from "./SectionNav";
 import { useAutosave, type SaveStatus } from "./useAutosave";
 
@@ -63,6 +66,7 @@ export function RequestForm({ form }: { form: RequestFormData }) {
     enabled: form.editable,
   });
   const [openSections, setOpenSections] = useState<number[]>([]);
+  const [access, setAccess] = useState<AccessChoices>(form.access);
   const conflict = status.kind === "conflict";
   const disabled = !form.editable || conflict;
 
@@ -98,6 +102,17 @@ export function RequestForm({ form }: { form: RequestFormData }) {
 
   const navItems: SectionNavItem[] = SECTIONS.map((section) => {
     const locked = lockedNote(section.number, values.type);
+    if (section.number === 4) {
+      return { ...section, state: "complete", note: "Custom / exception" };
+    }
+    if (section.number === 5) {
+      const count = Object.keys(access).length;
+      return {
+        ...section,
+        state: count > 0 ? "complete" : "empty",
+        note: `${count} app${count === 1 ? "" : "s"} set`,
+      };
+    }
     if (FIELD_SECTIONS.includes(section.number)) {
       const left = missing(section.number);
       return {
@@ -209,61 +224,70 @@ export function RequestForm({ form }: { form: RequestFormData }) {
           </InlineError>
         )}
 
-        {FIELD_SECTIONS.map((number) => (
-          <section
-            key={number}
-            id={`s${number}`}
-            aria-labelledby={`s${number}-title`}
-            className={cn(
-              "flex scroll-mt-28 flex-col gap-3.5 rounded-card border border-line bg-paper p-4 md:col-span-2 md:scroll-mt-6 md:px-5",
-              conflict && "opacity-55",
-            )}
-          >
-            <div className="flex items-baseline gap-2.5">
-              <span className="text-xs font-semibold text-graphite md:text-[11px]">
-                {String(number).padStart(2, "0")}
-              </span>
-              <h2
-                id={`s${number}-title`}
-                className="font-serif text-[21px] md:text-[19px]"
-              >
-                {SECTIONS[number - 1].title}
-              </h2>
-              <span className="ml-auto text-xs font-semibold whitespace-nowrap text-graphite md:text-[11px]">
-                {fillNote(missing(number))}
-              </span>
-            </div>
-            <div
+        {SECTIONS.map(({ number }) =>
+          number === 4 ? (
+            <ProvisioningSection key={number} />
+          ) : number === 5 ? (
+            <AccessSection
+              key={number}
+              requestId={form.id}
+              catalog={form.catalog}
+              access={access}
+              onAccessChange={setAccess}
+              disabled={disabled}
+            />
+          ) : !FIELD_SECTIONS.includes(number) ? (
+            <CollapsedSection
+              key={number}
+              section={SECTIONS[number - 1]}
+              locked={lockedNote(number, values.type)}
+              note="Not started"
+              open={openSections.includes(number)}
+              onToggle={() => toggle(number)}
+            />
+          ) : (
+            <section
+              key={number}
+              id={`s${number}`}
+              aria-labelledby={`s${number}-title`}
               className={cn(
-                "grid grid-cols-2 gap-x-2.5 gap-y-3.5 md:gap-x-3.5",
-                SECTION_GRIDS[number],
+                "flex scroll-mt-28 flex-col gap-3.5 rounded-card border border-line bg-paper p-4 md:col-span-2 md:scroll-mt-6 md:px-5",
+                conflict && "opacity-55",
               )}
             >
-              {fieldsOf(number).map((field) => (
-                <FieldRenderer
-                  key={field.key}
-                  field={field}
-                  value={valueOf(field)}
-                  onChange={(value) => setValue(field.key, value)}
-                  choices={form.choices[field.key]}
-                  error={errors[field.key as DraftFieldKey]}
-                  disabled={disabled}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
-
-        {SECTIONS.filter((s) => !FIELD_SECTIONS.includes(s.number)).map(
-          (section) => (
-            <CollapsedSection
-              key={section.number}
-              section={section}
-              locked={lockedNote(section.number, values.type)}
-              note="Not started"
-              open={openSections.includes(section.number)}
-              onToggle={() => toggle(section.number)}
-            />
+              <div className="flex items-baseline gap-2.5">
+                <span className="text-xs font-semibold text-graphite md:text-[11px]">
+                  {String(number).padStart(2, "0")}
+                </span>
+                <h2
+                  id={`s${number}-title`}
+                  className="font-serif text-[21px] md:text-[19px]"
+                >
+                  {SECTIONS[number - 1].title}
+                </h2>
+                <span className="ml-auto text-xs font-semibold whitespace-nowrap text-graphite md:text-[11px]">
+                  {fillNote(missing(number))}
+                </span>
+              </div>
+              <div
+                className={cn(
+                  "grid grid-cols-2 gap-x-2.5 gap-y-3.5 md:gap-x-3.5",
+                  SECTION_GRIDS[number],
+                )}
+              >
+                {fieldsOf(number).map((field) => (
+                  <FieldRenderer
+                    key={field.key}
+                    field={field}
+                    value={valueOf(field)}
+                    onChange={(value) => setValue(field.key, value)}
+                    choices={form.choices[field.key]}
+                    error={errors[field.key as DraftFieldKey]}
+                    disabled={disabled}
+                  />
+                ))}
+              </div>
+            </section>
           ),
         )}
 

@@ -90,7 +90,7 @@ test("New request creates a draft; Raju saves Anna Keller and finds her", async 
   await page.getByLabel("Work email").fill("anna.keller@laine.ai");
   await page.getByLabel("Country").selectOption("CH");
   // No click: the form saves on its own after a short pause.
-  await expect(page.getByRole("status")).toHaveText(/^Saved \d\d:\d\d/);
+  await expect(page.getByRole("status").first()).toHaveText(/^Saved \d\d:\d\d/);
   await expect(
     page.getByRole("heading", { level: 1, name: "Anna Keller" }),
   ).toBeVisible();
@@ -113,7 +113,7 @@ test("two tabs: the later save is refused and says 'changed somewhere else'", as
   await openApp(other, page.url());
 
   await page.getByLabel("First name").fill("Anna");
-  await expect(page.getByRole("status")).toHaveText(/^Saved/);
+  await expect(page.getByRole("status").first()).toHaveText(/^Saved/);
 
   await other.getByLabel("Job title / role").fill("Senior Product Designer");
   await expect(
@@ -126,6 +126,37 @@ test("two tabs: the later save is refused and says 'changed somewhere else'", as
   ).toBeVisible();
   await expect(other.getByLabel("Job title / role")).toBeDisabled();
 
-  await other.getByRole("button", { name: "Load the latest version" }).click();
+  await Promise.all([
+    other.waitForEvent("load"),
+    other.getByRole("button", { name: "Load the latest version" }).click(),
+  ]);
   await expect(other.getByLabel("First name")).toHaveValue("Anna");
+});
+
+test("Raju sets Slack, Figma and Google Workspace; Hexnode offers Enroll / Remove", async ({
+  page,
+}) => {
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: "New request" }).first().click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+
+  await expect(
+    page.getByLabel("Hexnode (MDM) action").locator("option"),
+  ).toHaveText(["—", "Enroll", "Remove"]);
+
+  for (const [app, action, permission] of [
+    ["Slack", "Grant", "Member"],
+    ["Figma", "Grant", "Editor"],
+    ["Google Workspace", "Grant", "User"],
+  ]) {
+    await page.getByLabel(`${app} action`).selectOption(action);
+    await page.getByLabel(`${app} permission`).selectOption(permission);
+  }
+  await expect(page.getByText("3 of 26 set")).toBeVisible();
+
+  // "N of 26 set" replaces "Saving…" once every choice is stored.
+  await openApp(page, page.url());
+  await expect(page.getByLabel("Figma permission")).toHaveValue("Editor");
+  await expect(page.getByLabel("Slack action")).toHaveValue("Grant");
+  await expect(page.getByText("3 of 26 set")).toBeVisible();
 });

@@ -42,8 +42,8 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | B3 | Employment event derived from ticket type (not asked twice) | §4.4 #3 | F01 | system field `employment_event` follows the type switch (`EMPLOYMENT_EVENTS`) | ✅ F01d |
 | B4 | Work email as stable employee key (unique) | §4.4 #6, §4.5 | F01b (`employees`, linked by trigger) | pgTAP "a work email creates and links the employee" | ✅ |
 | B5 | Sec. 3 → *Final authorization & confirmation* by Moises at the end; "must not be provisioned before…" line removed | §4.1, §5.1 | F07 (+ F08 PDF wording) | F07/F08 tests | ⏳ F07 |
-| B6 | Sec. 4 Provisioning method: RBAC template or custom, template name, RBAC document link | §4.1 | F02 (custom), F21 (templates) | F02/F21 tests | ⏳ ❓ D17 |
-| B7 | Sec. 5 Application access matrix from the catalog: per-app actions + permissions (Hexnode Enroll/Remove), notes, "Add other application" | §4.1, §4.2 | F02 | pgTAP actions/permissions per app, one row per app, Other apps; F02 done-when (UI) | 🟡 database ✅ (F02a); UI ⏳ F02b |
+| B6 | Sec. 4 Provisioning method: RBAC template or custom, template name, RBAC document link | §4.1 | F02 (custom), F21 (templates) | section 4 shown with Custom / exception (F02b) | 🟡 custom ✅ (F02b); templates ⏳ F21 ❓ D17 |
+| B7 | Sec. 5 Application access matrix from the catalog: per-app actions + permissions (Hexnode Enroll/Remove), notes, "Add other application" | §4.1, §4.2 | F02 | pgTAP actions/permissions per app, one row per app, Other apps; F02 done-when (UI) | 🟡 database ✅ (F02a); UI ✅ (F02b, e2e "Raju sets Slack, Figma and Google Workspace…"); Add other application ⏳ F02c |
 | B8 | Seed catalog: 4 categories, 26 apps | §4.2 | F02 | pgTAP "the 26 applications of form v4 are seeded", Hexnode Enroll/Remove | ✅ F02a |
 | B9 | Each request keeps a snapshot of the catalog entries it used | §7 | F02 | pgTAP "the row keeps a copy of the catalog name and category" | ✅ F02a (database) |
 | B10 | Sec. 6 Equipment: several items, laptop/phone/other (other needs description), issue/return, asset tag | §4.1 | F03 | F03 tests | ⏳ F03 |
@@ -159,7 +159,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | J3 | Empty states (requests, approvals), loading skeletons (reduced motion), save conflict "Reload and merge", offline banner | `records-states.md` | the feature that owns each page (F01, F07, F22) | e2e + unit | 🟡 requests list empty / no-match states ✅ (F01c); save conflict box ✅ (F01d-3); rest ⏳ |
 | J4 | Keyboard + screen reader + contrast (WCAG 2.1 AA) | §12, `design/README.md` | every feature + R2 | unit ARIA tests; R2 pass | 🟡 per feature |
 | J5 | Approvals badge (number waiting) in the approver's menu | `approver-view.md` | **F07** (assigned 2026-10-07) | e2e | ⏳ F07 |
-| J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); list (F01c); request form (F01d); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in, app shell, requests list, request form done (form: 16 px fields, no sideways scroll); ⏳ each new screen |
+| J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); list (F01c); request form (F01d); sections 4–5 + edit sheet (F02b); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in, app shell, requests list, request form done (form: 16 px fields, no sideways scroll); ⏳ each new screen |
 | J7 | Design boards still "draft, awaiting review" | phase 0 step 0.4 | reviewed per feature before building its screens | — | 🟡 |
 
 ## K. Engineering practice
