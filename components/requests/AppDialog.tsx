@@ -3,42 +3,62 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Button, CloseIcon, IconButton } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import type { AccessChoice, CatalogApp } from "@/lib/requests/access";
+import type { AccessChoice } from "@/lib/requests/access";
+
+export type DialogApp = {
+  name: string;
+  actions: string[];
+  /** null = free text (an "Other" app has no catalog options). */
+  permissions: string[] | null;
+};
+
+const fieldClass =
+  "rounded-field border border-field-border px-3 text-base outline-none focus:border-ink md:text-sm";
 
 /**
- * Edit one app of section 5: action, permission, notes. A native <dialog>
- * (focus stays inside, Esc closes). Bottom sheet on a phone, centred window
- * on desktop (design: Phone · Edit an app).
+ * Edit one app of section 5: action, permission, notes — and the name for
+ * an "Other" app. A native <dialog> (focus stays inside, Esc closes). Bottom
+ * sheet on a phone, centred window on desktop (design: Phone · Edit an app).
  */
 export function AppDialog({
   app,
   category,
   choice,
+  nameEditable = false,
   onSave,
   onClear,
   onClose,
 }: {
-  app: CatalogApp;
+  app: DialogApp;
   category: string;
+  /** Current values; undefined = the app is not on the request yet. */
   choice: AccessChoice | undefined;
-  onSave: (choice: AccessChoice) => void;
+  nameEditable?: boolean;
+  onSave: (choice: AccessChoice, name: string) => void;
   onClear: () => void;
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const nameId = useId();
+  const permissionId = useId();
   const notesId = useId();
+  const [name, setName] = useState(app.name);
   const [action, setAction] = useState(choice?.action ?? "");
   const [permission, setPermission] = useState(choice?.permission ?? "");
   const [notes, setNotes] = useState(choice?.notes ?? "");
+  const complete = Boolean(action && name.trim());
 
   useEffect(() => {
     ref.current?.showModal();
   }, []);
 
   const done = () => {
-    if (action) {
-      onSave({ action, permission: permission || null, notes: notes || null });
+    if (complete) {
+      onSave(
+        { action, permission: permission.trim() || null, notes: notes || null },
+        name.trim(),
+      );
     }
     onClose();
   };
@@ -67,11 +87,28 @@ export function AppDialog({
               {category}
             </span>
             <h2 id={titleId} className="font-serif text-[28px] leading-tight">
-              {app.name}
+              {nameEditable ? name.trim() || "Other application" : app.name}
             </h2>
           </div>
           <IconButton label="Close" icon={<CloseIcon />} onClick={onClose} />
         </div>
+
+        {nameEditable && (
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor={nameId} className="text-xs font-semibold">
+              Application name
+            </label>
+            <input
+              id={nameId}
+              value={name}
+              maxLength={80}
+              autoComplete="off"
+              onChange={(event) => setName(event.target.value)}
+              placeholder="e.g. Notion"
+              className={cn(fieldClass, "h-12 md:h-10")}
+            />
+          </div>
+        )}
 
         <fieldset className="flex flex-col gap-2">
           <legend className="pb-2 text-xs font-semibold">Action</legend>
@@ -103,33 +140,51 @@ export function AppDialog({
           </div>
         </fieldset>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="pb-2 text-xs font-semibold">Permission</legend>
-          <div className="flex flex-wrap gap-2">
-            {app.permissions.map((option) => (
-              <label
-                key={option}
-                className={cn(
-                  pill(permission === option),
-                  "px-4.5",
-                  permission === option
-                    ? "border-2 border-ink"
-                    : "border border-field-border",
-                )}
-              >
-                <input
-                  type="radio"
-                  name="permission"
-                  value={option}
-                  checked={permission === option}
-                  onChange={() => setPermission(option)}
-                  className="sr-only"
-                />
-                {option}
-              </label>
-            ))}
+        {app.permissions ? (
+          <fieldset className="flex flex-col gap-2">
+            <legend className="pb-2 text-xs font-semibold">Permission</legend>
+            <div className="flex flex-wrap gap-2">
+              {app.permissions.map((option) => (
+                <label
+                  key={option}
+                  className={cn(
+                    pill(permission === option),
+                    "px-4.5",
+                    permission === option
+                      ? "border-2 border-ink"
+                      : "border border-field-border",
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="permission"
+                    value={option}
+                    checked={permission === option}
+                    onChange={() => setPermission(option)}
+                    className="sr-only"
+                  />
+                  {option}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor={permissionId} className="text-xs font-semibold">
+              Permission / role{" "}
+              <span className="font-normal text-graphite">(optional)</span>
+            </label>
+            <input
+              id={permissionId}
+              value={permission}
+              maxLength={80}
+              autoComplete="off"
+              onChange={(event) => setPermission(event.target.value)}
+              placeholder="e.g. Member"
+              className={cn(fieldClass, "h-12 md:h-10")}
+            />
           </div>
-        </fieldset>
+        )}
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor={notesId} className="text-xs font-semibold">
@@ -142,7 +197,7 @@ export function AppDialog({
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             placeholder="e.g. Design team workspace only"
-            className="resize-none rounded-field border border-field-border px-3 py-2.5 text-base leading-snug outline-none focus:border-ink md:text-sm"
+            className={cn(fieldClass, "resize-none py-2.5 leading-snug")}
           />
         </div>
 
@@ -157,10 +212,14 @@ export function AppDialog({
           >
             Clear
           </Button>
-          <Button onClick={done}>Done</Button>
+          <Button onClick={done} disabled={nameEditable && !complete}>
+            Done
+          </Button>
         </div>
         <p className="text-center text-xs text-graphite">
-          Saved automatically · Clear removes {app.name} from this request
+          {nameEditable && !choice
+            ? "Choose a name and an action to add it"
+            : `Saved automatically · Clear removes ${name.trim() || "it"} from this request`}
         </p>
       </div>
     </dialog>

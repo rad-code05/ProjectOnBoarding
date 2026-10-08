@@ -6,8 +6,18 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { clearAccess, setAccess } from "@/app/(app)/requests/actions";
-import { ChevronRightIcon, InlineError } from "@/components/ui";
+import {
+  clearAccess,
+  removeOther,
+  saveOther,
+  setAccess,
+} from "@/app/(app)/requests/actions";
+import {
+  Button,
+  ChevronRightIcon,
+  InlineError,
+  PlusIcon,
+} from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
   choiceLabel,
@@ -16,6 +26,8 @@ import {
   type AccessChoices,
   type CatalogApp,
   type CatalogCategory,
+  OTHER_ACTIONS,
+  type OtherApp,
 } from "@/lib/requests/access";
 import { AppDialog } from "./AppDialog";
 
@@ -33,20 +45,25 @@ export function AccessSection({
   catalog,
   access,
   onAccessChange,
+  others,
+  onOthersChange,
   disabled,
 }: {
   requestId: string;
   catalog: CatalogCategory[];
   access: AccessChoices;
   onAccessChange: Dispatch<SetStateAction<AccessChoices>>;
+  others: OtherApp[];
+  onOthersChange: Dispatch<SetStateAction<OtherApp[]>>;
   disabled: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [onlySet, setOnlySet] = useState(false);
-  const [editing, setEditing] = useState<{
-    app: CatalogApp;
-    category: string;
-  } | null>(null);
+  const [editing, setEditing] = useState<
+    | { kind: "catalog"; app: CatalogApp; category: string }
+    | { kind: "other"; item: OtherApp | null }
+    | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, startSaving] = useTransition();
 
@@ -56,6 +73,51 @@ export function AccessSection({
   );
   const setCount = Object.keys(access).length;
   const shown = filterCatalog(catalog, access, query, onlySet);
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const shownOthers = others.filter((other) =>
+    words.every((word) => other.name.toLowerCase().includes(word)),
+  );
+
+  /** Adds or changes an "Other" app; it appears once the server has it. */
+  const keepOther = (
+    item: OtherApp | null,
+    choice: AccessChoice,
+    name: string,
+  ) =>
+    startSaving(async () => {
+      const result = await saveOther({
+        requestId,
+        itemId: item?.id ?? null,
+        name,
+        ...choice,
+      });
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+      setError(null);
+      const saved = { id: result.id, name, ...choice };
+      onOthersChange((current) =>
+        item
+          ? current.map((other) => (other.id === item.id ? saved : other))
+          : [...current, saved],
+      );
+    });
+
+  const dropOther = (item: OtherApp) => {
+    onOthersChange((current) =>
+      current.filter((other) => other.id !== item.id),
+    );
+    startSaving(async () => {
+      const result = await removeOther({ requestId, itemId: item.id });
+      if (result.ok) {
+        setError(null);
+      } else {
+        setError(result.message);
+        onOthersChange((current) => [...current, item]);
+      }
+    });
+  };
 
   /** Show the change at once; undo it if the server refuses. */
   const apply = (appId: number, choice: AccessChoice | null) => {
@@ -112,7 +174,9 @@ export function AccessSection({
           role="status"
           className="ml-auto text-xs font-semibold whitespace-nowrap text-graphite md:text-[11px]"
         >
-          {saving ? "Saving…" : `${setCount} of ${total} set`}
+          {saving
+            ? "Saving…"
+            : `${setCount} of ${total} set${others.length ? ` · ${others.length} other` : ""}`}
         </span>
       </div>
 
@@ -178,7 +242,11 @@ export function AccessSection({
                       aria-haspopup="dialog"
                       aria-label={`${app.name}: ${choice ? choiceLabel(choice) : "not set"}. Change`}
                       onClick={() =>
-                        setEditing({ app, category: category.name })
+                        setEditing({
+                          kind: "catalog",
+                          app,
+                          category: category.name,
+                        })
                       }
                       className="flex min-h-13 w-full items-center gap-2.5 px-4 py-1.5 text-left md:hidden"
                     >
@@ -221,7 +289,11 @@ export function AccessSection({
                         disabled={disabled}
                         aria-haspopup="dialog"
                         onClick={() =>
-                          setEditing({ app, category: category.name })
+                          setEditing({
+                            kind: "catalog",
+                            app,
+                            category: category.name,
+                          })
                         }
                         className={cn(
                           "min-w-0 flex-1 truncate text-left text-xs hover:underline",
@@ -275,20 +347,80 @@ export function AccessSection({
             </ul>
           </div>
         ))}
-        {shown.length === 0 && (
+        {shownOthers.length > 0 && (
+          <div className="break-inside-avoid md:pb-3">
+            <div className="flex items-baseline justify-between border-t border-line-subtle px-4 pt-2.5 pb-1.5 md:border-0 md:px-1">
+              <h3 className="text-[11px] font-bold tracking-widest text-graphite uppercase md:text-[10px]">
+                Other
+              </h3>
+            </div>
+            <ul>
+              {shownOthers.map((other) => (
+                <li key={other.id}>
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    aria-haspopup="dialog"
+                    aria-label={`${other.name}: ${choiceLabel(other)}. Change`}
+                    onClick={() => setEditing({ kind: "other", item: other })}
+                    className="flex min-h-13 w-full items-center gap-2.5 px-4 py-1.5 text-left md:min-h-9 md:rounded-[8px] md:border-[1.5px] md:border-line md:px-2 md:py-1"
+                  >
+                    <span className="size-2 shrink-0 rounded-pill bg-ink md:hidden" />
+                    <span className="min-w-0 flex-1 truncate text-[15px] font-bold md:text-xs">
+                      {other.name}
+                    </span>
+                    <span className="text-[13px] font-bold whitespace-nowrap md:text-xs">
+                      {choiceLabel(other)}
+                    </span>
+                    <ChevronRightIcon className="shrink-0 text-graphite md:hidden" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {shown.length === 0 && shownOthers.length === 0 && (
           <p className="px-4 py-3 text-sm text-graphite">
             No app matches “{query}”.
           </p>
         )}
       </div>
 
-      {editing && (
+      <div className="border-t border-line-subtle px-4 pt-2 pb-2 md:border-0 md:pt-0">
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={disabled}
+          iconLeft={<PlusIcon />}
+          onClick={() => setEditing({ kind: "other", item: null })}
+          className="h-12 w-full md:h-9 md:w-auto"
+        >
+          Add other application
+        </Button>
+      </div>
+
+      {editing?.kind === "catalog" && (
         <AppDialog
           app={editing.app}
           category={editing.category}
           choice={access[editing.app.id]}
           onSave={(choice) => apply(editing.app.id, choice)}
           onClear={() => apply(editing.app.id, null)}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {editing?.kind === "other" && (
+        <AppDialog
+          app={{
+            name: editing.item?.name ?? "",
+            actions: OTHER_ACTIONS,
+            permissions: null,
+          }}
+          category="Other application"
+          choice={editing.item ?? undefined}
+          nameEditable
+          onSave={(choice, name) => keepOther(editing.item, choice, name)}
+          onClear={() => editing.item && dropOther(editing.item)}
           onClose={() => setEditing(null)}
         />
       )}

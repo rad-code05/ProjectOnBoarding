@@ -160,3 +160,28 @@ test("Raju sets Slack, Figma and Google Workspace; Hexnode offers Enroll / Remov
   await expect(page.getByLabel("Slack action")).toHaveValue("Grant");
   await expect(page.getByText("3 of 26 set")).toBeVisible();
 });
+
+test("Raju adds an Other application (Notion) and it stays on the request", async ({
+  page,
+}) => {
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: "New request" }).first().click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+
+  await page.getByRole("button", { name: "Add other application" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("button", { name: "Done" })).toBeDisabled();
+  await dialog.getByLabel("Application name").fill("Notion");
+  await dialog.getByText("Grant", { exact: true }).click();
+  await dialog.getByLabel("Permission / role").fill("Member");
+  await dialog.getByRole("button", { name: "Done" }).click();
+
+  const row = page.getByRole("button", {
+    name: "Notion: Grant · Member. Change",
+  });
+  await expect(row).toBeVisible();
+  await expect(page.getByText("0 of 26 set · 1 other")).toBeVisible();
+
+  await openApp(page, page.url());
+  await expect(row).toBeVisible();
+});

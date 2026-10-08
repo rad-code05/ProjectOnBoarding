@@ -2,10 +2,13 @@
 
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
+import * as z from "zod";
 import {
   clearAccessSchema,
+  saveOtherSchema,
   setAccessSchema,
   type AccessResult,
+  type SaveOtherResult,
 } from "@/lib/requests/access";
 import {
   draftValuesSchema,
@@ -87,7 +90,10 @@ export async function saveDraft(input: {
 }
 
 /** Database refusals → words for the person (the database has the last say). */
-function accessError(code: string | undefined): AccessResult {
+function accessError(code: string | undefined): {
+  ok: false;
+  message: string;
+} {
   if (code === "23514") {
     return { ok: false, message: "That option isn't offered for this app." };
   }
@@ -161,5 +167,71 @@ export async function clearAccess(input: {
     .delete()
     .eq("request_id", parsed.data.requestId)
     .eq("app_id", parsed.data.appId);
+  return error ? accessError(error.code) : { ok: true };
+}
+
+/** Section 5 "Add other application": adds or changes a one-off app (audited). */
+export async function saveOther(input: {
+  requestId: string;
+  itemId: string | null;
+  name: string;
+  action: string;
+  permission: string | null;
+  notes: string | null;
+}): Promise<SaveOtherResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = saveOtherSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, message: "Give the application a name and an action." };
+  }
+  const { requestId, itemId, name, action, permission, notes } = parsed.data;
+  const supabase = createServerSupabaseClient();
+  const { data, error } = itemId
+    ? await supabase
+        .from("request_access_items")
+        .update({ app_name: name, action, permission, notes })
+        .eq("id", itemId)
+        .eq("request_id", requestId)
+        .is("app_id", null)
+        .select("id")
+        .single()
+    : await supabase
+        .from("request_access_items")
+        .insert(
+          // The category ("Other") is set by the database trigger.
+          {
+            request_id: requestId,
+            app_name: name,
+            action,
+            permission,
+            notes,
+          } as TablesInsert<"request_access_items">,
+        )
+        .select("id")
+        .single();
+  if (error?.code === "23505") {
+    return { ok: false, message: `${name} is already on this request.` };
+  }
+  if (error) return accessError(error.code);
+  return { ok: true, id: data.id };
+}
+
+/** Removes a one-off app from the request (audited). */
+export async function removeOther(input: {
+  requestId: string;
+  itemId: string;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = z
+    .object({ requestId: z.uuid(), itemId: z.uuid() })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Unknown app." };
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase
+    .from("request_access_items")
+    .delete()
+    .eq("id", parsed.data.itemId)
+    .eq("request_id", parsed.data.requestId)
+    .is("app_id", null);
   return error ? accessError(error.code) : { ok: true };
 }
