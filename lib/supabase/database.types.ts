@@ -179,6 +179,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      equipment_types: {
+        Row: {
+          actions: string[];
+          active: boolean;
+          id: number;
+          name: string;
+          needs_description: boolean;
+          sort_order: number;
+        };
+        Insert: {
+          actions?: string[];
+          active?: boolean;
+          id?: never;
+          name: string;
+          needs_description?: boolean;
+          sort_order?: number;
+        };
+        Update: {
+          actions?: string[];
+          active?: boolean;
+          id?: never;
+          name?: string;
+          needs_description?: boolean;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       form_fields: {
         Row: {
           applies_to: Database["public"]["Enums"]["request_type"][];
@@ -253,6 +280,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      physical_access_types: {
+        Row: {
+          actions: string[];
+          active: boolean;
+          id: number;
+          name: string;
+          scopes: string[];
+          sort_order: number;
+        };
+        Insert: {
+          actions: string[];
+          active?: boolean;
+          id?: never;
+          name: string;
+          scopes: string[];
+          sort_order?: number;
+        };
+        Update: {
+          actions?: string[];
+          active?: boolean;
+          id?: never;
+          name?: string;
+          scopes?: string[];
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       request_access_items: {
         Row: {
           action: string;
@@ -303,6 +357,111 @@ export type Database = {
             columns: ["request_id"];
             isOneToOne: false;
             referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      request_equipment_items: {
+        Row: {
+          action: string;
+          asset_tag: string | null;
+          created_at: string;
+          description: string | null;
+          id: string;
+          notes: string | null;
+          request_id: string;
+          type_id: number;
+          type_name: string;
+          updated_at: string;
+        };
+        Insert: {
+          action: string;
+          asset_tag?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          notes?: string | null;
+          request_id: string;
+          type_id: number;
+          type_name: string;
+          updated_at?: string;
+        };
+        Update: {
+          action?: string;
+          asset_tag?: string | null;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          notes?: string | null;
+          request_id?: string;
+          type_id?: number;
+          type_name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "request_equipment_items_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "request_equipment_items_type_id_fkey";
+            columns: ["type_id"];
+            isOneToOne: false;
+            referencedRelation: "equipment_types";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      request_physical_access_items: {
+        Row: {
+          action: string;
+          created_at: string;
+          id: string;
+          notes: string | null;
+          request_id: string;
+          scope: string | null;
+          type_id: number;
+          type_name: string;
+          updated_at: string;
+        };
+        Insert: {
+          action: string;
+          created_at?: string;
+          id?: string;
+          notes?: string | null;
+          request_id: string;
+          scope?: string | null;
+          type_id: number;
+          type_name: string;
+          updated_at?: string;
+        };
+        Update: {
+          action?: string;
+          created_at?: string;
+          id?: string;
+          notes?: string | null;
+          request_id?: string;
+          scope?: string | null;
+          type_id?: number;
+          type_name?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "request_physical_access_items_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "request_physical_access_items_type_id_fkey";
+            columns: ["type_id"];
+            isOneToOne: false;
+            referencedRelation: "physical_access_types";
             referencedColumns: ["id"];
           },
         ];
