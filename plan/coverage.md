@@ -43,9 +43,9 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | B4 | Work email as stable employee key (unique) | §4.4 #6, §4.5 | F01b (`employees`, linked by trigger) | pgTAP "a work email creates and links the employee" | ✅ |
 | B5 | Sec. 3 → *Final authorization & confirmation* by Moises at the end; "must not be provisioned before…" line removed | §4.1, §5.1 | F07 (+ F08 PDF wording) | F07/F08 tests | ⏳ F07 |
 | B6 | Sec. 4 Provisioning method: RBAC template or custom, template name, RBAC document link | §4.1 | F02 (custom), F21 (templates) | F02/F21 tests | ⏳ ❓ D17 |
-| B7 | Sec. 5 Application access matrix from the catalog: per-app actions + permissions (Hexnode Enroll/Remove), notes, "Add other application" | §4.1, §4.2 | F02 | F02 done-when | ⏳ F02 |
-| B8 | Seed catalog: 4 categories, 26 apps | §4.2 | F02 | seed + test | ⏳ F02 |
-| B9 | Each request keeps a snapshot of the catalog entries it used | §7 | F02 | F02 tests | ⏳ F02 |
+| B7 | Sec. 5 Application access matrix from the catalog: per-app actions + permissions (Hexnode Enroll/Remove), notes, "Add other application" | §4.1, §4.2 | F02 | pgTAP actions/permissions per app, one row per app, Other apps; F02 done-when (UI) | 🟡 database ✅ (F02a); UI ⏳ F02b |
+| B8 | Seed catalog: 4 categories, 26 apps | §4.2 | F02 | pgTAP "the 26 applications of form v4 are seeded", Hexnode Enroll/Remove | ✅ F02a |
+| B9 | Each request keeps a snapshot of the catalog entries it used | §7 | F02 | pgTAP "the row keeps a copy of the catalog name and category" | ✅ F02a (database) |
 | B10 | Sec. 6 Equipment: several items, laptop/phone/other (other needs description), issue/return, asset tag | §4.1 | F03 | F03 tests | ⏳ F03 |
 | B11 | Sec. 7 Physical & logical access (office, VPN, shared drives) | §4.1 | F03 | F03 tests | ⏳ F03 |
 | B12 | Sec. 8 Removal SLA: deadline computed, "within SLA" computed (not self-reported), reason required if missed | §4.1, §4.4 #7, §5.2 | F09 | F09 tests | ⏳ ❓ D3 timezone |
