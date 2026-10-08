@@ -46,8 +46,8 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | B7 | Sec. 5 Application access matrix from the catalog: per-app actions + permissions (Hexnode Enroll/Remove), notes, "Add other application" | §4.1, §4.2 | F02 | pgTAP actions/permissions per app, one row per app, Other apps; F02 done-when (UI) | 🟡 database ✅ (F02a); UI ✅ (F02b, e2e "Raju sets Slack, Figma and Google Workspace…"); Add other application ✅ (F02c, e2e "Raju adds an Other application") |
 | B8 | Seed catalog: 4 categories, 26 apps | §4.2 | F02 | pgTAP "the 26 applications of form v4 are seeded", Hexnode Enroll/Remove | ✅ F02a |
 | B9 | Each request keeps a snapshot of the catalog entries it used | §7 | F02 | pgTAP "the row keeps a copy of the catalog name and category" | ✅ F02a (database) |
-| B10 | Sec. 6 Equipment: several items, laptop/phone/other (other needs description), issue/return, asset tag | §4.1 | F03 | F03 tests | ⏳ F03 |
-| B11 | Sec. 7 Physical & logical access (office, VPN, shared drives) | §4.1 | F03 | F03 tests | ⏳ F03 |
+| B10 | Sec. 6 Equipment: several items, laptop/phone/other (other needs description), issue/return, asset tag | §4.1 | F03 | pgTAP several items, Issue / Return only, Other needs a description | 🟡 database ✅ (F03a); UI ⏳ F03b |
+| B11 | Sec. 7 Physical & logical access (office, VPN, shared drives) | §4.1 | F03 | pgTAP one row per type, actions / scopes per type | 🟡 database ✅ (F03a); UI ⏳ F03b |
 | B12 | Sec. 8 Removal SLA: deadline computed, "within SLA" computed (not self-reported), reason required if missed | §4.1, §4.4 #7, §5.2 | F09 | F09 tests | ⏳ ❓ D3 timezone |
 | B13 | Sec. 9 IT execution checklist per ticket type; executed by = signed-in user | §4.1 | F04 | F04 tests | ⏳ F04 |
 | B14 | Sec. 10 Final review & closure | §4.1 | F07 | F07 tests | ⏳ F07 |
