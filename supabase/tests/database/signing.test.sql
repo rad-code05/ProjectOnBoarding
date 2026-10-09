@@ -3,7 +3,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(33);
+select plan(35);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -45,6 +45,14 @@ select throws_ok($$select private.canonical_json('1.5')$$, '23514', null,
 select is(private.snapshot_sha256('{"b": 1, "a": [true, null, "x\"y"]}'),
   '13c255067dcb1a4607cf8f615caa4e985d773b15ab6bc957b8a2317c210b4acb',
   'SHA-256 of the canonical form (checked with Python)');
+
+-- Shared example with lib/signing/fingerprint.test.ts: the `canonicalize`
+-- library (RFC 8785 reference) gives this exact text and SHA-256.
+select is(private.canonical_json($v${"request":{"first_name":"José","last_name":"Müller","ticket_id":"UAM-2026-000124","effective_date":"2026-10-14","custom_fields":{}},"access":[{"app":"Figma","action":"Grant","permission":"Editor","notes":null}],"execution":{"checks":{"devices_enrolled":true,"access_provisioned":true},"notes":"Laptop €1 \"MacBook\"\nVPN\tok\u0001"}}$v$::jsonb),
+  $c${"access":[{"action":"Grant","app":"Figma","notes":null,"permission":"Editor"}],"execution":{"checks":{"access_provisioned":true,"devices_enrolled":true},"notes":"Laptop €1 \"MacBook\"\nVPN\tok\u0001"},"request":{"custom_fields":{},"effective_date":"2026-10-14","first_name":"José","last_name":"Müller","ticket_id":"UAM-2026-000124"}}$c$::text, 'same canonical text as the RFC 8785 library (accents, €, quotes, control characters)');
+select is(private.snapshot_sha256($v${"request":{"first_name":"José","last_name":"Müller","ticket_id":"UAM-2026-000124","effective_date":"2026-10-14","custom_fields":{}},"access":[{"app":"Figma","action":"Grant","permission":"Editor","notes":null}],"execution":{"checks":{"devices_enrolled":true,"access_provisioned":true},"notes":"Laptop €1 \"MacBook\"\nVPN\tok\u0001"}}$v$::jsonb),
+  '43779ef290cabb92960c7ca2dcd8c79ca4668468df98741457190d41ea06e239',
+  'same SHA-256 as the RFC 8785 library');
 
 -- ---------------------------------------------------------------------------
 -- Getting Anna and Ben ready (IT side)
