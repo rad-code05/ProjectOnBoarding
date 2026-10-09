@@ -134,6 +134,20 @@ test.describe("admin on a phone", () => {
     await expectNoSideScroll(page);
   });
 
+  test("My profile fits the phone", async ({ page }) => {
+    await openApp(page, "/profile");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "My profile" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Signature & initials" }),
+    ).toBeVisible();
+    await expect(
+      page.getByLabel("Initials (up to 4 characters)"),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+  });
+
   test("403 and 404 pages fit the phone", async ({ page }) => {
     await openApp(page, "/approvals");
     await expect(

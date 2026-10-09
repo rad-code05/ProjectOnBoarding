@@ -29,7 +29,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | A14 | At least one active approver must exist | ROLES "rules that never change" | **F18** (assigned 2026-10-07) | F18 tests | ⏳ F18 |
 | A15 | Concurrency: stale saves rejected (`version`) | §10.2 | F01b (DB), F01d (save + conflict message) | pgTAP "a save with an outdated version changes nothing"; Save draft sends the loaded `version` (`saveDraft`) | ✅ database + save + designed *changed elsewhere* box (e2e "two tabs") |
 | A16 | Secrets only in env settings; secret scanning + push protection | §10.2 | S2 (GitHub settings) | GitHub secret scanning on | ✅ |
-| A17 | Upload validation (PNG only, size/dimensions, re-encode, private bucket) | §8.1 | F05 | pgTAP bucket private / PNG / 1 MB, own folder only; re-encode in F05b | 🟡 storage rules ✅ (F05a); re-encode ⏳ F05b |
+| A17 | Upload validation (PNG only, size/dimensions, re-encode, private bucket) | §8.1 | F05 | pgTAP bucket private / PNG / 1 MB, own folder only; re-encode in F05b | ✅ storage rules (F05a) + server re-encode, size / type / dimension checks (F05b, unit `png.test.ts`) |
 | A18 | Authorization matrix test: every route × role | R1 | R1 (+ e2e grows per feature) | e2e | ⏳ R1 |
 | A19 | Security headers / CSP, dependency audit | R1 | R1 | — | ⏳ R1 |
 
@@ -78,7 +78,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
-| D-1 | Signature or initials PNG (or typed initials) in My profile; one active; old versions kept | §8.1, D13 | F05 | pgTAP one active, replaced versions kept, own only | 🟡 database ✅ (F05a); screens ⏳ F05b |
+| D-1 | Signature or initials PNG (or typed initials) in My profile; one active; old versions kept | §8.1, D13 | F05 | pgTAP one active, replaced versions kept, own only | ✅ F05 (database F05a, screens F05b, e2e "My profile: typed initials, then a PNG signature…"); "used on N requests" in History ⏳ F06 |
 | D-2 | Confirmation dialog with blocking checks, read-only summary, confirm checkbox | §8.1, `review-sign.md` | F06 (Raju), F07 (Moises) | e2e | ⏳ F06 |
 | D-3 | Server records signer, role, request, form version, **server timestamp**, snapshot SHA-256 (RFC 8785) | §8.1, §14 | F06 | pgTAP + unit | ⏳ F06 |
 | D-4 | Only the signed-in user applies their own signature; AI can never sign | §8.1, §6.2 | F06, F15–F17 | pgTAP + AI tool tests | ⏳ F06 |
@@ -159,7 +159,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | J3 | Empty states (requests, approvals), loading skeletons (reduced motion), save conflict "Reload and merge", offline banner | `records-states.md` | the feature that owns each page (F01, F07, F22) | e2e + unit | 🟡 requests list empty / no-match states ✅ (F01c); save conflict box ✅ (F01d-3); rest ⏳ |
 | J4 | Keyboard + screen reader + contrast (WCAG 2.1 AA) | §12, `design/README.md` | every feature + R2 | unit ARIA tests; R2 pass | 🟡 per feature |
 | J5 | Approvals badge (number waiting) in the approver's menu | `approver-view.md` | **F07** (assigned 2026-10-07) | e2e | ⏳ F07 |
-| J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); list (F01c); request form (F01d); sections 4–5 + edit sheet (F02b); sections 6–7 + add-equipment sheet (F03b); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in, app shell, requests list, request form done (form: 16 px fields, no sideways scroll); ⏳ each new screen |
+| J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); list (F01c); request form (F01d); sections 4–5 + edit sheet (F02b); sections 6–7 + add-equipment sheet (F03b); workflow sheets (F04b); My profile (F05b); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in, app shell, requests list, request form done (form: 16 px fields, no sideways scroll); ⏳ each new screen |
 | J7 | Design boards still "draft, awaiting review" | phase 0 step 0.4 | reviewed per feature before building its screens | — | 🟡 |
 
 ## K. Engineering practice

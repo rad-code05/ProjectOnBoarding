@@ -9,6 +9,14 @@ Opened from the name/avatar in the top bar (every role).
 - **History:** every uploaded version with where it was used, so past PDFs keep the signature used at the time.
 - Server side: PNG only, re-encoded, metadata stripped, stored in a private bucket under the user's ID.
 
+### My profile on a phone (D22 — approved 2026-10-09)
+Canvas boards: *Phone · My profile (signature & initials)*, *Phone · Replace signature (sheet)*, *Phone · Password & MFA*.
+- **Account card** (name, email, roles, sign-in + MFA, timezone, member since), **Manage password & MFA** (F05c), "managed by the admin" note.
+- **Signature & initials → Sign with:** two cards with a radio — *Signature* (preview of the current PNG, upload date + size, **Replace** / **Upload**) and *Initials* (type up to 4 characters with an Instrument Serif italic preview + **Save**, or **upload initials as PNG**). The active card has a 2 px ink border and an **Active** pill. Two columns on desktop.
+- **History:** every version with Active / Kept / Replaced; "Replacing keeps old versions…" note. (*Used on N requests* is added once signing exists, F06.)
+- **Replace signature sheet:** choose a PNG (preview, name, size, dimensions), three checks with ✓ / ! (PNG, under 1 MB, at least 300 × 100 px — initials 60 × 40), note that it becomes active and the old one stays in History, **Cancel** / **Save as active** (enabled when all checks pass).
+- **Decided 2026-10-09:** everyone uploads their own (Moises and Celine too); nobody — not even an admin — sees someone else's.
+
 ## Admin (Raju only) — shared left sub-menu `AdminNav`
 | Board | What it does |
 | --- | --- |

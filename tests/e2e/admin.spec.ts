@@ -1,3 +1,4 @@
+import sharp from "sharp";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import { openApp } from "./open";
 import { expect, test } from "@playwright/test";
@@ -297,4 +298,48 @@ test("Raju cancels a request with a reason; it becomes read-only", async ({
   await expect(
     page.getByRole("button", { name: "Cancel this request…" }),
   ).toHaveCount(0);
+});
+
+test("My profile: typed initials, then a PNG signature that becomes active", async ({
+  page,
+}) => {
+  await openApp(page, "/profile");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "My profile" }),
+  ).toBeVisible();
+
+  // Typed initials (each run uses fresh ones, so Save is always possible).
+  const initials = `T${Date.now() % 1000}`.slice(0, 4);
+  await page.getByLabel("Initials (up to 4 characters)").fill(initials);
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("radio", { name: /Initials/ })).toBeChecked();
+
+  // A PNG signature, made on the fly: checked in the browser, re-drawn on
+  // the server, stored in the private bucket, active afterwards.
+  const png = await sharp({
+    create: { width: 640, height: 200, channels: 4, background: "#00000000" },
+  })
+    .png()
+    .toBuffer();
+  await page.getByRole("button", { name: /^(Replace|Upload)$/ }).click();
+  const sheet = page.getByRole("dialog", { name: "Replace signature" });
+  await sheet.locator('input[type="file"]').setInputFiles({
+    name: "signature.png",
+    mimeType: "image/png",
+    buffer: png,
+  });
+  await expect(sheet.getByText("PNG image")).toBeVisible();
+  await sheet.getByRole("button", { name: "Save as active" }).click();
+  await expect(sheet).toHaveCount(0);
+
+  await expect(page.getByRole("radio", { name: /Signature/ })).toBeChecked();
+  await expect(
+    page.getByRole("img", { name: "Your current signature" }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole("listitem")
+      .filter({ hasText: /Signature · v\d+/ })
+      .first(),
+  ).toContainText("Active");
 });
