@@ -176,7 +176,7 @@ export function SignaturePanel({ state }: { state: SignatureState }) {
               onClick={() => setSheet("initials")}
               className="self-start text-[13px] font-semibold underline underline-offset-[3px]"
             >
-              or upload initials as PNG
+              or draw or upload your initials
             </button>
           </div>
         </fieldset>

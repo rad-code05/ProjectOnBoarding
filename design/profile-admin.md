@@ -16,6 +16,7 @@ Canvas boards: *Phone · My profile (signature & initials)*, *Phone · Replace s
 - **History:** every version with Active / Kept / Replaced; "Replacing keeps old versions…" note. (*Used on N requests* is added once signing exists, F06.)
 - **Replace signature sheet:** choose a PNG (preview, name, size, dimensions), three checks with ✓ / ! (PNG, under 1 MB, at least 300 × 100 px — initials 60 × 40), note that it becomes active and the old one stays in History, **Cancel** / **Save as active** (enabled when all checks pass).
 - **Decided 2026-10-09:** everyone uploads their own (Moises and Celine too); nobody — not even an admin — sees someone else's.
+- **Draw your signature (F05d — board *Phone · Draw signature (sheet)*, approved 2026-10-09, built in F05d):** the Replace sheet gets a **Draw / Upload PNG** switch (Draw first). A pad (sand, dashed border, signing line with ×) takes finger or stylus; **Undo** (last stroke) and **Clear**; hint "turn the phone sideways for more room". **Save as active** is enabled once something is drawn; the drawing becomes a transparent PNG and goes through the same server checks and re-encode as an upload (`uploadSignature`), then shows in History like any version. Same sheet for initials, with a smaller pad.
 
 ## Admin (Raju only) — shared left sub-menu `AdminNav`
 | Board | What it does |

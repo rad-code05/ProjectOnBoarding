@@ -146,6 +146,18 @@ test.describe("admin on a phone", () => {
       page.getByLabel("Initials (up to 4 characters)"),
     ).toBeVisible();
     await expectNoSideScroll(page);
+
+    // The draw sheet fits too (nothing is saved here).
+    await page.getByRole("button", { name: /^(Replace|Upload)$/ }).click();
+    const sheet = page.getByRole("dialog", { name: "Replace signature" });
+    await expect(
+      sheet.getByRole("img", { name: /Pad to draw your signature/ }),
+    ).toBeVisible();
+    await expect(
+      sheet.getByRole("button", { name: "Save as active" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+    await sheet.getByRole("button", { name: "Cancel" }).click();
   });
 
   test("Password & MFA fits the phone", async ({ page }) => {
