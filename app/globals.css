@@ -37,7 +37,7 @@
    * Keep content that is scrolled into view (section chips, keyboard focus,
    * search results) clear of the sticky bars: on a phone the ticket bar +
    * section chips at the top and the Save / Review bar at the bottom.
-   * Elements INSIDE a sticky bar get no margin — they can never move away
+   * Elements INSIDE a sticky bar or a sheet (dialog) get no margin — they can never move away
    * from the edge, and asking for it makes phone browsers scroll past the
    * end of the page (the CI iPhone test tapped beside the button).
    */
@@ -51,7 +51,7 @@
       scroll-margin-bottom: 0;
     }
   }
-  main [data-sticky-bar] :where(*) {
+  main :is([data-sticky-bar], dialog) :where(*) {
     scroll-margin: 0;
   }
 
