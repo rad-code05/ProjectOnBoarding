@@ -3,7 +3,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(30);
+select plan(31);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -88,6 +88,12 @@ select throws_ok(
   $$update public.execution_confirmations set checks = '{"security_controls": "yes"}'
     where request_id = (select id from ids where first_name = 'Dora')$$,
   '23514', null, 'checklist answers are true / false');
+select throws_ok(
+  $$select public.transition_request((select id from ids where first_name = 'Dora'), 'pending_confirmation')$$,
+  '42501', null, 'it never goes for confirmation without Review & sign (F06)');
+-- From here on this flag stands in for sign_request() (F06, signing.test.sql),
+-- so these tests stay about the state machine.
+select set_config('app.request_signing', 'on', true);
 select throws_ok(
   $$select public.transition_request((select id from ids where first_name = 'Dora'), 'pending_confirmation')$$,
   '23514', null, 'it cannot go for confirmation while the checklist is incomplete');

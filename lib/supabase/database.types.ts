@@ -535,6 +535,51 @@ export type Database = {
           },
         ];
       };
+      request_snapshots: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          data: NonNullable<Json>;
+          id: string;
+          kind: string;
+          request_id: string;
+          sha256: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          data: NonNullable<Json>;
+          id?: string;
+          kind: string;
+          request_id: string;
+          sha256: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          data?: NonNullable<Json>;
+          id?: string;
+          kind?: string;
+          request_id?: string;
+          sha256?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "request_snapshots_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "request_snapshots_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       requests: {
         Row: {
           assignee_id: string | null;
@@ -736,6 +781,84 @@ export type Database = {
           },
         ];
       };
+      signatures: {
+        Row: {
+          cleared_at: string | null;
+          cleared_reason: string | null;
+          form_version_id: number;
+          id: string;
+          request_id: string;
+          section: string;
+          signature_asset_id: string;
+          signed_at: string;
+          signer_id: string;
+          signer_role: Database["public"]["Enums"]["app_role"];
+          snapshot_id: string;
+        };
+        Insert: {
+          cleared_at?: string | null;
+          cleared_reason?: string | null;
+          form_version_id: number;
+          id?: string;
+          request_id: string;
+          section: string;
+          signature_asset_id: string;
+          signed_at?: string;
+          signer_id: string;
+          signer_role: Database["public"]["Enums"]["app_role"];
+          snapshot_id: string;
+        };
+        Update: {
+          cleared_at?: string | null;
+          cleared_reason?: string | null;
+          form_version_id?: number;
+          id?: string;
+          request_id?: string;
+          section?: string;
+          signature_asset_id?: string;
+          signed_at?: string;
+          signer_id?: string;
+          signer_role?: Database["public"]["Enums"]["app_role"];
+          snapshot_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "signatures_form_version_id_fkey";
+            columns: ["form_version_id"];
+            isOneToOne: false;
+            referencedRelation: "form_versions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "signatures_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "signatures_signature_asset_id_fkey";
+            columns: ["signature_asset_id"];
+            isOneToOne: false;
+            referencedRelation: "signature_assets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "signatures_signer_id_fkey";
+            columns: ["signer_id"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "signatures_snapshot_id_fkey";
+            columns: ["snapshot_id"];
+            isOneToOne: false;
+            referencedRelation: "request_snapshots";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_roles: {
         Row: {
           clerk_user_id: string;
@@ -777,10 +900,19 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      request_snapshot_preview: {
+        Args: { p_request_id: string };
+        Returns: Json;
+      };
       set_active_signature: {
         Args: { p_asset_id: string };
         Returns: undefined;
       };
+      sign_request: {
+        Args: { p_request_id: string; p_reviewed: Json };
+        Returns: string;
+      };
+      signing_checks: { Args: { p_request_id: string }; Returns: Json };
       transition_request: {
         Args: {
           p_reason?: string;
