@@ -323,6 +323,7 @@ test("My profile: typed initials, then a PNG signature that becomes active", asy
     .toBuffer();
   await page.getByRole("button", { name: /^(Replace|Upload)$/ }).click();
   const sheet = page.getByRole("dialog", { name: "Replace signature" });
+  await sheet.getByText("Upload PNG").click();
   await sheet.locator('input[type="file"]').setInputFiles({
     name: "signature.png",
     mimeType: "image/png",
@@ -332,6 +333,45 @@ test("My profile: typed initials, then a PNG signature that becomes active", asy
   await sheet.getByRole("button", { name: "Save as active" }).click();
   await expect(sheet).toHaveCount(0);
 
+  await expect(page.getByRole("radio", { name: /Signature/ })).toBeChecked();
+  await expect(
+    page.getByRole("img", { name: "Your current signature" }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole("listitem")
+      .filter({ hasText: /Signature · v\d+/ })
+      .first(),
+  ).toContainText("Active");
+});
+
+test("My profile: a signature drawn on the pad becomes the active one", async ({
+  page,
+}) => {
+  await openApp(page, "/profile");
+  await page.getByRole("button", { name: /^(Replace|Upload)$/ }).click();
+  const sheet = page.getByRole("dialog", { name: "Replace signature" });
+  await expect(sheet.getByRole("radio", { name: "Draw" })).toBeChecked();
+
+  // Draw two strokes with the mouse (finger and stylus use the same events).
+  const pad = sheet.getByRole("img", { name: /Pad to draw your signature/ });
+  const box = (await pad.boundingBox())!;
+  for (const y of [0.4, 0.6]) {
+    await page.mouse.move(box.x + box.width * 0.15, box.y + box.height * y);
+    await page.mouse.down();
+    for (let i = 1; i <= 10; i++) {
+      await page.mouse.move(
+        box.x + box.width * (0.15 + i * 0.07),
+        box.y + box.height * (y + (i % 2 ? -0.1 : 0.1)),
+      );
+    }
+    await page.mouse.up();
+  }
+  await sheet.getByRole("button", { name: "Undo" }).click();
+  await sheet.getByRole("button", { name: "Save as active" }).click();
+  await expect(sheet).toHaveCount(0);
+
+  // Stored like an upload: re-drawn on the server, active, in History.
   await expect(page.getByRole("radio", { name: /Signature/ })).toBeChecked();
   await expect(
     page.getByRole("img", { name: "Your current signature" }),

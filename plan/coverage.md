@@ -79,7 +79,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
-| D-1 | Signature or initials PNG (or typed initials) in My profile; one active; old versions kept | §8.1, D13 | F05 | pgTAP one active, replaced versions kept, own only | ✅ F05 (database F05a, screens F05b, e2e "My profile: typed initials, then a PNG signature…"); "used on N requests" in History ⏳ F06; drawing a signature by finger / stylus proposed as F05d |
+| D-1 | Signature or initials PNG (or typed initials) in My profile; one active; old versions kept | §8.1, D13 | F05 | pgTAP one active, replaced versions kept, own only | ✅ F05 (database F05a, screens F05b, e2e "My profile: typed initials, then a PNG signature…"); "used on N requests" in History ⏳ F06; drawing a signature by finger / stylus ✅ F05d (unit `DrawSignature.test.tsx`, e2e "…drawn on the pad becomes the active one") |
 | D-2 | Confirmation dialog with blocking checks, read-only summary, confirm checkbox | §8.1, `review-sign.md` | F06 (Raju), F07 (Moises) | e2e | ⏳ F06 |
 | D-3 | Server records signer, role, request, form version, **server timestamp**, snapshot SHA-256 (RFC 8785) | §8.1, §14 | F06 | pgTAP + unit | ⏳ F06 |
 | D-4 | Only the signed-in user applies their own signature; AI can never sign | §8.1, §6.2 | F06, F15–F17 | pgTAP + AI tool tests | ⏳ F06 |

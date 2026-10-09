@@ -344,6 +344,13 @@
       "w": 390,
       "h": 1240,
       "title": "Phone · Password & MFA"
+    },
+    "SignatureDrawMobile.dc.html": {
+      "x": 7500,
+      "y": 13560,
+      "w": 390,
+      "h": 844,
+      "title": "Phone · Draw signature (sheet) — F05d proposal"
     }
   },
   "createdOnFiles": {
@@ -365,7 +372,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 7420,
+      "maxW": 7890,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -451,7 +458,8 @@
     "CancelRequestMobile.dc.html",
     "ProfileMobile.dc.html",
     "SignatureUploadMobile.dc.html",
-    "ProfileSecurityMobile.dc.html"
+    "ProfileSecurityMobile.dc.html",
+    "SignatureDrawMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
