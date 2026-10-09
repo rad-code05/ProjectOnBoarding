@@ -323,6 +323,27 @@
       "w": 390,
       "h": 844,
       "title": "Phone · Cancel request (reason)"
+    },
+    "ProfileMobile.dc.html": {
+      "x": 6090,
+      "y": 13560,
+      "w": 390,
+      "h": 1500,
+      "title": "Phone · My profile (signature & initials)"
+    },
+    "SignatureUploadMobile.dc.html": {
+      "x": 6560,
+      "y": 13560,
+      "w": 390,
+      "h": 844,
+      "title": "Phone · Replace signature (sheet)"
+    },
+    "ProfileSecurityMobile.dc.html": {
+      "x": 7030,
+      "y": 13560,
+      "w": 390,
+      "h": 1240,
+      "title": "Phone · Password & MFA"
     }
   },
   "createdOnFiles": {
@@ -344,7 +365,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 6010,
+      "maxW": 7420,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -427,7 +448,10 @@
     "EquipmentMobileSheet.dc.html",
     "ExecutionMobile.dc.html",
     "StartExecutionMobile.dc.html",
-    "CancelRequestMobile.dc.html"
+    "CancelRequestMobile.dc.html",
+    "ProfileMobile.dc.html",
+    "SignatureUploadMobile.dc.html",
+    "ProfileSecurityMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
