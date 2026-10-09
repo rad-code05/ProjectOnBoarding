@@ -10,10 +10,14 @@ export const metadata = { title: "Request" };
 export default async function RequestPage({
   params,
 }: PageProps<"/requests/[id]">) {
-  await requireRole(...PAGES.requests.roles);
+  const { roles } = await requireRole(...PAGES.requests.roles);
   const { id } = await params;
   const form = await loadRequestForm(id);
   if (!form) notFound();
   // A new state (after Start execution / Cancel) starts a fresh form.
-  return <RequestForm key={form.state} form={form} />;
+  // Only an IT operator or admin signs section 9 (the database says the same).
+  const canSign = roles.some(
+    (role) => role === "admin" || role === "it_operator",
+  );
+  return <RequestForm key={form.state} form={form} canSign={canSign} />;
 }

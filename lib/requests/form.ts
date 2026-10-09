@@ -20,6 +20,7 @@ import {
   type RequestState,
   type RequestType,
 } from "./labels";
+import type { SignedSection } from "./signing";
 
 export type RequestFormData = {
   id: string;
@@ -50,6 +51,8 @@ export type RequestFormData = {
   equipment: EquipmentItem[];
   physicalTypes: PhysicalType[];
   physical: PhysicalChoices;
+  /** Section 11: the current (not cleared) signatures. */
+  signatures: SignedSection[];
 };
 
 const EDITABLE_STATES: RequestState[] = ["draft", "in_execution", "returned"];
@@ -93,6 +96,7 @@ export async function loadRequestForm(
     physical,
     checklist,
     execution,
+    signatures,
   ] = await Promise.all([
     supabase
       .from("form_fields")
@@ -159,6 +163,14 @@ export async function loadRequestForm(
       )
       .eq("request_id", request.id)
       .maybeSingle(),
+    supabase
+      .from("signatures")
+      .select(
+        "section, signed_at, signer:app_users!signatures_signer_id_fkey(first_name, last_name), snapshot:request_snapshots!signatures_snapshot_id_fkey(sha256)",
+      )
+      .eq("request_id", request.id)
+      .is("cleared_at", null)
+      .order("signed_at"),
   ]);
   for (const result of [
     fields,
@@ -172,6 +184,7 @@ export async function loadRequestForm(
     physical,
     checklist,
     execution,
+    signatures,
   ]) {
     if (result.error) {
       throw new Error(`Could not load the form: ${result.error.message}`);
@@ -332,6 +345,14 @@ export async function loadRequestForm(
         { action: row.action, scope: row.scope, notes: row.notes },
       ]),
     ),
+    signatures: (signatures.data ?? []).map((row) => ({
+      section: row.section as SignedSection["section"],
+      signerName:
+        personName(row.signer?.first_name, row.signer?.last_name) ||
+        "IT operator",
+      signedLabel: `${formatDay(row.signed_at)}, ${formatTime(row.signed_at)}`,
+      fingerprint: row.snapshot.sha256,
+    })),
     others: (items.data ?? [])
       .filter((item) => item.app_id === null)
       .map((item) => ({

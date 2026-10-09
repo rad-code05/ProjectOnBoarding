@@ -425,3 +425,83 @@ test("Password & MFA opens from My profile; a mismatch is caught before Clerk; M
     page.getByRole("region", { name: "Authenticator app" }),
   ).toContainText("On");
 });
+
+test("Raju reviews and signs a request; it awaits confirmation with his signature in section 11", async ({
+  page,
+}) => {
+  test.slow(); // a whole journey: profile, form, execution, signing
+  // Make sure there is an active signature (typed initials are enough).
+  await openApp(page, "/profile");
+  await page
+    .getByLabel("Initials (up to 4 characters)")
+    .fill(`S${Date.now() % 1000}`.slice(0, 4));
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("radio", { name: /Initials/ })).toBeChecked();
+
+  // A fresh request with every required field.
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: "New request" }).first().click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  await page.getByLabel("First name").fill("Sina");
+  await page.getByLabel("Last name").fill("Signer");
+  await page
+    .getByLabel("Work email")
+    .fill(`sina.signer.${Date.now()}@laine.ai`);
+  await page.getByLabel("Job title / role").fill("Analyst");
+  await page
+    .getByLabel("Department / team")
+    .selectOption({ label: "Engineering" });
+  await page.getByLabel("Country").selectOption("CH");
+  await page.getByLabel("Manager").fill("Mara Manager");
+  await page.getByLabel("Requested by").fill("Rita Requestor");
+  await page.getByLabel("Effective date").fill("2026-11-02");
+  await page.getByRole("button", { name: "Save draft" }).click();
+  await expect(page.getByRole("status").first()).toHaveText(/^Saved/);
+
+  await page.getByRole("button", { name: "Start execution" }).click();
+  await page
+    .getByRole("dialog", { name: "Start execution?" })
+    .getByRole("button", { name: "Start execution" })
+    .click();
+  const section9 = page.getByRole("region", {
+    name: "IT execution confirmation",
+  });
+  for (const item of [
+    "All authorised access provisioned or modified",
+    "Devices issued and enrolled (MDM)",
+    "Security controls applied (MFA, MDM, EDR)",
+  ]) {
+    await section9.getByRole("checkbox", { name: item }).check();
+    await expect(section9.getByRole("status")).not.toHaveText("Saving…");
+  }
+  await expect(section9.getByRole("status")).toHaveText("3 of 3 done");
+
+  // Review & sign
+  await page
+    .getByRole("button", { name: "Review & sign", exact: true })
+    .click();
+  const sheet = page.getByRole("dialog", { name: "Review & sign" });
+  const checks = sheet.getByRole("list", { name: "Checks before signing" });
+  await expect(checks).toContainText("All required fields complete");
+  await expect(checks).toContainText("Section 9 checklist complete");
+  await expect(checks).toContainText("Your signature is on file");
+  await expect(sheet.getByText("Sina Signer")).toBeVisible();
+  const sign = sheet.getByRole("button", { name: /^Sign & send/ });
+  await expect(sign).toBeDisabled();
+  await sheet.getByLabel(/I confirm the details above/).check();
+  await sign.click();
+  await expect(sheet).toHaveCount(0);
+
+  // Awaiting confirmation, signed, locked.
+  await expect(page.getByRole("group", { name: "Status" })).toHaveText(
+    "Awaiting confirmation",
+  );
+  const section11 = page.getByRole("region", { name: "Signatures & sign-off" });
+  await expect(section11).toContainText("Signed by");
+  await expect(section11).toContainText(/Fingerprint [0-9a-f]{16}/);
+  await expect(section11).toContainText("Waiting for the approver");
+  await expect(page.getByLabel("First name")).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Review & sign", exact: true }),
+  ).toHaveCount(0);
+});
