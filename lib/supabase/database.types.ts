@@ -680,6 +680,62 @@ export type Database = {
           },
         ];
       };
+      signature_assets: {
+        Row: {
+          byte_size: number | null;
+          created_at: string;
+          height: number | null;
+          id: string;
+          is_active: boolean;
+          kind: string;
+          retired_at: string | null;
+          sha256: string | null;
+          source: string;
+          storage_path: string | null;
+          typed_text: string | null;
+          user_id: string;
+          width: number | null;
+        };
+        Insert: {
+          byte_size?: number | null;
+          created_at?: string;
+          height?: number | null;
+          id?: string;
+          is_active?: boolean;
+          kind: string;
+          retired_at?: string | null;
+          sha256?: string | null;
+          source: string;
+          storage_path?: string | null;
+          typed_text?: string | null;
+          user_id: string;
+          width?: number | null;
+        };
+        Update: {
+          byte_size?: number | null;
+          created_at?: string;
+          height?: number | null;
+          id?: string;
+          is_active?: boolean;
+          kind?: string;
+          retired_at?: string | null;
+          sha256?: string | null;
+          source?: string;
+          storage_path?: string | null;
+          typed_text?: string | null;
+          user_id?: string;
+          width?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "signature_assets_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
+      };
       user_roles: {
         Row: {
           clerk_user_id: string;
@@ -721,6 +777,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      set_active_signature: {
+        Args: { p_asset_id: string };
+        Returns: undefined;
+      };
       transition_request: {
         Args: {
           p_reason?: string;
