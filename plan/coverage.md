@@ -52,7 +52,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | B12 | Sec. 8 Removal SLA: deadline computed, "within SLA" computed (not self-reported), reason required if missed | §4.1, §4.4 #7, §5.2 | F09 | F09 tests | ⏳ ❓ D3 timezone |
 | B13 | Sec. 9 IT execution checklist per ticket type; executed by = signed-in user | §4.1 | F04 | pgTAP checklist per type, executed by = signed-in user; e2e "Raju starts execution and ticks section 9…" | ✅ F04 |
 | B14 | Sec. 10 Final review & closure | §4.1 | F07 | F07 tests | ⏳ F07 |
-| B15 | Sec. 11 Signatures (IT half, approver half) | §4.1, §8 | F06, F07 | F06/F07 tests | ⏳ F06 |
+| B15 | Sec. 11 Signatures (IT half, approver half) | §4.1, §8 | F06, F07 | F06/F07 tests | 🟡 IT half recorded in the database (F06a `signatures`); on screen ⏳ F06b |
 | B16 | Default names (assignee Raju, approver Moises) are admin settings, not hard-coded | §4.1 | F21 (defaults) — F01 uses a seeded default | F21 tests | ⏳ F21 |
 | B17 | Sections 6–11 collapsed until relevant; section states in the rail | `design/main-page.md` | F03, F04 | e2e | ✅ rail/chips states (F01d-3); 6–7 open (F03); section 9 unlocks when execution starts (F04); 3, 8, 10, 11 collapsed until their step |
 | B18 | Dense two-column layout; AI-suggested fields dashed | `design/main-page.md` | F01–F02, F16 | e2e / visual check | ⏳ |
@@ -68,7 +68,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | C4 | Cancel with required reason | §4.3 | F04 | pgTAP "cancelling needs a reason", who / when / why recorded; e2e "Raju cancels a request with a reason…" | ✅ F04 |
 | C5 | Return to Raju with required comment → returned; Raju's signature cleared (kept in audit); sections 1–9 unlock; must sign again | §4.3, ROLES | F07 | F07 done-when | ⏳ F07 |
 | C6 | Returned view: Moises's comment, **flagged items**, "Go to…" and **Reply to Moises** | `design/request-variants.md` | **F07** (assigned 2026-10-07) | F07 tests | ⏳ F07 |
-| C7 | Any change after Raju signs clears his signature | §8.1 #4, §17 #5 | F06 | F06 tests | ⏳ F06 |
+| C7 | Any change after Raju signs clears his signature | §8.1 #4, §17 #5 | F06 | F06 tests | 🟡 signed = locked (RLS); signing again after a return clears the earlier signature (pgTAP `signing.test.sql`); clearing at Return ⏳ F07 |
 | C8 | Closed requests are never edited — changes go through a new access-modification request | §17 #5 | F04 (DB rule), F10 | pgTAP — only open states editable; cancelled / closed stay so | ✅ database (F04a); new access-modification request ⏳ F10 |
 | C9 | Pending confirmations visible to **all** approvers; first to confirm closes; PDF records who | §10.1 | F07, F08 | F07 tests | ⏳ F07 |
 | C10 | Offboarding: SLA required at creation, inventory pre-fills removals, countdown on request + list, missed reason before close | §5.2, `request-variants.md` | F09 | F09 tests | ⏳ F09 |
@@ -81,8 +81,8 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | --- | --- | --- | --- | --- | --- |
 | D-1 | Signature or initials PNG (or typed initials) in My profile; one active; old versions kept | §8.1, D13 | F05 | pgTAP one active, replaced versions kept, own only | ✅ F05 (database F05a, screens F05b, e2e "My profile: typed initials, then a PNG signature…"); "used on N requests" in History ⏳ F06; drawing a signature by finger / stylus ✅ F05d (unit `DrawSignature.test.tsx`, e2e "…drawn on the pad becomes the active one") |
 | D-2 | Confirmation dialog with blocking checks, read-only summary, confirm checkbox | §8.1, `review-sign.md` | F06 (Raju), F07 (Moises) | e2e | ⏳ F06 |
-| D-3 | Server records signer, role, request, form version, **server timestamp**, snapshot SHA-256 (RFC 8785) | §8.1, §14 | F06 | pgTAP + unit | ⏳ F06 |
-| D-4 | Only the signed-in user applies their own signature; AI can never sign | §8.1, §6.2 | F06, F15–F17 | pgTAP + AI tool tests | ⏳ F06 |
+| D-3 | Server records signer, role, request, form version, **server timestamp**, snapshot SHA-256 (RFC 8785) | §8.1, §14 | F06 | pgTAP + unit | ✅ database (F06a: server time, snapshot + SHA-256 of RFC 8785 form computed in the database, pgTAP `signing.test.sql`); library cross-check ⏳ F06b |
+| D-4 | Only the signed-in user applies their own signature; AI can never sign | §8.1, §6.2 | F06, F15–F17 | pgTAP + AI tool tests | 🟡 only IT operator / admin, with their own active asset (pgTAP); AI tools ⏳ F15–F17 |
 | D-5 | Never backdate: all dates server-generated, not editable | ROLES, §14 | S6 (triggers), every feature | pgTAP `session_audit` (backdated time overwritten) | 🟡 principle proven; ⏳ per table |
 
 ## E. PDF & export

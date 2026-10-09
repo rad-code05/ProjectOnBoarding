@@ -28,6 +28,9 @@ Opened by the **Review & sign** button on the request form when Raju has finishe
 - The "no AI suggestions left" check only applies once the assistant exists (feature F16); before that it is skipped.
 - Shows a confirmation toast on the form: "Signed and sent to Moises".
 
+## On a phone (D22 — board *Phone · Review & sign (sheet)*, approved 2026-10-09)
+A full-height bottom sheet: ticket + title + what signing does; the checks (✓ each, red with a link when failing); summary cards *Employee*, *Access & equipment*, *9 · IT execution* (each with **Edit**); **Your signature** (2 px ink border: active signature preview, "Change in My profile", *Will be recorded as* — date/time "set by the server when you sign"); the confirmation tick; a sticky bottom bar **Back to edit** / **Sign & send to Moises** (disabled until all checks pass and the box is ticked).
+
 ## Moises's version (to design next)
 Same dialog layout, opened from **Confirm & sign** when the request is *Awaiting confirmation*: summary + Raju's signature (read-only) + Moises's signature block, confirmation checkbox, and two actions: **Return to Raju** (comment required) and **Confirm, sign & close** (generates the PDF `firstname.lastname-onboarding.pdf`).
 
