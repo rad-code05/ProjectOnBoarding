@@ -91,9 +91,12 @@ select throws_ok(
 select throws_ok(
   $$select public.transition_request((select id from ids where first_name = 'Dora'), 'pending_confirmation')$$,
   '42501', null, 'it never goes for confirmation without Review & sign (F06)');
--- From here on this flag stands in for sign_request() (F06, signing.test.sql),
--- so these tests stay about the state machine.
+-- From here on these flags stand in for sign_request() (F06, signing.test.sql)
+-- and confirm_request() / return_request() (F07, approvals.test.sql), so these
+-- tests stay about the state machine.
 select set_config('app.request_signing', 'on', true);
+select set_config('app.request_confirming', 'on', true);
+select set_config('app.request_returning', 'on', true);
 select throws_ok(
   $$select public.transition_request((select id from ids where first_name = 'Dora'), 'pending_confirmation')$$,
   '23514', null, 'it cannot go for confirmation while the checklist is incomplete');

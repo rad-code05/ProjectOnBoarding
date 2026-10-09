@@ -34,6 +34,9 @@ Modal over the request (read-only):
 ### 3. Closed record & export — board *Moises · Closed request · PDF export*
 See [pdf-export.md](pdf-export.md). Nav shows **Records** active; back link "Back to approvals".
 
+## On a phone (D22 — approved 2026-10-09)
+Boards *Phone · Approvals (Moises's landing)* (menu badge with the number waiting, three tiles, a card per request with **Review & confirm**, short *Recently closed* list), *Phone · Confirm & sign (sheet)* (Raju's note from the last round if any, Employee / Access & equipment cards + **View the full form**, *IT execution · signed* with Raju's signature, time and fingerprint, *Your signature* — Approver · sections 3, 10, 11, server time — the approval tick, sticky **Return to Raju** / **Confirm, sign & close**) and *Phone · Return to Raju (sheet)* (what it does, optional section checkboxes, required comment). **Decided 2026-10-09:** whole sections are flagged (not single items); Raju answers with one note per round when he signs again. Signature images are visible where they were applied (the approver sees Raju's on the request) — never on someone else's profile.
+
 ## Permissions (enforced on the server, not only hidden in the UI)
 
 | Action | Raju (admin / IT) | Moises / backup (approver) |

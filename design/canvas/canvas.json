@@ -358,6 +358,34 @@
       "w": 390,
       "h": 1960,
       "title": "Phone · Review & sign (sheet) — F06 proposal"
+    },
+    "ApprovalsMobile.dc.html": {
+      "x": 8440,
+      "y": 13560,
+      "w": 390,
+      "h": 1400,
+      "title": "Phone · Approvals (Moises's landing) — F07 proposal"
+    },
+    "ConfirmSignMobile.dc.html": {
+      "x": 8910,
+      "y": 13560,
+      "w": 390,
+      "h": 2060,
+      "title": "Phone · Confirm & sign (sheet) — F07 proposal"
+    },
+    "ReturnRequestMobile.dc.html": {
+      "x": 9380,
+      "y": 13560,
+      "w": 390,
+      "h": 900,
+      "title": "Phone · Return to Raju (sheet) — F07 proposal"
+    },
+    "ReturnedRequestMobile.dc.html": {
+      "x": 9850,
+      "y": 13560,
+      "w": 390,
+      "h": 1200,
+      "title": "Phone · Returned request (Raju) — F07 proposal"
     }
   },
   "createdOnFiles": {
@@ -379,7 +407,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 8360,
+      "maxW": 10240,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -467,7 +495,11 @@
     "SignatureUploadMobile.dc.html",
     "ProfileSecurityMobile.dc.html",
     "SignatureDrawMobile.dc.html",
-    "ReviewSignMobile.dc.html"
+    "ReviewSignMobile.dc.html",
+    "ApprovalsMobile.dc.html",
+    "ConfirmSignMobile.dc.html",
+    "ReturnRequestMobile.dc.html",
+    "ReturnedRequestMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
