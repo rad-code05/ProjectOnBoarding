@@ -108,7 +108,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | F-5 | Offboarding SLA, Access by application, Open requests by status | §9.3, `reports.md` | F14 | F14 tests | ⏳ F14 |
 | F-6 | Monthly counts created / submitted / approved / completed / closed by ticket type | §9.3 #1, D21 | later, as a new report type | — | ➖ not now (D21: designed reports are enough for now) |
 | F-7 | CSV + PDF export of any report, permission-checked and **audited** | §9.3 #6, `reports.md` | F12 | F12 tests | ⏳ F12 |
-| F-8 | Summary tiles on the requests list and approvals page | `request-list.md`, `approver-view.md` | F01c (list), F07 | e2e "requests list: tiles…" | 🟡 list ✅ ("Onboarded this month" waits for D16/F06), approvals ⏳ F07 |
+| F-8 | Summary tiles on the requests list and approvals page | `request-list.md`, `approver-view.md` | F01c (list), F07 | e2e "requests list: tiles…" | 🟡 list ✅ ("Onboarded this month" waits for D16/F06), approvals ✅ F07b-1 (Waiting for you / Returned to Raju / Closed this month; e2e "Approvals shows the tiles…") |
 
 ## G. AI assistant
 
@@ -159,7 +159,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | J2 | App shell: top bar by role, profile link, sign-out — desktop and phone (menu button + full-screen menu) | `components.md`, phone boards | S7a, F01a | unit `TopBar.test.tsx` (desktop + phone menu); e2e desktop + `phone.spec.ts` | ✅ |
 | J3 | Empty states (requests, approvals), loading skeletons (reduced motion), save conflict "Reload and merge", offline banner | `records-states.md` | the feature that owns each page (F01, F07, F22) | e2e + unit | 🟡 requests list empty / no-match states ✅ (F01c); save conflict box ✅ (F01d-3); rest ⏳ |
 | J4 | Keyboard + screen reader + contrast (WCAG 2.1 AA) | §12, `design/README.md` | every feature + R2 | unit ARIA tests; R2 pass | 🟡 per feature |
-| J5 | Approvals badge (number waiting) in the approver's menu | `approver-view.md` | **F07** (assigned 2026-10-07) | e2e | ⏳ F07 |
+| J5 | Approvals badge (number waiting) in the approver's menu | `approver-view.md` | **F07** (assigned 2026-10-07) | e2e | ✅ F07b-1 (unit TopBar "approvers see how many requests wait"; layout `countWaiting`) |
 | J6 | **Mobile-first**: every screen works on iPhone (regular, Plus, Pro Max) and Galaxy S24 Ultra widths (~390–440 px) and desktop | D22 ✅ | sign-in ✅ (S5); app shell ✅ (**F01a**); list (F01c); request form (F01d); sections 4–5 + edit sheet (F02b); sections 6–7 + add-equipment sheet (F03b); workflow sheets (F04b); My profile (F05b); Password & MFA (F05c); Review & sign sheet (F06); every feature designs + tests its phone layout | e2e `phone.spec.ts` on iPhone 17e (WebKit) + Galaxy S24 Ultra (Chromium): menu, no sideways scroll | 🟡 sign-in, app shell, requests list, request form done (form: 16 px fields, no sideways scroll); ⏳ each new screen |
 | J7 | Design boards still "draft, awaiting review" | phase 0 step 0.4 | reviewed per feature before building its screens | — | 🟡 |
 
