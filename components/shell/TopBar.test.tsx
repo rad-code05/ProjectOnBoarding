@@ -148,4 +148,24 @@ describe("TopBar phone menu", () => {
     await user.click(within(menu).getByRole("button", { name: "Sign out" }));
     expect(signOut).toHaveBeenCalledWith({ redirectUrl: "/sign-in" });
   });
+
+  test("approvers see how many requests wait — on the link and the menu button", () => {
+    pathname = "/approvals";
+    render(
+      <TopBar
+        items={[
+          { href: "/approvals", label: "Approvals", badge: 2 },
+          { href: "/records", label: "Records" },
+        ]}
+        userName="Moises Larez"
+        userRole="Approver"
+      />,
+    );
+    expect(
+      screen.getByRole("link", { name: "Approvals, 2 waiting" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Open menu, 2 waiting" }),
+    ).toBeInTheDocument();
+  });
 });

@@ -11,7 +11,32 @@ test("approver lands on Approvals with the approver menu", async ({ page }) => {
   await expect(page).toHaveURL(/\/approvals$/);
   await expect(
     page.getByRole("navigation", { name: "Main" }).getByRole("link"),
-  ).toHaveText(["Approvals", "Records", "Reports"]);
+  ).toHaveText([/^Approvals/, "Records", "Reports"]);
+});
+
+test("Approvals shows the tiles, what waits and what closed", async ({
+  page,
+}) => {
+  await openApp(page, "/approvals");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Approvals" }),
+  ).toBeVisible();
+  for (const tile of [
+    "Waiting for you",
+    "Returned to Raju",
+    "Closed this month",
+  ]) {
+    await expect(page.getByText(tile, { exact: true }).first()).toBeVisible();
+  }
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Waiting for you" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Recently closed" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Creating and editing requests is done by IT."),
+  ).toBeVisible();
 });
 
 // Any request page — the role check runs before the request is looked up.

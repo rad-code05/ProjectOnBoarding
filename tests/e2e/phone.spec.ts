@@ -234,7 +234,7 @@ test.describe("approver on a phone", () => {
     const menu = await openMenu(page);
     await expect(
       menu.getByRole("navigation", { name: "Main" }).getByRole("link"),
-    ).toHaveText(["Approvals", "Records", "Reports"]);
+    ).toHaveText([/^Approvals/, "Records", "Reports"]);
     await page.keyboard.press("Escape");
     await expect(menu).toHaveCount(0);
   });

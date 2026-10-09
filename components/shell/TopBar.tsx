@@ -17,7 +17,7 @@ import { cn } from "@/lib/cn";
 
 export type TopBarProps = {
   /** Already filtered by role on the server (navFor). */
-  items: { href: string; label: string }[];
+  items: { href: string; label: string; badge?: number }[];
   userName: string;
   userRole: string;
 };
@@ -43,6 +43,24 @@ export function TopBar({ items, userName, userRole }: TopBarProps) {
 
   const isCurrent = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
+  const waiting = items.reduce((sum, item) => sum + (item.badge ?? 0), 0);
+
+  // "2" next to the label; screen readers hear "Approvals, 2 waiting".
+  const badge = (count: number | undefined, dark = true) =>
+    count ? (
+      <>
+        <span
+          aria-hidden="true"
+          className={cn(
+            "ml-1.5 inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-pill px-1.5 font-sans text-[11px] font-bold",
+            dark ? "bg-paper text-ink" : "bg-ink text-paper",
+          )}
+        >
+          {count}
+        </span>
+        <span className="sr-only">, {count} waiting</span>
+      </>
+    ) : null;
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -98,6 +116,7 @@ export function TopBar({ items, userName, userRole }: TopBarProps) {
                 )}
               >
                 {item.label}
+                {badge(item.badge)}
               </Link>
             );
           })}
@@ -127,13 +146,27 @@ export function TopBar({ items, userName, userRole }: TopBarProps) {
         <button
           ref={menuButton}
           type="button"
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-label={
+            menuOpen
+              ? "Close menu"
+              : waiting
+                ? `Open menu, ${waiting} waiting`
+                : "Open menu"
+          }
           aria-expanded={menuOpen}
           aria-controls="phone-menu"
           onClick={() => setMenuOpenOn(menuOpen ? null : pathname)}
-          className="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-pill border border-divider-dark bg-ink text-paper hover:border-stone md:hidden"
+          className="relative inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-pill border border-divider-dark bg-ink text-paper hover:border-stone md:hidden"
         >
           {menuOpen ? <CloseIcon size={18} /> : <MenuIcon size={18} />}
+          {!menuOpen && waiting > 0 && (
+            <span
+              aria-hidden="true"
+              className="absolute -top-1 -right-1 inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-pill bg-paper px-1.5 text-[11px] font-bold text-ink"
+            >
+              {waiting}
+            </span>
+          )}
         </button>
       </header>
 
@@ -158,7 +191,10 @@ export function TopBar({ items, userName, userRole }: TopBarProps) {
                     current ? "text-paper" : "text-stone hover:text-paper",
                   )}
                 >
-                  {item.label}
+                  <span>
+                    {item.label}
+                    {badge(item.badge)}
+                  </span>
                   {current && (
                     <span
                       aria-hidden="true"
