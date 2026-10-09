@@ -343,3 +343,28 @@ test("My profile: typed initials, then a PNG signature that becomes active", asy
       .first(),
   ).toContainText("Active");
 });
+
+test("Password & MFA opens from My profile; a mismatch is caught before Clerk", async ({
+  page,
+}) => {
+  await openApp(page, "/profile");
+  await page.getByRole("link", { name: "Manage password & MFA" }).click();
+  await expect(page).toHaveURL(/\/profile\/security$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Password & MFA" }),
+  ).toBeVisible();
+  // The test user signs in with an authenticator app.
+  await expect(
+    page.getByRole("region", { name: "Authenticator app" }),
+  ).toContainText("On");
+
+  // Only the safe path: the shared test user's password must never change.
+  await page.getByLabel("Current password").fill("not-the-real-one");
+  await page.getByLabel("New password", { exact: true }).fill("new-pass-1");
+  await page.getByLabel("Repeat new password").fill("new-pass-2");
+  await page.getByRole("button", { name: "Change password" }).click();
+  await expect(
+    page.getByRole("region", { name: "Change password" }).getByRole("alert"),
+  ).toHaveText("The new passwords don't match.");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});

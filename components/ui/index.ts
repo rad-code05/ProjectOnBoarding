@@ -4,6 +4,7 @@ export { IconButton } from "./IconButton";
 export {
   AlertIcon,
   CheckIcon,
+  ChevronLeftIcon,
   ChevronRightIcon,
   CloseIcon,
   EyeIcon,
