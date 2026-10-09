@@ -42,7 +42,7 @@ Enforced in the database (F04), not only in the UI. → `PROJECT_PLAN.md` §4.3,
 | Offboarding / modification | SLA panel, access inventory pre-fills removals | F09–F10 |
 | Audit log | Append-only; page with filters + CSV | S6 (table), F11 (page) |
 | Reports | Side panel of report types, each with a definition, CSV/PDF | F12–F14 |
-| AI assistant | "Laine robot", closed by default; proposes field values, batch onboarding, field suggestions; human approval for writes | F15–F17 |
+| AI assistant | "Laine robot", closed by default; **Anthropic** (model chosen in Admin); fills / updates the form for you, batch onboarding, field suggestions, **reports and questions about the data**; you accept every write; never signs / approves | F15–F17 |
 
 ## 5. Architecture
 ```

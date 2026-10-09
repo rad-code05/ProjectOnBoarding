@@ -225,6 +225,14 @@ All tool inputs are validated with Zod on the server; every server-side tool re-
 - Rate-limit `/api/chat` per user and set a monthly spend cap.
 - Choose the provider only after confirming data-processing terms, retention (prefer zero-retention), and region (Section 17).
 
+### 6.5 Decided 2026-10-09 (D7, part 1) — Anthropic, model chosen in Admin, a hands-on assistant
+- **Provider:** Anthropic (Claude) through the Vercel AI SDK (`@ai-sdk/anthropic`), one API key per environment.
+- **Model:** chosen by Raju in **Admin → AI settings** from a list kept as data (default **Claude Sonnet 5.5** `claude-sonnet-5-5`; also offered: Claude Opus 5.5 `claude-opus-5-5` for heavy analysis, Claude Haiku 4.5 for speed / cost). A new model is added to the list without a code change. Until Admin exists, the default comes from an environment variable.
+- **Scope widened (Raju):** the assistant does the typing — **fill in and update** the request form (sections 1–7: fields, applications, equipment, physical access; section 9 notes), **offload** batch onboarding, **create reports** and **answer questions about the data**.
+- **Guardrails kept (proposed, to confirm):** every write is shown as a suggestion / change list that the person accepts (per field, or `needsApproval` for a batch); the assistant still never signs, approves, returns, closes, cancels, changes roles or publishes form changes (§6.2); **section 9 ticks stay human** — they state that the work was done (the assistant may draft the notes).
+- **Data questions and reports:** read-only tools that run **with the signed-in person's own session** (RLS decides what it can see — Moises never gets drafts), using the report definitions of F12–F14 and validated filters (no free SQL); answers say which data they used; a report can be shown and exported (CSV / PDF) like any report.
+- **Still open (D7, part 2):** may employee data be sent to Anthropic, under which data-processing terms and retention (prefer zero-retention); confirm with Laine before F15 goes live.
+
 ---
 
 ## 7. Form Extensibility

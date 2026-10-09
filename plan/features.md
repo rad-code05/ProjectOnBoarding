@@ -66,13 +66,13 @@ Every feature's done-when also includes: accessible (keyboard + screen reader), 
 "Offboarding SLA" (needs F09), "Access by application", "Open requests by status".
 
 ### F15 — Assistant shell
-**Needs:** F02. **Decision:** D7. **Design:** `design/main-page.md` (robot). `/api/chat`, rate limit + spend cap, robot launcher + panel (closed by default).
+**Needs:** F02. **Decision:** D7 (part 1 ✅ 2026-10-09: Anthropic, model chosen in Admin — PROJECT_PLAN §6.5; part 2 open: employee data / terms / retention). **Design:** `design/main-page.md` (robot). `/api/chat` with `@ai-sdk/anthropic`, **model from AI settings** (list kept as data, default Claude Sonnet 5.5; a small Admin → AI settings card, or env var until F21), rate limit + spend cap, robot launcher + panel (closed by default).
 
 ### F16 — Field suggestions
-`proposeFieldValues` → suggested fields, accept/reject, audit `source = ai`; read-only tools `getRequestSummary` / `getCatalog` ("what's still missing?"); enables the AI check in Review & sign.
+**Form tools (widened 2026-10-09 — the assistant does the typing):** propose / apply values for sections 1–7 (fields, applications, equipment, physical access) and section 9 notes — shown as suggestions, accept / reject each, audit `source = ai`; section 9 ticks stay human; never sign / approve / close / cancel / change roles. Read-only tools `getRequestSummary` / `getCatalog` ("what's still missing?"); enables the AI check in Review & sign.
 
 ### F17 — Batch onboarding
-**Decision:** D8. **Design:** `design/request-variants.md` (batch). Upload, parse, batch grid with checks, `createDraftRequests` (`needsApproval`); safety tests (no forbidden tools, prompt injection).
+**Decision:** D8. **Design:** `design/request-variants.md` (batch). Upload, parse, batch grid with checks, `createDraftRequests` (`needsApproval`); safety tests (no forbidden tools, prompt injection). **+ Data questions & AI reports (added 2026-10-09, needs F12–F14):** read-only tools with the person's own session (RLS) over the report definitions with validated filters (no free SQL) — answers name the data used; a report can be shown and exported like any other.
 
 ### F18 — Admin: users & roles
 **Decision:** D4, D5. Clerk invitations, role editing with segregation-of-duties rules; **at least one active approver must always exist** (block removing/deactivating the last one).
