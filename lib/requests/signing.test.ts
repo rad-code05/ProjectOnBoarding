@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 import {
   accessRows,
   employeeRows,
+  pdfFileName,
   signButtonLabel,
   signErrorMessage,
   signingChecks,
@@ -48,6 +49,7 @@ const snapshot = snapshotSchema.parse({
     manager_name: "Mara Manager",
     requestor_name: null,
     effective_date: "2026-10-14",
+    execution_started_at: null,
   },
   access: [
     {
@@ -91,6 +93,7 @@ const review = (patch: Partial<SigningReview>): SigningReview => ({
     detail: "",
   },
   approvers: ["Moises"],
+  signerName: "Raju Bholani",
   ...patch,
 });
 
@@ -210,5 +213,26 @@ describe("wording", () => {
     ],
   ])("%s %s", (code, message, expected) => {
     expect(signErrorMessage(code, message)).toBe(expected);
+  });
+});
+
+describe("pdfFileName", () => {
+  test.each([
+    ["José", "Müller", "onboarding", "jose.muller-onboarding.pdf"],
+    [
+      "Anna Lena",
+      "Keller-Brun",
+      "offboarding",
+      "anna-lena.keller-brun-offboarding.pdf",
+    ],
+    [
+      "Zoë",
+      "O'Neil",
+      "access_modification",
+      "zoe.oneil-access-modification.pdf",
+    ],
+    [null, null, "onboarding", "request-onboarding.pdf"],
+  ])("%s %s (%s) → %s", (first, last, type, expected) => {
+    expect(pdfFileName(first, last, type)).toBe(expected);
   });
 });

@@ -1,5 +1,6 @@
 "use server";
 
+import { currentUser } from "@clerk/nextjs/server";
 import * as z from "zod";
 import { requireRole } from "@/lib/auth";
 import { loadSignatures } from "@/lib/profile/signatures";
@@ -33,7 +34,7 @@ export async function loadSigningReview(
   if (!id.success) return { ok: false, message: "This request is unknown." };
 
   const supabase = createServerSupabaseClient();
-  const [checks, preview, approvers, signatures] = await Promise.all([
+  const [checks, preview, approvers, signatures, user] = await Promise.all([
     supabase.rpc("signing_checks", { p_request_id: id.data }),
     supabase.rpc("request_snapshot_preview", { p_request_id: id.data }),
     supabase
@@ -44,6 +45,7 @@ export async function loadSigningReview(
       .eq("role", "approver")
       .eq("app_users.active", true),
     loadSignatures(),
+    currentUser(),
   ]);
   if (checks.error || preview.error || !preview.data) {
     return { ok: false, message: "Could not open the review. Try again." };
@@ -71,6 +73,8 @@ export async function loadSigningReview(
       approvers: (approvers.data ?? [])
         .map((row) => row.app_users.first_name)
         .filter((name): name is string => Boolean(name)),
+      signerName:
+        [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "You",
     },
   };
 }

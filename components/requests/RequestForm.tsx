@@ -30,6 +30,8 @@ import { FieldRenderer } from "./FieldRenderer";
 import { PhysicalSection } from "./PhysicalSection";
 import { ProvisioningSection } from "./ProvisioningSection";
 import { SectionNav, type SectionNavItem } from "./SectionNav";
+import { ReviewSignSheet } from "./ReviewSignSheet";
+import { SignaturesSection } from "./SignaturesSection";
 import { useAutosave, type SaveStatus } from "./useAutosave";
 import { CancelRequestSheet, StartExecutionSheet } from "./WorkflowSheets";
 
@@ -63,7 +65,14 @@ function statusText(status: SaveStatus, created: string): string {
  * switch at the top. Changes save on their own (useAutosave) and only if
  * nobody saved in between; sections without fields yet are collapsed rows.
  */
-export function RequestForm({ form }: { form: RequestFormData }) {
+export function RequestForm({
+  form,
+  canSign,
+}: {
+  form: RequestFormData;
+  /** IT operator or admin: may open Review & sign. */
+  canSign: boolean;
+}) {
   const { values, saved, errors, status, setValue, saveNow } = useAutosave({
     id: form.id,
     version: form.version,
@@ -77,7 +86,7 @@ export function RequestForm({ form }: { form: RequestFormData }) {
   const [equipment, setEquipment] = useState<EquipmentItem[]>(form.equipment);
   const [physical, setPhysical] = useState<PhysicalChoices>(form.physical);
   const [checks, setChecks] = useState(form.execution.checks);
-  const [sheet, setSheet] = useState<"start" | "cancel" | null>(null);
+  const [sheet, setSheet] = useState<"start" | "cancel" | "sign" | null>(null);
   const started = Boolean(form.workflow.executionStartedLabel);
   const cancellable = [
     "draft",
@@ -94,6 +103,23 @@ export function RequestForm({ form }: { form: RequestFormData }) {
         ? [...new Set([...current, number])]
         : current.filter((n) => n !== number),
     );
+
+  // Save what's typed first, so the review shows the latest data.
+  const openReview = async () => {
+    await saveNow();
+    setSheet("sign");
+  };
+
+  // "Edit" / "Fix" in the review: close it and open that section.
+  const editSection = (number: number) => {
+    setSheet(null);
+    toggle(number, true);
+    requestAnimationFrame(() =>
+      document
+        .getElementById(`s${number}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+  };
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -342,6 +368,12 @@ export function RequestForm({ form }: { form: RequestFormData }) {
               checks={checks}
               onChecksChange={setChecks}
             />
+          ) : number === 11 && form.signatures.length > 0 ? (
+            <SignaturesSection
+              key={number}
+              signatures={form.signatures}
+              state={form.state}
+            />
           ) : !FIELD_SECTIONS.includes(number) ? (
             <CollapsedSection
               key={number}
@@ -432,7 +464,14 @@ export function RequestForm({ form }: { form: RequestFormData }) {
                 Start execution
               </Button>
             ) : (
-              <Button disabled title="Review & sign arrives with F06">
+              <Button
+                disabled={conflict || !canSign}
+                title={
+                  canSign ? undefined : "Only an IT operator signs section 9"
+                }
+                aria-haspopup="dialog"
+                onClick={() => void openReview()}
+              >
                 Review &amp; sign
               </Button>
             )}
@@ -444,6 +483,15 @@ export function RequestForm({ form }: { form: RequestFormData }) {
         <StartExecutionSheet
           requestId={form.id}
           subtitle={subtitle}
+          onClose={() => setSheet(null)}
+        />
+      )}
+      {sheet === "sign" && (
+        <ReviewSignSheet
+          requestId={form.id}
+          eyebrow={[form.ticketId, TYPE_LABELS[values.type]].join(" · ")}
+          checklist={form.checklist}
+          onEdit={editSection}
           onClose={() => setSheet(null)}
         />
       )}

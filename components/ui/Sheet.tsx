@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { cn } from "@/lib/cn";
 import { CloseIcon } from "./icons";
 import { IconButton } from "./IconButton";
 
@@ -14,11 +15,17 @@ export function Sheet({
   title,
   onClose,
   children,
+  wide = false,
+  footer,
 }: {
   eyebrow: string;
   title: string;
   onClose: () => void;
   children: ReactNode;
+  /** Wider window on desktop (Review & sign). */
+  wide?: boolean;
+  /** Buttons that stay at the bottom while the content scrolls. */
+  footer?: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -32,7 +39,10 @@ export function Sheet({
       ref={ref}
       aria-labelledby={titleId}
       onClose={onClose}
-      className="fixed inset-x-0 top-auto bottom-0 m-0 max-h-[90dvh] w-full max-w-none rounded-t-[20px] bg-paper p-0 text-ink backdrop:bg-ink/45 md:inset-0 md:m-auto md:max-w-md md:rounded-[18px]"
+      className={cn(
+        "fixed inset-x-0 top-auto bottom-0 m-0 max-h-[90dvh] w-full max-w-none rounded-t-[20px] bg-paper p-0 text-ink backdrop:bg-ink/45 md:inset-0 md:m-auto md:rounded-[18px]",
+        wide ? "md:max-w-3xl" : "md:max-w-md",
+      )}
     >
       <div className="flex flex-col gap-4.5 px-4 pt-2.5 pb-6 md:p-6">
         <span
@@ -52,6 +62,11 @@ export function Sheet({
         </div>
         {children}
       </div>
+      {footer && (
+        <div className="sticky bottom-0 border-t border-line-subtle bg-paper px-4 pt-3 pb-6 md:px-6">
+          {footer}
+        </div>
+      )}
     </dialog>
   );
 }

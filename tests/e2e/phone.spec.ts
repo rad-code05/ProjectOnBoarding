@@ -160,6 +160,33 @@ test.describe("admin on a phone", () => {
     await sheet.getByRole("button", { name: "Cancel" }).click();
   });
 
+  test("Review & sign opens as a sheet that fits the phone", async ({
+    page,
+  }) => {
+    await openApp(page, "/requests");
+    await page.getByRole("button", { name: "New request" }).first().click();
+    await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+    await page.getByRole("button", { name: "Start execution" }).click();
+    await page
+      .getByRole("dialog", { name: "Start execution?" })
+      .getByRole("button", { name: "Start execution" })
+      .click();
+    await page
+      .getByRole("button", { name: "Review & sign", exact: true })
+      .click();
+    const sheet = page.getByRole("dialog", { name: "Review & sign" });
+    // An empty request: the checks say what's missing; nothing is signed.
+    await expect(
+      sheet.getByRole("list", { name: "Checks before signing" }),
+    ).toContainText("Required fields empty");
+    await expect(
+      sheet.getByRole("button", { name: /^Sign & send/ }),
+    ).toBeDisabled();
+    await expectNoSideScroll(page);
+    await sheet.getByRole("button", { name: "Back to edit" }).click();
+    await expect(sheet).toHaveCount(0);
+  });
+
   test("Password & MFA fits the phone", async ({ page }) => {
     await openApp(page, "/profile/security");
     await expect(

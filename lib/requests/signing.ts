@@ -25,6 +25,7 @@ export const snapshotSchema = z.object({
     manager_name: text,
     requestor_name: text,
     effective_date: text,
+    execution_started_at: text,
   }),
   access: z.array(
     z.object({ app: z.string(), action: z.string(), permission: text }),
@@ -70,6 +71,18 @@ export type SigningReview = {
   signature: SignerSignature | null;
   /** First names of the active approvers. */
   approvers: string[];
+  /** The signed-in signer's name (from Clerk). */
+  signerName: string;
+};
+
+/** A current signature in section 11. */
+export type SignedSection = {
+  section: "it_execution" | "final_confirmation";
+  signerName: string;
+  /** "9 Oct 2026, 14:12" — server time. */
+  signedLabel: string;
+  /** SHA-256 of the signed snapshot. */
+  fingerprint: string;
 };
 
 export type Row = { label: string; value: string };
@@ -152,6 +165,34 @@ export function signingChecks(review: SigningReview): Check[] {
         },
   );
   return checks;
+}
+
+const PDF_SUFFIX: Record<string, string> = {
+  onboarding: "onboarding",
+  offboarding: "offboarding",
+  access_modification: "access-modification",
+};
+
+/**
+ * "José Müller", onboarding → "jose.muller-onboarding.pdf" (PROJECT_PLAN
+ * §8.2): lower case, accents removed, spaces / hyphens inside a name → "-",
+ * anything else dropped.
+ */
+export function pdfFileName(
+  first: string | null,
+  last: string | null,
+  type: string,
+): string {
+  const clean = (name: string | null) =>
+    (name ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036F]/g, "")
+      .toLowerCase()
+      .trim()
+      .replace(/[\s-]+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+  const name = [clean(first), clean(last)].filter(Boolean).join(".");
+  return `${name || "request"}-${PDF_SUFFIX[type] ?? "request"}.pdf`;
 }
 
 /** "Sign & send to Moises" when he is the only approver (design/review-sign.md). */
