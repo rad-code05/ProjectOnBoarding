@@ -344,7 +344,7 @@ test("My profile: typed initials, then a PNG signature that becomes active", asy
   ).toContainText("Active");
 });
 
-test("Password & MFA opens from My profile; a mismatch is caught before Clerk", async ({
+test("Password & MFA opens from My profile; a mismatch is caught before Clerk; MFA sheets cancel safely", async ({
   page,
 }) => {
   await openApp(page, "/profile");
@@ -367,4 +367,21 @@ test("Password & MFA opens from My profile; a mismatch is caught before Clerk", 
     page.getByRole("region", { name: "Change password" }).getByRole("alert"),
   ).toHaveText("The new passwords don't match.");
   await expect(page.getByRole("dialog")).toHaveCount(0);
+
+  // The MFA sheets open and Cancel changes nothing (never press Start or
+  // Make new codes here: the shared test user's MFA must stay as it is).
+  await page.getByRole("button", { name: "Set up on a new phone" }).click();
+  const phone = page.getByRole("dialog", { name: "Set up on a new phone" });
+  await expect(phone).toContainText("Your old phone stops working");
+  await phone.getByRole("button", { name: "Cancel" }).click();
+  await expect(phone).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Make new backup codes" }).click();
+  const codes = page.getByRole("dialog", { name: "Make new backup codes" });
+  await expect(codes).toContainText("stop working");
+  await codes.getByRole("button", { name: "Cancel" }).click();
+  await expect(codes).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "Authenticator app" }),
+  ).toContainText("On");
 });

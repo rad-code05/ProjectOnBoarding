@@ -161,6 +161,12 @@ test.describe("admin on a phone", () => {
       await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
     }
     await expectNoSideScroll(page);
+    await page.getByRole("button", { name: "Set up on a new phone" }).click();
+    const sheet = page.getByRole("dialog", { name: "Set up on a new phone" });
+    await expect(sheet.getByRole("button", { name: "Start" })).toBeVisible();
+    await expectNoSideScroll(page);
+    await sheet.getByRole("button", { name: "Cancel" }).click();
+    await expect(sheet).toHaveCount(0);
   });
 
   test("403 and 404 pages fit the phone", async ({ page }) => {

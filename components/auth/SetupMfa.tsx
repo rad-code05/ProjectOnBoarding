@@ -7,11 +7,11 @@ import {
   useUser,
 } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { QRCodeSVG } from "qrcode.react";
 import { useState, type FormEvent } from "react";
 import { Button, InlineError, TextField } from "@/components/ui";
 import { AuthHeading } from "./AuthLayout";
 import { authErrorMessage } from "./authErrors";
+import { AuthenticatorQr, BackupCodeList } from "./MfaPieces";
 
 type Step = "intro" | "scan" | "codes";
 
@@ -74,22 +74,6 @@ export function SetupMfa() {
     }
   }
 
-  function download() {
-    const text = [
-      "Laine onboarding rights — backup codes",
-      `Account: ${user?.primaryEmailAddress?.emailAddress ?? ""}`,
-      "Each code works once. Keep this file somewhere safe.",
-      "",
-      ...backupCodes,
-    ].join("\n");
-    const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "laine-onboarding-backup-codes.txt";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
   async function finish() {
     setError(null);
     setBusy(true);
@@ -130,27 +114,7 @@ export function SetupMfa() {
         <AuthHeading title="Scan the code">
           In your authenticator app, add an account and scan this QR code.
         </AuthHeading>
-        {uri && (
-          <div className="self-start rounded-card border border-line bg-paper p-4">
-            <QRCodeSVG
-              value={uri}
-              size={176}
-              bgColor="#ffffff"
-              fgColor="#000000"
-              title="QR code for your authenticator app"
-            />
-          </div>
-        )}
-        {secret && (
-          <details className="text-[13px] text-graphite">
-            <summary className="cursor-pointer font-semibold text-ink">
-              Can&apos;t scan? Enter the key manually
-            </summary>
-            <code className="mt-2 block rounded-field bg-paper px-3 py-2 font-mono text-sm break-all text-ink">
-              {secret}
-            </code>
-          </details>
-        )}
+        <AuthenticatorQr uri={uri} secret={secret} />
         <TextField
           label="6-digit code from the app"
           inputMode="numeric"
@@ -182,23 +146,12 @@ export function SetupMfa() {
         If you lose your phone, each of these codes lets you sign in once. Save
         them somewhere safe — they won&apos;t be shown again.
       </AuthHeading>
-      <ol className="grid grid-cols-2 gap-2 rounded-card border border-line bg-paper p-4 font-mono text-sm">
-        {backupCodes.map((c) => (
-          <li key={c}>{c}</li>
-        ))}
-      </ol>
-      <Button variant="secondary" onClick={download} className="self-start">
-        Download as text file
-      </Button>
-      <label className="flex items-start gap-3 rounded-field bg-paper p-3 text-sm">
-        <input
-          type="checkbox"
-          checked={saved}
-          onChange={(e) => setSaved(e.target.checked)}
-          className="mt-0.5 size-4 accent-ink"
-        />
-        I&apos;ve saved my backup codes somewhere safe.
-      </label>
+      <BackupCodeList
+        codes={backupCodes}
+        email={user?.primaryEmailAddress?.emailAddress ?? ""}
+        saved={saved}
+        onSavedChange={setSaved}
+      />
       {error && <InlineError live>{error}</InlineError>}
       <Button
         size="lg"
