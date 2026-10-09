@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Avatar, SummaryTile, buttonStyles } from "@/components/ui";
 import { loadApprovals, type WaitingRequest } from "@/lib/approvals/list";
 import { requireRole } from "@/lib/auth";
@@ -36,13 +37,12 @@ function WaitingCard({ request }: { request: WaitingRequest }) {
           </div>
         ))}
       </dl>
-      <span
-        aria-disabled="true"
-        title="Comes with the next part of F07"
-        className={`${buttonStyles("primary", "md")} cursor-not-allowed opacity-60 md:self-start`}
+      <Link
+        href={`/approvals/${request.id}`}
+        className={`${buttonStyles("primary", "md")} md:self-start`}
       >
         Review &amp; confirm
-      </span>
+      </Link>
     </li>
   );
 }

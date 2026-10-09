@@ -16,43 +16,21 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { ChecklistItem } from "@/lib/requests/execution";
-import { formatDay, formatTime } from "@/lib/requests/format";
 import {
-  accessRows,
-  employeeRows,
+  Rows,
+  SignatureMark,
+  SnapshotCards,
+  cardTitle,
+  linkStyle,
+} from "./SnapshotCards";
+import {
   pdfFileName,
   signButtonLabel,
   signingChecks,
   snapshotSchema,
   type Check,
-  type Row,
   type SigningReview,
 } from "@/lib/requests/signing";
-
-const card = "flex flex-col gap-2.5 rounded-xl border border-line px-3.5 py-3";
-const cardTitle = "font-serif text-[19px]";
-
-function Rows({ rows, split = false }: { rows: Row[]; split?: boolean }) {
-  return (
-    <dl
-      className={cn(
-        "grid gap-x-3.5 gap-y-1.5 text-[13px]",
-        split ? "grid-cols-[1fr_auto]" : "grid-cols-[auto_1fr]",
-      )}
-    >
-      {rows.map((row, i) => (
-        <div key={`${row.label}-${i}`} className="contents">
-          <dt className={split ? "font-semibold" : "text-graphite"}>
-            {row.label}
-          </dt>
-          <dd className={split ? "text-right text-graphite" : "font-semibold"}>
-            {row.value}
-          </dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
 
 /**
  * Raju's Review & sign (design: Review & sign dialog + Phone · Review & sign).
@@ -124,8 +102,6 @@ export function ReviewSignSheet({
       router.refresh();
     });
 
-  const execution = snapshot?.execution;
-  const started = snapshot?.request.execution_started_at;
   const approver =
     review?.approvers.length === 1 ? review.approvers[0] : "The approver";
 
@@ -196,71 +172,12 @@ export function ReviewSignSheet({
             ))}
           </ul>
 
-          <div className="flex flex-col gap-3.5 md:grid md:grid-cols-2">
-            <section aria-labelledby="rs-employee" className={card}>
-              <div className="flex items-center justify-between">
-                <h3 id="rs-employee" className={cardTitle}>
-                  Employee
-                </h3>
-                <EditButton section={2} onEdit={onEdit} />
-              </div>
-              <Rows rows={employeeRows(snapshot)} />
-            </section>
-
-            <section aria-labelledby="rs-access" className={card}>
-              <div className="flex items-center justify-between">
-                <h3 id="rs-access" className={cardTitle}>
-                  Access &amp; equipment
-                </h3>
-                <EditButton section={5} onEdit={onEdit} />
-              </div>
-              {accessRows(snapshot).length > 0 ? (
-                <Rows rows={accessRows(snapshot)} split />
-              ) : (
-                <p className="text-[13px] text-graphite">Nothing requested.</p>
-              )}
-            </section>
-          </div>
-
-          <section aria-labelledby="rs-it" className={card}>
-            <div className="flex items-center justify-between">
-              <h3 id="rs-it" className={cardTitle}>
-                9 · IT execution
-              </h3>
-              <EditButton section={9} onEdit={onEdit} />
-            </div>
-            <span className="-mt-1.5 text-xs text-graphite">
-              Executed by {execution?.executed_by_name ?? "—"}
-              {started
-                ? ` · started ${formatDay(started)}, ${formatTime(started)}`
-                : ""}
-            </span>
-            <ul className="flex flex-col gap-2 text-[13px]">
-              {checklist.map((item) => {
-                const done = Boolean(execution?.checks[item.key]);
-                return (
-                  <li key={item.key} className="flex items-start gap-2">
-                    {done ? (
-                      <CheckIcon size={16} className="mt-px shrink-0" />
-                    ) : (
-                      <AlertIcon
-                        size={16}
-                        className="mt-px shrink-0 text-signal"
-                      />
-                    )}
-                    <span className={cn(!done && "text-signal")}>
-                      {item.label}
-                      {!done && " — not ticked"}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-            <p className="text-[13px] text-graphite">
-              <span className="font-semibold text-ink">Notes: </span>
-              {execution?.notes || "—"}
-            </p>
-          </section>
+          <SnapshotCards
+            snapshot={snapshot}
+            checklist={checklist}
+            onEdit={onEdit}
+            idPrefix="rs"
+          />
 
           <section
             aria-labelledby="rs-sig"
@@ -274,22 +191,11 @@ export function ReviewSignSheet({
                 Change in My profile
               </Link>
             </div>
-            <div className="flex h-19 items-center justify-center rounded-field bg-sand">
-              {review.signature?.previewUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element -- short-lived private link
-                <img
-                  src={review.signature.previewUrl}
-                  alt="Your active signature"
-                  className="max-h-16 max-w-full object-contain"
-                />
-              ) : review.signature?.typedText ? (
-                <span className="font-accent text-[34px] italic">
-                  {review.signature.typedText}
-                </span>
-              ) : (
-                <span className="text-sm text-graphite">No signature yet</span>
-              )}
-            </div>
+            <SignatureMark
+              imageUrl={review.signature?.previewUrl ?? null}
+              typedText={review.signature?.typedText ?? null}
+              alt="Your active signature"
+            />
             {review.signature && (
               <span className="text-xs text-graphite">
                 Active {review.signature.kind} · {review.signature.detail}
@@ -360,8 +266,6 @@ export function ReviewSignSheet({
   );
 }
 
-const linkStyle = "text-[13px] font-semibold underline underline-offset-2";
-
 /** "Fix" next to a failing check: opens the section, or My profile. */
 function FixLink({
   fix,
@@ -385,20 +289,6 @@ function FixLink({
       className={linkStyle}
     >
       Fix
-    </button>
-  );
-}
-
-function EditButton({
-  section,
-  onEdit,
-}: {
-  section: number;
-  onEdit: (section: number) => void;
-}) {
-  return (
-    <button type="button" onClick={() => onEdit(section)} className={linkStyle}>
-      Edit
     </button>
   );
 }
