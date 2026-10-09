@@ -25,7 +25,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | A9 | Wrong role → "no access" (403); unknown page → 404 | `design/records-states.md` | S7b | e2e approver/admin 403, 404 page | ✅ |
 | A10 | Role-based menu and start page (Raju → Requests, approver → Approvals) | ROLES, `approver-view.md` | S7a | e2e admin/approver landing + menu | ✅ |
 | A11 | Approver never sees drafts / in-execution requests | ROLES, `approver-view.md` | F01b (RLS on `requests`), F01c (list via RLS), F07 | pgTAP `requests_rls`; e2e approver → 403 on `/requests` and on a request page `/requests/[id]` | ✅ database + list + request page; F07 adds the approver views |
-| A12 | Nobody approves a request they prepared or executed | ROLES, §10.1 | F07 (server + DB) | pgTAP + e2e (F07 done-when) | ⏳ F07 |
+| A12 | Nobody approves a request they prepared or executed | ROLES, §10.1 | F07 (server + DB) | pgTAP + e2e (F07 done-when) | 🟡 database ✅ (creator, executor and IT signer refused — pgTAP `approvals.test.sql`); e2e ⏳ F07b |
 | A13 | Admin can't grant themselves Approver; role changes controlled | §10.1, D5 | S6 (no self-grant check, audited), F18 | pgTAP (S6); F18 tests | 🟡 ❓ D5 |
 | A14 | At least one active approver must exist | ROLES "rules that never change" | **F18** (assigned 2026-10-07) | F18 tests | ⏳ F18 |
 | A15 | Concurrency: stale saves rejected (`version`) | §10.2 | F01b (DB), F01d (save + conflict message) | pgTAP "a save with an outdated version changes nothing"; Save draft sends the loaded `version` (`saveDraft`) | ✅ database + save + designed *changed elsewhere* box (e2e "two tabs") |
@@ -66,11 +66,11 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | C2 | No approval gate before provisioning (Moises signs once, at the end) | §5.1, ROLES | F04/F07 | F07 tests | ⏳ F07 |
 | C3 | Every transition writes an audit event | §4.3 | F04 | pgTAP "the move is audited (from → to)" | ✅ F04a |
 | C4 | Cancel with required reason | §4.3 | F04 | pgTAP "cancelling needs a reason", who / when / why recorded; e2e "Raju cancels a request with a reason…" | ✅ F04 |
-| C5 | Return to Raju with required comment → returned; Raju's signature cleared (kept in audit); sections 1–9 unlock; must sign again | §4.3, ROLES | F07 | F07 done-when | ⏳ F07 |
+| C5 | Return to Raju with required comment → returned; Raju's signature cleared (kept in audit); sections 1–9 unlock; must sign again | §4.3, ROLES | F07 | F07 done-when | 🟡 database ✅ (comment required, signature cleared with reason, sections reopen; pgTAP); screens ⏳ F07b/c |
 | C6 | Returned view: Moises's comment, **flagged items**, "Go to…" and **Reply to Moises** | `design/request-variants.md` | **F07** (assigned 2026-10-07) | F07 tests | ⏳ F07 |
 | C7 | Any change after Raju signs clears his signature | §8.1 #4, §17 #5 | F06 | F06 tests | 🟡 signed = locked (RLS); signing again after a return clears the earlier signature (pgTAP `signing.test.sql`); clearing at Return ⏳ F07 |
 | C8 | Closed requests are never edited — changes go through a new access-modification request | §17 #5 | F04 (DB rule), F10 | pgTAP — only open states editable; cancelled / closed stay so | ✅ database (F04a); new access-modification request ⏳ F10 |
-| C9 | Pending confirmations visible to **all** approvers; first to confirm closes; PDF records who | §10.1 | F07, F08 | F07 tests | ⏳ F07 |
+| C9 | Pending confirmations visible to **all** approvers; first to confirm closes; PDF records who | §10.1 | F07, F08 | F07 tests | 🟡 database ✅ (every approver may confirm; the second finds it closed — pgTAP); PDF ⏳ F08 |
 | C10 | Offboarding: SLA required at creation, inventory pre-fills removals, countdown on request + list, missed reason before close | §5.2, `request-variants.md` | F09 | F09 tests | ⏳ F09 |
 | C11 | Access inventory per employee (built from closed requests) | §4.4 #2, D20 ✅ | F09 | F09 tests | ⏳ F09 (in v1 — D20) |
 | C12 | Access modification: keep / change / remove inventory rows + add from catalog | `request-variants.md` | F10 | F10 tests | ⏳ F10 |

@@ -195,7 +195,7 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_sg_approver","role":"authenticated"}', true);
 select is((select count(*)::int from public.signatures s join ids on ids.id = s.request_id), 1,
   'the approver sees the IT signature of a request awaiting confirmation');
-select public.transition_request(id, 'returned', 'Add the VPN group') from ids where first_name = 'Anna';
+select public.return_request(id, 'Add the VPN group') from ids where first_name = 'Anna';
 
 select set_config('request.jwt.claims', '{"sub":"user_sg_admin","role":"authenticated"}', true);
 select lives_ok(

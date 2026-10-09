@@ -16,6 +16,7 @@ The inventory shows what the person has today; each row can be **kept, changed**
 - Status pill **Returned** (signal outline); alert card "Returned by Moises Larez" with his comment, **Go to …** (jumps to the flagged section) and **Reply to Moises**.
 - Note: sections 1–9 are unlocked; Raju's previous signature is removed (kept in the audit log); sign again via **Review & sign again**.
 - Flagged items show a signal border and "Flagged by Moises".
+- **Phone board** *Phone · Returned request (Raju)* (approved 2026-10-09). **Decided:** whole **sections** are flagged (not single items); **Reply to Moises** = one optional note written in **Review & sign again**, shown to Moises on his next review (every round kept).
 
 ## Read-only (approver) — board *Moises · Read-only request*
 Opened from "View the full form" in Confirm & sign. Every applicable section as a read-only card (3 columns), header actions **Return to Raju** and **Confirm & sign**. No inputs, no assistant.

@@ -39,6 +39,71 @@ export type Database = {
         };
         Relationships: [];
       };
+      approvals: {
+        Row: {
+          comment: string | null;
+          decided_at: string;
+          decided_by: string;
+          decision: string;
+          flagged_sections: number[];
+          id: string;
+          request_id: string;
+          signature_id: string | null;
+          snapshot_id: string | null;
+        };
+        Insert: {
+          comment?: string | null;
+          decided_at?: string;
+          decided_by: string;
+          decision: string;
+          flagged_sections?: number[];
+          id?: string;
+          request_id: string;
+          signature_id?: string | null;
+          snapshot_id?: string | null;
+        };
+        Update: {
+          comment?: string | null;
+          decided_at?: string;
+          decided_by?: string;
+          decision?: string;
+          flagged_sections?: number[];
+          id?: string;
+          request_id?: string;
+          signature_id?: string | null;
+          snapshot_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "approvals_decided_by_fkey";
+            columns: ["decided_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "approvals_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "approvals_signature_id_fkey";
+            columns: ["signature_id"];
+            isOneToOne: false;
+            referencedRelation: "signatures";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "approvals_snapshot_id_fkey";
+            columns: ["snapshot_id"];
+            isOneToOne: false;
+            referencedRelation: "request_snapshots";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       audit_events: {
         Row: {
           action: string;
@@ -787,6 +852,7 @@ export type Database = {
           cleared_reason: string | null;
           form_version_id: number;
           id: string;
+          note: string | null;
           request_id: string;
           section: string;
           signature_asset_id: string;
@@ -800,6 +866,7 @@ export type Database = {
           cleared_reason?: string | null;
           form_version_id: number;
           id?: string;
+          note?: string | null;
           request_id: string;
           section: string;
           signature_asset_id: string;
@@ -813,6 +880,7 @@ export type Database = {
           cleared_reason?: string | null;
           form_version_id?: number;
           id?: string;
+          note?: string | null;
           request_id?: string;
           section?: string;
           signature_asset_id?: string;
@@ -900,16 +968,40 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      approval_preview: { Args: { p_request_id: string }; Returns: Json };
+      confirm_request: {
+        Args: { p_request_id: string; p_reviewed: Json };
+        Returns: string;
+      };
+      request_signature_marks: {
+        Args: { p_request_id: string };
+        Returns: {
+          kind: string;
+          note: string;
+          section: string;
+          sha256: string;
+          signed_at: string;
+          signer_name: string;
+          signer_role: Database["public"]["Enums"]["app_role"];
+          source: string;
+          storage_path: string;
+          typed_text: string;
+        }[];
+      };
       request_snapshot_preview: {
         Args: { p_request_id: string };
         Returns: Json;
+      };
+      return_request: {
+        Args: { p_comment: string; p_flagged?: number[]; p_request_id: string };
+        Returns: string;
       };
       set_active_signature: {
         Args: { p_asset_id: string };
         Returns: undefined;
       };
       sign_request: {
-        Args: { p_request_id: string; p_reviewed: Json };
+        Args: { p_note?: string; p_request_id: string; p_reviewed: Json };
         Returns: string;
       };
       signing_checks: { Args: { p_request_id: string }; Returns: Json };
