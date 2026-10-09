@@ -186,7 +186,10 @@ export function RequestForm({ form }: { form: RequestFormData }) {
 
   return (
     <div className="flex flex-col gap-3.5 md:grid md:grid-cols-[13.5rem_minmax(0,1fr)] md:items-start md:gap-7">
-      <div className="sticky top-0 z-20 -mx-4 -mt-6 flex flex-col gap-1 border-b border-line bg-sand px-4 pt-1 md:top-6 md:mx-0 md:mt-0 md:gap-4 md:border-0 md:p-0">
+      <div
+        data-sticky-bar
+        className="sticky top-0 z-20 -mx-4 -mt-6 flex flex-col gap-1 border-b border-line bg-sand px-4 pt-1 md:top-6 md:mx-0 md:mt-0 md:gap-4 md:border-0 md:p-0"
+      >
         <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-start">
           <Link
             href="/requests"
@@ -408,7 +411,10 @@ export function RequestForm({ form }: { form: RequestFormData }) {
         )}
 
         {form.editable && (
-          <div className="sticky bottom-0 order-last -mx-4 grid grid-cols-2 gap-2 border-t border-line bg-sand px-4 pt-3 pb-5 md:static md:order-0 md:col-start-2 md:row-start-1 md:mx-0 md:flex md:border-0 md:p-0">
+          <div
+            data-sticky-bar
+            className="sticky bottom-0 order-last -mx-4 grid grid-cols-2 gap-2 border-t border-line bg-sand px-4 pt-3 pb-5 md:static md:order-0 md:col-start-2 md:row-start-1 md:mx-0 md:flex md:border-0 md:p-0"
+          >
             <Button
               type="submit"
               variant="secondary"

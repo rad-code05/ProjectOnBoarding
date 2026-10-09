@@ -34,19 +34,25 @@
 
 @layer base {
   /*
-   * Keep anything scrolled into view (section chips, keyboard focus, search
-   * results) clear of the sticky bars: on a phone the ticket bar + section
-   * chips at the top and the Save / Review bar at the bottom.
+   * Keep content that is scrolled into view (section chips, keyboard focus,
+   * search results) clear of the sticky bars: on a phone the ticket bar +
+   * section chips at the top and the Save / Review bar at the bottom.
+   * Elements INSIDE a sticky bar get no margin — they can never move away
+   * from the edge, and asking for it makes phone browsers scroll past the
+   * end of the page (the CI iPhone test tapped beside the button).
    */
-  html {
-    scroll-padding-top: 9rem;
-    scroll-padding-bottom: 6rem;
+  main :where(section, button, input, select, textarea, a, [tabindex]) {
+    scroll-margin-top: 9rem;
+    scroll-margin-bottom: 6rem;
   }
   @media (width >= 48rem) {
-    html {
-      scroll-padding-top: 1.5rem;
-      scroll-padding-bottom: 0;
+    main :where(section, button, input, select, textarea, a, [tabindex]) {
+      scroll-margin-top: 1.5rem;
+      scroll-margin-bottom: 0;
     }
+  }
+  main [data-sticky-bar] :where(*) {
+    scroll-margin: 0;
   }
 
   body {
