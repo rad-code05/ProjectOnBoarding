@@ -25,7 +25,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | A9 | Wrong role → "no access" (403); unknown page → 404 | `design/records-states.md` | S7b | e2e approver/admin 403, 404 page | ✅ |
 | A10 | Role-based menu and start page (Raju → Requests, approver → Approvals) | ROLES, `approver-view.md` | S7a | e2e admin/approver landing + menu | ✅ |
 | A11 | Approver never sees drafts / in-execution requests | ROLES, `approver-view.md` | F01b (RLS on `requests`), F01c (list via RLS), F07 | pgTAP `requests_rls`; e2e approver → 403 on `/requests` and on a request page `/requests/[id]` | ✅ database + list + request page; F07 adds the approver views |
-| A12 | Nobody approves a request they prepared or executed | ROLES, §10.1 | F07 (server + DB) | pgTAP + e2e (F07 done-when) | 🟡 database ✅ (creator, executor and IT signer refused — pgTAP `approvals.test.sql`); e2e ⏳ F07b |
+| A12 | Nobody approves a request they prepared or executed | ROLES, §10.1 | F07 (server + DB) | pgTAP + e2e (F07 done-when) | ✅ database (creator, executor and IT signer refused — pgTAP `approvals.test.sql`) + screen (blocked with the reason — unit `ApprovalSheets.test.tsx`) |
 | A13 | Admin can't grant themselves Approver; role changes controlled | §10.1, D5 | S6 (no self-grant check, audited), F18 | pgTAP (S6); F18 tests | 🟡 ❓ D5 |
 | A14 | At least one active approver must exist | ROLES "rules that never change" | **F18** (assigned 2026-10-07) | F18 tests | ⏳ F18 |
 | A15 | Concurrency: stale saves rejected (`version`) | §10.2 | F01b (DB), F01d (save + conflict message) | pgTAP "a save with an outdated version changes nothing"; Save draft sends the loaded `version` (`saveDraft`) | ✅ database + save + designed *changed elsewhere* box (e2e "two tabs") |
@@ -52,7 +52,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | B12 | Sec. 8 Removal SLA: deadline computed, "within SLA" computed (not self-reported), reason required if missed | §4.1, §4.4 #7, §5.2 | F09 | F09 tests | ⏳ ❓ D3 timezone |
 | B13 | Sec. 9 IT execution checklist per ticket type; executed by = signed-in user | §4.1 | F04 | pgTAP checklist per type, executed by = signed-in user; e2e "Raju starts execution and ticks section 9…" | ✅ F04 |
 | B14 | Sec. 10 Final review & closure | §4.1 | F07 | F07 tests | ⏳ F07 |
-| B15 | Sec. 11 Signatures (IT half, approver half) | §4.1, §8 | F06, F07 | F06/F07 tests | 🟡 IT half ✅ F06 (section 11 shows signer, server time, fingerprint — e2e "Raju reviews and signs…"); approver half ⏳ F07 |
+| B15 | Sec. 11 Signatures (IT half, approver half) | §4.1, §8 | F06, F07 | F06/F07 tests | ✅ IT half (F06) + approver half (F07b — `confirm_request`, e2e full loop) |
 | B16 | Default names (assignee Raju, approver Moises) are admin settings, not hard-coded | §4.1 | F21 (defaults) — F01 uses a seeded default | F21 tests | ⏳ F21 |
 | B17 | Sections 6–11 collapsed until relevant; section states in the rail | `design/main-page.md` | F03, F04 | e2e | ✅ rail/chips states (F01d-3); 6–7 open (F03); section 9 unlocks when execution starts (F04); 3, 8, 10, 11 collapsed until their step |
 | B18 | Dense two-column layout; AI-suggested fields dashed | `design/main-page.md` | F01–F02, F16 | e2e / visual check | ⏳ |
@@ -66,11 +66,11 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | C2 | No approval gate before provisioning (Moises signs once, at the end) | §5.1, ROLES | F04/F07 | F07 tests | ⏳ F07 |
 | C3 | Every transition writes an audit event | §4.3 | F04 | pgTAP "the move is audited (from → to)" | ✅ F04a |
 | C4 | Cancel with required reason | §4.3 | F04 | pgTAP "cancelling needs a reason", who / when / why recorded; e2e "Raju cancels a request with a reason…" | ✅ F04 |
-| C5 | Return to Raju with required comment → returned; Raju's signature cleared (kept in audit); sections 1–9 unlock; must sign again | §4.3, ROLES | F07 | F07 done-when | 🟡 database ✅ (comment required, signature cleared with reason, sections reopen; pgTAP); screens ⏳ F07b/c |
+| C5 | Return to Raju with required comment → returned; Raju's signature cleared (kept in audit); sections 1–9 unlock; must sign again | §4.3, ROLES | F07 | F07 done-when | 🟡 database ✅ + Return to Raju sheet ✅ (e2e full loop); Raju's Returned view details ⏳ F07c |
 | C6 | Returned view: Moises's comment, **flagged items**, "Go to…" and **Reply to Moises** | `design/request-variants.md` | **F07** (assigned 2026-10-07) | F07 tests | ⏳ F07 |
 | C7 | Any change after Raju signs clears his signature | §8.1 #4, §17 #5 | F06 | F06 tests | 🟡 signed = locked (RLS); signing again after a return clears the earlier signature (pgTAP `signing.test.sql`); clearing at Return ⏳ F07 |
 | C8 | Closed requests are never edited — changes go through a new access-modification request | §17 #5 | F04 (DB rule), F10 | pgTAP — only open states editable; cancelled / closed stay so | ✅ database (F04a); new access-modification request ⏳ F10 |
-| C9 | Pending confirmations visible to **all** approvers; first to confirm closes; PDF records who | §10.1 | F07, F08 | F07 tests | 🟡 database ✅ (every approver may confirm; the second finds it closed — pgTAP); PDF ⏳ F08 |
+| C9 | Pending confirmations visible to **all** approvers; first to confirm closes; PDF records who | §10.1 | F07, F08 | F07 tests | ✅ every approver sees the queue; the first to confirm closes it (pgTAP); e2e full loop; PDF ⏳ F08 |
 | C10 | Offboarding: SLA required at creation, inventory pre-fills removals, countdown on request + list, missed reason before close | §5.2, `request-variants.md` | F09 | F09 tests | ⏳ F09 |
 | C11 | Access inventory per employee (built from closed requests) | §4.4 #2, D20 ✅ | F09 | F09 tests | ⏳ F09 (in v1 — D20) |
 | C12 | Access modification: keep / change / remove inventory rows + add from catalog | `request-variants.md` | F10 | F10 tests | ⏳ F10 |
@@ -80,7 +80,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
 | D-1 | Signature or initials PNG (or typed initials) in My profile; one active; old versions kept | §8.1, D13 | F05 | pgTAP one active, replaced versions kept, own only | ✅ F05 (database F05a, screens F05b, e2e "My profile: typed initials, then a PNG signature…"); "used on N requests" in History ⏳ F06; drawing a signature by finger / stylus ✅ F05d (unit `DrawSignature.test.tsx`, e2e "…drawn on the pad becomes the active one") |
-| D-2 | Confirmation dialog with blocking checks, read-only summary, confirm checkbox | §8.1, `review-sign.md` | F06 (Raju), F07 (Moises) | e2e | 🟡 Raju ✅ F06 (unit `ReviewSignSheet.test.tsx`, e2e "Raju reviews and signs…", phone sheet); Moises ⏳ F07 |
+| D-2 | Confirmation dialog with blocking checks, read-only summary, confirm checkbox | §8.1, `review-sign.md` | F06 (Raju), F07 (Moises) | e2e | ✅ Raju (F06) + Moises (F07b: `ConfirmSignSheet`, unit + e2e full loop) |
 | D-3 | Server records signer, role, request, form version, **server timestamp**, snapshot SHA-256 (RFC 8785) | §8.1, §14 | F06 | pgTAP + unit | ✅ database (F06a: server time, snapshot + SHA-256 of RFC 8785 form computed in the database, pgTAP `signing.test.sql`); library cross-check ✅ (shared example: `canonicalize` RFC 8785 library = database, unit `signing.test.ts` + pgTAP) |
 | D-4 | Only the signed-in user applies their own signature; AI can never sign | §8.1, §6.2 | F06, F15–F17 | pgTAP + AI tool tests | 🟡 only IT operator / admin, with their own active asset (pgTAP); AI tools ⏳ F15–F17 |
 | D-5 | Never backdate: all dates server-generated, not editable | ROLES, §14 | S6 (triggers), every feature | pgTAP `session_audit` (backdated time overwritten) | 🟡 principle proven; ⏳ per table |
