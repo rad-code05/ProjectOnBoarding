@@ -29,7 +29,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | A14 | At least one active approver must exist | ROLES "rules that never change" | **F18** (assigned 2026-10-07) | F18 tests | ⏳ F18 |
 | A15 | Concurrency: stale saves rejected (`version`) | §10.2 | F01b (DB), F01d (save + conflict message) | pgTAP "a save with an outdated version changes nothing"; Save draft sends the loaded `version` (`saveDraft`) | ✅ database + save + designed *changed elsewhere* box (e2e "two tabs") |
 | A16 | Secrets only in env settings; secret scanning + push protection | §10.2 | S2 (GitHub settings) | GitHub secret scanning on | ✅ |
-| A17 | Upload validation (PNG only, size/dimensions, re-encode, private bucket) | §8.1 | F05 | F05 tests | ⏳ F05 |
+| A17 | Upload validation (PNG only, size/dimensions, re-encode, private bucket) | §8.1 | F05 | pgTAP bucket private / PNG / 1 MB, own folder only; re-encode in F05b | 🟡 storage rules ✅ (F05a); re-encode ⏳ F05b |
 | A18 | Authorization matrix test: every route × role | R1 | R1 (+ e2e grows per feature) | e2e | ⏳ R1 |
 | A19 | Security headers / CSP, dependency audit | R1 | R1 | — | ⏳ R1 |
 
@@ -78,7 +78,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
-| D-1 | Signature or initials PNG (or typed initials) in My profile; one active; old versions kept | §8.1, D13 | F05 | F05 tests | ⏳ F05 |
+| D-1 | Signature or initials PNG (or typed initials) in My profile; one active; old versions kept | §8.1, D13 | F05 | pgTAP one active, replaced versions kept, own only | 🟡 database ✅ (F05a); screens ⏳ F05b |
 | D-2 | Confirmation dialog with blocking checks, read-only summary, confirm checkbox | §8.1, `review-sign.md` | F06 (Raju), F07 (Moises) | e2e | ⏳ F06 |
 | D-3 | Server records signer, role, request, form version, **server timestamp**, snapshot SHA-256 (RFC 8785) | §8.1, §14 | F06 | pgTAP + unit | ⏳ F06 |
 | D-4 | Only the signed-in user applies their own signature; AI can never sign | §8.1, §6.2 | F06, F15–F17 | pgTAP + AI tool tests | ⏳ F06 |
