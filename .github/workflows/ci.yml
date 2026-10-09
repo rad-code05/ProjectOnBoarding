@@ -72,8 +72,9 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # Local Supabase (database + API) with all migrations — never the cloud DB.
-      - run: pnpm exec supabase start -x studio,imgproxy,realtime,edge-runtime,logflare,vector,mailpit,storage-api,supavisor,postgres-meta
+      # Local Supabase (database + API + Storage for signature uploads) with all
+      # migrations — never the cloud DB.
+      - run: pnpm exec supabase start -x studio,imgproxy,realtime,edge-runtime,logflare,vector,mailpit,supavisor,postgres-meta
       - name: Point the app at the local Supabase
         run: |
           eval "$(pnpm exec supabase status -o env)"
