@@ -148,6 +148,21 @@ test.describe("admin on a phone", () => {
     await expectNoSideScroll(page);
   });
 
+  test("Password & MFA fits the phone", async ({ page }) => {
+    await openApp(page, "/profile/security");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Password & MFA" }),
+    ).toBeVisible();
+    for (const name of [
+      "Change password",
+      "Authenticator app",
+      "Backup codes",
+    ]) {
+      await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
+    }
+    await expectNoSideScroll(page);
+  });
+
   test("403 and 404 pages fit the phone", async ({ page }) => {
     await openApp(page, "/approvals");
     await expect(

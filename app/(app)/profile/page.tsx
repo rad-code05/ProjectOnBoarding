@@ -1,4 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
+import Link from "next/link";
 import { SignaturePanel } from "@/components/profile/SignaturePanel";
 import { Avatar, ChevronRightIcon, buttonStyles } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
@@ -69,14 +70,13 @@ export default async function ProfilePage() {
             </div>
           ))}
         </dl>
-        <span
-          aria-disabled="true"
-          title="Coming with the next part of F05"
-          className={`${buttonStyles("secondary", "md")} cursor-not-allowed opacity-60 md:self-start`}
+        <Link
+          href="/profile/security"
+          className={`${buttonStyles("secondary", "md")} md:self-start`}
         >
           Manage password &amp; MFA
           <ChevronRightIcon />
-        </span>
+        </Link>
         <p className="text-xs text-graphite">
           Name, email and roles are managed by the admin.
         </p>

@@ -100,6 +100,14 @@ export function CloseIcon(props: IconProps) {
   );
 }
 
+export function ChevronLeftIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M15 18l-6-6 6-6" />
+    </Svg>
+  );
+}
+
 export function ChevronRightIcon(props: IconProps) {
   return (
     <Svg {...props}>
