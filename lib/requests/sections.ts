@@ -58,14 +58,18 @@ export const SECTIONS: SectionInfo[] = [
  * Sections someone else or a later step owns — shown locked, with who/when.
  * null = Raju may open it now. (F04 adds the workflow rules.)
  */
-export function lockedNote(number: number, type: RequestType): string | null {
+export function lockedNote(
+  number: number,
+  type: RequestType,
+  executionStarted = false,
+): string | null {
   switch (number) {
     case 3:
       return "Moises signs at the end";
     case 8:
       return type === "offboarding" ? null : "Offboarding only";
     case 9:
-      return "Opens when execution starts";
+      return executionStarted ? null : "Opens when execution starts";
     case 10:
       return "Moises · after Review & sign";
     case 11:

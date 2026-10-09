@@ -19,6 +19,10 @@ import {
   type SaveDraftResult,
 } from "@/lib/requests/draft";
 import {
+  changeStateSchema,
+  saveExecutionSchema,
+} from "@/lib/requests/execution";
+import {
   saveEquipmentSchema,
   setPhysicalSchema,
 } from "@/lib/requests/equipment";
@@ -364,4 +368,74 @@ export async function clearPhysical(input: {
     .eq("request_id", parsed.data.requestId)
     .eq("type_id", parsed.data.typeId);
   return error ? accessError(error.code) : { ok: true };
+}
+
+/**
+ * Start execution or cancel — through the database's state machine
+ * (transition_request), which checks the move, the role and the reason,
+ * stamps the server time and writes the audit event.
+ */
+export async function changeState(input: {
+  requestId: string;
+  to: "in_execution" | "cancelled";
+  reason: string | null;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = changeStateSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: "That step isn't valid." };
+  const { requestId, to, reason } = parsed.data;
+  if (to === "cancelled" && !reason) {
+    return { ok: false, message: "Give a reason for cancelling." };
+  }
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("transition_request", {
+    p_request_id: requestId,
+    p_to: to,
+    p_reason: reason ?? undefined,
+  });
+  if (!error) return { ok: true };
+  if (error.code === "23514") {
+    return {
+      ok: false,
+      message:
+        "This step isn't possible any more — reload to see where the request is now.",
+    };
+  }
+  if (error.code === "42501") {
+    return { ok: false, message: "You can't take this step on this request." };
+  }
+  return {
+    ok: false,
+    message: "Could not save. Check your connection and try again.",
+  };
+}
+
+/** Section 9: saves the checklist and notes ("executed by" = you, set by the database). */
+export async function saveExecution(input: {
+  requestId: string;
+  checks: Record<string, boolean>;
+  notes: string | null;
+}): Promise<AccessResult> {
+  const { userId } = await requireRole("admin", "requester", "it_operator");
+  const parsed = saveExecutionSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, message: "Those notes are too long." };
+  }
+  const { requestId, checks, notes } = parsed.data;
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase
+    .from("execution_confirmations")
+    .upsert(
+      { request_id: requestId, checks, notes, executed_by: userId },
+      { onConflict: "request_id" },
+    );
+  if (!error) return { ok: true };
+  if (error.code === "42501") {
+    return {
+      ok: false,
+      message:
+        "Section 9 can only be changed while the request is in execution.",
+    };
+  }
+  return accessError(error.code);
 }

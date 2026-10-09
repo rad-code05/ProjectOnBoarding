@@ -14,5 +14,6 @@ export default async function RequestPage({
   const { id } = await params;
   const form = await loadRequestForm(id);
   if (!form) notFound();
-  return <RequestForm form={form} />;
+  // A new state (after Start execution / Cancel) starts a fresh form.
+  return <RequestForm key={form.state} form={form} />;
 }

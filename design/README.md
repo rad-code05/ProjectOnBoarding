@@ -48,6 +48,7 @@ All planned screens now have a first design. Nothing is built yet.
 | Phone (D22): app shell (menu closed/open) · requests list (+ empty) · request form sections 1–2 (+ changed elsewhere) | Approved (2026-10-07) |
 | Phone (D22): sections 4–5 application access (+ edit-an-app sheet) | Approved (2026-10-08) |
 | Phone (D22): sections 6–7 equipment & physical access (+ add-equipment sheet) | Approved (2026-10-08) |
+| Phone (D22): in execution / section 9, Start execution, Cancel request | Approved (2026-10-08) |
 
 ## Canvas sources
 `canvas/` holds a copy of every artboard (`*.dc.html`) and the layout index (`canvas.json`) from the live canvas, so the design survives outside claude.ai. Keep it in sync after canvas edits. `assets/laine-logo-white.png` is the logo the artboards use (uploaded to the canvas as `/_blob/17b23c9ce6dc5f048942c7b514470f03`).
