@@ -20,7 +20,7 @@
 | ~~D4~~ | ✅ **Resolved 2026-10-07:** backup approver = **Celine** (account + email in Clerk, never in the repo). App users for now: Raju, Moises, Celine; more can be added later | — (Clerk invite before F07 tests) |
 | D5 | How admin role changes are controlled (second admin vs logged + visible to approvers) | F18 |
 | D6 | Auditor OK with end-only approval (no pre-provisioning approval)? | R |
-| D7 | AI provider & model (Claude direct vs via OpenRouter), may employee data be sent, retention | F15 |
+| D7 | AI provider & model (Claude direct vs via OpenRouter), may employee data be sent, retention | F15 — **part 1 decided 2026-10-09:** Anthropic; model chosen in Admin (default Claude Sonnet 5.5); assistant fills / updates forms, creates reports, answers data questions (PROJECT_PLAN §6.5). **Open:** employee data to Anthropic, terms, retention |
 | D8 | Batch input format (CSV, XLSX, pasted text) | F17 |
 | D9 | SharePoint: download only / Save button / automatic; site, library, folder; who does the Entra app registration | F22 |
 | D10 | Notifications: email (Resend) and/or Slack; v1 or later | F23 |

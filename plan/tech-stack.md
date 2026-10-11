@@ -18,7 +18,7 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | PDF | React-PDF, server-side `renderToBuffer` | `@react-pdf/renderer` | 4.9.0 | F08 |
 | Image processing | Re-encode uploaded PNGs, strip metadata | `sharp` | 0.35.5 | F05 |
 | AI chat | Vercel AI SDK (`streamText`, `tool` + `needsApproval`, `useChat`) | `ai`, `@ai-sdk/react` | 7.0.123 · 4.0.126 | F15 |
-| AI model | **Pending D7.** Default proposal: Anthropic Claude (`claude-sonnet-5-5`), set by env var | `@ai-sdk/anthropic` (or OpenRouter provider) | 4.0.69 | F15 |
+| AI model | **Anthropic (D7, 2026-10-09).** Chosen in Admin → AI settings from a list kept as data (default `claude-sonnet-5-5`; also `claude-opus-5-5`, `claude-haiku-4-5-20251001`); env var until Admin exists | `@ai-sdk/anthropic` | 4.0.69 | F15 |
 | Batch files | CSV / XLSX parsing (server-side) — **pending D8** | `papaparse`, `exceljs` | 5.7.0 · 4.4.0 | F17 |
 | Charts | Plain SVG/HTML bars (single series) — no chart library needed | — | — | F12 |
 | Email (phase 7) | Resend | `resend` | 6.31.0 | F23 |
@@ -49,7 +49,7 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | Vercel (hosting) — project `laine-onboarding`, https://laine-onboarding.vercel.app | Preview per PR, Production | Raju (personal; Hobby → Pro before go-live) | S4 ✅ |
 | Clerk (email + password + MFA, invite-only — D1) | Development instance, Production instance | Raju (personal) | S5 |
 | Supabase (region EU – Frankfurt — D2) | `laine-onboarding-dev` (Free; paired with the Clerk dev instance, used by local `pnpm dev` and Vercel until go-live) · `laine-onboarding-prod` at R7 (Pro) · local Docker copy for tests | Raju (personal, org "rad-code05's Org") | S6 ✅ |
-| AI provider (Anthropic or OpenRouter) | one key per environment | **D7** | F15 |
+| Anthropic API key | one key per environment | **D7** ✅ provider · data terms open | F15 |
 | Resend | — | D10 | F23 |
 | Microsoft 365 / Entra (app registration) | — | D9 | F22 |
 | Sentry (or alternative) | — | to confirm | R3 |

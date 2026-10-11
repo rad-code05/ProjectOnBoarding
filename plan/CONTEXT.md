@@ -2,7 +2,7 @@
 
 > **Read this first in every new session** (then `CLAUDE.md` → "Resume here" for the exact next step).
 > One page that explains *what* we build, *why*, *how* it fits together and *how we work*. Details live in the linked files — this file links, it does not repeat them.
-> Last updated: 2026-10-06.
+> Last updated: 2026-10-09.
 
 ## 1. What we are building
 **Laine onboarding rights** — an internal web app for Laine that replaces the PDF *Laine User Access Management Form v4*.
@@ -42,7 +42,7 @@ Enforced in the database (F04), not only in the UI. → `PROJECT_PLAN.md` §4.3,
 | Offboarding / modification | SLA panel, access inventory pre-fills removals | F09–F10 |
 | Audit log | Append-only; page with filters + CSV | S6 (table), F11 (page) |
 | Reports | Side panel of report types, each with a definition, CSV/PDF | F12–F14 |
-| AI assistant | "Laine robot", closed by default; proposes field values, batch onboarding, field suggestions; human approval for writes | F15–F17 |
+| AI assistant | "Laine robot", closed by default; **Anthropic** (model chosen in Admin); fills / updates the form for you, batch onboarding, field suggestions, **reports and questions about the data**; you accept every write; never signs / approves | F15–F17 |
 
 ## 5. Architecture
 ```
@@ -78,11 +78,11 @@ Built: `app_users`, `user_roles`, `audit_events` (S6) · `employees`, `departmen
 7. **Docs stay current:** tick the item + session-log line in its plan file, update `CLAUDE.md` "Resume here", this file if the big picture changes, and Raju's study guide `Rajulearning/Learn.md` (local only).
 
 ## 9. Roadmap and where we are
-| Stage | Items | Status (2026-10-06) |
+| Stage | Items | Status (2026-10-09) |
 | --- | --- | --- |
 | Phase 0 — decisions & design | D1–D19, design review | D1, D2, D12, D13 decided; others open (asked when a feature needs them) |
-| Phase 1 — walking skeleton | S1 app · S2 CI · S3 design foundation · S4 hosting · S5 sign-in · S6 database & roles · S7 app shell | S1–S7 merged (S6: #12, #13, #15, #16; S7: #18–#20 + S7d); **walking skeleton complete — F01 next** |
-| Features | F01–F08 onboarding end-to-end · F09–F11 offboarding, modification, audit page → **go-live possible** · F12–F23 reports, AI, admin, SharePoint, email | not started |
+| Phase 1 — walking skeleton | S1 app · S2 CI · S3 design foundation · S4 hosting · S5 sign-in · S6 database & roles · S7 app shell | S1–S7 merged (S6: #12, #13, #15, #16; S7: #18–#20 + S7d); walking skeleton complete |
+| Features | F01–F08 onboarding end-to-end · F09–F11 offboarding, modification, audit page → **go-live possible** · F12–F23 reports, AI, admin, SharePoint, email | **F01–F06 done**; F07 approvals in progress (database + Moises's screens done, Raju's Returned view next); then F08 PDF |
 | Release | R1–R7 security, accessibility, monitoring, backups, docs, automated DB deploys, go-live | after F11 |
 | Operate | Weekly/monthly/quarterly/yearly routine | after go-live |
 
