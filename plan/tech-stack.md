@@ -13,9 +13,9 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | Authentication | Clerk (Core 3) — our own sign-in screens on Clerk hooks, invite-only, MFA | `@clerk/nextjs` **7.9.8** (pinned) | 7.9.8 | S5 ✅ |
 | QR code (MFA setup) | Renders the authenticator `otpauth://` URI as an SVG | `qrcode.react` **4.2.0** (pinned) | 4.2.0 | S5 ✅ |
 | Database | Supabase Postgres + Row Level Security, Clerk as third-party auth | `@supabase/supabase-js` **2.117.2**, `supabase` CLI **2.119.0** (dev dep), `server-only` 0.0.1 (pinned) | 2.117.2 · CLI 2.119.0 | S6 ✅ |
-| File storage | Supabase Storage, private buckets (signatures, PDFs) | (same) | — | F05 |
+| File storage | Supabase Storage, private buckets `signatures` (F05) and `records` (PDFs, F08a) | (same) | — | F05 ✅ · F08a ✅ |
 | Validation | Zod (forms, Server Actions, AI tool inputs) | `zod` | 4.6.5 | S1 |
-| PDF | React-PDF, server-side `renderToBuffer` | `@react-pdf/renderer` | 4.9.0 | F08 |
+| PDF | React-PDF, server-side `renderToBuffer`; fonts embedded from TTF files in `lib/records/fonts/` (Raleway 400/600/700, Newsreader 400, Instrument Serif italic — SIL OFL, licences next to them) | `@react-pdf/renderer` **4.9.0** (pinned) | 4.9.0 | F08b ✅ |
 | Image processing | Re-encode uploaded PNGs, strip metadata | `sharp` | 0.35.5 | F05 |
 | AI chat | Vercel AI SDK (`streamText`, `tool` + `needsApproval`, `useChat`) | `ai`, `@ai-sdk/react` | 7.0.123 · 4.0.126 | F15 |
 | AI model | **Anthropic (D7, 2026-10-09).** Chosen in Admin → AI settings from a list kept as data (default `claude-sonnet-5-5`; also `claude-opus-5-5`, `claude-haiku-4-5-20251001`); env var until Admin exists | `@ai-sdk/anthropic` | 4.0.69 | F15 |

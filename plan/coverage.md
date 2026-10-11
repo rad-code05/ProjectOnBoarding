@@ -89,13 +89,13 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
-| E1 | PDF from the frozen closure snapshot, mirrors the 11 sections, fonts embedded, footer with SHA-256 | §8.2, `records-states.md` | F08 | F08 done-when (hash match) | 🟡 storage + record ✅ F08a (`pdf_documents` from the approval snapshot, private bucket `records`, one per request, download audit — pgTAP `records.test.sql`); document F08b, page F08c |
+| E1 | PDF from the frozen closure snapshot, mirrors the 11 sections, fonts embedded, footer with SHA-256 | §8.2, `records-states.md` | F08 | F08 done-when (hash match) | 🟡 storage + record ✅ F08a (`pdf_documents` from the approval snapshot, private bucket `records`, one per request, download audit — pgTAP `records.test.sql`); document ✅ F08b (`RecordPdf`, unit `record.test.ts` + `render.test.ts`: 2 A4 pages, fonts embedded, footer with SHA-256); page F08c |
 | E2 | Filename `firstname.lastname-<type>.pdf` with sanitising (José Müller → jose.muller); storage path includes ticket ID | §8.2, §14 | F08 | unit (filename) | 🟡 filename + sanitising ✅ (F06 `pdfFileName`, unit); D18 ✅ pattern kept for all three types; storage path `<ticket>/<file>` ✅ (F08a `record_pdf`, pgTAP `records.test.sql`) |
 | E3 | Every download / SharePoint save is an audit event | §8.2 | F08, F22 | pgTAP/e2e | ⏳ F08 |
 | E4 | Closed request page: Download, Preview, signatures card, recent activity; PDF marker in lists | `pdf-export.md` | F08 | e2e | ⏳ F08 |
 | E5 | Draft PDF watermark "DRAFT – NOT APPROVED" (if drafts may be exported) | §8.2 | — | pgTAP `records.test.sql` (no PDF before approval) | ✅ **not needed** — D18: a PDF exists only once approved |
 | E6 | Save to SharePoint (Graph, `Sites.Selected`), status + retry | §8.2, `pdf-export.md` | F22 | F22 tests | ❓ D9 |
-| E7 | Compare layout against the original form PDF | D14 | F08b | — | ⏳ F08b (D14 ✅: kept locally in git-ignored `Rajulearning/source/`, never committed) |
+| E7 | Compare layout against the original form PDF | D14 | F08b | — | ⏳ F08b built from the approved boards; compare once the original is in `Rajulearning/source/` (D14 ✅: local only, never committed) |
 
 ## F. Reports
 
