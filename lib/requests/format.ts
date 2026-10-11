@@ -6,8 +6,12 @@ const dayMonthYear = new Intl.DateTimeFormat("en-GB", {
 });
 const relative = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
-/** Company timezone — D3 is still open; the database assumes the same. */
-const COMPANY_TIMEZONE = "Europe/Zurich";
+/**
+ * Company timezone (D3, decided 2026-10-11): Asia/Dubai, the default of
+ * `app_settings.company_timezone` in the database. Screens use this fixed
+ * value until the Admin selector exists; the PDF reads the database setting.
+ */
+export const COMPANY_TIMEZONE = "Asia/Dubai";
 const companyDay = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   month: "short",

@@ -13,6 +13,7 @@ test("admin lands on Requests with the admin menu", async ({ page }) => {
   const menu = page.getByRole("navigation", { name: "Main" });
   await expect(menu.getByRole("link")).toHaveText([
     "Requests",
+    "Records",
     "Reports",
     "Audit log",
     "Admin",
@@ -26,7 +27,13 @@ test("admin lands on Requests with the admin menu", async ({ page }) => {
 test("admin can open every menu page", async ({ page }) => {
   await openApp(page, "/requests");
   const menu = page.getByRole("navigation", { name: "Main" });
-  for (const label of ["Reports", "Audit log", "Admin", "Requests"]) {
+  for (const label of [
+    "Records",
+    "Reports",
+    "Audit log",
+    "Admin",
+    "Requests",
+  ]) {
     await menu.getByRole("link", { name: label }).click();
     await expect(
       page.getByRole("heading", { level: 1, name: label }),

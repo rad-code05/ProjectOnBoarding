@@ -12,7 +12,7 @@ export type NavItem = {
 /**
  * Main menu, in display order. One list drives both the top bar and each
  * page's server-side check, so they can't drift apart (ROLES.md):
- * Raju → Requests · Reports · Audit log · Admin; approver → Approvals · Records · Reports.
+ * Raju → Requests · Records · Reports · Audit log · Admin; approver → Approvals · Records · Reports.
  */
 export const PAGES = {
   requests: {
@@ -24,7 +24,7 @@ export const PAGES = {
   records: {
     href: "/records",
     label: "Records",
-    roles: ["approver", "auditor"],
+    roles: ["admin", "approver", "auditor"],
   },
   reports: {
     href: "/reports",
