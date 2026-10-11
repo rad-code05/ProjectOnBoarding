@@ -36,6 +36,12 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 **Continue unfinished work**
 > Read CLAUDE.md, then continue F04 in plan/features.md. Check the session log and the open branch/PR to see where we stopped.
 
+**Next session (2026-10-12): test run + F19**
+> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date (the "docs: session handover (F19 next)" PR should be merged — clean up its branch).
+> 1) First help me test the full onboarding flow myself with a test approver: I created rbh+approver@laine.ai in the Clerk dev instance and added "; rbh+approver@laine.ai=approver" to ROLE_BOOTSTRAP in .env.local — run pnpm users:sync, then guide me step by step through the flow (my account in a normal window, the test approver in a private window: new request → execution → Review & sign → Return → sign again with a note → Confirm & sign → record page → Download PDF → Records) and fix anything I report.
+> 2) Then continue with F19 (Admin · Applications) in plan/features.md: brief me on where we are, what F19 builds and why now, propose the PR split, and draw its phone boards on the design canvas for my approval before building. It covers applications, equipment types and physical/logical access types; retire instead of delete; every change audited; later the AI robot can suggest new apps that I accept.
+> Verify library APIs with Context7 before coding. Run the git commands for me (branch, commit, push, PR); I squash-merge on GitHub and say "done". After every merged migration, do the cloud db push dry run and wait for my "push". Update my learning guide (Rajulearning/Learn.md) at the end of every PR — Part 10, glossary, data model, repo map and roadmap — and record every configuration change there.
+
 **Check the state** (after a break or a disconnect)
 > Read CLAUDE.md and check everything: git status, branches, open PRs, CI, and whether the notes in CLAUDE.md match reality.
 
