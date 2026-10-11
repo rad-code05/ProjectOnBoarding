@@ -98,8 +98,16 @@ test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirm
   await expect(raju.getByRole("group", { name: "Status" })).toHaveText(
     "Returned",
   );
-  await expect(raju.getByText("Add Figma as Viewer")).toBeVisible();
-  await reviewAndSign(raju);
+  const returned = raju.getByRole("region", { name: "Returned" });
+  await expect(returned).toContainText("“Add Figma as Viewer”");
+  await expect(returned).toContainText("Sections 1–9 are open again");
+  const access = raju.getByRole("region", { name: /Application access/ });
+  await expect(access.getByText(/^Flagged by /)).toBeVisible();
+  await returned
+    .getByRole("button", { name: "Go to Application access" })
+    .click();
+  await expect(access).toBeInViewport();
+  await reviewAndSign(raju, "Figma is Viewer now");
   await rajuContext.close();
 
   // Moises confirms.
@@ -111,6 +119,7 @@ test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirm
     .click();
   await page.getByRole("button", { name: "Confirm & sign" }).click();
   const confirm = page.getByRole("dialog", { name: "Confirm & sign" });
+  await expect(confirm.getByText("Figma is Viewer now")).toBeVisible();
   await expect(confirm.getByText(/Fingerprint [0-9a-f]{16}/)).toBeVisible();
   await confirm.getByLabel(/I have reviewed this record/).check();
   await confirm.getByRole("button", { name: "Confirm, sign & close" }).click();

@@ -20,6 +20,7 @@ import {
   personName,
 } from "@/lib/requests/labels";
 import { EXECUTION_EDITABLE, doneCount } from "@/lib/requests/execution";
+import { flagLabel } from "@/lib/requests/returned";
 import { SECTIONS, fillNote, lockedNote } from "@/lib/requests/sections";
 import { ChangedElsewhere } from "./ChangedElsewhere";
 import { CollapsedSection } from "./CollapsedSection";
@@ -29,6 +30,7 @@ import { ExecutionSection } from "./ExecutionSection";
 import { FieldRenderer } from "./FieldRenderer";
 import { PhysicalSection } from "./PhysicalSection";
 import { ProvisioningSection } from "./ProvisioningSection";
+import { ReturnedCard, SectionFlag, sectionFrame } from "./ReturnedCard";
 import { SectionNav, type SectionNavItem } from "./SectionNav";
 import { ReviewSignSheet } from "./ReviewSignSheet";
 import { SignaturesSection } from "./SignaturesSection";
@@ -95,6 +97,7 @@ export function RequestForm({
     "returned",
   ].includes(form.state);
   const conflict = status.kind === "conflict";
+  const flag = (number: number) => flagLabel(form.returned, number);
   const disabled = !form.editable || conflict;
 
   const toggle = (number: number, open?: boolean) =>
@@ -145,6 +148,12 @@ export function RequestForm({
     ).length;
 
   const navItems: SectionNavItem[] = SECTIONS.map((section) => {
+    const item = navItem(section);
+    const flagged = flag(section.number);
+    return flagged ? { ...item, flagged: true, note: flagged } : item;
+  });
+
+  function navItem(section: (typeof SECTIONS)[number]): SectionNavItem {
     const locked = lockedNote(section.number, values.type, started);
     if (section.number === 9 && !locked) {
       const done = doneCount(form.checklist, checks);
@@ -192,7 +201,7 @@ export function RequestForm({
     return locked
       ? { ...section, state: "locked", note: locked }
       : { ...section, state: "empty" };
-  });
+  }
 
   const typeField = form.fields.find((field) => field.key === "type");
   const name = personName(values.first_name, values.last_name);
@@ -307,16 +316,8 @@ export function RequestForm({
             )}
           </div>
         )}
-        {form.state === "returned" && form.workflow.returnReason && (
-          <div
-            role="note"
-            className="flex flex-col gap-1 rounded-card border-2 border-signal bg-paper px-4 py-3 md:col-span-2"
-          >
-            <span className="text-sm font-bold text-signal">
-              Returned by the approver
-            </span>
-            <span className="text-sm">{form.workflow.returnReason}</span>
-          </div>
+        {form.returned && (
+          <ReturnedCard info={form.returned} onGoTo={editSection} />
         )}
         {conflict && <ChangedElsewhere changes={unsaved} />}
         {status.kind === "error" && (
@@ -337,6 +338,7 @@ export function RequestForm({
               onAccessChange={setAccess}
               others={others}
               onOthersChange={setOthers}
+              flag={flag(number)}
               disabled={disabled}
             />
           ) : number === 6 ? (
@@ -346,6 +348,7 @@ export function RequestForm({
               types={form.equipmentTypes}
               items={equipment}
               onItemsChange={setEquipment}
+              flag={flag(number)}
               disabled={disabled}
             />
           ) : number === 7 ? (
@@ -355,6 +358,7 @@ export function RequestForm({
               types={form.physicalTypes}
               choices={physical}
               onChoicesChange={setPhysical}
+              flag={flag(number)}
               disabled={disabled}
             />
           ) : number === 9 && started ? (
@@ -367,6 +371,7 @@ export function RequestForm({
               startedLabel={form.workflow.executionStartedLabel}
               checks={checks}
               onChecksChange={setChecks}
+              flag={flag(number)}
             />
           ) : number === 11 && form.signatures.length > 0 ? (
             <SignaturesSection
@@ -389,11 +394,12 @@ export function RequestForm({
               id={`s${number}`}
               aria-labelledby={`s${number}-title`}
               className={cn(
-                "flex flex-col gap-3.5 rounded-card border border-line bg-paper p-4 md:col-span-2 md:px-5",
+                "flex flex-col gap-3.5 rounded-card bg-paper p-4 md:col-span-2 md:px-5",
+                sectionFrame(flag(number)),
                 conflict && "opacity-55",
               )}
             >
-              <div className="flex items-baseline gap-2.5">
+              <div className="flex flex-wrap items-baseline gap-2.5">
                 <span className="text-xs font-semibold text-graphite md:text-[11px]">
                   {String(number).padStart(2, "0")}
                 </span>
@@ -403,6 +409,7 @@ export function RequestForm({
                 >
                   {SECTIONS[number - 1].title}
                 </h2>
+                <SectionFlag label={flag(number)} />
                 <span className="ml-auto text-xs font-semibold whitespace-nowrap text-graphite md:text-[11px]">
                   {fillNote(missing(number))}
                 </span>
@@ -472,7 +479,9 @@ export function RequestForm({
                 aria-haspopup="dialog"
                 onClick={() => void openReview()}
               >
-                Review &amp; sign
+                {form.state === "returned"
+                  ? "Review & sign again"
+                  : "Review & sign"}
               </Button>
             )}
           </div>
@@ -491,6 +500,7 @@ export function RequestForm({
           requestId={form.id}
           eyebrow={[form.ticketId, TYPE_LABELS[values.type]].join(" · ")}
           checklist={form.checklist}
+          noteFor={form.returned?.byFirstName ?? null}
           onEdit={editSection}
           onClose={() => setSheet(null)}
         />

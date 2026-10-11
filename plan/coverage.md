@@ -63,12 +63,12 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
 | C1 | States `draft → in_execution → pending_confirmation → closed`, `returned`, `cancelled`; **enforced in the database** | §4.3, §14 | F04 | pgTAP `workflow_rls` — invalid moves rejected (F04 done-when) | ✅ F04a |
-| C2 | No approval gate before provisioning (Moises signs once, at the end) | §5.1, ROLES | F04/F07 | F07 tests | ⏳ F07 |
+| C2 | No approval gate before provisioning (Moises signs once, at the end) | §5.1, ROLES | F04/F07 | pgTAP `workflow_rls` (IT starts execution without approval) + e2e full loop | ✅ F04a + F07 (one approval, at the end) |
 | C3 | Every transition writes an audit event | §4.3 | F04 | pgTAP "the move is audited (from → to)" | ✅ F04a |
 | C4 | Cancel with required reason | §4.3 | F04 | pgTAP "cancelling needs a reason", who / when / why recorded; e2e "Raju cancels a request with a reason…" | ✅ F04 |
-| C5 | Return to Raju with required comment → returned; Raju's signature cleared (kept in audit); sections 1–9 unlock; must sign again | §4.3, ROLES | F07 | F07 done-when | 🟡 database ✅ + Return to Raju sheet ✅ (e2e full loop); Raju's Returned view details ⏳ F07c |
-| C6 | Returned view: Moises's comment, **flagged items**, "Go to…" and **Reply to Moises** | `design/request-variants.md` | **F07** (assigned 2026-10-07) | F07 tests | ⏳ F07 |
-| C7 | Any change after Raju signs clears his signature | §8.1 #4, §17 #5 | F06 | F06 tests | 🟡 signed = locked (RLS); signing again after a return clears the earlier signature (pgTAP `signing.test.sql`); clearing at Return ⏳ F07 |
+| C5 | Return to Raju with required comment → returned; Raju's signature cleared (kept in audit); sections 1–9 unlock; must sign again | §4.3, ROLES | F07 | F07 done-when | ✅ database (pgTAP `approvals.test.sql`) + Return to Raju sheet (F07b) + Raju's Returned view and signing again (F07c, e2e full loop) |
+| C6 | Returned view: Moises's comment, **flagged items**, "Go to…" and **Reply to Moises** | `design/request-variants.md` | **F07** (assigned 2026-10-07) | unit `ReturnedCard.test.tsx`, `returned.test.ts`, `ReviewSignSheet.test.tsx` (note); e2e full loop (card, flag, Go to, note seen by Moises) | ✅ F07c — whole sections flagged, Reply = one optional note per round in Review & sign again |
+| C7 | Any change after Raju signs clears his signature | §8.1 #4, §17 #5 | F06 | F06 tests | 🟡 signed = locked (RLS); signing again after a return clears the earlier signature (pgTAP `signing.test.sql`); cleared at Return with the reason (pgTAP `approvals.test.sql`, F07a) |
 | C8 | Closed requests are never edited — changes go through a new access-modification request | §17 #5 | F04 (DB rule), F10 | pgTAP — only open states editable; cancelled / closed stay so | ✅ database (F04a); new access-modification request ⏳ F10 |
 | C9 | Pending confirmations visible to **all** approvers; first to confirm closes; PDF records who | §10.1 | F07, F08 | F07 tests | ✅ every approver sees the queue; the first to confirm closes it (pgTAP); e2e full loop; PDF ⏳ F08 |
 | C10 | Offboarding: SLA required at creation, inventory pre-fills removals, countdown on request + list, missed reason before close | §5.2, `request-variants.md` | F09 | F09 tests | ⏳ F09 |

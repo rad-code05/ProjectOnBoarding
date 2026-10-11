@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useId, useState, useTransition } from "react";
 import {
   loadSigningReview,
   signRequest,
@@ -41,12 +41,15 @@ export function ReviewSignSheet({
   requestId,
   eyebrow,
   checklist,
+  noteFor = null,
   onEdit,
   onClose,
 }: {
   requestId: string;
   eyebrow: string;
   checklist: ChecklistItem[];
+  /** Signing again after a return: the approver's first name for the note. */
+  noteFor?: string | null;
   /** Close and open a section of the form. */
   onEdit: (section: number) => void;
   onClose: () => void;
@@ -55,6 +58,8 @@ export function ReviewSignSheet({
   const [review, setReview] = useState<SigningReview | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  const [note, setNote] = useState("");
+  const noteId = useId();
   const [error, setError] = useState<string | null>(null);
   const [signing, start] = useTransition();
 
@@ -93,6 +98,7 @@ export function ReviewSignSheet({
       const result = await signRequest({
         requestId,
         snapshot: review.snapshot,
+        note: noteFor ? note : null,
       });
       if (!result.ok) {
         setError(result.message);
@@ -221,6 +227,27 @@ export function ReviewSignSheet({
               ]}
             />
           </section>
+
+          {noteFor && (
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor={noteId} className="text-sm font-semibold">
+                Note for {noteFor} (optional)
+              </label>
+              <textarea
+                id={noteId}
+                aria-describedby={`${noteId}-help`}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                maxLength={1000}
+                rows={3}
+                placeholder="What you changed since it was returned"
+                className="rounded-field border border-field-border bg-paper px-3 py-2.5 text-base outline-none focus:border-ink md:text-sm"
+              />
+              <span id={`${noteId}-help`} className="text-xs text-graphite">
+                {noteFor} sees it when reviewing the request again.
+              </span>
+            </div>
+          )}
 
           <label className="flex items-start gap-3 rounded-xl bg-sand px-3.5 py-3 text-sm leading-snug">
             <input

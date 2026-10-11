@@ -20,6 +20,7 @@ import {
   type RequestState,
   type RequestType,
 } from "./labels";
+import { flaggedSections, type ReturnInfo } from "./returned";
 import type { SignedSection } from "./signing";
 
 export type RequestFormData = {
@@ -53,6 +54,8 @@ export type RequestFormData = {
   physical: PhysicalChoices;
   /** Section 11: the current (not cleared) signatures. */
   signatures: SignedSection[];
+  /** While returned: who returned it, when, the comment, flagged sections. */
+  returned: ReturnInfo | null;
 };
 
 const EDITABLE_STATES: RequestState[] = ["draft", "in_execution", "returned"];
@@ -97,6 +100,7 @@ export async function loadRequestForm(
     checklist,
     execution,
     signatures,
+    lastReturn,
   ] = await Promise.all([
     supabase
       .from("form_fields")
@@ -171,6 +175,16 @@ export async function loadRequestForm(
       .eq("request_id", request.id)
       .is("cleared_at", null)
       .order("signed_at"),
+    supabase
+      .from("approvals")
+      .select(
+        "comment, flagged_sections, decided_at, approver:app_users!approvals_decided_by_fkey(first_name, last_name)",
+      )
+      .eq("request_id", request.id)
+      .eq("decision", "returned")
+      .order("decided_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
   for (const result of [
     fields,
@@ -185,6 +199,7 @@ export async function loadRequestForm(
     checklist,
     execution,
     signatures,
+    lastReturn,
   ]) {
     if (result.error) {
       throw new Error(`Could not load the form: ${result.error.message}`);
@@ -353,6 +368,10 @@ export async function loadRequestForm(
       signedLabel: `${formatDay(row.signed_at)}, ${formatTime(row.signed_at)}`,
       fingerprint: row.snapshot.sha256,
     })),
+    returned:
+      request.state === "returned"
+        ? returnInfo(lastReturn.data, request.return_reason)
+        : null,
     others: (items.data ?? [])
       .filter((item) => item.app_id === null)
       .map((item) => ({
@@ -362,5 +381,40 @@ export async function loadRequestForm(
         permission: item.permission,
         notes: item.notes,
       })),
+  };
+}
+
+type ReturnRow = {
+  comment: string | null;
+  flagged_sections: number[];
+  decided_at: string;
+  approver: { first_name: string | null; last_name: string | null } | null;
+};
+
+/** The latest return as shown on the request (falls back to the reason). */
+function returnInfo(
+  row: ReturnRow | null,
+  reason: string | null,
+): ReturnInfo | null {
+  if (!row) {
+    return reason
+      ? {
+          byName: "the approver",
+          byFirstName: "the approver",
+          atLabel: "",
+          comment: reason,
+          flagged: [],
+        }
+      : null;
+  }
+  const first = row.approver?.first_name?.trim();
+  return {
+    byName:
+      personName(row.approver?.first_name, row.approver?.last_name) ||
+      "the approver",
+    byFirstName: first || "the approver",
+    atLabel: `${formatDay(row.decided_at)}, ${formatTime(row.decided_at)}`,
+    comment: row.comment ?? reason ?? "",
+    flagged: flaggedSections(row.flagged_sections),
   };
 }

@@ -30,6 +30,7 @@ import {
   type OtherApp,
 } from "@/lib/requests/access";
 import { AppDialog } from "./AppDialog";
+import { SectionFlag, sectionFrame } from "./ReturnedCard";
 
 const selectClass =
   "h-8 min-w-0 rounded-[7px] border border-field-border bg-paper px-1.5 text-xs disabled:bg-sand";
@@ -48,6 +49,7 @@ export function AccessSection({
   others,
   onOthersChange,
   disabled,
+  flag,
 }: {
   requestId: string;
   catalog: CatalogCategory[];
@@ -56,6 +58,8 @@ export function AccessSection({
   others: OtherApp[];
   onOthersChange: Dispatch<SetStateAction<OtherApp[]>>;
   disabled: boolean;
+  /** "Flagged by Moises" after a return, or null. */
+  flag?: string | null;
 }) {
   const [query, setQuery] = useState("");
   const [onlySet, setOnlySet] = useState(false);
@@ -161,15 +165,19 @@ export function AccessSection({
     <section
       id="s5"
       aria-labelledby="s5-title"
-      className="flex flex-col gap-3 rounded-card border border-line bg-paper pt-4 pb-2 md:col-span-2 md:px-1"
+      className={cn(
+        "flex flex-col gap-3 rounded-card bg-paper pt-4 pb-2 md:col-span-2 md:px-1",
+        sectionFrame(flag),
+      )}
     >
-      <div className="flex items-baseline gap-2.5 px-4">
+      <div className="flex flex-wrap items-baseline gap-2.5 px-4">
         <span className="text-xs font-semibold text-graphite md:text-[11px]">
           05
         </span>
         <h2 id="s5-title" className="font-serif text-[21px] md:text-[19px]">
           Application access
         </h2>
+        <SectionFlag label={flag} />
         <span
           role="status"
           className="ml-auto text-xs font-semibold whitespace-nowrap text-graphite md:text-[11px]"
