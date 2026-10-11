@@ -2,7 +2,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(23);
+select plan(24);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -34,8 +34,12 @@ select results_eq(
   array['Core business', 'Engineering, cloud & data', 'Security, device & identity', 'Business, finance & operations'],
   'the four categories are seeded in order');
 select is(
-  (select count(*)::int from public.catalog_apps where active), 26,
-  'the 26 applications of form v4 are seeded');
+  (select count(*)::int from public.catalog_apps where active), 28,
+  'the 26 applications of form v4 plus Zoom and Excalidraw are seeded');
+select ok(
+  (select permissions = '{Basic,Licensed,Admin}' from public.catalog_apps where name = 'Zoom')
+  and (select permissions = '{Member,Admin}' from public.catalog_apps where name = 'Excalidraw'),
+  'Zoom and Excalidraw offer their own permissions');
 select is(
   (select actions from public.catalog_apps where name = 'Hexnode (MDM)'), array['Enroll', 'Remove'],
   'Hexnode has its own actions: Enroll / Remove');

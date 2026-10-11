@@ -1,7 +1,7 @@
 import sharp from "sharp";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import { openApp } from "./open";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
   await setupClerkTestingToken({ page });
@@ -153,13 +153,13 @@ test("Raju sets Slack, Figma and Google Workspace; Hexnode offers Enroll / Remov
     await page.getByLabel(`${app} action`).selectOption(action);
     await page.getByLabel(`${app} permission`).selectOption(permission);
   }
-  await expect(page.getByText("3 of 26 set")).toBeVisible();
+  await expect(accessStatus(page)).toHaveText(/^3 of \d+ set$/);
 
-  // "N of 26 set" replaces "Saving…" once every choice is stored.
+  // "N of M set" replaces "Saving…" once every choice is stored.
   await openApp(page, page.url());
   await expect(page.getByLabel("Figma permission")).toHaveValue("Editor");
   await expect(page.getByLabel("Slack action")).toHaveValue("Grant");
-  await expect(page.getByText("3 of 26 set")).toBeVisible();
+  await expect(accessStatus(page)).toHaveText(/^3 of \d+ set$/);
 });
 
 test("Raju adds an Other application (Notion) and it stays on the request", async ({
@@ -181,7 +181,7 @@ test("Raju adds an Other application (Notion) and it stays on the request", asyn
     name: "Notion: Grant · Member. Change",
   });
   await expect(row).toBeVisible();
-  await expect(page.getByText("0 of 26 set · 1 other")).toBeVisible();
+  await expect(accessStatus(page)).toHaveText(/^0 of \d+ set · 1 other$/);
 
   await openApp(page, page.url());
   await expect(row).toBeVisible();
@@ -505,3 +505,11 @@ test("Raju reviews and signs a request; it awaits confirmation with his signatur
     page.getByRole("button", { name: "Review & sign", exact: true }),
   ).toHaveCount(0);
 });
+
+/** Section 5's own status line ("N of M set"); the catalog grows over time. */
+function accessStatus(page: Page) {
+  return page
+    .getByRole("region", { name: "Application access" })
+    .getByRole("status")
+    .first();
+}

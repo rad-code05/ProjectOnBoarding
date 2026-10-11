@@ -122,7 +122,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | G6 | AI can **never** approve, sign, submit, close, cancel, change roles, publish form changes — no such tools exist | §6.2, §14, ROLES | F15–F17 | test that the tool list contains none of them (F17 safety tests) | ⏳ F15 |
 | G7 | Uploaded files / pasted text treated as untrusted (prompt injection) | §6.4 | F17 | F17 safety tests | ⏳ F17 |
 | G8 | Only needed fields go to the model; never signatures or secrets; provider chosen after data terms | §6.4 | F15 | review + test | ⏳ ❓ D7 |
-| G9 | AI field suggestions ("we need a field for X") and catalog suggestions ("add Notion") need admin confirmation | §6.1, §7 | F19 (catalog), F20 (fields) | F19/F20 tests | ⏳ |
+| G9 | AI field suggestions ("we need a field for X") and catalog suggestions ("add Notion") need admin confirmation | §6.1, §7 | F19 (catalog, moved up after F08) + F15/F16 (robot suggests; admin accepts — asked by Raju 2026-10-11), F20 (fields) | F19/F20 tests | ⏳ |
 | G10 | LangFuse tracing (optional, with redaction) | §2 | — | — | ➖ optional, not planned |
 
 ## H. Admin & extensibility
@@ -130,7 +130,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
 | H1 | Users & roles: invite via Clerk, role chips, MFA + last sign-in, SoD rules | `profile-admin.md`, §10.1 | F18 (today: `pnpm users:sync`) | F18 tests | ⏳ ❓ D4, D5 |
-| H2 | Applications: add / rename / move / retire (never delete), actions + permission options, reorder, categories — **no code change** | §7 | F19 | F19 done-when | ⏳ F19 |
+| H2 | Applications: add / rename / move / retire (never delete), actions + permission options, reorder, categories — **no code change** | §7 | F19 (moved up: right after F08) | F19 done-when | ⏳ F19 — until then new apps arrive as seed migrations (Zoom + Excalidraw 2026-10-11, pgTAP `access_items_rls`) |
 | H3 | **Equipment types and physical/logical access types** editable the same way | §7 | **F19** (assigned 2026-10-07) | F19 tests | ⏳ F19 |
 | H4 | Form fields & versions: draft/publish, request keeps its version, `custom_fields jsonb`; old requests/PDFs unchanged | §7, §14 | F01 (v4.1 seeded), F20 | F20 done-when | ⏳ F20 |
 | H5 | RBAC templates as data; applying one pre-fills the matrix | §4.4 #1 | F21 | F21 tests | ⏳ ❓ D17 |
