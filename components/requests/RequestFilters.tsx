@@ -20,8 +20,9 @@ const selectClass =
  * Search and filters for the requests list. They live in the URL
  * (?q=&type=&status=&country=), so a filtered view can be bookmarked and the
  * Back button works; the server reads them and runs the query.
+ * Without `countries` (the Records list) only search and type are shown.
  */
-export function RequestFilters({ countries }: { countries: string[] }) {
+export function RequestFilters({ countries }: { countries?: string[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -112,34 +113,36 @@ export function RequestFilters({ countries }: { countries: string[] }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 md:flex">
-        <select
-          aria-label="Status"
-          value={params.get("status") ?? ""}
-          onChange={(event) => update({ status: event.target.value })}
-          className={selectClass}
-        >
-          <option value="">All statuses</option>
-          {REQUEST_STATES.map((state) => (
-            <option key={state} value={state}>
-              {STATE_LABELS[state]}
-            </option>
-          ))}
-        </select>
-        <select
-          aria-label="Country"
-          value={params.get("country") ?? ""}
-          onChange={(event) => update({ country: event.target.value })}
-          className={selectClass}
-        >
-          <option value="">All countries</option>
-          {countries.map((code) => (
-            <option key={code} value={code}>
-              {countryName(code)}
-            </option>
-          ))}
-        </select>
-      </div>
+      {countries && (
+        <div className="grid grid-cols-2 gap-2 md:flex">
+          <select
+            aria-label="Status"
+            value={params.get("status") ?? ""}
+            onChange={(event) => update({ status: event.target.value })}
+            className={selectClass}
+          >
+            <option value="">All statuses</option>
+            {REQUEST_STATES.map((state) => (
+              <option key={state} value={state}>
+                {STATE_LABELS[state]}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Country"
+            value={params.get("country") ?? ""}
+            onChange={(event) => update({ country: event.target.value })}
+            className={selectClass}
+          >
+            <option value="">All countries</option>
+            {countries.map((code) => (
+              <option key={code} value={code}>
+                {countryName(code)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
     </div>
   );
 }

@@ -149,9 +149,23 @@ test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirm
   await page.setViewportSize({ width: 1280, height: 800 });
 
   await openApp(page, "/approvals");
+  const recent = page.getByRole("region", { name: "Recently closed" });
   await expect(
-    page.getByRole("region", { name: "Recently closed" }),
-  ).toContainText(ticketId);
+    recent.getByRole("link", { name: /Lina Loop/ }).first(),
+  ).toHaveAttribute("href", /^\/records\//);
+  await expect(recent).toContainText(ticketId);
+
+  // Records (F08d): find it by ticket, open its PDF from the list.
+  await recent.getByRole("link", { name: "All records" }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Records" }),
+  ).toBeVisible();
+  await page.getByRole("searchbox", { name: /Search/ }).fill(ticketId);
+  await expect(page).toHaveURL(new RegExp(`q=${ticketId}`));
+  await expect(page.getByText("1 record", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Download the PDF record of Lina Loop" }),
+  ).toHaveAttribute("href", `/records/${requestId}/pdf`);
 
   // The PDF itself: downloaded with its fingerprint, and every download is
   // the same file.

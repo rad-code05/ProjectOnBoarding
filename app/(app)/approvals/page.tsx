@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { Avatar, SummaryTile, buttonStyles } from "@/components/ui";
+import {
+  Avatar,
+  ChevronRightIcon,
+  SummaryTile,
+  buttonStyles,
+} from "@/components/ui";
 import { loadApprovals, type WaitingRequest } from "@/lib/approvals/list";
 import { requireRole } from "@/lib/auth";
 import { PAGES } from "@/lib/navigation";
@@ -93,20 +98,38 @@ export default async function ApprovalsPage() {
       </section>
 
       <section aria-labelledby="closed-title" className="flex flex-col gap-2">
-        <h2 id="closed-title" className={heading}>
-          Recently closed
-        </h2>
+        <div className="flex items-baseline justify-between">
+          <h2 id="closed-title" className={heading}>
+            Recently closed
+          </h2>
+          <Link
+            href="/records"
+            className="text-[13px] font-semibold underline underline-offset-2"
+          >
+            All records
+          </Link>
+        </div>
         {recentlyClosed.length > 0 ? (
           <ul className="rounded-card border border-line bg-paper">
             {recentlyClosed.map((request) => (
               <li
                 key={request.id}
-                className="flex flex-col gap-0.5 border-b border-line-subtle px-3.5 py-3 last:border-0"
+                className="border-b border-line-subtle last:border-0"
               >
-                <span className="text-sm font-semibold">{request.name}</span>
-                <span className="text-xs text-graphite">
-                  {request.ticketId} · closed {request.closed}
-                </span>
+                <Link
+                  href={`/records/${request.id}`}
+                  className="flex min-h-14 items-center gap-2.5 px-3.5 py-3"
+                >
+                  <span className="flex flex-1 flex-col gap-0.5">
+                    <span className="text-sm font-semibold">
+                      {request.name}
+                    </span>
+                    <span className="text-xs text-graphite">
+                      {request.ticketId} · closed {request.closed}
+                    </span>
+                  </span>
+                  <ChevronRightIcon size={18} />
+                </Link>
               </li>
             ))}
           </ul>
