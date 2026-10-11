@@ -7,6 +7,7 @@ export {
   ChevronLeftIcon,
   ChevronRightIcon,
   CloseIcon,
+  DownloadIcon,
   EyeIcon,
   EyeOffIcon,
   LockIcon,

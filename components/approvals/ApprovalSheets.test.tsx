@@ -122,7 +122,9 @@ describe("ConfirmSignSheet", () => {
     expect(confirm).toBeDisabled();
     await u.click(screen.getByLabelText(/I have reviewed this record/));
     await u.click(confirm);
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/approvals"));
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith(`/records/${ID}?closed=1`),
+    );
     expect(confirmRequest).toHaveBeenCalledWith({
       requestId: ID,
       snapshot: SNAPSHOT,

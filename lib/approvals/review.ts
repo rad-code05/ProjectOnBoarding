@@ -37,46 +37,21 @@ export type ApprovalReview = {
   ownRequest: boolean;
 };
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+type Supabase = ReturnType<typeof createServerSupabaseClient>;
 
 /**
- * One request for the approver: the snapshot they would confirm, the
- * signatures already applied (with their images through the "visible where
- * applied" rule) and their own active signature. null = not visible.
+ * The current signatures of a request, with 10-minute links to their images
+ * (the "visible where applied" Storage rule). Used by the approver's page and
+ * the record page.
  */
-export async function loadApprovalReview(
-  id: string,
-): Promise<ApprovalReview | null> {
-  if (!UUID.test(id)) return null;
-  const { userId } = await getCurrentUser();
-  const supabase = createServerSupabaseClient();
-
-  const { data: request } = await supabase
-    .from("requests")
-    .select("id, ticket_id, type, state, created_by")
-    .eq("id", id)
-    .maybeSingle();
-  if (!request) return null;
-
-  const [preview, marks, checklist, execution, signatures] = await Promise.all([
-    supabase.rpc("approval_preview", { p_request_id: id }),
-    supabase.rpc("request_signature_marks", { p_request_id: id }),
-    supabase
-      .from("execution_checklist_items")
-      .select("key, label")
-      .contains("applies_to", [request.type])
-      .eq("active", true)
-      .order("sort_order"),
-    supabase
-      .from("execution_confirmations")
-      .select("executed_by")
-      .eq("request_id", id)
-      .maybeSingle(),
-    loadSignatures(),
-  ]);
-  if (preview.error || !preview.data) return null;
-
-  const rows = marks.data ?? [];
+export async function loadAppliedSignatures(
+  supabase: Supabase,
+  requestId: string,
+): Promise<{ it: AppliedSignature | null; approval: AppliedSignature | null }> {
+  const { data } = await supabase.rpc("request_signature_marks", {
+    p_request_id: requestId,
+  });
+  const rows = data ?? [];
   const paths = rows.flatMap((m) => (m.storage_path ? [m.storage_path] : []));
   const links = new Map<string, string>();
   if (paths.length > 0) {
@@ -99,6 +74,51 @@ export async function loadApprovalReview(
       note: m.note,
     };
   };
+  return {
+    it: applied("it_execution"),
+    approval: applied("final_confirmation"),
+  };
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * One request for the approver: the snapshot they would confirm, the
+ * signatures already applied (with their images through the "visible where
+ * applied" rule) and their own active signature. null = not visible.
+ */
+export async function loadApprovalReview(
+  id: string,
+): Promise<ApprovalReview | null> {
+  if (!UUID.test(id)) return null;
+  const { userId } = await getCurrentUser();
+  const supabase = createServerSupabaseClient();
+
+  const { data: request } = await supabase
+    .from("requests")
+    .select("id, ticket_id, type, state, created_by")
+    .eq("id", id)
+    .maybeSingle();
+  if (!request) return null;
+
+  const [preview, applied, checklist, execution, signatures] =
+    await Promise.all([
+      supabase.rpc("approval_preview", { p_request_id: id }),
+      loadAppliedSignatures(supabase, id),
+      supabase
+        .from("execution_checklist_items")
+        .select("key, label")
+        .contains("applies_to", [request.type])
+        .eq("active", true)
+        .order("sort_order"),
+      supabase
+        .from("execution_confirmations")
+        .select("executed_by")
+        .eq("request_id", id)
+        .maybeSingle(),
+      loadSignatures(),
+    ]);
+  if (preview.error || !preview.data) return null;
 
   const active = signatures.versions.find((v) => v.status === "active");
   return {
@@ -108,8 +128,8 @@ export async function loadApprovalReview(
     state: request.state,
     snapshot: preview.data,
     checklist: checklist.data ?? [],
-    it: applied("it_execution"),
-    approval: applied("final_confirmation"),
+    it: applied.it,
+    approval: applied.approval,
     mine: active
       ? {
           kind: active.kind,
