@@ -124,14 +124,37 @@ test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirm
   await expect(confirm.getByText(/Fingerprint [0-9a-f]{16}/)).toBeVisible();
   await confirm.getByLabel(/I have reviewed this record/).check();
   await confirm.getByRole("button", { name: "Confirm, sign & close" }).click();
-  await expect(page).toHaveURL(/\/approvals$/);
+
+  // Moises lands on the record (F08c-2) with its PDF.
+  const requestId = requestUrl.split("/").pop();
+  await expect(page).toHaveURL(`/records/${requestId}?closed=1`);
+  await expect(page.getByRole("status")).toHaveText(
+    "Confirmed, signed and closed",
+  );
+  const pdfCard = page.getByRole("region", { name: "Access record" });
+  await expect(pdfCard).toContainText("lina.loop-onboarding.pdf");
+  await expect(
+    pdfCard.getByRole("link", { name: "Download PDF" }),
+  ).toHaveAttribute("href", `/records/${requestId}/pdf`);
+  await expect(page.getByRole("region", { name: "Signatures" })).toContainText(
+    "Figma is Viewer now",
+  );
+  // The same page fits a phone (D22).
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.setViewportSize({ width: 1280, height: 800 });
+
+  await openApp(page, "/approvals");
   await expect(
     page.getByRole("region", { name: "Recently closed" }),
   ).toContainText(ticketId);
 
-  // The PDF record (F08): made at closing, downloaded with its fingerprint,
-  // and every download is the same file.
-  const requestId = requestUrl.split("/").pop();
+  // The PDF itself: downloaded with its fingerprint, and every download is
+  // the same file.
   const first = await page.request.get(`/records/${requestId}/pdf`);
   expect(first.status()).toBe(200);
   expect(first.headers()["content-type"]).toBe("application/pdf");

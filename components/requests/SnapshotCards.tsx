@@ -122,8 +122,6 @@ export function SnapshotCards({
   onEdit?: (section: number) => void;
   idPrefix?: string;
 }) {
-  const execution = snapshot.execution;
-  const started = snapshot.request.execution_started_at;
   const access = accessRows(snapshot);
   return (
     <>
@@ -153,42 +151,66 @@ export function SnapshotCards({
         </section>
       </div>
 
-      <section aria-labelledby={`${idPrefix}-it`} className={card}>
-        <CardHeader
-          id={`${idPrefix}-it`}
-          title="9 · IT execution"
-          section={9}
-          onEdit={onEdit}
-        />
-        <span className="-mt-1.5 text-xs text-graphite">
-          Executed by {execution?.executed_by_name ?? "—"}
-          {started
-            ? ` · started ${formatDay(started)}, ${formatTime(started)}`
-            : ""}
-        </span>
-        <ul className="flex flex-col gap-2 text-[13px]">
-          {checklist.map((item) => {
-            const done = Boolean(execution?.checks[item.key]);
-            return (
-              <li key={item.key} className="flex items-start gap-2">
-                {done ? (
-                  <CheckIcon size={16} className="mt-px shrink-0" />
-                ) : (
-                  <AlertIcon size={16} className="mt-px shrink-0 text-signal" />
-                )}
-                <span className={cn(!done && "text-signal")}>
-                  {item.label}
-                  {!done && " — not ticked"}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-        <p className="text-[13px] text-graphite">
-          <span className="font-semibold text-ink">Notes: </span>
-          {execution?.notes || "—"}
-        </p>
-      </section>
+      <ExecutionCard
+        snapshot={snapshot}
+        checklist={checklist}
+        onEdit={onEdit}
+        idPrefix={idPrefix}
+      />
     </>
+  );
+}
+
+/** Section 9 from the snapshot: who executed it, the checklist, the notes. */
+export function ExecutionCard({
+  snapshot,
+  checklist,
+  onEdit,
+  idPrefix = "snap",
+}: {
+  snapshot: Snapshot;
+  checklist: ChecklistItem[];
+  onEdit?: (section: number) => void;
+  idPrefix?: string;
+}) {
+  const execution = snapshot.execution;
+  const started = snapshot.request.execution_started_at;
+  return (
+    <section aria-labelledby={`${idPrefix}-it`} className={card}>
+      <CardHeader
+        id={`${idPrefix}-it`}
+        title="9 · IT execution"
+        section={9}
+        onEdit={onEdit}
+      />
+      <span className="-mt-1.5 text-xs text-graphite">
+        Executed by {execution?.executed_by_name ?? "—"}
+        {started
+          ? ` · started ${formatDay(started)}, ${formatTime(started)}`
+          : ""}
+      </span>
+      <ul className="flex flex-col gap-2 text-[13px]">
+        {checklist.map((item) => {
+          const done = Boolean(execution?.checks[item.key]);
+          return (
+            <li key={item.key} className="flex items-start gap-2">
+              {done ? (
+                <CheckIcon size={16} className="mt-px shrink-0" />
+              ) : (
+                <AlertIcon size={16} className="mt-px shrink-0 text-signal" />
+              )}
+              <span className={cn(!done && "text-signal")}>
+                {item.label}
+                {!done && " — not ticked"}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="text-[13px] text-graphite">
+        <span className="font-semibold text-ink">Notes: </span>
+        {execution?.notes || "—"}
+      </p>
+    </section>
   );
 }

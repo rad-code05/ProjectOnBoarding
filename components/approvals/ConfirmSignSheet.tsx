@@ -51,7 +51,8 @@ export function ConfirmSignSheet({
         setError(result.message);
         return;
       }
-      router.push("/approvals");
+      // Closed: straight to the record and its PDF (board: Closed request).
+      router.push(`/records/${review.id}?closed=1`);
       router.refresh();
     });
 
