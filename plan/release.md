@@ -1,6 +1,6 @@
 # Release (go-live)
 
-**When:** after S1–S7 and F01–F11 (onboarding, offboarding, access modification, approvals, PDF, audit log). Features F12+ ship after go-live, each through the same PR process.
+**When (changed 2026-10-11 by Raju):** after **all features** (F01–F23 and F26) and then the data load — **F24** Excel import and **F25** AI screenshot check — so production starts with **complete data** (everyone's current access, past onboardings). Earlier plan was go-live after F11.
 
 Security and accessibility are checked **in every feature**; this is the final review, not the first.
 

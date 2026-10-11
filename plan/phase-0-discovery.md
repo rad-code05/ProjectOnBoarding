@@ -24,7 +24,7 @@
 | D8 | Batch input format (CSV, XLSX, pasted text) | F17 |
 | D9 | SharePoint: download only / Save button / automatic; site, library, folder; who does the Entra app registration | F22 |
 | D10 | Notifications: email (Resend) and/or Slack; v1 or later | F23 |
-| D11 | Import past completed forms? | R |
+| ~~D11~~ | ✅ **Resolved 2026-10-11: yes** — Excel import of the existing records and access (F24) + AI check of screenshots against the database (F25), both before go-live | — (F24, F25) |
 | ~~D12~~ | ✅ **Resolved 2026-10-01:** default `*.vercel.app` URL for now (Laine subdomain before go-live); Vercel, Supabase and Clerk on Raju's personal accounts (consider transfer to Laine before go-live) | — |
 | ~~D13~~ | ✅ **Resolved 2026-09-30:** internal acknowledgment only (record of the process), not legally binding; PNG signature or initials (PNG or typed) | — |
 | D15 | **Clerk plan at go-live:** authenticator-app MFA + backup codes are Clerk *Pro* features (free in the development instance). Keep MFA required (paid plan in production) vs. password + device-trust email code only (free) vs. Microsoft/Google SSO later. Recommendation: keep MFA. | R7 |
@@ -43,4 +43,5 @@ D1, D2 (region) and D12 answered ✅ — S4–S6 are unblocked; design board sta
 ## Session log
 - 2026-09-30 — Plan, roles, workflow, full design drafted; repo created.
 - 2026-10-11 — **D14** (original form PDF kept locally only, never committed) and **D18** (filename pattern kept; PDF only for approved requests) decided by Raju before F08.
+- 2026-10-11 — **D11** decided (import Excel + AI screenshot check before go-live → F24, F25); quarterly access review added (F26); go-live moved to after all features + data load. PDF record keeps the app's wording (not the paper form's labels).
 - 2026-10-11 — **D3** decided: company timezone Asia/Dubai by default, selectable by an admin (F08a stores it).

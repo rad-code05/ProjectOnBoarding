@@ -196,12 +196,21 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | # | Item | Source | Where | Status |
 | --- | --- | --- | --- | --- |
 | M1 | Email notifications (approver waiting, returned, SLA due) | §13, `records-states.md` | F23 | ⏳ ❓ D10 |
-| M2 | Slack notifications, contractor end-date reminders | §13 | not planned yet | ➖ phase 2 — add as F24+ when wanted |
+| M2 | Slack notifications, contractor end-date reminders | §13 | not planned yet | ➖ phase 2 — add as F27+ when wanted |
 | M3 | SSO (Microsoft 365 / Google) | D1 | later, no redesign needed | ➖ |
 | M4 | Automatic provisioning in external tools | §1, §16 | out of scope v1 | ➖ |
 | M5 | Optional pre-provisioning approval setting | §5.1 | only if the auditor requires it (D6) | ➖ |
 
 ---
+
+## N. Existing data & compliance (added 2026-10-11, asked by Raju)
+| # | Requirement | Source | Built in | Proof | Status |
+| --- | --- | --- | --- | --- | --- |
+| N1 | Upload Laine's existing Excel (onboarding log, user-rights matrix, remediation log) → preview with checks → fills employees, access inventory and imported past requests; never committed | Raju 2026-10-11, D11 | **F24** (before go-live) | F24 tests | ⏳ F24 |
+| N2 | Upload screenshots of an app's user list → AI compares with the database → differences as suggestions the admin accepts | Raju 2026-10-11 | **F25** (before go-live) | F25 tests | ⏳ F25 ❓ D7 part 2 |
+| N3 | Quarterly access review (SOC 2 / ISO 27001): keep / remove / change per line, signed coversheet, export **PDF and Excel** | Raju 2026-10-11 | **F26** | F26 tests | ⏳ F26 |
+| N4 | Production starts with complete data (go-live after all features + F24/F25) | Raju 2026-10-11 | `release.md` | R7 checklist | ⏳ |
+| N5 | More applications from the vendor list (Confluence, Adobe, Cursor, Graphite, Sentry, GoDaddy, Acronis, Avanan, HostedScan, Stripe) | Raju 2026-10-11 | seed migration | pgTAP `access_items_rls` (38 apps) | ✅ |
 
 ## Gaps found on 2026-10-07 and what was done
 
