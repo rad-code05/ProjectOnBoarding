@@ -15,6 +15,7 @@ import type {
   PhysicalType,
 } from "@/lib/requests/equipment";
 import { AppDialog } from "./AppDialog";
+import { SectionFlag, sectionFrame } from "./ReturnedCard";
 
 function label(choice: PhysicalChoice | undefined): string {
   if (!choice) return "Not set";
@@ -31,12 +32,15 @@ export function PhysicalSection({
   choices,
   onChoicesChange,
   disabled,
+  flag,
 }: {
   requestId: string;
   types: PhysicalType[];
   choices: PhysicalChoices;
   onChoicesChange: Dispatch<SetStateAction<PhysicalChoices>>;
   disabled: boolean;
+  /** "Flagged by Moises" after a return, or null. */
+  flag?: string | null;
 }) {
   const [editing, setEditing] = useState<PhysicalType | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -71,15 +75,19 @@ export function PhysicalSection({
     <section
       id="s7"
       aria-labelledby="s7-title"
-      className="flex flex-col gap-1.5 rounded-card border border-line bg-paper pt-4 pb-2 md:col-span-2 md:px-1"
+      className={cn(
+        "flex flex-col gap-1.5 rounded-card bg-paper pt-4 pb-2 md:col-span-2 md:px-1",
+        sectionFrame(flag),
+      )}
     >
-      <div className="flex items-baseline gap-2.5 px-4 pb-1.5">
+      <div className="flex flex-wrap items-baseline gap-2.5 px-4 pb-1.5">
         <span className="text-xs font-semibold text-graphite md:text-[11px]">
           07
         </span>
         <h2 id="s7-title" className="font-serif text-[21px] md:text-[19px]">
           Physical &amp; logical access
         </h2>
+        <SectionFlag label={flag} />
         <span
           role="status"
           className="ml-auto text-xs font-semibold whitespace-nowrap text-graphite md:text-[11px]"

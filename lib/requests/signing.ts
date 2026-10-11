@@ -205,6 +205,13 @@ export function signButtonLabel(approvers: string[]): string {
 export const signRequestSchema = z.object({
   requestId: z.uuid(),
   snapshot: z.record(z.string(), z.unknown()),
+  /** Optional note for the approver — only when signing again after a return. */
+  note: z
+    .string()
+    .trim()
+    .max(1000, "Keep the note under 1000 characters.")
+    .nullish()
+    .transform((value) => value || null),
 });
 
 export type SignResult = { ok: true } | { ok: false; message: string };
@@ -227,6 +234,9 @@ export function signErrorMessage(
     }
     if (message.includes("checklist")) {
       return "Tick every item in section 9 first.";
+    }
+    if (message.includes("note for the approver")) {
+      return "A note for the approver is only for a returned request.";
     }
     if (message.includes("only a request in execution")) {
       return "This request has already been signed or closed.";

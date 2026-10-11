@@ -57,12 +57,14 @@ export async function createExecutedRequest(page: Page, firstName: string) {
   return ticketId;
 }
 
-/** As Raju, on the request page: Review & sign → I confirm → Sign & send. */
-export async function reviewAndSign(page: Page) {
-  await page
-    .getByRole("button", { name: "Review & sign", exact: true })
-    .click();
+/**
+ * As Raju, on the request page: Review & sign (again, after a return) →
+ * optional note for the approver → I confirm → Sign & send.
+ */
+export async function reviewAndSign(page: Page, note?: string) {
+  await page.getByRole("button", { name: /^Review & sign( again)?$/ }).click();
   const sheet = page.getByRole("dialog", { name: "Review & sign" });
+  if (note) await sheet.getByLabel(/^Note for .+ \(optional\)$/).fill(note);
   await sheet.getByLabel(/I confirm the details above/).check();
   await sheet.getByRole("button", { name: /^Sign & send/ }).click();
   await expect(sheet).toHaveCount(0);

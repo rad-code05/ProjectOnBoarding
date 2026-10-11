@@ -266,7 +266,7 @@ Rules: only the signed-in user can apply their own signature; the AI can never s
 - Generated server-side with `@react-pdf/renderer`, laid out to mirror the v4 form (same 11 sections), from a **frozen snapshot** of the request at closure, so it can be regenerated identically.
 - Filename: `firstname.lastname-onboarding.pdf`; proposed `firstname.lastname-offboarding.pdf` and `firstname.lastname-access-modification.pdf`.
 - Filename sanitising: lowercase, accents transliterated (`José Müller` → `jose.muller`), spaces/hyphens in multi-part names kept as `-`, other characters removed. Storage path includes the ticket ID so names never collide: `pdfs/UAM-2026-000123/jose.muller-onboarding.pdf`. The download keeps the plain filename.
-- Draft/unsigned PDFs (if allowed) are watermarked "DRAFT – NOT APPROVED".
+- **Only approved (closed) requests have a PDF** — no draft or watermarked exports (D18, 2026-10-11).
 - Every download/export is an audit event.
 - **Export destinations** (design: `design/pdf-export.md`): **Download PDF** to the computer (v1). **Save to SharePoint** via Microsoft Graph with an Entra app registration limited by `Sites.Selected` to one site/library (proposed v1.1; needs a Microsoft 365 admin). Decision open in Section 17.
 
@@ -570,7 +570,7 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 9. **Data:** region *resolved 2026-10-01 (D2)* — Supabase **EU – Frankfurt (eu-central-1)**. Still open: retention for records, signatures, PDFs; backup requirements; company timezone for reports and SLAs (D3).
 10. **AI:** provider and model (Claude direct vs. via OpenRouter); may employee personal data be sent; batch input format (CSV, XLSX, pasted text)?
 11. **Notifications:** email (Resend) and/or Slack — v1 or phase 2?
-12. **PDF filenames** for offboarding and access modification (proposed in 8.2); may drafts be exported?
+12. **PDF filenames** for offboarding and access modification (proposed in 8.2); may drafts be exported? *Resolved 2026-10-11 (D18)* — keep the pattern for all three types (`firstname.lastname-onboarding.pdf`, `-offboarding.pdf`, `-access-modification.pdf`; stored under the ticket ID); **a PDF exists only for an approved (closed) request** — no draft or watermarked exports.
 13. **Existing records:** import past completed forms?
 14. **Owners:** *accounts resolved 2026-10-01 (D12)* — Vercel, Supabase and Clerk are created on **Raju's personal accounts** (like the GitHub repo); app runs on the default `*.vercel.app` URL for now, a Laine subdomain is added before go-live. ⚠️ Before go-live, consider transferring the projects to Laine-owned accounts so the company owns the data (release R7). Still open: who approves go-live.
 15. **SharePoint:** manual upload only, a "Save to SharePoint" button, or automatic save on close? Which site, library and folder? Who can create the Entra app registration and grant `Sites.Selected` access?

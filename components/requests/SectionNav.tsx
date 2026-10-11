@@ -7,6 +7,8 @@ export type SectionNavItem = {
   title: string;
   state: "complete" | "todo" | "locked" | "empty";
   note?: string;
+  /** The approver flagged it when returning the request. */
+  flagged?: boolean;
 };
 
 function Mark({ state }: { state: SectionNavItem["state"] }) {
@@ -54,22 +56,33 @@ export function SectionNav({
               onClick={() => onSelect(item.number)}
               className={cn(
                 "flex h-9 items-center gap-1.5 rounded-pill border pr-3 pl-2 text-[13px] md:h-auto md:items-start md:gap-2.5 md:rounded-[8px] md:border-0 md:px-2 md:py-1.5 md:text-xs",
-                item.state === "locked"
-                  ? "border-line text-graphite"
-                  : "border-line bg-paper md:bg-transparent",
-                item.state === "todo" && "border-ink font-bold md:font-normal",
+                item.flagged
+                  ? "border-signal bg-paper font-bold text-signal md:bg-transparent md:font-semibold"
+                  : item.state === "locked"
+                    ? "border-line text-graphite"
+                    : item.state === "todo"
+                      ? "border-ink bg-paper font-bold md:bg-transparent md:font-normal"
+                      : "border-line bg-paper md:bg-transparent",
               )}
             >
               <Mark state={item.state} />
               <span className="md:hidden">
                 {item.number} {item.short}
+                {item.flagged && <span className="sr-only"> (flagged)</span>}
               </span>
               <span className="hidden flex-col gap-0.5 md:flex">
                 <span>
                   {item.number} · {item.title}
                 </span>
                 {item.note && (
-                  <span className="text-[10px] text-graphite">{item.note}</span>
+                  <span
+                    className={cn(
+                      "text-[10px]",
+                      item.flagged ? "text-signal" : "text-graphite",
+                    )}
+                  >
+                    {item.note}
+                  </span>
                 )}
               </span>
             </a>

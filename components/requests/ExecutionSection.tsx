@@ -9,6 +9,7 @@ import {
   type ChecklistItem,
   type ExecutionRecord,
 } from "@/lib/requests/execution";
+import { SectionFlag, sectionFrame } from "./ReturnedCard";
 
 /**
  * Section 9 — IT execution confirmation (design: Phone · In execution).
@@ -24,6 +25,7 @@ export function ExecutionSection({
   startedLabel,
   checks,
   onChecksChange,
+  flag,
 }: {
   requestId: string;
   items: ChecklistItem[];
@@ -33,6 +35,8 @@ export function ExecutionSection({
   /** Held by the form so the section chip shows the same count. */
   checks: Record<string, boolean>;
   onChecksChange: (checks: Record<string, boolean>) => void;
+  /** "Flagged by Moises" after a return, or null. */
+  flag?: string | null;
 }) {
   const notesId = useId();
   const [notes, setNotes] = useState(record.notes ?? "");
@@ -69,15 +73,19 @@ export function ExecutionSection({
     <section
       id="s9"
       aria-labelledby="s9-title"
-      className="flex flex-col gap-3.5 rounded-card border border-line bg-paper p-4 md:col-span-2 md:px-5"
+      className={cn(
+        "flex flex-col gap-3.5 rounded-card bg-paper p-4 md:col-span-2 md:px-5",
+        sectionFrame(flag),
+      )}
     >
-      <div className="flex items-baseline gap-2.5">
+      <div className="flex flex-wrap items-baseline gap-2.5">
         <span className="text-xs font-semibold text-graphite md:text-[11px]">
           09
         </span>
         <h2 id="s9-title" className="font-serif text-[21px] md:text-[19px]">
           IT execution confirmation
         </h2>
+        <SectionFlag label={flag} />
         <span
           role="status"
           className="ml-auto text-xs font-semibold whitespace-nowrap text-graphite md:text-[11px]"

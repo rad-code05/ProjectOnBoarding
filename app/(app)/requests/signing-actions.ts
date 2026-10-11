@@ -81,21 +81,26 @@ export async function loadSigningReview(
 
 /**
  * Signs section 9 with the snapshot the person reviewed. The database checks
- * everything again and refuses if anything changed since the review.
+ * everything again and refuses if anything changed since the review. After a
+ * return, an optional note for the approver goes with the signature.
  */
 export async function signRequest(input: {
   requestId: string;
   snapshot: Json;
+  note?: string | null;
 }): Promise<SignResult> {
   await requireRole("admin", "it_operator");
   const parsed = signRequestSchema.safeParse(input);
-  if (!parsed.success)
-    return { ok: false, message: "This request is unknown." };
+  if (!parsed.success) {
+    const note = parsed.error.issues.find((i) => i.path[0] === "note");
+    return { ok: false, message: note?.message ?? "This request is unknown." };
+  }
 
   const supabase = createServerSupabaseClient();
   const { error } = await supabase.rpc("sign_request", {
     p_request_id: parsed.data.requestId,
     p_reviewed: parsed.data.snapshot as Json,
+    ...(parsed.data.note ? { p_note: parsed.data.note } : {}),
   });
   if (error)
     return { ok: false, message: signErrorMessage(error.code, error.message) };

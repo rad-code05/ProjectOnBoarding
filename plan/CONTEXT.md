@@ -2,7 +2,7 @@
 
 > **Read this first in every new session** (then `CLAUDE.md` → "Resume here" for the exact next step).
 > One page that explains *what* we build, *why*, *how* it fits together and *how we work*. Details live in the linked files — this file links, it does not repeat them.
-> Last updated: 2026-10-09.
+> Last updated: 2026-10-11.
 
 ## 1. What we are building
 **Laine onboarding rights** — an internal web app for Laine that replaces the PDF *Laine User Access Management Form v4*.
@@ -78,16 +78,16 @@ Built: `app_users`, `user_roles`, `audit_events` (S6) · `employees`, `departmen
 7. **Docs stay current:** tick the item + session-log line in its plan file, update `CLAUDE.md` "Resume here", this file if the big picture changes, and Raju's study guide `Rajulearning/Learn.md` (local only).
 
 ## 9. Roadmap and where we are
-| Stage | Items | Status (2026-10-09) |
+| Stage | Items | Status (2026-10-11) |
 | --- | --- | --- |
 | Phase 0 — decisions & design | D1–D19, design review | D1, D2, D12, D13 decided; others open (asked when a feature needs them) |
 | Phase 1 — walking skeleton | S1 app · S2 CI · S3 design foundation · S4 hosting · S5 sign-in · S6 database & roles · S7 app shell | S1–S7 merged (S6: #12, #13, #15, #16; S7: #18–#20 + S7d); walking skeleton complete |
-| Features | F01–F08 onboarding end-to-end · F09–F11 offboarding, modification, audit page → **go-live possible** · F12–F23 reports, AI, admin, SharePoint, email | **F01–F06 done**; F07 approvals in progress (database + Moises's screens done, Raju's Returned view next); then F08 PDF |
+| Features | F01–F08 onboarding end-to-end · F09–F11 offboarding, modification, audit page → **go-live possible** · F12–F23 reports, AI, admin, SharePoint, email | **F01–F07 done** (2026-10-11: F07c Raju's Returned view); next **F08 PDF** (phone boards first) |
 | Release | R1–R7 security, accessibility, monitoring, backups, docs, automated DB deploys, go-live | after F11 |
 | Operate | Weekly/monthly/quarterly/yearly routine | after go-live |
 
 ## 10. Decisions
-Decided: **D1** Clerk email+password+MFA invite-only · **D2** Supabase Frankfurt · **D12** personal accounts, `*.vercel.app` until go-live · **D13** signature = internal acknowledgment. Open: D3 timezone · D4 backup approver · D5 admin role-change control · D6 auditor OK with end-only approval · D7 AI provider/data · D8 batch format · D9 SharePoint · D10 notifications · D11 import old forms · D14 original PDF · D15 Clerk Pro · D16 report metric · D17 RBAC templates · D18 PDF filenames/drafts · D19 go-live sign-off. → `plan/phase-0-discovery.md`, `PROJECT_PLAN.md` §17.
+Decided: **D1** Clerk email+password+MFA invite-only · **D2** Supabase Frankfurt · **D4** backup approver = Celine · **D7 part 1** AI = Anthropic, model chosen in Admin · **D12** personal accounts, `*.vercel.app` until go-live · **D13** signature = internal acknowledgment · **D14** original form PDF kept locally only (never committed) · **D18** PDF filename pattern for all three types, PDF only once approved · **D20–D22** (access inventory in v1, designed reports, mobile-first). Open: D3 timezone · D5 admin role-change control · D6 auditor OK with end-only approval · D7 part 2 AI data policy · D8 batch format · D9 SharePoint · D10 notifications · D11 import old forms · D15 Clerk Pro · D16 report metric · D17 RBAC templates · D19 go-live sign-off. → `plan/phase-0-discovery.md`, `PROJECT_PLAN.md` §17.
 
 ## 11. Document map
 | Need | File |

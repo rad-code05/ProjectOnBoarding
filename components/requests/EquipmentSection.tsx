@@ -22,6 +22,7 @@ import {
   type EquipmentItem,
   type EquipmentType,
 } from "@/lib/requests/equipment";
+import { SectionFlag, sectionFrame } from "./ReturnedCard";
 
 const fieldClass =
   "h-12 min-w-0 rounded-field border border-field-border px-3 text-base outline-none focus:border-ink md:h-10 md:text-sm";
@@ -224,12 +225,15 @@ export function EquipmentSection({
   items,
   onItemsChange,
   disabled,
+  flag,
 }: {
   requestId: string;
   types: EquipmentType[];
   items: EquipmentItem[];
   onItemsChange: Dispatch<SetStateAction<EquipmentItem[]>>;
   disabled: boolean;
+  /** "Flagged by Moises" after a return, or null. */
+  flag?: string | null;
 }) {
   const [editing, setEditing] = useState<EquipmentItem | "new" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -274,15 +278,19 @@ export function EquipmentSection({
     <section
       id="s6"
       aria-labelledby="s6-title"
-      className="flex flex-col gap-2.5 rounded-card border border-line bg-paper pt-4 pb-3 md:col-span-2 md:px-1"
+      className={cn(
+        "flex flex-col gap-2.5 rounded-card bg-paper pt-4 pb-3 md:col-span-2 md:px-1",
+        sectionFrame(flag),
+      )}
     >
-      <div className="flex items-baseline gap-2.5 px-4">
+      <div className="flex flex-wrap items-baseline gap-2.5 px-4">
         <span className="text-xs font-semibold text-graphite md:text-[11px]">
           06
         </span>
         <h2 id="s6-title" className="font-serif text-[21px] md:text-[19px]">
           IT equipment
         </h2>
+        <SectionFlag label={flag} />
         <span
           role="status"
           className="ml-auto text-xs font-semibold whitespace-nowrap text-graphite md:text-[11px]"

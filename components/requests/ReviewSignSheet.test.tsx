@@ -81,12 +81,17 @@ const review = (patch: Partial<SigningReview> = {}): SigningReview => ({
   ...patch,
 });
 
-function renderSheet(onEdit = vi.fn(), onClose = vi.fn()) {
+function renderSheet(
+  onEdit = vi.fn(),
+  onClose = vi.fn(),
+  noteFor: string | null = null,
+) {
   render(
     <ReviewSignSheet
       requestId="5f0d2f4e-8c1a-4b7e-9a51-1d2f3e4a5b6c"
       eyebrow="UAM-2026-000124 · Onboarding"
       checklist={CHECKLIST}
+      noteFor={noteFor}
       onEdit={onEdit}
       onClose={onClose}
     />,
@@ -131,8 +136,27 @@ describe("ReviewSignSheet", () => {
     expect(signRequest).toHaveBeenCalledWith({
       requestId: "5f0d2f4e-8c1a-4b7e-9a51-1d2f3e4a5b6c",
       snapshot: SNAPSHOT,
+      note: null,
     });
     expect(refresh).toHaveBeenCalled();
+    expect(screen.queryByLabelText(/Note for/)).not.toBeInTheDocument();
+  });
+
+  test("signing again after a return: an optional note for the approver goes with it", async () => {
+    const u = userEvent.setup();
+    const { onClose } = renderSheet(vi.fn(), vi.fn(), "Moises");
+    const note = await screen.findByLabelText("Note for Moises (optional)");
+    await u.type(note, "Figma is Viewer now");
+    await u.click(screen.getByLabelText(/I confirm the details above/));
+    await u.click(
+      screen.getByRole("button", { name: "Sign & send to Moises" }),
+    );
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(signRequest).toHaveBeenCalledWith({
+      requestId: "5f0d2f4e-8c1a-4b7e-9a51-1d2f3e4a5b6c",
+      snapshot: SNAPSHOT,
+      note: "Figma is Viewer now",
+    });
   });
 
   test("a failing check blocks signing and Fix opens the section", async () => {
