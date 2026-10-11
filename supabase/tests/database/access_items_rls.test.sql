@@ -34,8 +34,8 @@ select results_eq(
   array['Core business', 'Engineering, cloud & data', 'Security, device & identity', 'Business, finance & operations'],
   'the four categories are seeded in order');
 select is(
-  (select count(*)::int from public.catalog_apps where active), 28,
-  'the 26 applications of form v4 plus Zoom and Excalidraw are seeded');
+  (select count(*)::int from public.catalog_apps where active), 38,
+  'the 26 applications of form v4, Zoom, Excalidraw and ten more from the vendor list are seeded');
 select ok(
   (select permissions = '{Basic,Licensed,Admin}' from public.catalog_apps where name = 'Zoom')
   and (select permissions = '{Member,Admin}' from public.catalog_apps where name = 'Excalidraw'),
