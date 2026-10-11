@@ -8,6 +8,7 @@ describe("navFor", () => {
   test("Raju (admin, requester, IT operator) gets the admin menu", () => {
     expect(labels(["admin", "requester", "it_operator"])).toEqual([
       "Requests",
+      "Records",
       "Reports",
       "Audit log",
       "Admin",

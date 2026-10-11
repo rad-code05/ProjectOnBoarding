@@ -5,7 +5,7 @@ import { Avatar, ChevronRightIcon, buttonStyles } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { ROLE_LABELS } from "@/lib/navigation";
 import { loadSignatures } from "@/lib/profile/signatures";
-import { formatDay } from "@/lib/requests/format";
+import { COMPANY_TIMEZONE, formatDay } from "@/lib/requests/format";
 
 export const metadata = { title: "My profile" };
 
@@ -29,7 +29,7 @@ export default async function ProfilePage() {
       label: "Sign-in",
       value: `Email + password · MFA ${user?.twoFactorEnabled ? "on" : "off"}`,
     },
-    { label: "Timezone", value: "Europe/Zurich" },
+    { label: "Timezone", value: COMPANY_TIMEZONE },
     {
       label: "Member since",
       value: user?.createdAt

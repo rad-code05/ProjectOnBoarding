@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import { openApp } from "./open";
 import { expect, test } from "@playwright/test";
@@ -127,4 +128,25 @@ test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirm
   await expect(
     page.getByRole("region", { name: "Recently closed" }),
   ).toContainText(ticketId);
+
+  // The PDF record (F08): made at closing, downloaded with its fingerprint,
+  // and every download is the same file.
+  const requestId = requestUrl.split("/").pop();
+  const first = await page.request.get(`/records/${requestId}/pdf`);
+  expect(first.status()).toBe(200);
+  expect(first.headers()["content-type"]).toBe("application/pdf");
+  expect(first.headers()["content-disposition"]).toBe(
+    'attachment; filename="lina.loop-onboarding.pdf"',
+  );
+  const bytes = await first.body();
+  expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  expect(first.headers()["x-record-sha256"]).toBe(sha256);
+  const again = await page.request.get(`/records/${requestId}/pdf?view=1`);
+  expect(again.headers()["content-disposition"]).toMatch(/^inline;/);
+  expect(
+    createHash("sha256")
+      .update(await again.body())
+      .digest("hex"),
+  ).toBe(sha256);
 });

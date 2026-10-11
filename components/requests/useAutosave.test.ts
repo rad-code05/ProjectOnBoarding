@@ -72,7 +72,8 @@ describe("useAutosave", () => {
         values: expect.objectContaining({ first_name: "Anna" }),
       }),
     );
-    expect(result.current.status).toEqual({ kind: "saved", at: "08:06" });
+    // 06:06 UTC shown in the company timezone (Asia/Dubai, UTC+4).
+    expect(result.current.status).toEqual({ kind: "saved", at: "10:06" });
   });
 
   test("the next save uses the version the last save returned", async () => {

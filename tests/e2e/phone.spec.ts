@@ -40,6 +40,7 @@ test.describe("admin on a phone", () => {
     const menu = await openMenu(page);
     await expect(menu.getByRole("link")).toHaveText([
       "Requests",
+      "Records",
       "Reports",
       "Audit log",
       "Admin",

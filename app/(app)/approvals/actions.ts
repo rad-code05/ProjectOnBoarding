@@ -1,6 +1,7 @@
 "use server";
 
 import { requireRole } from "@/lib/auth";
+import { ensureRecordPdf } from "@/lib/records/ensure";
 import {
   approvalErrorMessage,
   confirmSchema,
@@ -32,6 +33,13 @@ export async function confirmRequest(input: {
       ok: false,
       message: approvalErrorMessage(error.code, error.message),
     };
+  }
+  // The request is closed: make its PDF record now. If that fails, the
+  // first download makes it instead (same snapshot, same result).
+  try {
+    await ensureRecordPdf(parsed.data.requestId);
+  } catch (cause) {
+    console.error("PDF record not made at closing", cause);
   }
   return { ok: true };
 }

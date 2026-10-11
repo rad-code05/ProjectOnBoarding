@@ -1,4 +1,5 @@
 /** Small pure helpers for the Approvals page (testable without a server). */
+import { COMPANY_TIMEZONE } from "@/lib/requests/format";
 
 /** "Figma, Slack, Google Workspace +2" — at most three names. */
 export function accessSummary(apps: string[]): string {
@@ -10,7 +11,7 @@ export function accessSummary(apps: string[]): string {
 /** First day of the current month in the company timezone, as an ISO date. */
 export function monthStart(now = new Date()): string {
   const [year, month] = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Zurich",
+    timeZone: COMPANY_TIMEZONE,
     year: "numeric",
     month: "2-digit",
   })
