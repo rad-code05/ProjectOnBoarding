@@ -9,6 +9,35 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          company_timezone: string;
+          id: boolean;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          company_timezone?: string;
+          id?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          company_timezone?: string;
+          id?: boolean;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "app_settings_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
+      };
       app_users: {
         Row: {
           active: boolean;
@@ -413,6 +442,67 @@ export type Database = {
           version?: string;
         };
         Relationships: [];
+      };
+      pdf_documents: {
+        Row: {
+          byte_size: number;
+          file_name: string;
+          generated_at: string;
+          generated_by: string;
+          id: string;
+          request_id: string;
+          sha256: string;
+          snapshot_id: string;
+          storage_path: string;
+          timezone: string;
+        };
+        Insert: {
+          byte_size: number;
+          file_name: string;
+          generated_at?: string;
+          generated_by: string;
+          id?: string;
+          request_id: string;
+          sha256: string;
+          snapshot_id: string;
+          storage_path: string;
+          timezone: string;
+        };
+        Update: {
+          byte_size?: number;
+          file_name?: string;
+          generated_at?: string;
+          generated_by?: string;
+          id?: string;
+          request_id?: string;
+          sha256?: string;
+          snapshot_id?: string;
+          storage_path?: string;
+          timezone?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pdf_documents_generated_by_fkey";
+            columns: ["generated_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "pdf_documents_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: true;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pdf_documents_snapshot_id_fkey";
+            columns: ["snapshot_id"];
+            isOneToOne: false;
+            referencedRelation: "request_snapshots";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       physical_access_types: {
         Row: {
@@ -973,6 +1063,19 @@ export type Database = {
         Args: { p_request_id: string; p_reviewed: Json };
         Returns: string;
       };
+      log_record_download: {
+        Args: { p_request_id: string };
+        Returns: undefined;
+      };
+      record_pdf: {
+        Args: {
+          p_byte_size: number;
+          p_file_name: string;
+          p_request_id: string;
+          p_sha256: string;
+        };
+        Returns: string;
+      };
       request_signature_marks: {
         Args: { p_request_id: string };
         Returns: {
@@ -1000,6 +1103,7 @@ export type Database = {
         Args: { p_asset_id: string };
         Returns: undefined;
       };
+      set_company_timezone: { Args: { p_timezone: string }; Returns: string };
       sign_request: {
         Args: { p_note?: string; p_request_id: string; p_reviewed: Json };
         Returns: string;

@@ -386,6 +386,20 @@
       "w": 390,
       "h": 1200,
       "title": "Phone · Returned request (Raju) — F07 proposal"
+    },
+    "RecordMobile.dc.html": {
+      "x": 10320,
+      "y": 13560,
+      "w": 390,
+      "h": 1420,
+      "title": "Phone · Closed request (PDF record) — F08 proposal"
+    },
+    "RecordsMobile.dc.html": {
+      "x": 10790,
+      "y": 13560,
+      "w": 390,
+      "h": 1180,
+      "title": "Phone · Records — F08 proposal"
     }
   },
   "createdOnFiles": {
@@ -407,7 +421,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 10240,
+      "maxW": 11180,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -499,7 +513,9 @@
     "ApprovalsMobile.dc.html",
     "ConfirmSignMobile.dc.html",
     "ReturnRequestMobile.dc.html",
-    "ReturnedRequestMobile.dc.html"
+    "ReturnedRequestMobile.dc.html",
+    "RecordMobile.dc.html",
+    "RecordsMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

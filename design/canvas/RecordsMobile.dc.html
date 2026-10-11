@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Records · Phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}
+a{color:#000000}a:hover{color:#cf2e2e}
+</style>
+</helmet>
+<div style="width: 390px; min-height: 1180px; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+
+<header style="height: 56px; box-sizing: border-box; padding: 0 8px 0 16px; background: #000000; display: flex; align-items: center; gap: 12px; color: #FFFFFF">
+<img src="/_blob/17b23c9ce6dc5f048942c7b514470f03" alt="Laine" style="width: 60px; height: 22px; display: block; flex-shrink: 0">
+<div style="width: 1px; height: 18px; background: #333333; flex-shrink: 0"></div>
+<span style="flex-grow: 1; font-family: Newsreader, serif; font-size: 16px">Onboarding rights</span>
+<a href="#" aria-label="My profile: Moises Larez" style="width: 36px; height: 36px; border-radius: 100px; background: #333333; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; text-decoration: none">ML</a>
+<button type="button" aria-label="Open menu" style="width: 44px; height: 44px; border: none; background: transparent; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg>
+</button>
+</header>
+
+<main style="padding: 20px 16px 32px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 34px; line-height: 1.1">Records</h1>
+<p style="margin: 0; font-size: 14px; line-height: 1.5; color: #535353">Closed requests and their signed PDF record. A PDF exists only once a request is approved.</p>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="rec-q" style="font-size: 13px; font-weight: 600">Search</label>
+<input id="rec-q" type="search" placeholder="Name, email or ticket" style="height: 48px; box-sizing: border-box; padding: 0 14px; border-radius: 12px; border: 1px solid #b9b0a2; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px">
+</div>
+
+<div role="group" aria-label="Type" style="margin: 0 -16px; padding: 0 16px; overflow-x: auto; display: flex; gap: 6px; white-space: nowrap">
+<sc-for list="{{types}}" as="t" hint-placeholder-count="4">
+<button type="button" aria-pressed="{{t.on}}" style="height: 36px; padding: 0 14px; border-radius: 100px; border: 1px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600; flex-shrink: 0">{{t.label}}</button>
+</sc-for>
+</div>
+
+<span style="font-size: 12px; font-weight: 600; color: #535353">7 records</span>
+
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{records}}" as="r" hint-placeholder-count="4">
+<li style="padding: 12px 8px 12px 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #dcd4c7; display: flex; align-items: center; gap: 8px">
+<a href="#" style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; text-decoration: none">
+<span style="font-size: 15px; font-weight: 700">{{r.name}}</span>
+<span style="font-size: 12px; color: #535353">{{r.ticket}} · {{r.type}}</span>
+<span style="font-size: 12px; color: #535353">Closed {{r.closed}} · approved by {{r.by}}</span>
+</a>
+<a href="#" aria-label="{{r.download}}" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 100px; border: 1px solid #000000; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg>
+</a>
+</li>
+</sc-for>
+</ul>
+
+<button type="button" style="height: 44px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 14px; font-weight: 600">Show more</button>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+renderVals() {
+const pill = (label, on) => ({ label, on: on ? 'true' : 'false', bg: on ? '#000000' : '#FFFFFF', fg: on ? '#FFFFFF' : '#000000', border: on ? '#000000' : '#dcd4c7' });
+return {
+types: [pill('All', true), pill('Onboarding', false), pill('Offboarding', false), pill('Access modification', false)],
+records: [
+{ name: 'Anna Keller', ticket: 'UAM-2026-000124', type: 'Onboarding', closed: '9 Oct 2026', by: 'Moises Larez', download: 'Download anna.keller-onboarding.pdf' },
+{ name: 'Lea Brun', ticket: 'UAM-2026-000118', type: 'Onboarding', closed: '7 Oct 2026', by: 'Moises Larez', download: 'Download lea.brun-onboarding.pdf' },
+{ name: 'Tom Weber', ticket: 'UAM-2026-000116', type: 'Access modification', closed: '6 Oct 2026', by: 'Celine', download: 'Download tom.weber-access-modification.pdf' },
+{ name: 'Mia Rossi', ticket: 'UAM-2026-000111', type: 'Offboarding', closed: '2 Oct 2026', by: 'Moises Larez', download: 'Download mia.rossi-offboarding.pdf' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

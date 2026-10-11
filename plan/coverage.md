@@ -49,7 +49,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | B9 | Each request keeps a snapshot of the catalog entries it used | §7 | F02 | pgTAP "the row keeps a copy of the catalog name and category" | ✅ F02a (database) |
 | B10 | Sec. 6 Equipment: several items, laptop/phone/other (other needs description), issue/return, asset tag | §4.1 | F03 | pgTAP several items, Issue / Return only, Other needs a description; e2e "Raju records equipment…" | ✅ F03 |
 | B11 | Sec. 7 Physical & logical access (office, VPN, shared drives) | §4.1 | F03 | pgTAP one row per type, actions / scopes per type; e2e office access Grant · Badge | ✅ F03 |
-| B12 | Sec. 8 Removal SLA: deadline computed, "within SLA" computed (not self-reported), reason required if missed | §4.1, §4.4 #7, §5.2 | F09 | F09 tests | ⏳ ❓ D3 timezone |
+| B12 | Sec. 8 Removal SLA: deadline computed, "within SLA" computed (not self-reported), reason required if missed | §4.1, §4.4 #7, §5.2 | F09 | F09 tests | ⏳ F09 (D3 ✅ company timezone, default Asia/Dubai) |
 | B13 | Sec. 9 IT execution checklist per ticket type; executed by = signed-in user | §4.1 | F04 | pgTAP checklist per type, executed by = signed-in user; e2e "Raju starts execution and ticks section 9…" | ✅ F04 |
 | B14 | Sec. 10 Final review & closure | §4.1 | F07 | F07 tests | ⏳ F07 |
 | B15 | Sec. 11 Signatures (IT half, approver half) | §4.1, §8 | F06, F07 | F06/F07 tests | ✅ IT half (F06) + approver half (F07b — `confirm_request`, e2e full loop) |
@@ -89,13 +89,13 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
-| E1 | PDF from the frozen closure snapshot, mirrors the 11 sections, fonts embedded, footer with SHA-256 | §8.2, `records-states.md` | F08 | F08 done-when (hash match) | ⏳ F08 |
-| E2 | Filename `firstname.lastname-<type>.pdf` with sanitising (José Müller → jose.muller); storage path includes ticket ID | §8.2, §14 | F08 | unit (filename) | ⏳ ❓ D18 |
+| E1 | PDF from the frozen closure snapshot, mirrors the 11 sections, fonts embedded, footer with SHA-256 | §8.2, `records-states.md` | F08 | F08 done-when (hash match) | 🟡 storage + record ✅ F08a (`pdf_documents` from the approval snapshot, private bucket `records`, one per request, download audit — pgTAP `records.test.sql`); document F08b, page F08c |
+| E2 | Filename `firstname.lastname-<type>.pdf` with sanitising (José Müller → jose.muller); storage path includes ticket ID | §8.2, §14 | F08 | unit (filename) | 🟡 filename + sanitising ✅ (F06 `pdfFileName`, unit); D18 ✅ pattern kept for all three types; storage path `<ticket>/<file>` ✅ (F08a `record_pdf`, pgTAP `records.test.sql`) |
 | E3 | Every download / SharePoint save is an audit event | §8.2 | F08, F22 | pgTAP/e2e | ⏳ F08 |
 | E4 | Closed request page: Download, Preview, signatures card, recent activity; PDF marker in lists | `pdf-export.md` | F08 | e2e | ⏳ F08 |
-| E5 | Draft PDF watermark "DRAFT – NOT APPROVED" (if drafts may be exported) | §8.2 | F08 | — | ❓ D18 |
+| E5 | Draft PDF watermark "DRAFT – NOT APPROVED" (if drafts may be exported) | §8.2 | — | pgTAP `records.test.sql` (no PDF before approval) | ✅ **not needed** — D18: a PDF exists only once approved |
 | E6 | Save to SharePoint (Graph, `Sites.Selected`), status + retry | §8.2, `pdf-export.md` | F22 | F22 tests | ❓ D9 |
-| E7 | Compare layout against the original form PDF | D14 | F08 | — | ❓ D14 (Raju adds the PDF to `docs/source/`) |
+| E7 | Compare layout against the original form PDF | D14 | F08b | — | ⏳ F08b (D14 ✅: kept locally in git-ignored `Rajulearning/source/`, never committed) |
 
 ## F. Reports
 
@@ -135,7 +135,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | H4 | Form fields & versions: draft/publish, request keeps its version, `custom_fields jsonb`; old requests/PDFs unchanged | §7, §14 | F01 (v4.1 seeded), F20 | F20 done-when | ⏳ F20 |
 | H5 | RBAC templates as data; applying one pre-fills the matrix | §4.4 #1 | F21 | F21 tests | ⏳ ❓ D17 |
 | H6a | **Departments** as an admin-editable list (seed: Engineering, Tech, Sales, Operations, Marketing, Compliance, Admin); retire, never delete | Raju 2026-10-07 | F01b (table + seed), F21 (editing screen) | pgTAP "the seven departments are seeded" | 🟡 list ✅, editing ⏳ F21 |
-| H6 | Defaults: IT owner, primary approver, timezone, ticket prefix, SLA definitions, PDF naming | `profile-admin.md` | F21 | F21 tests | ⏳ F21 |
+| H6 | Defaults: IT owner, primary approver, timezone, ticket prefix, SLA definitions, PDF naming | `profile-admin.md` | F21 | F21 tests | ⏳ F21 (company timezone stored F08a — D3) |
 | H7 | Every catalog/field/role change audit-logged; applies to new requests only | §7 | F18–F21 | pgTAP | ⏳ |
 
 ## I. Audit log
