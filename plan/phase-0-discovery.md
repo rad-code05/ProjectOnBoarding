@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | ~~D1~~ | ✅ **Resolved 2026-10-01:** Clerk, email + password, MFA required, invite-only; no SSO for now | — |
 | D2 | ✅ Region **resolved 2026-10-01: EU – Frankfurt**. Still open: retention for records, signatures, PDFs | R4 |
-| D3 | Company timezone for reports and SLAs (assumed Europe/Zurich) | F09, F12 |
+| ~~D3~~ | ✅ **Resolved 2026-10-11:** one **company timezone**, default **Asia/Dubai**, selectable by an admin (`app_settings.company_timezone`, `set_company_timezone()` — F08a; selector in Admin) — used for ticket years, dates on screen, the PDF, SLAs and reports | — (F08a) |
 | ~~D4~~ | ✅ **Resolved 2026-10-07:** backup approver = **Celine** (account + email in Clerk, never in the repo). App users for now: Raju, Moises, Celine; more can be added later | — (Clerk invite before F07 tests) |
 | D5 | How admin role changes are controlled (second admin vs logged + visible to approvers) | F18 |
 | D6 | Auditor OK with end-only approval (no pre-provisioning approval)? | R |
@@ -43,3 +43,4 @@ D1, D2 (region) and D12 answered ✅ — S4–S6 are unblocked; design board sta
 ## Session log
 - 2026-09-30 — Plan, roles, workflow, full design drafted; repo created.
 - 2026-10-11 — **D14** (original form PDF kept locally only, never committed) and **D18** (filename pattern kept; PDF only for approved requests) decided by Raju before F08.
+- 2026-10-11 — **D3** decided: company timezone Asia/Dubai by default, selectable by an admin (F08a stores it).

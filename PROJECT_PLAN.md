@@ -567,7 +567,7 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 6a. **Devices:** *resolved 2026-10-07 (D22)* — **mobile-first, desktop and phone**: iPhone regular / Plus / Pro Max and Samsung Galaxy S24 Ultra widths (~390–440 px) as well as desktop.
 7. **RBAC templates:** store templates as data (4.4 #1)? Where is the current RBAC document?
 8. **Access inventory for offboarding** (4.4 #2): *resolved 2026-10-07 (D20)* — **yes, in v1** (F09).
-9. **Data:** region *resolved 2026-10-01 (D2)* — Supabase **EU – Frankfurt (eu-central-1)**. Still open: retention for records, signatures, PDFs; backup requirements; company timezone for reports and SLAs (D3).
+9. **Data:** region *resolved 2026-10-01 (D2)* — Supabase **EU – Frankfurt (eu-central-1)**. Still open: retention for records, signatures, PDFs; backup requirements; company timezone for reports and SLAs (D3) — *resolved 2026-10-11*: one company setting, default **Asia/Dubai**, selectable by an admin.
 10. **AI:** provider and model (Claude direct vs. via OpenRouter); may employee personal data be sent; batch input format (CSV, XLSX, pasted text)?
 11. **Notifications:** email (Resend) and/or Slack — v1 or phase 2?
 12. **PDF filenames** for offboarding and access modification (proposed in 8.2); may drafts be exported? *Resolved 2026-10-11 (D18)* — keep the pattern for all three types (`firstname.lastname-onboarding.pdf`, `-offboarding.pdf`, `-access-modification.pdf`; stored under the ticket ID); **a PDF exists only for an approved (closed) request** — no draft or watermarked exports.

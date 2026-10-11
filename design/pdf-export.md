@@ -21,6 +21,9 @@ The PDF is generated **once, when Moises confirms, signs and closes** the reques
 
 Side cards: **Signatures** (Raju and Moises with server timestamps) and **Recent activity** (from the audit log, including downloads and SharePoint saves).
 
+## Phone layout (approved 2026-10-11)
+Boards *Phone · Closed request (PDF record)* and *Phone · Records*. **Record page:** top bar with **Records** back link, ticket and a black **Closed** pill; after confirming, Moises sees the toast "Confirmed, signed and closed"; eyebrow *Record · <type>*, name, "Closed <date, time> · read-only record"; the **Access record** card (2 px ink border): file name, *Contents* (form version · all 11 sections · both signatures), *Made* (time + company timezone, from the signed snapshot), *Fingerprint*, **Download PDF** (primary, full width), **Preview**, "Every download is the same file… recorded in the audit log"; **Signatures** (mark, role and sections, name, server time, fingerprint); **The signed record** — Employee / Access & equipment / IT execution / Notes rows that expand. SharePoint (F22) and Recent activity (F11) come later. **Records list:** title + "A PDF exists only once a request is approved", search (16 px), type pills (All / Onboarding / Offboarding / Access modification), count, one card per record (name, ticket · type, closed date · approved by) with a 44 px download button, **Show more**.
+
 ## Who can export
 Admin, approver/reviewer and auditor roles. Every download and SharePoint save writes an audit event.
 
