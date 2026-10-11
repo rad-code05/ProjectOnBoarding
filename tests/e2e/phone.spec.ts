@@ -239,4 +239,18 @@ test.describe("approver on a phone", () => {
     await page.keyboard.press("Escape");
     await expect(menu).toHaveCount(0);
   });
+
+  test("Records fits the phone; search is 16 px so iPhone doesn't zoom", async ({
+    page,
+  }) => {
+    await openApp(page, "/records");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Records" }),
+    ).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: /Search/ })).toHaveCSS(
+      "font-size",
+      "16px",
+    );
+    await expectNoSideScroll(page);
+  });
 });

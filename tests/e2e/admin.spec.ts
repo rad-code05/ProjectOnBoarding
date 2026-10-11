@@ -443,7 +443,9 @@ test("Raju reviews and signs a request; it awaits confirmation with his signatur
     .getByLabel("Initials (up to 4 characters)")
     .fill(`S${Date.now() % 1000}`.slice(0, 4));
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByRole("radio", { name: /Initials/ })).toBeChecked();
+  // Other tests may switch the same test user to a PNG at the same time;
+  // what this needs is *an* active signature, whichever kind.
+  await expect(page.getByRole("radio", { checked: true })).toHaveCount(1);
 
   // A fresh request with every required field.
   await openApp(page, "/requests");

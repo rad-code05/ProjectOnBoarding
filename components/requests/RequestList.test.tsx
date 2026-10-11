@@ -60,8 +60,14 @@ describe("RequestList", () => {
     expect(screen.getAllByText("No work email yet").length).toBeGreaterThan(0);
   });
 
-  test("closed requests show the PDF marker", () => {
+  test("closed requests show the PDF marker and open their record", () => {
     render(<RequestList rows={[row({ state: "closed" })]} now={now} />);
     expect(screen.getAllByText("PDF").length).toBe(2);
+    for (const link of screen.getAllByRole("link")) {
+      expect(link).toHaveAttribute(
+        "href",
+        "/records/11111111-1111-1111-1111-111111111111",
+      );
+    }
   });
 });

@@ -1,33 +1,19 @@
 import Link from "next/link";
-import { Avatar, ChevronRightIcon, StatusPill } from "@/components/ui";
+import {
+  Avatar,
+  ChevronRightIcon,
+  DownloadIcon,
+  StatusPill,
+} from "@/components/ui";
 import { formatDate, formatUpdated } from "@/lib/requests/format";
 import { TYPE_LABELS, countryName, personName } from "@/lib/requests/labels";
 import type { RequestRow } from "@/lib/requests/list";
 
-function DownloadIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 4v11" />
-      <path d="M7 10l5 5 5-5" />
-      <path d="M5 20h14" />
-    </svg>
-  );
-}
-
 function view(row: RequestRow, now: Date) {
   const name = personName(row.first_name, row.last_name);
   return {
-    href: `/requests/${row.id}`,
+    // A closed request opens its record (PDF, signatures) — F08d.
+    href: row.state === "closed" ? `/records/${row.id}` : `/requests/${row.id}`,
     name: name || "New request",
     unnamed: !name,
     email: row.work_email ?? "No work email yet",
@@ -89,7 +75,7 @@ export function RequestList({
                     {v.updated}
                     {v.hasPdf && (
                       <span className="flex items-center gap-0.5 font-bold text-ink">
-                        <DownloadIcon />
+                        <DownloadIcon size={14} strokeWidth={2} />
                         PDF
                       </span>
                     )}
@@ -180,7 +166,7 @@ export function RequestList({
                         className="flex items-center gap-0.5 text-[10px] font-bold"
                         title="PDF available"
                       >
-                        <DownloadIcon />
+                        <DownloadIcon size={14} strokeWidth={2} />
                         PDF
                       </span>
                     ) : (
