@@ -6,7 +6,7 @@ Where Moises (or Raju) gets the finished record as a PDF, to keep on their compu
 
 ## When the PDF exists
 
-The PDF is generated **once, when Moises confirms, signs and closes** the request, from the frozen signed snapshot. Every download is the same file. Draft/in-progress requests have no official PDF (a watermarked "DRAFT – NOT APPROVED" preview may be added later if wanted).
+The PDF is generated **once, when Moises confirms, signs and closes** the request, from the frozen signed snapshot. Every download is the same file. Draft/in-progress requests have **no PDF at all** — export only once approved (D18, decided 2026-10-11).
 
 ## Where the export options are
 
