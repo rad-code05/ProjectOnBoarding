@@ -70,3 +70,41 @@ export function catalogErrorMessage(
   }
   return "Could not save. Reload and try again.";
 }
+
+// ---------------------------------------------------------------------------
+// Equipment & access types (F19d)
+// ---------------------------------------------------------------------------
+
+/** Section 6 actions (database: admin_save_equipment_type). */
+export const EQUIPMENT_ACTIONS = ["Issue", "Return"] as const;
+/** Section 7 actions (database: admin_save_access_type). */
+export const ACCESS_ACTIONS = ["Grant", "Modify", "Remove", "Disable"] as const;
+
+export type AdminEquipmentType = {
+  id: number;
+  name: string;
+  actions: string[];
+  needsDescription: boolean;
+  active: boolean;
+  uses: number;
+};
+
+export type AdminAccessType = {
+  id: number;
+  name: string;
+  actions: string[];
+  scopes: string[];
+  active: boolean;
+  uses: number;
+};
+
+/** "Issue · Return — needs a description" / "Grant · Disable — Badge / Key". */
+export function typeLine(
+  type: { actions: string[] } & (
+    { needsDescription: boolean } | { scopes: string[] }
+  ),
+): string {
+  const actions = type.actions.join(" · ");
+  if ("scopes" in type) return `${actions} — ${type.scopes.join(" / ")}`;
+  return type.needsDescription ? `${actions} — needs a description` : actions;
+}

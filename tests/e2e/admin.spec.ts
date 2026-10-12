@@ -86,6 +86,48 @@ test("Admin · Applications: add an application, change it, find it, retire it",
   ).toBeVisible();
 });
 
+test("Admin · Equipment & access types: add one of each, then retire them", async ({
+  page,
+}) => {
+  const stamp = Date.now() % 100000;
+  await openApp(page, "/admin/types");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Equipment & access types" }),
+  ).toBeVisible();
+
+  // An equipment type that needs a description
+  await page.getByRole("button", { name: "Add equipment type" }).click();
+  const eq = page.getByRole("dialog", { name: "Add equipment type" });
+  await eq.getByLabel("Name").fill(`E2E Kit ${stamp}`);
+  await eq.getByLabel(/Needs a description/).check();
+  await eq.getByRole("button", { name: "Add equipment type" }).click();
+  await expect(eq).toHaveCount(0);
+  const kit = page.getByRole("button", {
+    name: new RegExp(`E2E Kit ${stamp}`),
+  });
+  await expect(kit).toContainText("Issue · Return — needs a description");
+
+  // An access type with a scope
+  await page.getByRole("button", { name: "Add access type" }).click();
+  const ac = page.getByRole("dialog", { name: "Add access type" });
+  await ac.getByLabel("Name").fill(`E2E Door ${stamp}`);
+  await ac.getByLabel("New scope").fill("Lab");
+  await ac.getByRole("button", { name: "Add access type" }).click();
+  await expect(ac).toHaveCount(0);
+  const door = page.getByRole("button", {
+    name: new RegExp(`E2E Door ${stamp}`),
+  });
+  await expect(door).toContainText("Grant · Disable — Lab");
+
+  // Retire both (test items never stay on new requests)
+  await kit.click();
+  await page.getByRole("button", { name: "Retire equipment type" }).click();
+  await expect(kit).toContainText("Retired");
+  await door.click();
+  await page.getByRole("button", { name: "Retire access type" }).click();
+  await expect(door).toContainText("Retired");
+});
+
 test("admin can open every menu page", async ({ page }) => {
   await openApp(page, "/requests");
   const menu = page.getByRole("navigation", { name: "Main" });
@@ -290,7 +332,8 @@ test("Raju records equipment (Other needs a description) and office access", asy
     page
       .getByRole("region", { name: "Physical & logical access" })
       .getByRole("status"),
-  ).toHaveText("1 of 3 set");
+    // The admin can add access types (F19d), so the total may grow.
+  ).toHaveText(/^1 of \d+ set$/);
 
   // Both are stored: still there after a reload.
   await openApp(page, page.url());

@@ -1,18 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useState, useTransition, type KeyboardEvent } from "react";
+import { useId, useState, useTransition } from "react";
 import { saveApp, setAppActive } from "@/app/(app)/admin/actions";
-import { Button, CloseIcon, InlineError, Sheet } from "@/components/ui";
+import { Button, InlineError, Sheet } from "@/components/ui";
 import {
   APP_ACTIONS,
   type AdminApp,
   type AdminCategory,
 } from "@/lib/admin/catalog-shared";
 import { cn } from "@/lib/cn";
-
-const field =
-  "h-12 min-w-0 rounded-field border border-field-border bg-paper px-3 text-base outline-none focus:border-ink md:h-10 md:text-sm";
+import {
+  ActionToggles,
+  OptionChips,
+  fieldClass as field,
+  withDraft,
+} from "./ListFields";
 
 /**
  * Add or edit one application (board: Phone · Edit application (sheet)).
@@ -46,28 +49,6 @@ export function AppSheet({
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  const toggle = (action: string) =>
-    setActions((current) =>
-      current.includes(action)
-        ? current.filter((a) => a !== action)
-        : APP_ACTIONS.filter((a) => a === action || current.includes(a)),
-    );
-
-  const addPermission = () => {
-    const value = draft.trim().replace(/\s+/g, " ");
-    if (!value) return;
-    if (!permissions.some((p) => p.toLowerCase() === value.toLowerCase())) {
-      setPermissions([...permissions, value]);
-    }
-    setDraft("");
-  };
-  const onDraftKey = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      addPermission();
-    }
-  };
-
   const run = (work: () => Promise<{ ok: boolean; message?: string }>) =>
     start(async () => {
       setError(null);
@@ -87,7 +68,7 @@ export function AppSheet({
         categoryId,
         name,
         actions,
-        permissions: draft.trim() ? [...permissions, draft] : permissions,
+        permissions: withDraft(permissions, draft),
       }),
     );
   const setActive = (active: boolean) =>
@@ -158,80 +139,23 @@ export function AppSheet({
         </select>
       </div>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="pb-1.5 text-[13px] font-semibold">
-          Allowed actions
-        </legend>
-        <div className="flex flex-wrap gap-1.5">
-          {APP_ACTIONS.map((action) => {
-            const on = actions.includes(action);
-            return (
-              <button
-                key={action}
-                type="button"
-                aria-pressed={on}
-                onClick={() => toggle(action)}
-                className={cn(
-                  "h-10 rounded-pill border px-3.5 text-[13px] font-semibold",
-                  on
-                    ? "border-ink bg-ink text-paper"
-                    : "border-field-border bg-paper",
-                )}
-              >
-                {action}
-              </button>
-            );
-          })}
-        </div>
-        <span className="text-xs text-graphite">
-          At least one. Hexnode uses Enroll / Remove.
-        </span>
-      </fieldset>
+      <ActionToggles
+        all={APP_ACTIONS}
+        value={actions}
+        onChange={setActions}
+        hint="At least one. Hexnode uses Enroll / Remove."
+      />
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="pb-1.5 text-[13px] font-semibold">
-          Permission options
-        </legend>
-        {permissions.length > 0 && (
-          <ul className="flex flex-wrap gap-1.5">
-            {permissions.map((p) => (
-              <li
-                key={p}
-                className="flex h-9 items-center gap-1 rounded-pill bg-sand pr-1 pl-3 text-[13px] font-semibold"
-              >
-                {p}
-                <button
-                  type="button"
-                  aria-label={`Remove ${p}`}
-                  onClick={() =>
-                    setPermissions(permissions.filter((x) => x !== p))
-                  }
-                  className="flex size-7 items-center justify-center"
-                >
-                  <CloseIcon size={14} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="grid grid-cols-[1fr_auto] gap-2">
-          <input
-            aria-label="New permission option"
-            placeholder="e.g. Dev seat"
-            value={draft}
-            maxLength={40}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={onDraftKey}
-            className={field}
-          />
-          <Button variant="secondary" size="sm" onClick={addPermission}>
-            Add
-          </Button>
-        </div>
-        <span className="text-xs text-graphite">
-          At least one. These are the choices in section 5 of a request.
-        </span>
-      </fieldset>
+      <OptionChips
+        legend="Permission options"
+        inputLabel="New permission option"
+        placeholder="e.g. Dev seat"
+        hint="At least one. These are the choices in section 5 of a request."
+        value={permissions}
+        onChange={setPermissions}
+        draft={draft}
+        onDraftChange={setDraft}
+      />
 
       {app && (
         <div

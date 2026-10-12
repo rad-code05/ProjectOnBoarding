@@ -1,6 +1,11 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { AdminApp, AdminCategory } from "./catalog-shared";
+import type {
+  AdminAccessType,
+  AdminApp,
+  AdminCategory,
+  AdminEquipmentType,
+} from "./catalog-shared";
 
 /**
  * Everything Admin · Applications shows: categories and applications
@@ -46,6 +51,58 @@ export async function loadCatalogAdmin(): Promise<{
       permissions: app.permissions,
       active: app.active,
       uses: uses.get(app.id) ?? 0,
+    })),
+  };
+}
+
+/** Admin · Equipment & access types: both lists, with uses per type. */
+export async function loadTypesAdmin(): Promise<{
+  equipment: AdminEquipmentType[];
+  access: AdminAccessType[];
+}> {
+  const supabase = createServerSupabaseClient();
+  const [equipment, access, equipmentUsed, accessUsed] = await Promise.all([
+    supabase
+      .from("equipment_types")
+      .select("id, name, actions, needs_description, active")
+      .order("sort_order"),
+    supabase
+      .from("physical_access_types")
+      .select("id, name, actions, scopes, active")
+      .order("sort_order"),
+    supabase.from("request_equipment_items").select("type_id"),
+    supabase.from("request_physical_access_items").select("type_id"),
+  ]);
+  for (const result of [equipment, access, equipmentUsed, accessUsed]) {
+    if (result.error) {
+      throw new Error(`Could not load the types: ${result.error.message}`);
+    }
+  }
+  const count = (rows: { type_id: number }[] | null) => {
+    const map = new Map<number, number>();
+    for (const row of rows ?? []) {
+      map.set(row.type_id, (map.get(row.type_id) ?? 0) + 1);
+    }
+    return map;
+  };
+  const eqUses = count(equipmentUsed.data);
+  const acUses = count(accessUsed.data);
+  return {
+    equipment: (equipment.data ?? []).map((t) => ({
+      id: t.id,
+      name: t.name,
+      actions: t.actions,
+      needsDescription: t.needs_description,
+      active: t.active,
+      uses: eqUses.get(t.id) ?? 0,
+    })),
+    access: (access.data ?? []).map((t) => ({
+      id: t.id,
+      name: t.name,
+      actions: t.actions,
+      scopes: t.scopes,
+      active: t.active,
+      uses: acUses.get(t.id) ?? 0,
     })),
   };
 }
