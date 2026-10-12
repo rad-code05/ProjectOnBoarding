@@ -5,17 +5,9 @@ import { useId, useMemo, useState, useTransition } from "react";
 import { setMyTimezone } from "@/app/(app)/profile/actions";
 import { InlineError } from "@/components/ui";
 import { formatTime } from "@/lib/requests/format";
+import { timezoneList } from "@/lib/time/zones";
 
 const DEFAULT = "";
-
-/** Every IANA timezone the browser knows, with the given ones included. */
-function timezoneList(extra: string[]): string[] {
-  const all =
-    typeof Intl.supportedValuesOf === "function"
-      ? Intl.supportedValuesOf("timeZone")
-      : [];
-  return [...new Set([...all, ...extra])].sort();
-}
 
 /**
  * My profile → Timezone (F05e, board Phone · My profile): the timezone of my

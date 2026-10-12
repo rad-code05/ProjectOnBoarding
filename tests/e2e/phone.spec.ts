@@ -221,6 +221,20 @@ test.describe("admin on a phone", () => {
     ).toBeVisible();
     await expectNoSideScroll(page);
   });
+
+  test("Admin home and Settings fit the phone", async ({ page }) => {
+    await openApp(page, "/admin");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Admin" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+    await openApp(page, "/admin/settings");
+    await expect(page.getByLabel("Timezone", { exact: true })).toHaveCSS(
+      "font-size",
+      "16px",
+    );
+    await expectNoSideScroll(page);
+  });
 });
 
 test.describe("approver on a phone", () => {
