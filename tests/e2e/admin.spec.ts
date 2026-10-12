@@ -24,6 +24,25 @@ test("admin lands on Requests with the admin menu", async ({ page }) => {
   );
 });
 
+test("Admin home leads to Settings with the company timezone", async ({
+  page,
+}) => {
+  await openApp(page, "/admin");
+  await expect(page.getByRole("link", { name: /^Applications/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^Settings/ })).toContainText(
+    "Company timezone:",
+  );
+  await page.getByRole("link", { name: /^Settings/ }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Settings" }),
+  ).toBeVisible();
+  // Read only: changing it here would change times for other tests.
+  await expect(page.getByLabel("Timezone", { exact: true })).not.toHaveValue(
+    "",
+  );
+  await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
+});
+
 test("admin can open every menu page", async ({ page }) => {
   await openApp(page, "/requests");
   const menu = page.getByRole("navigation", { name: "Main" });
