@@ -150,3 +150,97 @@ export async function setCategoryActive(input: {
     }),
   );
 }
+
+// ---------------------------------------------------------------------------
+// Admin · Equipment & access types (F19d)
+// ---------------------------------------------------------------------------
+
+/** Add (no id) or change an equipment type. */
+export async function saveEquipmentType(input: {
+  id: number | null;
+  name: string;
+  actions: string[];
+  needsDescription: boolean;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z
+    .object({
+      id: id.nullable(),
+      name: shortText,
+      actions: z.array(shortText).max(10),
+      needsDescription: z.boolean(),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Check the fields." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_save_equipment_type", {
+      p_id: parsed.data.id as number,
+      p_name: parsed.data.name,
+      p_actions: parsed.data.actions,
+      p_needs_description: parsed.data.needsDescription,
+    }),
+  );
+}
+
+/** Retire (false) or restore (true) an equipment type. */
+export async function setEquipmentTypeActive(input: {
+  id: number;
+  active: boolean;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z.object({ id, active: z.boolean() }).safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Unknown type." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_set_equipment_type_active", {
+      p_id: parsed.data.id,
+      p_active: parsed.data.active,
+    }),
+  );
+}
+
+/** Add (no id) or change a physical / logical access type. */
+export async function saveAccessType(input: {
+  id: number | null;
+  name: string;
+  actions: string[];
+  scopes: string[];
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z
+    .object({
+      id: id.nullable(),
+      name: shortText,
+      actions: z.array(shortText).max(10),
+      scopes: z.array(shortText).max(20),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Check the fields." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_save_access_type", {
+      p_id: parsed.data.id as number,
+      p_name: parsed.data.name,
+      p_actions: parsed.data.actions,
+      p_scopes: parsed.data.scopes,
+    }),
+  );
+}
+
+/** Retire (false) or restore (true) an access type. */
+export async function setAccessTypeActive(input: {
+  id: number;
+  active: boolean;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z.object({ id, active: z.boolean() }).safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Unknown type." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_set_access_type_active", {
+      p_id: parsed.data.id,
+      p_active: parsed.data.active,
+    }),
+  );
+}
