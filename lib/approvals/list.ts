@@ -2,6 +2,7 @@ import "server-only";
 import { formatDate, formatDay, formatTime } from "@/lib/requests/format";
 import { TYPE_LABELS, countryName, personName } from "@/lib/requests/labels";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { displayTimezone } from "@/lib/time/display";
 import { accessSummary, monthStart } from "./summary";
 
 /** One request waiting for the approver (a card on Approvals). */
@@ -50,6 +51,7 @@ export async function countWaiting(): Promise<number> {
  */
 export async function loadApprovals(): Promise<ApprovalsOverview> {
   const supabase = createServerSupabaseClient();
+  const tz = await displayTimezone();
   const [waiting, returned, closedMonth, closed] = await Promise.all([
     supabase
       .from("requests")
@@ -105,7 +107,7 @@ export async function loadApprovals(): Promise<ApprovalsOverview> {
         effective: formatDate(r.effective_date),
         access: accessSummary(apps),
         signedByIt: it
-          ? `${it.signer_name ?? "IT"} · ${formatDay(it.signed_at)}, ${formatTime(it.signed_at)}`
+          ? `${it.signer_name ?? "IT"} · ${formatDay(it.signed_at, tz)}, ${formatTime(it.signed_at, tz)}`
           : "—",
       };
     }),
@@ -115,7 +117,7 @@ export async function loadApprovals(): Promise<ApprovalsOverview> {
       id: r.id,
       ticketId: r.ticket_id,
       name: personName(r.first_name, r.last_name) || "Unnamed person",
-      closed: formatDay(r.closed_at),
+      closed: formatDay(r.closed_at, tz),
     })),
   };
 }

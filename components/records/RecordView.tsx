@@ -185,6 +185,7 @@ export function RecordView({
               snapshot={record.snapshot}
               checklist={record.checklist}
               idPrefix="rec"
+              timeZone={record.timezone}
             />
           </Expandable>
         </div>

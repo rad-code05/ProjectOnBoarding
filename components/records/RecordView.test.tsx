@@ -14,6 +14,7 @@ const page = (patch: Partial<RecordPage> = {}): RecordPage => {
     ticketId: "UAM-2026-000124",
     type: "onboarding",
     closedLabel: "9 Oct 2026, 16:05",
+    timezone: "Asia/Dubai",
     snapshot: sample.snapshot,
     checklist: sample.checklist,
     it: {

@@ -116,11 +116,14 @@ export function SnapshotCards({
   checklist,
   onEdit,
   idPrefix = "snap",
+  timeZone,
 }: {
   snapshot: Snapshot;
   checklist: ChecklistItem[];
   onEdit?: (section: number) => void;
   idPrefix?: string;
+  /** The viewer's screen timezone (F05e). */
+  timeZone?: string;
 }) {
   const access = accessRows(snapshot);
   return (
@@ -156,6 +159,7 @@ export function SnapshotCards({
         checklist={checklist}
         onEdit={onEdit}
         idPrefix={idPrefix}
+        timeZone={timeZone}
       />
     </>
   );
@@ -167,11 +171,14 @@ export function ExecutionCard({
   checklist,
   onEdit,
   idPrefix = "snap",
+  timeZone,
 }: {
   snapshot: Snapshot;
   checklist: ChecklistItem[];
   onEdit?: (section: number) => void;
   idPrefix?: string;
+  /** The viewer's screen timezone (F05e). */
+  timeZone?: string;
 }) {
   const execution = snapshot.execution;
   const started = snapshot.request.execution_started_at;
@@ -186,7 +193,7 @@ export function ExecutionCard({
       <span className="-mt-1.5 text-xs text-graphite">
         Executed by {execution?.executed_by_name ?? "—"}
         {started
-          ? ` · started ${formatDay(started)}, ${formatTime(started)}`
+          ? ` · started ${formatDay(started, timeZone)}, ${formatTime(started, timeZone)}`
           : ""}
       </span>
       <ul className="flex flex-col gap-2 text-[13px]">

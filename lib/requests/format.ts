@@ -7,31 +7,53 @@ const dayMonthYear = new Intl.DateTimeFormat("en-GB", {
 const relative = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
 /**
- * Company timezone (D3, decided 2026-10-11): Asia/Dubai, the default of
- * `app_settings.company_timezone` in the database. Screens use this fixed
- * value until the Admin selector exists; the PDF reads the database setting.
+ * Company timezone (D3): Asia/Dubai, the default of
+ * `app_settings.company_timezone`. The PDF record, ticket years, reports and
+ * SLAs use the company setting; screens use each person's own timezone
+ * (`my_timezone()`, F05e) and fall back to this one.
  */
 export const COMPANY_TIMEZONE = "Asia/Dubai";
-const companyDay = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: COMPANY_TIMEZONE,
-});
-const companyTime = new Intl.DateTimeFormat("en-GB", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: COMPANY_TIMEZONE,
-});
 
-/** A server timestamp → "7 Oct 2026" in the company timezone. */
-export function formatDay(iso: string | null): string {
-  return iso ? companyDay.format(new Date(iso)) : "—";
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+/** One formatter per timezone and kind, made once. */
+function formatter(kind: "day" | "time", timeZone: string) {
+  const key = `${kind}|${timeZone}`;
+  let f = formatters.get(key);
+  if (!f) {
+    f = new Intl.DateTimeFormat(
+      "en-GB",
+      kind === "day"
+        ? { day: "numeric", month: "short", year: "numeric", timeZone }
+        : { hour: "2-digit", minute: "2-digit", timeZone },
+    );
+    formatters.set(key, f);
+  }
+  return f;
 }
 
-/** A server timestamp → "14:12" in the company timezone. */
-export function formatTime(iso: string): string {
-  return companyTime.format(new Date(iso));
+/** A server timestamp → "7 Oct 2026" in the given timezone. */
+export function formatDay(
+  iso: string | null,
+  timeZone: string = COMPANY_TIMEZONE,
+): string {
+  return iso ? formatter("day", timeZone).format(new Date(iso)) : "—";
+}
+
+/** A server timestamp → "14:12" in the given timezone. */
+export function formatTime(
+  iso: string,
+  timeZone: string = COMPANY_TIMEZONE,
+): string {
+  return formatter("time", timeZone).format(new Date(iso));
+}
+
+/** A server timestamp → "7 Oct 2026, 14:12" in the given timezone. */
+export function formatDayTime(
+  iso: string,
+  timeZone: string = COMPANY_TIMEZONE,
+): string {
+  return `${formatDay(iso, timeZone)}, ${formatTime(iso, timeZone)}`;
 }
 
 /** "2026-10-14" (a date without time) → "14 Oct 2026". */

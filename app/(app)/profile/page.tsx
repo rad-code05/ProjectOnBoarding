@@ -1,20 +1,25 @@
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { SignaturePanel } from "@/components/profile/SignaturePanel";
+import { TimezoneCard } from "@/components/profile/TimezoneCard";
 import { Avatar, ChevronRightIcon, buttonStyles } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { ROLE_LABELS } from "@/lib/navigation";
 import { loadSignatures } from "@/lib/profile/signatures";
-import { COMPANY_TIMEZONE, formatDay } from "@/lib/requests/format";
+import { loadTimezoneChoice } from "@/lib/profile/timezone";
+import { formatDay } from "@/lib/requests/format";
+import { displayTimezone } from "@/lib/time/display";
 
 export const metadata = { title: "My profile" };
 
 /** Every signed-in user has a profile, whatever their roles. */
 export default async function ProfilePage() {
   const { roles } = await getCurrentUser();
-  const [user, signatures] = await Promise.all([
+  const [user, signatures, choice, tz] = await Promise.all([
     currentUser(),
     loadSignatures(),
+    loadTimezoneChoice(),
+    displayTimezone(),
   ]);
   const name =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "—";
@@ -29,11 +34,10 @@ export default async function ProfilePage() {
       label: "Sign-in",
       value: `Email + password · MFA ${user?.twoFactorEnabled ? "on" : "off"}`,
     },
-    { label: "Timezone", value: COMPANY_TIMEZONE },
     {
       label: "Member since",
       value: user?.createdAt
-        ? formatDay(new Date(user.createdAt).toISOString())
+        ? formatDay(new Date(user.createdAt).toISOString(), tz)
         : "—",
     },
   ];
@@ -81,6 +85,8 @@ export default async function ProfilePage() {
           Name, email and roles are managed by the admin.
         </p>
       </section>
+
+      <TimezoneCard own={choice.own} company={choice.company} />
 
       <SignaturePanel state={signatures} />
     </div>

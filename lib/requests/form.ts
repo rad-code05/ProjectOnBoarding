@@ -1,5 +1,6 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { displayTimezone } from "@/lib/time/display";
 import { countryOptions } from "./countries";
 import type { AccessChoices, CatalogCategory, OtherApp } from "./access";
 import type { DraftFormValues } from "./draft";
@@ -56,6 +57,8 @@ export type RequestFormData = {
   signatures: SignedSection[];
   /** While returned: who returned it, when, the comment, flagged sections. */
   returned: ReturnInfo | null;
+  /** The signed-in person's screen timezone (F05e). */
+  timezone: string;
 };
 
 const EDITABLE_STATES: RequestState[] = ["draft", "in_execution", "returned"];
@@ -76,6 +79,7 @@ export async function loadRequestForm(
 ): Promise<RequestFormData | null> {
   if (!UUID.test(id)) return null;
   const supabase = createServerSupabaseClient();
+  const tz = await displayTimezone();
 
   const { data: request, error } = await supabase
     .from("requests")
@@ -249,8 +253,8 @@ export async function loadRequestForm(
     state: request.state,
     version: request.version,
     editable: EDITABLE_STATES.includes(request.state),
-    createdLabel: `${formatDay(request.created_at)}, ${formatTime(request.created_at)}`,
-    savedLabel: request.version > 1 ? formatTime(request.updated_at) : null,
+    createdLabel: `${formatDay(request.created_at, tz)}, ${formatTime(request.created_at, tz)}`,
+    savedLabel: request.version > 1 ? formatTime(request.updated_at, tz) : null,
     fields: (fields.data ?? []).map((field) => ({
       key: field.key,
       label: field.label,
@@ -276,8 +280,8 @@ export async function loadRequestForm(
     system: {
       ticket_id: request.ticket_id,
       status: STATE_LABELS[request.state],
-      opened_at: formatDay(request.created_at),
-      closed_at: formatDay(request.closed_at),
+      opened_at: formatDay(request.created_at, tz),
+      closed_at: formatDay(request.closed_at, tz),
       employment_event: EMPLOYMENT_EVENTS[request.type],
     },
     choices,
@@ -338,11 +342,11 @@ export async function loadRequestForm(
     },
     workflow: {
       executionStartedLabel: request.execution_started_at
-        ? `${formatDay(request.execution_started_at)}, ${formatTime(request.execution_started_at)}`
+        ? `${formatDay(request.execution_started_at, tz)}, ${formatTime(request.execution_started_at, tz)}`
         : null,
       cancelledLabel: request.cancelled_at
         ? [
-            `${formatDay(request.cancelled_at)}, ${formatTime(request.cancelled_at)}`,
+            `${formatDay(request.cancelled_at, tz)}, ${formatTime(request.cancelled_at, tz)}`,
             personName(
               request.canceller?.first_name,
               request.canceller?.last_name,
@@ -365,13 +369,14 @@ export async function loadRequestForm(
       signerName:
         personName(row.signer?.first_name, row.signer?.last_name) ||
         "IT operator",
-      signedLabel: `${formatDay(row.signed_at)}, ${formatTime(row.signed_at)}`,
+      signedLabel: `${formatDay(row.signed_at, tz)}, ${formatTime(row.signed_at, tz)}`,
       fingerprint: row.snapshot.sha256,
     })),
     returned:
       request.state === "returned"
-        ? returnInfo(lastReturn.data, request.return_reason)
+        ? returnInfo(lastReturn.data, request.return_reason, tz)
         : null,
+    timezone: tz,
     others: (items.data ?? [])
       .filter((item) => item.app_id === null)
       .map((item) => ({
@@ -395,6 +400,7 @@ type ReturnRow = {
 function returnInfo(
   row: ReturnRow | null,
   reason: string | null,
+  tz: string,
 ): ReturnInfo | null {
   if (!row) {
     return reason
@@ -413,7 +419,7 @@ function returnInfo(
       personName(row.approver?.first_name, row.approver?.last_name) ||
       "the approver",
     byFirstName: first || "the approver",
-    atLabel: `${formatDay(row.decided_at)}, ${formatTime(row.decided_at)}`,
+    atLabel: `${formatDay(row.decided_at, tz)}, ${formatTime(row.decided_at, tz)}`,
     comment: row.comment ?? reason ?? "",
     flagged: flaggedSections(row.flagged_sections),
   };

@@ -59,6 +59,26 @@ for (const path of ["/admin", "/requests", REQUEST_PAGE, "/audit"]) {
   });
 }
 
+test("My profile: the approver picks their own timezone, then goes back to the company default", async ({
+  page,
+}) => {
+  await openApp(page, "/profile");
+  const select = page.getByLabel("Show times on my screens in");
+  await expect(select).toBeVisible();
+  await select.selectOption("Europe/Zurich");
+  const timezoneCard = page.getByRole("region", { name: "Timezone" });
+  await expect(timezoneCard.getByRole("status")).toHaveText(
+    /^Saved · now \d\d:\d\d in Europe\/Zurich$/,
+  );
+  await openApp(page, "/profile");
+  await expect(select).toHaveValue("Europe/Zurich");
+  // Back to the default, so other tests see the company timezone.
+  await select.selectOption("");
+  await expect(timezoneCard.getByRole("status")).toHaveText(/in Asia\/Dubai$/);
+  await openApp(page, "/profile");
+  await expect(select).toHaveValue("");
+});
+
 test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirms and it closes", async ({
   page,
   browser,

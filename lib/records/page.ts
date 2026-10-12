@@ -4,10 +4,11 @@ import {
   type AppliedSignature,
 } from "@/lib/approvals/review";
 import type { ChecklistItem } from "@/lib/requests/execution";
-import { formatDay, formatTime } from "@/lib/requests/format";
+import { formatDayTime } from "@/lib/requests/format";
 import type { RequestType } from "@/lib/requests/labels";
 import { snapshotSchema, type Snapshot } from "@/lib/requests/signing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { displayTimezone } from "@/lib/time/display";
 import { ensureRecordPdf, type PdfRecord } from "./ensure";
 
 /** Everything the record page shows (board: Phone · Closed request). */
@@ -22,12 +23,13 @@ export type RecordPage = {
   checklist: ChecklistItem[];
   it: AppliedSignature | null;
   approval: AppliedSignature | null;
+  /** The viewer's screen timezone (F05e). */
+  timezone: string;
   /** null = the PDF could not be made just now (try again). */
   pdf: (PdfRecord & { generatedLabel: string }) | null;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const at = (iso: string) => `${formatDay(iso)}, ${formatTime(iso)}`;
 
 /**
  * A closed request as a read-only record, with its PDF (made now if closing
@@ -36,6 +38,7 @@ const at = (iso: string) => `${formatDay(iso)}, ${formatTime(iso)}`;
 export async function loadRecordPage(id: string): Promise<RecordPage | null> {
   if (!UUID.test(id)) return null;
   const supabase = createServerSupabaseClient();
+  const tz = await displayTimezone();
   const { data: request } = await supabase
     .from("requests")
     .select("id, ticket_id, type, state, closed_at")
@@ -54,7 +57,7 @@ export async function loadRecordPage(id: string): Promise<RecordPage | null> {
       .order("decided_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
-    loadAppliedSignatures(supabase, id),
+    loadAppliedSignatures(supabase, id, tz),
     supabase
       .from("execution_checklist_items")
       .select("key, label")
@@ -68,7 +71,11 @@ export async function loadRecordPage(id: string): Promise<RecordPage | null> {
   let pdf: RecordPage["pdf"] = null;
   try {
     const record = await ensureRecordPdf(id);
-    if (record) pdf = { ...record, generatedLabel: at(record.generatedAt) };
+    if (record)
+      pdf = {
+        ...record,
+        generatedLabel: formatDayTime(record.generatedAt, record.timezone),
+      };
   } catch (cause) {
     console.error("PDF record not available", cause);
   }
@@ -77,7 +84,8 @@ export async function loadRecordPage(id: string): Promise<RecordPage | null> {
     id: request.id,
     ticketId: request.ticket_id,
     type: request.type,
-    closedLabel: at(request.closed_at),
+    closedLabel: formatDayTime(request.closed_at, tz),
+    timezone: tz,
     snapshot: parsed.data,
     checklist: checklist.data ?? [],
     it: applied.it,

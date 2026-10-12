@@ -15,7 +15,7 @@ a{color:#000000}a:hover{color:#cf2e2e}
 input::placeholder{color:#7e7e7e}
 </style>
 </helmet>
-<div style="width: 390px; height: 1500px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+<div style="width: 390px; height: 1680px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
 
 <header style="height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 0 8px 0 16px; background: #000000; display: flex; align-items: center; gap: 12px; color: #FFFFFF">
 <img src="/_blob/17b23c9ce6dc5f048942c7b514470f03" alt="Laine" style="width: 60px; height: 22px; display: block; flex-shrink: 0">
@@ -47,12 +47,26 @@ input::placeholder{color:#7e7e7e}
 <dl style="margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 14px">
 <dt style="color: #535353">Roles</dt><dd style="margin: 0; font-weight: 600">Admin · Requester · IT operator</dd>
 <dt style="color: #535353">Sign-in</dt><dd style="margin: 0">Email + password · MFA on</dd>
-<dt style="color: #535353">Timezone</dt><dd style="margin: 0">Europe/Zurich</dd>
 <dt style="color: #535353">Member since</dt><dd style="margin: 0">30 Sep 2026</dd>
 </dl>
 <a href="ProfileSecurityMobile.dc.html" style="height: 48px; border: 1px solid #000000; border-radius: 100px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 600; text-decoration: none; color: #000000">Manage password &amp; MFA
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></a>
 <span style="font-size: 12px; color: #535353">Name, email and roles are managed by the admin.</span>
+</section>
+
+<section aria-labelledby="tz-title" style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<h2 id="tz-title" style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 21px">Timezone</h2>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="tz-select" style="font-size: 13px; font-weight: 600">Show times on my screens in</label>
+<select id="tz-select" aria-describedby="tz-help" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px; color: #000000">
+<option>Company default — Asia/Dubai</option>
+<option selected>Europe/Zurich</option>
+<option>Europe/London</option>
+<option>Asia/Kolkata</option>
+</select>
+<span role="status" style="font-size: 12px; font-weight: 600; color: #000000">Saved · now 14:05 in Europe/Zurich</span>
+</div>
+<p id="tz-help" style="margin: 0; font-size: 12px; line-height: 1.5; color: #535353">Only your screens change. PDF records, ticket numbers, reports and SLA deadlines always use the company timezone (Asia/Dubai), so everyone sees the same record.</p>
 </section>
 
 <section aria-labelledby="sig-title" style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
@@ -111,7 +125,7 @@ input::placeholder{color:#7e7e7e}
 </main>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1500}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1680}}'>
 class Component extends DCLogic {
 renderVals() {
 const base = 'font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; white-space: nowrap; ';

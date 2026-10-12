@@ -95,6 +95,7 @@ export function ConfirmSignSheet({
         snapshot={snapshot}
         checklist={review.checklist}
         idPrefix="cs"
+        timeZone={review.timezone}
       />
       <button
         type="button"

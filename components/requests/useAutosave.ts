@@ -31,12 +31,15 @@ export function useAutosave({
   values: initialValues,
   savedAt,
   enabled,
+  timeZone,
 }: {
   id: string;
   version: number;
   values: DraftFormValues;
   savedAt: string | null;
   enabled: boolean;
+  /** The person's screen timezone (F05e). */
+  timeZone?: string;
 }) {
   const [values, setValues] = useState(initialValues);
   const [saved, setSaved] = useState(initialValues);
@@ -81,7 +84,10 @@ export function useAutosave({
             savedRef.current = toSave;
             setSaved(toSave);
             setErrors({});
-            setStatus({ kind: "saved", at: formatTime(result.savedAt) });
+            setStatus({
+              kind: "saved",
+              at: formatTime(result.savedAt, timeZone),
+            });
           } else if (result.reason === "invalid") {
             setErrors(result.fieldErrors);
             setStatus({ kind: "invalid" });
@@ -97,7 +103,7 @@ export function useAutosave({
       }
       busy.current = false;
     },
-    [id],
+    [id, timeZone],
   );
 
   useEffect(() => {
