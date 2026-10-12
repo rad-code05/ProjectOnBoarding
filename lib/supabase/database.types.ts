@@ -846,6 +846,7 @@ export type Database = {
       };
       requests: {
         Row: {
+          access_cutoff_at: string | null;
           assignee_id: string | null;
           cancel_reason: string | null;
           cancelled_at: string | null;
@@ -861,13 +862,17 @@ export type Database = {
           execution_started_at: string | null;
           first_name: string | null;
           form_version_id: number;
+          handover_to: string | null;
           id: string;
           job_title: string | null;
           last_name: string | null;
+          last_working_day: string | null;
           manager_name: string | null;
           priority: Database["public"]["Enums"]["request_priority"];
           requestor_name: string | null;
           return_reason: string | null;
+          sla_due_at: string | null;
+          sla_timeline: Database["public"]["Enums"]["sla_timeline"] | null;
           state: Database["public"]["Enums"]["request_state"];
           state_changed_at: string | null;
           ticket_id: string;
@@ -879,6 +884,7 @@ export type Database = {
           work_email: string | null;
         };
         Insert: {
+          access_cutoff_at?: string | null;
           assignee_id?: string | null;
           cancel_reason?: string | null;
           cancelled_at?: string | null;
@@ -894,13 +900,17 @@ export type Database = {
           execution_started_at?: string | null;
           first_name?: string | null;
           form_version_id: number;
+          handover_to?: string | null;
           id?: string;
           job_title?: string | null;
           last_name?: string | null;
+          last_working_day?: string | null;
           manager_name?: string | null;
           priority?: Database["public"]["Enums"]["request_priority"];
           requestor_name?: string | null;
           return_reason?: string | null;
+          sla_due_at?: string | null;
+          sla_timeline?: Database["public"]["Enums"]["sla_timeline"] | null;
           state?: Database["public"]["Enums"]["request_state"];
           state_changed_at?: string | null;
           ticket_id: string;
@@ -912,6 +922,7 @@ export type Database = {
           work_email?: string | null;
         };
         Update: {
+          access_cutoff_at?: string | null;
           assignee_id?: string | null;
           cancel_reason?: string | null;
           cancelled_at?: string | null;
@@ -927,13 +938,17 @@ export type Database = {
           execution_started_at?: string | null;
           first_name?: string | null;
           form_version_id?: number;
+          handover_to?: string | null;
           id?: string;
           job_title?: string | null;
           last_name?: string | null;
+          last_working_day?: string | null;
           manager_name?: string | null;
           priority?: Database["public"]["Enums"]["request_priority"];
           requestor_name?: string | null;
           return_reason?: string | null;
+          sla_due_at?: string | null;
+          sla_timeline?: Database["public"]["Enums"]["sla_timeline"] | null;
           state?: Database["public"]["Enums"]["request_state"];
           state_changed_at?: string | null;
           ticket_id?: string;
@@ -1220,6 +1235,7 @@ export type Database = {
         Args: { p_request_id: string; p_reviewed: Json };
         Returns: string;
       };
+      create_offboarding: { Args: { p_employee_id?: string }; Returns: string };
       log_record_download: {
         Args: { p_request_id: string };
         Returns: undefined;
@@ -1290,6 +1306,7 @@ export type Database = {
         | "closed"
         | "cancelled";
       request_type: "onboarding" | "offboarding" | "access_modification";
+      sla_timeline: "same_day" | "within_24h" | "within_48h";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -1430,6 +1447,7 @@ export const Constants = {
         "cancelled",
       ],
       request_type: ["onboarding", "offboarding", "access_modification"],
+      sla_timeline: ["same_day", "within_24h", "within_48h"],
     },
   },
 } as const;

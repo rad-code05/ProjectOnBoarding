@@ -145,20 +145,11 @@ Saved 10:42 · created 29 Sep 2026, 10:40</span>
 <input id="ho" type="text" value="Giulia Bianchi (manager)" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; color: #000000">
 <span style="font-size: 12px; color: #535353">Drive, mailbox, GitHub repos and shared files.</span>
 </div>
-<fieldset style="margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: 8px">
-<legend style="padding: 0 0 6px; font-size: 12px; font-weight: 600">Account action</legend>
-<sc-for list="{{actions}}" as="a" hint-placeholder-count="3">
-<label style="{{a.box}}">
-<sc-if value="{{a.on}}" hint-placeholder-val="{{false}}"><input type="radio" name="acct" checked style="width: 22px; height: 22px; margin: 1px 0 0; accent-color: #000000; flex-shrink: 0"></sc-if><sc-if value="{{a.off}}" hint-placeholder-val="{{true}}"><input type="radio" name="acct" style="width: 22px; height: 22px; margin: 1px 0 0; accent-color: #000000; flex-shrink: 0"></sc-if>
-<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">{{a.label}}</span><span style="font-size: 12px; color: #535353">{{a.help}}</span></span>
+<label style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid #cfc7ba; border-radius: 12px">
+<input type="checkbox" disabled style="width: 22px; height: 22px; margin: 1px 0 0; accent-color: #000000; flex-shrink: 0">
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600">Mailbox converted to a shared mailbox</span><span style="font-size: 12px; line-height: 1.4; color: #535353">Office 365: sign-in blocked, mailbox shared with the person above. Tick it during execution — the time is recorded.</span></span>
 </label>
-</sc-for>
-</fieldset>
-<div style="display: flex; flex-direction: column; gap: 6px">
-<label for="del" style="font-size: 12px; font-weight: 600">Delete the account on</label>
-<input id="del" type="text" value="31 Oct 2026" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; color: #000000">
-<span style="font-size: 12px; color: #535353">Suggested: 30 days after the cut-off.</span>
-</div>
+<span style="font-size: 12px; line-height: 1.5; color: #535353">How each application is removed — Delete, Suspend or Disable — is chosen on its row in section 5.</span>
 </section>
 
 <div style="display: flex; flex-direction: column; gap: 8px">
@@ -198,14 +189,9 @@ f('Department', 'Sales'), f('Country', 'Italy'),
 f('Manager', 'Giulia Bianchi'), f('Requested by', 'Giulia Bianchi')
 ],
 lists: [
-{ id: 's5', num: '05', title: 'Applications to remove', note: 'Google Workspace, Slack, HubSpot +4', count: '7' },
+{ id: 's5', num: '05', title: 'Applications to remove', note: 'Choose Delete, Suspend or Disable for each', count: '7' },
 { id: 's6', num: '06', title: 'Equipment to return', note: 'Laptop · macOS', count: '1' },
 { id: 's7', num: '07', title: 'Physical & logical access', note: 'Office badge, VPN, shared drives', count: '3' }
-],
-actions: [
-choice('Suspend now, delete later', 'Sign-in blocked at the cut-off; deleted on the date below.', true),
-choice('Delete at the cut-off', 'Data handed over first.', false),
-choice('Suspend and keep', 'Legal or audit hold — never deleted automatically.', false)
 ],
 locked: [
 { num: '09', title: 'IT execution confirmation', note: 'Opens when execution starts' },
