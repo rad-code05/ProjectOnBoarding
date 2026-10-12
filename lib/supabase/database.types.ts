@@ -1061,6 +1061,54 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_save_access_type: {
+        Args: {
+          p_actions: string[];
+          p_id: number;
+          p_name: string;
+          p_scopes: string[];
+        };
+        Returns: number;
+      };
+      admin_save_app: {
+        Args: {
+          p_actions: string[];
+          p_category_id: number;
+          p_id: number;
+          p_name: string;
+          p_permissions: string[];
+        };
+        Returns: number;
+      };
+      admin_save_category: {
+        Args: { p_id: number; p_name: string };
+        Returns: number;
+      };
+      admin_save_equipment_type: {
+        Args: {
+          p_actions: string[];
+          p_id: number;
+          p_name: string;
+          p_needs_description: boolean;
+        };
+        Returns: number;
+      };
+      admin_set_access_type_active: {
+        Args: { p_active: boolean; p_id: number };
+        Returns: undefined;
+      };
+      admin_set_app_active: {
+        Args: { p_active: boolean; p_id: number };
+        Returns: undefined;
+      };
+      admin_set_category_active: {
+        Args: { p_active: boolean; p_id: number };
+        Returns: undefined;
+      };
+      admin_set_equipment_type_active: {
+        Args: { p_active: boolean; p_id: number };
+        Returns: undefined;
+      };
       approval_preview: { Args: { p_request_id: string }; Returns: Json };
       confirm_request: {
         Args: { p_request_id: string; p_reviewed: Json };
