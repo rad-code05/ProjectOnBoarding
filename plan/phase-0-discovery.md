@@ -16,7 +16,7 @@
 | --- | --- | --- |
 | ~~D1~~ | ✅ **Resolved 2026-10-01:** Clerk, email + password, MFA required, invite-only; no SSO for now | — |
 | D2 | ✅ Region **resolved 2026-10-01: EU – Frankfurt**. Still open: retention for records, signatures, PDFs | R4 |
-| ~~D3~~ | ✅ **Resolved 2026-10-11:** one **company timezone**, default **Asia/Dubai**, selectable by an admin (`app_settings.company_timezone`, `set_company_timezone()` — F08a; selector in Admin) — used for ticket years, dates on screen, the PDF, SLAs and reports | — (F08a) |
+| ~~D3~~ | ✅ **Resolved 2026-10-11:** one **company timezone**, default **Asia/Dubai**, selectable by an admin (`app_settings.company_timezone`, `set_company_timezone()` — F08a; selector in Admin) — used for ticket years, the PDF, SLAs and reports. **Refined 2026-10-12:** each person can pick their own timezone for **their screens** on My profile (F05e); the company timezone stays the default and stays on the PDF, tickets, reports and SLAs | — (F08a, F05e) |
 | ~~D4~~ | ✅ **Resolved 2026-10-07:** backup approver = **Celine** (account + email in Clerk, never in the repo). App users for now: Raju, Moises, Celine; more can be added later | — (Clerk invite before F07 tests) |
 | D5 | How admin role changes are controlled (second admin vs logged + visible to approvers) | F18 |
 | D6 | Auditor OK with end-only approval (no pre-provisioning approval)? | R |
