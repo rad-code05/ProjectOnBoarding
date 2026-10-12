@@ -400,6 +400,76 @@
       "w": 390,
       "h": 1180,
       "title": "Phone · Records — F08 proposal"
+    },
+    "AdminHomeMobile.dc.html": {
+      "x": 11260,
+      "y": 13560,
+      "w": 390,
+      "h": 900,
+      "title": "Phone · Admin (home) — F19 proposal"
+    },
+    "AdminAppsMobile.dc.html": {
+      "x": 11730,
+      "y": 13560,
+      "w": 390,
+      "h": 1300,
+      "title": "Phone · Admin · Applications — F19 proposal"
+    },
+    "AdminAppSheetMobile.dc.html": {
+      "x": 12200,
+      "y": 13560,
+      "w": 390,
+      "h": 1080,
+      "title": "Phone · Edit application (sheet) — F19 proposal"
+    },
+    "AdminTypesMobile.dc.html": {
+      "x": 12670,
+      "y": 13560,
+      "w": 390,
+      "h": 1160,
+      "title": "Phone · Admin · Equipment & access types — F19 proposal"
+    },
+    "AdminSettingsMobile.dc.html": {
+      "x": 13140,
+      "y": 13560,
+      "w": 390,
+      "h": 844,
+      "title": "Phone · Admin · Settings (company timezone) — F19 proposal"
+    },
+    "OffboardStartMobile.dc.html": {
+      "x": 13610,
+      "y": 13560,
+      "w": 390,
+      "h": 920,
+      "title": "Phone · Start an offboarding (who is leaving?) — F09 proposal"
+    },
+    "OffboardDraftMobile.dc.html": {
+      "x": 14080,
+      "y": 13560,
+      "w": 390,
+      "h": 2060,
+      "title": "Phone · Offboarding draft (SLA, removals, handover) — F09 proposal"
+    },
+    "OffboardExecutionMobile.dc.html": {
+      "x": 14550,
+      "y": 13560,
+      "w": 390,
+      "h": 1960,
+      "title": "Phone · Offboarding in execution (tick removals) — F09 proposal"
+    },
+    "EquipmentReturnMobile.dc.html": {
+      "x": 15020,
+      "y": 13560,
+      "w": 390,
+      "h": 844,
+      "title": "Phone · Equipment return (sheet) — F09 proposal"
+    },
+    "SlaResultMobile.dc.html": {
+      "x": 15490,
+      "y": 13560,
+      "w": 390,
+      "h": 1240,
+      "title": "Phone · SLA missed or met — F09 proposal"
     }
   },
   "createdOnFiles": {
@@ -421,7 +491,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 11180,
+      "maxW": 15880,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -515,7 +585,17 @@
     "ReturnRequestMobile.dc.html",
     "ReturnedRequestMobile.dc.html",
     "RecordMobile.dc.html",
-    "RecordsMobile.dc.html"
+    "RecordsMobile.dc.html",
+    "AdminHomeMobile.dc.html",
+    "AdminAppsMobile.dc.html",
+    "AdminAppSheetMobile.dc.html",
+    "AdminTypesMobile.dc.html",
+    "AdminSettingsMobile.dc.html",
+    "OffboardStartMobile.dc.html",
+    "OffboardDraftMobile.dc.html",
+    "OffboardExecutionMobile.dc.html",
+    "EquipmentReturnMobile.dc.html",
+    "SlaResultMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
