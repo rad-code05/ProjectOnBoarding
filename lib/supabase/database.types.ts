@@ -46,6 +46,7 @@ export type Database = {
           email: string;
           first_name: string | null;
           last_name: string | null;
+          timezone: string | null;
           updated_at: string;
         };
         Insert: {
@@ -55,6 +56,7 @@ export type Database = {
           email: string;
           first_name?: string | null;
           last_name?: string | null;
+          timezone?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -64,6 +66,7 @@ export type Database = {
           email?: string;
           first_name?: string | null;
           last_name?: string | null;
+          timezone?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -1067,6 +1070,7 @@ export type Database = {
         Args: { p_request_id: string };
         Returns: undefined;
       };
+      my_timezone: { Args: Record<PropertyKey, never>; Returns: string };
       record_pdf: {
         Args: {
           p_byte_size: number;
@@ -1104,6 +1108,7 @@ export type Database = {
         Returns: undefined;
       };
       set_company_timezone: { Args: { p_timezone: string }; Returns: string };
+      set_my_timezone: { Args: { p_timezone: string }; Returns: string };
       sign_request: {
         Args: { p_note?: string; p_request_id: string; p_reviewed: Json };
         Returns: string;
