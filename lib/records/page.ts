@@ -38,7 +38,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function loadRecordPage(id: string): Promise<RecordPage | null> {
   if (!UUID.test(id)) return null;
   const supabase = createServerSupabaseClient();
-  const tz = await displayTimezone();
+  // Asked in parallel with the queries below (one round trip less).
+  const tzPromise = displayTimezone();
   const { data: request } = await supabase
     .from("requests")
     .select("id, ticket_id, type, state, closed_at")
@@ -57,7 +58,7 @@ export async function loadRecordPage(id: string): Promise<RecordPage | null> {
       .order("decided_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
-    loadAppliedSignatures(supabase, id, tz),
+    tzPromise.then((tz) => loadAppliedSignatures(supabase, id, tz)),
     supabase
       .from("execution_checklist_items")
       .select("key, label")
@@ -66,6 +67,7 @@ export async function loadRecordPage(id: string): Promise<RecordPage | null> {
       .order("sort_order"),
   ]);
   const parsed = snapshotSchema.safeParse(approval.data?.snapshot?.data);
+  const tz = await tzPromise;
   if (!parsed.success) return null;
 
   let pdf: RecordPage["pdf"] = null;

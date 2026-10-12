@@ -97,7 +97,8 @@ export async function loadApprovalReview(
   if (!UUID.test(id)) return null;
   const { userId } = await getCurrentUser();
   const supabase = createServerSupabaseClient();
-  const tz = await displayTimezone();
+  // Asked in parallel with the queries below (one round trip less).
+  const tzPromise = displayTimezone();
 
   const { data: request } = await supabase
     .from("requests")
@@ -109,7 +110,7 @@ export async function loadApprovalReview(
   const [preview, applied, checklist, execution, signatures] =
     await Promise.all([
       supabase.rpc("approval_preview", { p_request_id: id }),
-      loadAppliedSignatures(supabase, id, tz),
+      tzPromise.then((tz) => loadAppliedSignatures(supabase, id, tz)),
       supabase
         .from("execution_checklist_items")
         .select("key, label")
@@ -124,6 +125,7 @@ export async function loadApprovalReview(
       loadSignatures(),
     ]);
   if (preview.error || !preview.data) return null;
+  const tz = await tzPromise;
 
   const active = signatures.versions.find((v) => v.status === "active");
   return {

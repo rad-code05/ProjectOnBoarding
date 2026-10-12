@@ -51,7 +51,8 @@ export async function countWaiting(): Promise<number> {
  */
 export async function loadApprovals(): Promise<ApprovalsOverview> {
   const supabase = createServerSupabaseClient();
-  const tz = await displayTimezone();
+  // Asked in parallel with the queries below (one round trip less).
+  const tzPromise = displayTimezone();
   const [waiting, returned, closedMonth, closed] = await Promise.all([
     supabase
       .from("requests")
@@ -76,6 +77,7 @@ export async function loadApprovals(): Promise<ApprovalsOverview> {
       .order("closed_at", { ascending: false })
       .limit(5),
   ]);
+  const tz = await tzPromise;
   for (const result of [waiting, returned, closedMonth, closed]) {
     if (result.error) {
       throw new Error(`Could not load approvals: ${result.error.message}`);

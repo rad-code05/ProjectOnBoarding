@@ -79,7 +79,8 @@ export async function loadRequestForm(
 ): Promise<RequestFormData | null> {
   if (!UUID.test(id)) return null;
   const supabase = createServerSupabaseClient();
-  const tz = await displayTimezone();
+  // Asked in parallel with the queries below (one round trip less).
+  const tzPromise = displayTimezone();
 
   const { data: request, error } = await supabase
     .from("requests")
@@ -190,6 +191,7 @@ export async function loadRequestForm(
       .limit(1)
       .maybeSingle(),
   ]);
+  const tz = await tzPromise;
   for (const result of [
     fields,
     departments,

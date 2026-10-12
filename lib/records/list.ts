@@ -22,7 +22,8 @@ export type RecordRow = {
  */
 export async function listRecords(filters: RequestFilters) {
   const supabase = createServerSupabaseClient();
-  const tz = await displayTimezone();
+  // Asked in parallel with the queries below (one round trip less).
+  const tzPromise = displayTimezone();
   let query = supabase
     .from("requests")
     .select(
@@ -46,6 +47,7 @@ export async function listRecords(filters: RequestFilters) {
 
   const { data, error, count } = await query;
   if (error) throw new Error(`Could not load records: ${error.message}`);
+  const tz = await tzPromise;
   const rows: RecordRow[] = (data ?? []).map((row) => {
     const approver = row.approvals[0]?.approver;
     return {
