@@ -249,6 +249,112 @@ export type Database = {
         };
         Relationships: [];
       };
+      employee_access_inventory: {
+        Row: {
+          access_type_id: number | null;
+          app_id: number | null;
+          asset_tag: string | null;
+          category_name: string | null;
+          created_at: string;
+          description: string | null;
+          employee_id: string;
+          end_reason: string | null;
+          ended_at: string | null;
+          ended_request_id: string | null;
+          equipment_type_id: number | null;
+          granted_at: string;
+          granted_request_id: string | null;
+          id: string;
+          kind: Database["public"]["Enums"]["inventory_kind"];
+          name: string;
+          permission: string | null;
+          source: string;
+        };
+        Insert: {
+          access_type_id?: number | null;
+          app_id?: number | null;
+          asset_tag?: string | null;
+          category_name?: string | null;
+          created_at?: string;
+          description?: string | null;
+          employee_id: string;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          ended_request_id?: string | null;
+          equipment_type_id?: number | null;
+          granted_at: string;
+          granted_request_id?: string | null;
+          id?: string;
+          kind: Database["public"]["Enums"]["inventory_kind"];
+          name: string;
+          permission?: string | null;
+          source?: string;
+        };
+        Update: {
+          access_type_id?: number | null;
+          app_id?: number | null;
+          asset_tag?: string | null;
+          category_name?: string | null;
+          created_at?: string;
+          description?: string | null;
+          employee_id?: string;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          ended_request_id?: string | null;
+          equipment_type_id?: number | null;
+          granted_at?: string;
+          granted_request_id?: string | null;
+          id?: string;
+          kind?: Database["public"]["Enums"]["inventory_kind"];
+          name?: string;
+          permission?: string | null;
+          source?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "employee_access_inventory_access_type_id_fkey";
+            columns: ["access_type_id"];
+            isOneToOne: false;
+            referencedRelation: "physical_access_types";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "employee_access_inventory_app_id_fkey";
+            columns: ["app_id"];
+            isOneToOne: false;
+            referencedRelation: "catalog_apps";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "employee_access_inventory_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "employee_access_inventory_ended_request_id_fkey";
+            columns: ["ended_request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "employee_access_inventory_equipment_type_id_fkey";
+            columns: ["equipment_type_id"];
+            isOneToOne: false;
+            referencedRelation: "equipment_types";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "employee_access_inventory_granted_request_id_fkey";
+            columns: ["granted_request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       employees: {
         Row: {
           created_at: string;
@@ -1174,6 +1280,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "requester" | "it_operator" | "approver" | "auditor";
       audit_source: "user" | "ai" | "system";
+      inventory_kind: "application" | "equipment" | "access";
       request_priority: "low" | "medium" | "high";
       request_state:
         | "draft"
@@ -1312,6 +1419,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "requester", "it_operator", "approver", "auditor"],
       audit_source: ["user", "ai", "system"],
+      inventory_kind: ["application", "equipment", "access"],
       request_priority: ["low", "medium", "high"],
       request_state: [
         "draft",
