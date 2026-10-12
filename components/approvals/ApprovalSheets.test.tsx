@@ -57,6 +57,7 @@ const review = (patch: Partial<ApprovalReview> = {}): ApprovalReview => ({
   ticketId: "UAM-2026-000124",
   type: "onboarding",
   state: "pending_confirmation",
+  timezone: "Asia/Dubai",
   snapshot: SNAPSHOT,
   checklist: [
     {

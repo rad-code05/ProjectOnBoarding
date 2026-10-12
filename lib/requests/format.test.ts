@@ -1,5 +1,11 @@
 import { describe, expect, test } from "vitest";
-import { formatDate, formatUpdated } from "./format";
+import {
+  formatDate,
+  formatDay,
+  formatDayTime,
+  formatTime,
+  formatUpdated,
+} from "./format";
 
 const now = new Date("2026-10-07T12:00:00Z");
 
@@ -22,5 +28,17 @@ describe("formatUpdated", () => {
     ["2026-09-01T12:00:00Z", "1 Sept 2026"],
   ])("%s → %s", (iso, expected) => {
     expect(formatUpdated(iso, now)).toBe(expected);
+  });
+});
+
+describe("screen times in a person's timezone (F05e)", () => {
+  const at = "2026-10-09T22:30:00Z";
+  test("the company timezone (Asia/Dubai) is the default", () => {
+    expect(formatDayTime(at)).toBe("10 Oct 2026, 02:30");
+  });
+  test("a person's own timezone moves the time — and sometimes the day", () => {
+    expect(formatTime(at, "Europe/Zurich")).toBe("00:30");
+    expect(formatDay(at, "Europe/Zurich")).toBe("10 Oct 2026");
+    expect(formatDayTime(at, "America/New_York")).toBe("9 Oct 2026, 18:30");
   });
 });

@@ -42,6 +42,7 @@ export function ReviewSignSheet({
   eyebrow,
   checklist,
   noteFor = null,
+  timeZone,
   onEdit,
   onClose,
 }: {
@@ -50,6 +51,8 @@ export function ReviewSignSheet({
   checklist: ChecklistItem[];
   /** Signing again after a return: the approver's first name for the note. */
   noteFor?: string | null;
+  /** The person's screen timezone (F05e). */
+  timeZone?: string;
   /** Close and open a section of the form. */
   onEdit: (section: number) => void;
   onClose: () => void;
@@ -183,6 +186,7 @@ export function ReviewSignSheet({
             checklist={checklist}
             onEdit={onEdit}
             idPrefix="rs"
+            timeZone={timeZone}
           />
 
           <section

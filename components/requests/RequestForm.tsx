@@ -81,6 +81,7 @@ export function RequestForm({
     values: form.values,
     savedAt: form.savedLabel,
     enabled: form.editable,
+    timeZone: form.timezone,
   });
   const [openSections, setOpenSections] = useState<number[]>([]);
   const [access, setAccess] = useState<AccessChoices>(form.access);
@@ -501,6 +502,7 @@ export function RequestForm({
           eyebrow={[form.ticketId, TYPE_LABELS[values.type]].join(" · ")}
           checklist={form.checklist}
           noteFor={form.returned?.byFirstName ?? null}
+          timeZone={form.timezone}
           onEdit={editSection}
           onClose={() => setSheet(null)}
         />

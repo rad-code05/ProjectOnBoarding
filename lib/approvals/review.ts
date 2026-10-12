@@ -7,6 +7,7 @@ import type { RequestState, RequestType } from "@/lib/requests/labels";
 import type { SignerSignature } from "@/lib/requests/signing";
 import type { Json } from "@/lib/supabase/database.types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { displayTimezone } from "@/lib/time/display";
 
 /** A signature applied to the request, as the approver sees it. */
 export type AppliedSignature = {
@@ -35,6 +36,8 @@ export type ApprovalReview = {
   mine: SignerSignature | null;
   /** Created or executed it: another approver must confirm. */
   ownRequest: boolean;
+  /** The approver's screen timezone (F05e). */
+  timezone: string;
 };
 
 type Supabase = ReturnType<typeof createServerSupabaseClient>;
@@ -47,6 +50,7 @@ type Supabase = ReturnType<typeof createServerSupabaseClient>;
 export async function loadAppliedSignatures(
   supabase: Supabase,
   requestId: string,
+  tz: string,
 ): Promise<{ it: AppliedSignature | null; approval: AppliedSignature | null }> {
   const { data } = await supabase.rpc("request_signature_marks", {
     p_request_id: requestId,
@@ -67,7 +71,7 @@ export async function loadAppliedSignatures(
     if (!m) return null;
     return {
       name: m.signer_name ?? "—",
-      signedLabel: `${formatDay(m.signed_at)}, ${formatTime(m.signed_at)}`,
+      signedLabel: `${formatDay(m.signed_at, tz)}, ${formatTime(m.signed_at, tz)}`,
       imageUrl: m.storage_path ? (links.get(m.storage_path) ?? null) : null,
       typedText: m.typed_text,
       fingerprint: m.sha256,
@@ -93,6 +97,8 @@ export async function loadApprovalReview(
   if (!UUID.test(id)) return null;
   const { userId } = await getCurrentUser();
   const supabase = createServerSupabaseClient();
+  // Asked in parallel with the queries below (one round trip less).
+  const tzPromise = displayTimezone();
 
   const { data: request } = await supabase
     .from("requests")
@@ -104,7 +110,7 @@ export async function loadApprovalReview(
   const [preview, applied, checklist, execution, signatures] =
     await Promise.all([
       supabase.rpc("approval_preview", { p_request_id: id }),
-      loadAppliedSignatures(supabase, id),
+      tzPromise.then((tz) => loadAppliedSignatures(supabase, id, tz)),
       supabase
         .from("execution_checklist_items")
         .select("key, label")
@@ -119,6 +125,7 @@ export async function loadApprovalReview(
       loadSignatures(),
     ]);
   if (preview.error || !preview.data) return null;
+  const tz = await tzPromise;
 
   const active = signatures.versions.find((v) => v.status === "active");
   return {
@@ -139,6 +146,7 @@ export async function loadApprovalReview(
           detail: active.detail,
         }
       : null,
+    timezone: tz,
     ownRequest:
       userId === request.created_by || userId === execution.data?.executed_by,
   };

@@ -80,6 +80,7 @@ export function ApprovalView({
         snapshot={snapshot}
         checklist={review.checklist}
         idPrefix="ap"
+        timeZone={review.timezone}
       />
       <SignaturesSection
         signatures={[

@@ -10,7 +10,7 @@ Opened from the name/avatar in the top bar (every role).
 - Server side: PNG only, re-encoded, metadata stripped, stored in a private bucket under the user's ID.
 
 ### My profile on a phone (D22 — approved 2026-10-09)
-Canvas boards: *Phone · My profile (signature & initials)*, *Phone · Replace signature (sheet)*, *Phone · Password & MFA*.
+Canvas boards: *Phone · My profile (timezone, signature & initials)*, *Phone · Replace signature (sheet)*, *Phone · Password & MFA*. **Timezone card (F05e, approved 2026-10-12):** "Show times on my screens in" — *Company default — Asia/Dubai* or any timezone; saves on change ("Saved · now 14:05 in Europe/Zurich"); note: only your screens change, the PDF record, ticket numbers, reports and SLA deadlines always use the company timezone. Replaces the read-only Timezone line of the account card.
 - **Account card** (name, email, roles, sign-in + MFA, timezone, member since), **Manage password & MFA** (F05c), "managed by the admin" note.
 - **Signature & initials → Sign with:** two cards with a radio — *Signature* (preview of the current PNG, upload date + size, **Replace** / **Upload**) and *Initials* (type up to 4 characters with an Instrument Serif italic preview + **Save**, or **upload initials as PNG**). The active card has a 2 px ink border and an **Active** pill. Two columns on desktop.
 - **History:** every version with Active / Kept / Replaced; "Replacing keeps old versions…" note. (*Used on N requests* is added once signing exists, F06.)

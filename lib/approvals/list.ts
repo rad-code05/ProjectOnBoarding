@@ -2,6 +2,7 @@ import "server-only";
 import { formatDate, formatDay, formatTime } from "@/lib/requests/format";
 import { TYPE_LABELS, countryName, personName } from "@/lib/requests/labels";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { displayTimezone } from "@/lib/time/display";
 import { accessSummary, monthStart } from "./summary";
 
 /** One request waiting for the approver (a card on Approvals). */
@@ -50,6 +51,8 @@ export async function countWaiting(): Promise<number> {
  */
 export async function loadApprovals(): Promise<ApprovalsOverview> {
   const supabase = createServerSupabaseClient();
+  // Asked in parallel with the queries below (one round trip less).
+  const tzPromise = displayTimezone();
   const [waiting, returned, closedMonth, closed] = await Promise.all([
     supabase
       .from("requests")
@@ -74,6 +77,7 @@ export async function loadApprovals(): Promise<ApprovalsOverview> {
       .order("closed_at", { ascending: false })
       .limit(5),
   ]);
+  const tz = await tzPromise;
   for (const result of [waiting, returned, closedMonth, closed]) {
     if (result.error) {
       throw new Error(`Could not load approvals: ${result.error.message}`);
@@ -105,7 +109,7 @@ export async function loadApprovals(): Promise<ApprovalsOverview> {
         effective: formatDate(r.effective_date),
         access: accessSummary(apps),
         signedByIt: it
-          ? `${it.signer_name ?? "IT"} · ${formatDay(it.signed_at)}, ${formatTime(it.signed_at)}`
+          ? `${it.signer_name ?? "IT"} · ${formatDay(it.signed_at, tz)}, ${formatTime(it.signed_at, tz)}`
           : "—",
       };
     }),
@@ -115,7 +119,7 @@ export async function loadApprovals(): Promise<ApprovalsOverview> {
       id: r.id,
       ticketId: r.ticket_id,
       name: personName(r.first_name, r.last_name) || "Unnamed person",
-      closed: formatDay(r.closed_at),
+      closed: formatDay(r.closed_at, tz),
     })),
   };
 }

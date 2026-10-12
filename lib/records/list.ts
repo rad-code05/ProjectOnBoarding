@@ -3,6 +3,7 @@ import { searchTerms, type RequestFilters } from "@/lib/requests/filters";
 import { formatDay } from "@/lib/requests/format";
 import { personName, type RequestType } from "@/lib/requests/labels";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { displayTimezone } from "@/lib/time/display";
 
 /** One closed request in the Records list (board: Phone · Records). */
 export type RecordRow = {
@@ -21,6 +22,8 @@ export type RecordRow = {
  */
 export async function listRecords(filters: RequestFilters) {
   const supabase = createServerSupabaseClient();
+  // Asked in parallel with the queries below (one round trip less).
+  const tzPromise = displayTimezone();
   let query = supabase
     .from("requests")
     .select(
@@ -44,6 +47,7 @@ export async function listRecords(filters: RequestFilters) {
 
   const { data, error, count } = await query;
   if (error) throw new Error(`Could not load records: ${error.message}`);
+  const tz = await tzPromise;
   const rows: RecordRow[] = (data ?? []).map((row) => {
     const approver = row.approvals[0]?.approver;
     return {
@@ -51,7 +55,7 @@ export async function listRecords(filters: RequestFilters) {
       ticketId: row.ticket_id,
       type: row.type,
       name: personName(row.first_name, row.last_name) || "Unnamed person",
-      closed: formatDay(row.closed_at),
+      closed: formatDay(row.closed_at, tz),
       approvedBy: personName(approver?.first_name, approver?.last_name) || "—",
     };
   });

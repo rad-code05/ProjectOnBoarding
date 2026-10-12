@@ -101,3 +101,37 @@ export async function activateSignature(input: {
   revalidatePath("/profile");
   return { ok: true };
 }
+
+/**
+ * My timezone (F05e): the timezone of your own screens, or null = back to the
+ * company default. The database checks the name and changes only your row.
+ */
+export async function setMyTimezone(input: {
+  timezone: string | null;
+}): Promise<ProfileResult> {
+  await getCurrentUser();
+  const parsed = z
+    .string()
+    .trim()
+    .min(1)
+    .max(64)
+    .regex(/^[A-Za-z0-9_+\-/]+$/)
+    .nullable()
+    .safeParse(input.timezone);
+  if (!parsed.success) return failed("Choose a timezone from the list.");
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("set_my_timezone", {
+    // Empty = back to the company default (the function treats it as null).
+    p_timezone: parsed.data ?? "",
+  });
+  if (error) {
+    return failed(
+      error.code === "23514"
+        ? "That timezone isn't known. Choose another one."
+        : "Could not save. Reload and try again.",
+    );
+  }
+  // Every page shows times in it from now on.
+  revalidatePath("/", "layout");
+  return { ok: true };
+}

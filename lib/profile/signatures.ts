@@ -1,6 +1,7 @@
 import "server-only";
 import { formatDay } from "@/lib/requests/format";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { displayTimezone } from "@/lib/time/display";
 import type { SignatureKind } from "./png";
 
 export const SIGNATURE_BUCKET = "signatures";
@@ -32,6 +33,8 @@ export type SignatureState = {
  */
 export async function loadSignatures(): Promise<SignatureState> {
   const supabase = createServerSupabaseClient();
+  // Asked in parallel with the queries below (one round trip less).
+  const tzPromise = displayTimezone();
   const { data, error } = await supabase
     .from("signature_assets")
     .select(
@@ -39,6 +42,7 @@ export async function loadSignatures(): Promise<SignatureState> {
     )
     .order("created_at", { ascending: true });
   if (error) throw new Error(`Could not load signatures: ${error.message}`);
+  const tz = await tzPromise;
 
   const current = data.filter((row) => !row.retired_at && row.storage_path);
   const links = new Map<string, string>();
@@ -70,7 +74,7 @@ export async function loadSignatures(): Promise<SignatureState> {
           ? `${name} · typed “${row.typed_text}”`
           : `${name} · v${counter[kind]}`,
         detail: [
-          `${typed ? "Saved" : "Uploaded"} ${formatDay(row.created_at)}`,
+          `${typed ? "Saved" : "Uploaded"} ${formatDay(row.created_at, tz)}`,
           !typed && `${row.width} × ${row.height} px`,
         ]
           .filter(Boolean)

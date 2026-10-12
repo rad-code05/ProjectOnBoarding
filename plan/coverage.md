@@ -210,7 +210,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | N2 | Upload screenshots of an app's user list → AI compares with the database → differences as suggestions the admin accepts | Raju 2026-10-11 | **F25** (before go-live) | F25 tests | ⏳ F25 ❓ D7 part 2 |
 | N3 | Quarterly access review (SOC 2 / ISO 27001): keep / remove / change per line, signed coversheet, export **PDF and Excel** | Raju 2026-10-11 | **F26** | F26 tests | ⏳ F26 |
 | N4 | Production starts with complete data (go-live after all features + F24/F25) | Raju 2026-10-11 | `release.md` | R7 checklist | ⏳ |
-| N6 | Each person chooses the timezone of their screens (My profile); PDF / tickets / reports / SLAs stay on the company timezone | Raju 2026-10-12 | **F05e** | pgTAP `user_timezone.test.sql` + F05e-2 tests | 🟡 database ✅ F05e-1; screens ⏳ F05e-2 |
+| N6 | Each person chooses the timezone of their screens (My profile); PDF / tickets / reports / SLAs stay on the company timezone | Raju 2026-10-12 | **F05e** | pgTAP `user_timezone.test.sql` + F05e-2 tests | ✅ database F05e-1 (#61) + screens F05e-2 (My profile Timezone card; all screen times; unit + e2e) |
 | N5 | More applications from the vendor list (Confluence, Adobe, Cursor, Graphite, Sentry, GoDaddy, Acronis, Avanan, HostedScan, Stripe) | Raju 2026-10-11 | seed migration | pgTAP `access_items_rls` (38 apps) | ✅ |
 
 ## Gaps found on 2026-10-07 and what was done
