@@ -228,6 +228,12 @@ test.describe("admin on a phone", () => {
       page.getByRole("heading", { level: 1, name: "Admin" }),
     ).toBeVisible();
     await expectNoSideScroll(page);
+    await openApp(page, "/admin/applications");
+    await expect(page.getByLabel("Find an application")).toHaveCSS(
+      "font-size",
+      "16px",
+    );
+    await expectNoSideScroll(page);
     await openApp(page, "/admin/settings");
     await expect(page.getByLabel("Timezone", { exact: true })).toHaveCSS(
       "font-size",

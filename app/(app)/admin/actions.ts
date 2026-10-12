@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import * as z from "zod";
+import { catalogErrorMessage } from "@/lib/admin/catalog-shared";
 import { requireRole } from "@/lib/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -43,4 +44,109 @@ export async function setCompanyTimezone(input: {
   // Screens of people without their own timezone follow it from now on.
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Admin · Applications (F19c) — the database checks and audits every change.
+// ---------------------------------------------------------------------------
+
+const id = z.number().int().positive().max(32767);
+const shortText = z.string().max(200);
+
+async function rpcResult(
+  run: PromiseLike<{ error: { code?: string; message?: string } | null }>,
+): Promise<AdminResult> {
+  const { error } = await run;
+  if (error) {
+    return {
+      ok: false,
+      message: catalogErrorMessage(error.code, error.message),
+    };
+  }
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+/** Add (no id) or change an application. */
+export async function saveApp(input: {
+  id: number | null;
+  categoryId: number;
+  name: string;
+  actions: string[];
+  permissions: string[];
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z
+    .object({
+      id: id.nullable(),
+      categoryId: id,
+      name: shortText,
+      actions: z.array(shortText).max(10),
+      permissions: z.array(shortText).max(20),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Check the fields." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_save_app", {
+      p_id: parsed.data.id as number,
+      p_category_id: parsed.data.categoryId,
+      p_name: parsed.data.name,
+      p_actions: parsed.data.actions,
+      p_permissions: parsed.data.permissions,
+    }),
+  );
+}
+
+/** Retire (false) or restore (true) an application. */
+export async function setAppActive(input: {
+  id: number;
+  active: boolean;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z.object({ id, active: z.boolean() }).safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Unknown application." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_set_app_active", {
+      p_id: parsed.data.id,
+      p_active: parsed.data.active,
+    }),
+  );
+}
+
+/** Add (no id) or rename a category. */
+export async function saveCategory(input: {
+  id: number | null;
+  name: string;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z
+    .object({ id: id.nullable(), name: shortText })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Check the name." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_save_category", {
+      p_id: parsed.data.id as number,
+      p_name: parsed.data.name,
+    }),
+  );
+}
+
+/** Retire (false) or restore (true) a category. */
+export async function setCategoryActive(input: {
+  id: number;
+  active: boolean;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z.object({ id, active: z.boolean() }).safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Unknown category." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_set_category_active", {
+      p_id: parsed.data.id,
+      p_active: parsed.data.active,
+    }),
+  );
 }

@@ -1,16 +1,13 @@
-import { PagePlaceholder } from "@/components/shell";
+import { AppsAdmin } from "@/components/admin/AppsAdmin";
+import { loadCatalogAdmin } from "@/lib/admin/catalog";
 import { requireRole } from "@/lib/auth";
 import { PAGES } from "@/lib/navigation";
 
 export const metadata = { title: "Applications" };
 
-export default async function Page() {
+/** Admin · Applications — add, change, retire and restore (F19c). */
+export default async function AdminApplicationsPage() {
   await requireRole(...PAGES.admin.roles);
-  return (
-    <PagePlaceholder
-      title="Applications"
-      description="The tools in section 5 of every new request: add, change, retire."
-      feature="F19c"
-    />
-  );
+  const { categories, apps } = await loadCatalogAdmin();
+  return <AppsAdmin categories={categories} apps={apps} />;
 }

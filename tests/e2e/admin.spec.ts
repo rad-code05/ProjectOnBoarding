@@ -43,6 +43,49 @@ test("Admin home leads to Settings with the company timezone", async ({
   await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
 });
 
+test("Admin · Applications: add an application, change it, find it, retire it", async ({
+  page,
+}) => {
+  const name = `E2E App ${Date.now() % 100000}`;
+  await openApp(page, "/admin/applications");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Applications" }),
+  ).toBeVisible();
+
+  // Add
+  await page.getByRole("button", { name: "Add application" }).first().click();
+  const add = page.getByRole("dialog", { name: "Add application" });
+  await add.getByLabel("Name").fill(name);
+  await add.getByLabel("New permission option").fill("Member");
+  await add.getByRole("button", { name: "Add", exact: true }).click();
+  await add.getByRole("button", { name: "Add application" }).click();
+  await expect(add).toHaveCount(0);
+
+  // Find it, change it
+  await page.getByLabel("Find an application").fill(name);
+  const row = page.getByRole("button", { name: new RegExp(name) });
+  await expect(row).toContainText("Grant · Modify · Remove — Member");
+  await row.click();
+  const edit = page.getByRole("dialog", { name: `Edit ${name}` });
+  await expect(edit).toContainText("used on 0 requests");
+  await edit.getByLabel("New permission option").fill("Admin");
+  await edit.getByRole("button", { name: "Save changes" }).click();
+  await expect(edit).toHaveCount(0);
+  await expect(row).toContainText("Member / Admin");
+
+  // Retire: gone from the active list, listed under Retired
+  await row.click();
+  await page
+    .getByRole("dialog", { name: `Edit ${name}` })
+    .getByRole("button", { name: "Retire application" })
+    .click();
+  await expect(page.getByText("No application matches.")).toBeVisible();
+  await page.getByRole("button", { name: /^Retired · \d+$/ }).click();
+  await expect(
+    page.getByRole("button", { name: new RegExp(name) }),
+  ).toBeVisible();
+});
+
 test("admin can open every menu page", async ({ page }) => {
   await openApp(page, "/requests");
   const menu = page.getByRole("navigation", { name: "Main" });

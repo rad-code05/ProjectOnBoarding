@@ -130,7 +130,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
 | H1 | Users & roles: invite via Clerk, role chips, MFA + last sign-in, SoD rules | `profile-admin.md`, §10.1 | F18 (today: `pnpm users:sync`) | F18 tests | ⏳ ❓ D4, D5 |
-| H2 | Applications: add / rename / move / retire (never delete), actions + permission options, reorder, categories — **no code change** | §7 | F19 (moved up: right after F08) | F19 done-when | 🟡 database ✅ F19a (admin functions: add / change / retire / restore, checks, audit — pgTAP `admin_catalog.test.sql`); screens ⏳ F19c |
+| H2 | Applications: add / rename / move / retire (never delete), actions + permission options, reorder, categories — **no code change** | §7 | F19 (moved up: right after F08) | F19 done-when | ✅ database F19a (pgTAP `admin_catalog.test.sql`) + screens F19c (`/admin/applications`: add / change / retire / restore apps and categories; unit + e2e) — drag to reorder not built (new items go to the end) |
 | H3 | **Equipment types and physical/logical access types** editable the same way | §7 | **F19** (assigned 2026-10-07) | pgTAP `admin_catalog.test.sql` | 🟡 database ✅ F19a; screens ⏳ F19d |
 | H4 | Form fields & versions: draft/publish, request keeps its version, `custom_fields jsonb`; old requests/PDFs unchanged | §7, §14 | F01 (v4.1 seeded), F20 | F20 done-when | ⏳ F20 |
 | H5 | RBAC templates as data; applying one pre-fills the matrix | §4.4 #1 | F21 | F21 tests | ⏳ ❓ D17 |
