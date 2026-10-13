@@ -475,3 +475,112 @@ export async function saveExecution(input: {
   }
   return accessError(error.code);
 }
+
+/** Offboarding work (F09d): the database's own words for a refusal it explains. */
+function workError(error: { code?: string; message: string }): AccessResult {
+  if (error.code === "23514" || error.code === "P0002") {
+    // check_violation messages are written for people ("choose Delete, …").
+    const message =
+      error.message.charAt(0).toUpperCase() + error.message.slice(1);
+    return {
+      ok: false,
+      message: message.endsWith(".") ? message : `${message}.`,
+    };
+  }
+  if (error.code === "42501") {
+    return { ok: false, message: "You can't record offboarding work." };
+  }
+  return {
+    ok: false,
+    message: "Could not save. Check your connection and try again.",
+  };
+}
+
+const setRemovalSchema = z.object({
+  kind: z.enum(["application", "access"]),
+  itemId: z.uuid(),
+  done: z.boolean().nullable(),
+  method: z.enum(["Delete", "Suspend", "Disable"]).nullable(),
+});
+
+/** Section 5 / 7 of an offboarding: how it was removed, and the tick (server time). */
+export async function setRemoval(input: {
+  kind: "application" | "access";
+  itemId: string;
+  done: boolean | null;
+  method: "Delete" | "Suspend" | "Disable" | null;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = setRemovalSchema.safeParse(input);
+  if (!parsed.success)
+    return { ok: false, message: "That change isn't valid." };
+  const { kind, itemId, done, method } = parsed.data;
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("set_removal", {
+    p_kind: kind,
+    p_item_id: itemId,
+    p_done: done ?? undefined,
+    p_method: method ?? undefined,
+  });
+  return error ? workError(error) : { ok: true };
+}
+
+const equipmentReturnSchema = z.object({
+  itemId: z.uuid(),
+  status: z.enum(["pending", "received", "not_returned"]),
+  reason: z
+    .string()
+    .trim()
+    .max(500, "Keep it under 500 characters.")
+    .nullable()
+    .transform((value) => value || null),
+});
+
+/** Section 6 of an offboarding: pending / received / not returned (+ reason). */
+export async function setEquipmentReturn(input: {
+  itemId: string;
+  status: "pending" | "received" | "not_returned";
+  reason: string | null;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = equipmentReturnSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message: parsed.error.issues[0]?.message ?? "That change isn't valid.",
+    };
+  }
+  if (parsed.data.status === "not_returned" && !parsed.data.reason) {
+    return { ok: false, message: "Say why it was not returned." };
+  }
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("set_equipment_return", {
+    p_item_id: parsed.data.itemId,
+    p_status: parsed.data.status,
+    p_reason: parsed.data.reason ?? undefined,
+  });
+  return error ? workError(error) : { ok: true };
+}
+
+/** Handover: mailbox converted to a shared mailbox, or no mailbox to convert. */
+export async function setMailboxHandling(input: {
+  requestId: string;
+  value: "converted_shared" | "no_mailbox" | null;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = z
+    .object({
+      requestId: z.uuid(),
+      value: z.enum(["converted_shared", "no_mailbox"]).nullable(),
+    })
+    .safeParse(input);
+  if (!parsed.success)
+    return { ok: false, message: "That change isn't valid." };
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("set_mailbox_handling", {
+    p_request_id: parsed.data.requestId,
+    // null clears the choice; the generated types can't say a text argument may be null.
+    p_value: parsed.data.value as string,
+  });
+  return error ? workError(error) : { ok: true };
+}

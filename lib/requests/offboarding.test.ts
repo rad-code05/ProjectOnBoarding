@@ -59,8 +59,22 @@ test("removalsSummary", () => {
   expect(
     removalsSummary({
       apps: [
-        { id: "a", name: "Slack", category: "Core", had: "Member" },
-        { id: "b", name: "Figma", category: "Core", had: null },
+        {
+          id: "a",
+          name: "Slack",
+          category: "Core",
+          had: "Member",
+          method: null,
+          doneAt: null,
+        },
+        {
+          id: "b",
+          name: "Figma",
+          category: "Core",
+          had: null,
+          method: null,
+          doneAt: null,
+        },
       ],
       equipment: [
         {
@@ -68,6 +82,9 @@ test("removalsSummary", () => {
           name: "Laptop · macOS",
           assetTag: "LT-1",
           description: null,
+          status: "pending",
+          reason: null,
+          recordedAt: null,
         },
       ],
       access: [],

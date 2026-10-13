@@ -34,6 +34,7 @@ import {
   RemovalSections,
   SlaSection,
 } from "./OffboardingSections";
+import { MailboxChoice, WorkRemovalSections } from "./OffboardingWork";
 import { PhysicalSection } from "./PhysicalSection";
 import { ProvisioningSection } from "./ProvisioningSection";
 import { ReturnedCard, SectionFlag, sectionFrame } from "./ReturnedCard";
@@ -181,6 +182,19 @@ export function RequestForm({
       const verb = { 5: "to remove", 6: "to return", 7: "to disable" }[
         section.number as 5 | 6 | 7
       ];
+      if (started) {
+        const done = {
+          5: off.removals.apps.filter((a) => a.doneAt).length,
+          6: off.removals.equipment.filter((e) => e.status !== "pending")
+            .length,
+          7: off.removals.access.filter((a) => a.doneAt).length,
+        }[section.number as 5 | 6 | 7];
+        return {
+          ...section,
+          state: done === count ? "complete" : "todo",
+          note: `${done} of ${count} done`,
+        };
+      }
       return {
         ...section,
         state: count > 0 ? "complete" : "empty",
@@ -377,13 +391,36 @@ export function RequestForm({
         {SECTIONS.map(({ number }) =>
           off && [4, 6, 7, 8].includes(number) ? null : off && number === 5 ? (
             <Fragment key={number}>
-              <RemovalSections removals={off.removals} flag={flag} />
+              {started ? (
+                <WorkRemovalSections
+                  removals={off.removals}
+                  editable={
+                    EXECUTION_EDITABLE.includes(form.state) && !conflict
+                  }
+                  timeZone={form.timezone}
+                  flag={flag}
+                />
+              ) : (
+                <RemovalSections removals={off.removals} flag={flag} />
+              )}
               <HandoverSection
                 values={values}
                 setValue={setValue}
                 errors={errors}
                 disabled={disabled}
-              />
+              >
+                {started && (
+                  <MailboxChoice
+                    requestId={form.id}
+                    handling={off.mailbox.handling}
+                    recordedAt={off.mailbox.recordedAt}
+                    editable={
+                      EXECUTION_EDITABLE.includes(form.state) && !conflict
+                    }
+                    timeZone={form.timezone}
+                  />
+                )}
+              </HandoverSection>
             </Fragment>
           ) : number === 4 ? (
             <ProvisioningSection key={number} />

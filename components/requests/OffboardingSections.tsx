@@ -371,7 +371,16 @@ export function RemovalSections({
 }
 
 /** Handover (offboarding only): who gets the data and mailbox. */
-export function HandoverSection({ values, setValue, errors, disabled }: Props) {
+export function HandoverSection({
+  values,
+  setValue,
+  errors,
+  disabled,
+  children,
+}: Props & {
+  /** During execution: the mailbox choice (F09d). */
+  children?: ReactNode;
+}) {
   const id = useId();
   return (
     <section
@@ -411,10 +420,12 @@ export function HandoverSection({ values, setValue, errors, disabled }: Props) {
         />
       </Field>
       <span className="text-xs leading-normal text-graphite">
-        Drive, mailbox, GitHub repos and shared files. During execution you
-        record whether the mailbox was converted to a shared mailbox, and how
-        each application was removed.
+        Drive, mailbox, GitHub repos and shared files.
+        {children
+          ? ""
+          : " During execution you record whether the mailbox was converted to a shared mailbox."}
       </span>
+      {children}
     </section>
   );
 }
