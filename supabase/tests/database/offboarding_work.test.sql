@@ -4,7 +4,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(33);
+select plan(34);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -164,7 +164,11 @@ select ok(
   'a device still Return pending is not a blocker');
 select throws_ok($$select public.set_mailbox_handling((select id from r where label = 'N'), 'forwarded')$$,
   '23514', 'mailbox must be converted_shared or no_mailbox', 'only the two mailbox choices');
+create temporary table v_before as select version from public.requests where id = (select id from r where label = 'N');
+grant select on v_before to authenticated;
 select public.set_mailbox_handling((select id from r where label = 'N'), 'converted_shared');
+select is((select version from public.requests where id = (select id from r where label = 'N')),
+  (select version from v_before), 'the mailbox choice keeps the version, so the open form can still save');
 select ok((select mailbox_handling = 'converted_shared' and mailbox_recorded_at is not null
   from public.requests where id = (select id from r where label = 'N')), 'shared mailbox recorded with its time');
 

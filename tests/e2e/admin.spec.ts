@@ -438,6 +438,13 @@ test("New request → Offboarding: Who is leaving? and an empty offboarding draf
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
   await expect(page.getByText(/New request · Offboarding/)).toBeVisible();
 
+  // A wrong value names the field that stops the save (2026-10-13).
+  await page.getByLabel("Work email").fill("N/");
+  await expect(page.getByRole("status").first()).toHaveText(
+    "Not saved — check Work email.",
+  );
+  await page.getByLabel("Work email").fill("");
+
   // Start execution before section 8 is complete says what's missing.
   await page.getByRole("button", { name: "Start execution" }).click();
   const early = page.getByRole("dialog", { name: "Start execution?" });
@@ -492,6 +499,11 @@ test("New request → Offboarding: Who is leaving? and an empty offboarding draf
   ).toBeVisible();
   await page.getByRole("radio", { name: /No mailbox to convert/ }).check();
   await expect(page.getByText(/^Recorded \d/)).toBeVisible();
+  // The mailbox choice doesn't block the form's next save (2026-10-13).
+  await page.getByLabel("Data & mailbox go to").fill("N/A");
+  await expect(page.getByRole("status").first()).toHaveText(
+    /^(All changes saved|Saved) \d\d:\d\d/,
+  );
 
   // F09d-4: add an app to remove, then take it off again.
   const apps = page.getByRole("region", { name: "Applications to remove" });
