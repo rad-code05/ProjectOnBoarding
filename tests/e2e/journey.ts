@@ -48,7 +48,9 @@ export async function createExecutedRequest(page: Page, firstName: string) {
   await page.getByLabel("Requested by").fill("Rita Requestor");
   await page.getByLabel("Effective date").fill("2026-11-02");
   await page.getByRole("button", { name: "Save draft" }).click();
-  await expect(page.getByRole("status").first()).toHaveText(/^Saved/);
+  await expect(page.getByRole("status").first()).toHaveText(
+    /^(All changes saved|Saved) \d\d:\d\d/,
+  );
 
   await page.getByRole("button", { name: "Start execution" }).click();
   await page

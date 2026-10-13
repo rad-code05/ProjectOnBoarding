@@ -288,7 +288,9 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
   await raju.getByLabel("Effective date").fill(today);
   await raju.getByLabel("Data & mailbox go to").fill("Mara Manager");
   await raju.getByRole("button", { name: "Save draft" }).click();
-  await expect(raju.getByRole("status").first()).toHaveText(/^Saved/);
+  await expect(raju.getByRole("status").first()).toHaveText(
+    /^(All changes saved|Saved) \d\d:\d\d/,
+  );
   await raju.getByRole("button", { name: "Start execution" }).click();
   await raju
     .getByRole("dialog", { name: "Start execution?" })

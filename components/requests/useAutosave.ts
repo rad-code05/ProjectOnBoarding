@@ -11,7 +11,8 @@ export const AUTOSAVE_DELAY_MS = 1500;
 export type SaveStatus =
   | { kind: "idle" }
   | { kind: "saving" }
-  | { kind: "saved"; at: string }
+  /** `confirmed`: the Save button was pressed and everything is stored. */
+  | { kind: "saved"; at: string; confirmed?: boolean }
   | { kind: "invalid" }
   | { kind: "error"; message: string }
   /** Saved elsewhere in between — nothing more is saved until reload. */
@@ -133,6 +134,23 @@ export function useAutosave({
     errors,
     status,
     setValue,
-    saveNow: () => run(values),
+    /**
+     * The Save button: saves what's waiting, then always says so — even when
+     * everything was already saved (it used to look as if nothing happened).
+     */
+    saveNow: async () => {
+      await run(values);
+      setStatus((current) =>
+        current.kind === "saved"
+          ? { ...current, confirmed: true }
+          : current.kind === "idle"
+            ? {
+                kind: "saved",
+                at: formatTime(new Date().toISOString(), timeZone),
+                confirmed: true,
+              }
+            : current,
+      );
+    },
   };
 }

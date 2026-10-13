@@ -59,7 +59,9 @@ function statusText(status: SaveStatus, created: string): string {
     case "saving":
       return "Saving…";
     case "saved":
-      return `Saved ${status.at} · created ${created}`;
+      return status.confirmed
+        ? `All changes saved ${status.at} — you can leave and continue later`
+        : `Saved ${status.at} · created ${created}`;
     case "invalid":
       return "Not saved — check the marked fields.";
     case "error":
