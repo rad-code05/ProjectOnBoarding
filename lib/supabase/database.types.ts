@@ -647,9 +647,12 @@ export type Database = {
           app_name: string;
           category_name: string;
           created_at: string;
+          done_at: string | null;
+          done_by: string | null;
           id: string;
           notes: string | null;
           permission: string | null;
+          removal_method: string | null;
           request_id: string;
           updated_at: string;
         };
@@ -659,9 +662,12 @@ export type Database = {
           app_name: string;
           category_name: string;
           created_at?: string;
+          done_at?: string | null;
+          done_by?: string | null;
           id?: string;
           notes?: string | null;
           permission?: string | null;
+          removal_method?: string | null;
           request_id: string;
           updated_at?: string;
         };
@@ -671,9 +677,12 @@ export type Database = {
           app_name?: string;
           category_name?: string;
           created_at?: string;
+          done_at?: string | null;
+          done_by?: string | null;
           id?: string;
           notes?: string | null;
           permission?: string | null;
+          removal_method?: string | null;
           request_id?: string;
           updated_at?: string;
         };
@@ -684,6 +693,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "catalog_apps";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "request_access_items_done_by_fkey";
+            columns: ["done_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
           },
           {
             foreignKeyName: "request_access_items_request_id_fkey";
@@ -703,6 +719,10 @@ export type Database = {
           id: string;
           notes: string | null;
           request_id: string;
+          return_reason: string | null;
+          return_recorded_at: string | null;
+          return_recorded_by: string | null;
+          return_status: string | null;
           type_id: number;
           type_name: string;
           updated_at: string;
@@ -715,6 +735,10 @@ export type Database = {
           id?: string;
           notes?: string | null;
           request_id: string;
+          return_reason?: string | null;
+          return_recorded_at?: string | null;
+          return_recorded_by?: string | null;
+          return_status?: string | null;
           type_id: number;
           type_name: string;
           updated_at?: string;
@@ -727,6 +751,10 @@ export type Database = {
           id?: string;
           notes?: string | null;
           request_id?: string;
+          return_reason?: string | null;
+          return_recorded_at?: string | null;
+          return_recorded_by?: string | null;
+          return_status?: string | null;
           type_id?: number;
           type_name?: string;
           updated_at?: string;
@@ -738,6 +766,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "requests";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "request_equipment_items_return_recorded_by_fkey";
+            columns: ["return_recorded_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
           },
           {
             foreignKeyName: "request_equipment_items_type_id_fkey";
@@ -752,6 +787,8 @@ export type Database = {
         Row: {
           action: string;
           created_at: string;
+          done_at: string | null;
+          done_by: string | null;
           id: string;
           notes: string | null;
           request_id: string;
@@ -763,6 +800,8 @@ export type Database = {
         Insert: {
           action: string;
           created_at?: string;
+          done_at?: string | null;
+          done_by?: string | null;
           id?: string;
           notes?: string | null;
           request_id: string;
@@ -774,6 +813,8 @@ export type Database = {
         Update: {
           action?: string;
           created_at?: string;
+          done_at?: string | null;
+          done_by?: string | null;
           id?: string;
           notes?: string | null;
           request_id?: string;
@@ -783,6 +824,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "request_physical_access_items_done_by_fkey";
+            columns: ["done_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
           {
             foreignKeyName: "request_physical_access_items_request_id_fkey";
             columns: ["request_id"];
@@ -867,11 +915,15 @@ export type Database = {
           job_title: string | null;
           last_name: string | null;
           last_working_day: string | null;
+          mailbox_handling: string | null;
+          mailbox_recorded_at: string | null;
+          mailbox_recorded_by: string | null;
           manager_name: string | null;
           priority: Database["public"]["Enums"]["request_priority"];
           requestor_name: string | null;
           return_reason: string | null;
           sla_due_at: string | null;
+          sla_missed_reason: string | null;
           sla_timeline: Database["public"]["Enums"]["sla_timeline"] | null;
           state: Database["public"]["Enums"]["request_state"];
           state_changed_at: string | null;
@@ -905,11 +957,15 @@ export type Database = {
           job_title?: string | null;
           last_name?: string | null;
           last_working_day?: string | null;
+          mailbox_handling?: string | null;
+          mailbox_recorded_at?: string | null;
+          mailbox_recorded_by?: string | null;
           manager_name?: string | null;
           priority?: Database["public"]["Enums"]["request_priority"];
           requestor_name?: string | null;
           return_reason?: string | null;
           sla_due_at?: string | null;
+          sla_missed_reason?: string | null;
           sla_timeline?: Database["public"]["Enums"]["sla_timeline"] | null;
           state?: Database["public"]["Enums"]["request_state"];
           state_changed_at?: string | null;
@@ -943,11 +999,15 @@ export type Database = {
           job_title?: string | null;
           last_name?: string | null;
           last_working_day?: string | null;
+          mailbox_handling?: string | null;
+          mailbox_recorded_at?: string | null;
+          mailbox_recorded_by?: string | null;
           manager_name?: string | null;
           priority?: Database["public"]["Enums"]["request_priority"];
           requestor_name?: string | null;
           return_reason?: string | null;
           sla_due_at?: string | null;
+          sla_missed_reason?: string | null;
           sla_timeline?: Database["public"]["Enums"]["sla_timeline"] | null;
           state?: Database["public"]["Enums"]["request_state"];
           state_changed_at?: string | null;
@@ -1001,6 +1061,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "form_versions";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "requests_mailbox_recorded_by_fkey";
+            columns: ["mailbox_recorded_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
           },
         ];
       };
@@ -1265,6 +1332,7 @@ export type Database = {
           typed_text: string;
         }[];
       };
+      request_sla: { Args: { p_request_id: string }; Returns: Json };
       request_snapshot_preview: {
         Args: { p_request_id: string };
         Returns: Json;
@@ -1278,7 +1346,24 @@ export type Database = {
         Returns: undefined;
       };
       set_company_timezone: { Args: { p_timezone: string }; Returns: string };
+      set_equipment_return: {
+        Args: { p_item_id: string; p_reason?: string; p_status: string };
+        Returns: undefined;
+      };
+      set_mailbox_handling: {
+        Args: { p_request_id: string; p_value: string };
+        Returns: undefined;
+      };
       set_my_timezone: { Args: { p_timezone: string }; Returns: string };
+      set_removal: {
+        Args: {
+          p_done?: boolean;
+          p_item_id: string;
+          p_kind: string;
+          p_method?: string;
+        };
+        Returns: undefined;
+      };
       sign_request: {
         Args: { p_note?: string; p_request_id: string; p_reviewed: Json };
         Returns: string;
