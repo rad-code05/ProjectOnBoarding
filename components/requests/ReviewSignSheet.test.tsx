@@ -162,7 +162,7 @@ describe("ReviewSignSheet", () => {
   test("a failing check blocks signing and Fix opens the section", async () => {
     loadSigningReview.mockResolvedValue({
       ok: true,
-      review: review({ checklistComplete: false, approvers: [] }),
+      review: review({ missingFields: ["Country"], approvers: [] }),
     });
     const u = userEvent.setup();
     const { onEdit } = renderSheet();
@@ -172,10 +172,27 @@ describe("ReviewSignSheet", () => {
     await u.click(screen.getByLabelText(/I confirm the details above/));
     expect(sign).toBeDisabled();
     expect(
-      screen.getByText("Section 9 checklist is not complete"),
+      screen.getByText("Required fields empty: Country"),
     ).toBeInTheDocument();
     await u.click(screen.getByRole("button", { name: "Fix" }));
-    expect(onEdit).toHaveBeenCalledWith(9);
+    expect(onEdit).toHaveBeenCalledWith(2);
+  });
+
+  test("an incomplete section 9 is a warning: signing stays possible (2026-10-13)", async () => {
+    loadSigningReview.mockResolvedValue({
+      ok: true,
+      review: review({ checklistComplete: false, approvers: [] }),
+    });
+    const u = userEvent.setup();
+    renderSheet();
+    const sign = await screen.findByRole("button", {
+      name: "Sign & send for confirmation",
+    });
+    expect(
+      screen.getByText(/^Section 9 checklist not complete/),
+    ).toBeInTheDocument();
+    await u.click(screen.getByLabelText(/I confirm the details above/));
+    expect(sign).toBeEnabled();
   });
 
   test("changed since the review: says so and offers to review again", async () => {

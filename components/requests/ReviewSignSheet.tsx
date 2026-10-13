@@ -159,10 +159,14 @@ export function ReviewSignSheet({
                 <span
                   className={cn(
                     "flex size-4.5 shrink-0 items-center justify-center rounded-pill",
-                    check.ok ? "bg-ink text-paper" : "text-signal",
+                    check.warn
+                      ? "text-ink"
+                      : check.ok
+                        ? "bg-ink text-paper"
+                        : "text-signal",
                   )}
                 >
-                  {check.ok ? (
+                  {check.ok && !check.warn ? (
                     <CheckIcon size={10} strokeWidth={3.5} />
                   ) : (
                     <AlertIcon size={18} />

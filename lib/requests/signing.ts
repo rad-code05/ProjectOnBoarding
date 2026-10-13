@@ -254,13 +254,34 @@ export function offboardingRows(snapshot: Snapshot, timeZone?: string): Row[] {
 }
 
 export type Check = {
+  /** false = blocks signing. */
   ok: boolean;
+  /** Shown, but doesn't block (2026-10-13: section 9 / devices pending). */
+  warn?: boolean;
   label: string;
   /** Where to fix it: a section number or a page. */
   fix: { section: number } | { href: string } | null;
 };
 
-/** The blocking checks at the top of the sheet. */
+/** Offboarding devices still "Return pending": a warning, not a block. */
+function pendingDevices(snapshot: Json): Check[] {
+  const parsed = snapshotSchema.safeParse(snapshot);
+  if (!parsed.success || !parsed.data.offboarding) return [];
+  const pending = parsed.data.equipment.filter(
+    (e) => (e.return_status ?? "pending") === "pending",
+  ).length;
+  if (pending === 0) return [];
+  return [
+    {
+      ok: true,
+      warn: true,
+      label: `${pending === 1 ? "1 device is" : `${pending} devices are`} still Return pending — you can still sign; it stays on the person's record until it's back`,
+      fix: { section: 6 },
+    },
+  ];
+}
+
+/** The checks at the top of the sheet: blocking ones and warnings. */
 export function signingChecks(review: SigningReview): Check[] {
   const checks: Check[] = [];
   if (!review.stateOk) {
@@ -288,10 +309,13 @@ export function signingChecks(review: SigningReview): Check[] {
     review.checklistComplete
       ? { ok: true, label: "Section 9 checklist complete", fix: null }
       : {
-          ok: false,
-          label: "Section 9 checklist is not complete",
+          ok: true,
+          warn: true,
+          label:
+            "Section 9 checklist not complete — you can still sign; unticked items show as “No” on the record",
           fix: { section: 9 },
         },
+    ...pendingDevices(review.snapshot),
     review.signature
       ? { ok: true, label: "Your signature is on file", fix: null }
       : {

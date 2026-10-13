@@ -4,7 +4,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(32);
+select plan(33);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -137,7 +137,7 @@ select ok(exists (select 1 from public.audit_events where action = 'request.remo
 select ok(
   (select (public.signing_checks((select id from r where label = 'N')) -> 'missing_fields')
     @> '["Removal method (Delete, Suspend or Disable) for 1 application(s)", "Applications removed (0 of 2)",
-         "Access disabled or removed (0 of 1)", "Equipment received or marked not returned (0 of 1)",
+         "Access disabled or removed (0 of 1)",
          "Data & mailbox go to", "Mailbox: converted to a shared mailbox, or no mailbox to convert"]'::jsonb),
   'Review & sign lists everything still open');
 select ok(
@@ -156,6 +156,12 @@ select throws_ok($$select public.set_equipment_return((select id from n_kit), 'n
 select public.set_equipment_return((select id from n_kit), 'not_returned', 'Lost by the courier; wiped remotely');
 select ok((select return_status = 'not_returned' and return_recorded_at is not null and return_recorded_by = 'user_ow_admin' from n_kit),
   'Not returned is recorded with its reason, time and person');
+-- Back to pending: since 2026-10-13 a pending device doesn't block signing.
+select public.set_equipment_return((select id from n_kit), 'pending');
+select ok(
+  not (select (public.signing_checks((select id from r where label = 'N')) -> 'missing_fields')::text
+    like '%Equipment%'),
+  'a device still Return pending is not a blocker');
 select throws_ok($$select public.set_mailbox_handling((select id from r where label = 'N'), 'forwarded')$$,
   '23514', 'mailbox must be converted_shared or no_mailbox', 'only the two mailbox choices');
 select public.set_mailbox_handling((select id from r where label = 'N'), 'converted_shared');
@@ -210,9 +216,10 @@ select set_config('request.jwt.claims', '{"sub":"user_ow_abe","role":"authentica
 select public.confirm_request((select id from r where label = 'N'), (select data from n_reviewed));
 reset role;
 select is(
-  (select count(*)::int from public.employee_access_inventory i join public.employees e on e.id = i.employee_id
+  (select string_agg(i.name, ', ') from public.employee_access_inventory i join public.employees e on e.id = i.employee_id
    where e.work_email = 'nina.ow@example.test' and i.ended_at is null),
-  0, 'once the offboarding closes, Nina holds nothing in the inventory');
+  'Laptop · macOS',
+  'once the offboarding closes, Nina holds only the laptop still Return pending');
 
 -- ---------------------------------------------------------------------------
 -- Max: the deadline passed → missed, reason required
