@@ -7,7 +7,14 @@ import {
   personName,
   type RequestType,
 } from "@/lib/requests/labels";
-import type { Row, Snapshot } from "@/lib/requests/signing";
+import {
+  appRows,
+  equipmentRows,
+  offboardingRows,
+  physicalRows,
+  type Row,
+  type Snapshot,
+} from "@/lib/requests/signing";
 
 /**
  * The PDF record (F08, design: PDF record · page 1 / 2). Everything printed
@@ -157,50 +164,35 @@ export function recordSections(input: RecordInput): RecordSection[] {
       number: 5,
       title: "Application access",
       rows: [
-        ...none(
-          snapshot.access.map((a) => ({
-            label: a.app,
-            value: join(a.action, a.permission),
-          })),
-          "Applications",
-        ),
-        { label: "All other catalog applications", value: "No change" },
+        ...none(appRows(snapshot, timezone), "Applications"),
+        // An offboarding lists everything the person had; nothing else changes on onboarding.
+        ...(type === "offboarding"
+          ? []
+          : [{ label: "All other catalog applications", value: "No change" }]),
       ],
     },
     {
       number: 6,
       title: "IT equipment",
-      rows: none(
-        snapshot.equipment.map((e) => ({
-          label: join(e.type, e.description),
-          value: join(e.action, e.asset_tag),
-        })),
-        "Equipment",
-      ),
+      rows: none(equipmentRows(snapshot, timezone), "Equipment"),
     },
     {
       number: 7,
       title: "Physical & logical access",
-      rows: none(
-        snapshot.physical_access.map((p) => ({
-          label: p.type,
-          value: join(p.action, p.scope),
-        })),
-        "Physical & logical access",
-      ),
+      rows: none(physicalRows(snapshot, timezone), "Physical & logical access"),
     },
     {
       number: 8,
       title: "Access removal SLA",
-      rows: [
-        {
-          label: "Applies to",
-          value:
-            type === "offboarding"
-              ? "Offboarding"
-              : "Offboarding only — not applicable",
-        },
-      ],
+      rows:
+        type === "offboarding"
+          ? offboardingRows(snapshot, timezone)
+          : [
+              {
+                label: "Applies to",
+                value: "Offboarding only — not applicable",
+              },
+            ],
     },
     {
       number: 9,

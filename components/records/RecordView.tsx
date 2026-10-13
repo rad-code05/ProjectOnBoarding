@@ -17,7 +17,11 @@ import type { AppliedSignature } from "@/lib/approvals/review";
 import { cn } from "@/lib/cn";
 import type { RecordPage } from "@/lib/records/page";
 import { TYPE_LABELS, personName } from "@/lib/requests/labels";
-import { accessRows, employeeRows } from "@/lib/requests/signing";
+import {
+  accessRows,
+  employeeRows,
+  offboardingRows,
+} from "@/lib/requests/signing";
 
 /**
  * A closed request as its read-only record (board: Phone · Closed request
@@ -35,7 +39,8 @@ export function RecordView({
   const r = record.snapshot.request;
   const name = personName(r.first_name, r.last_name) || "Unnamed person";
   const pdfUrl = `/records/${record.id}/pdf`;
-  const access = accessRows(record.snapshot);
+  const access = accessRows(record.snapshot, record.timezone);
+  const offboarding = offboardingRows(record.snapshot, record.timezone);
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-3.5">
@@ -177,6 +182,17 @@ export function RecordView({
               <p className="text-[13px] text-graphite">Nothing requested.</p>
             )}
           </Expandable>
+          {offboarding.length > 0 && (
+            <Expandable
+              title="Access removal SLA & handover"
+              note={
+                offboarding.find((row) => row.label === "Removed within SLA")
+                  ?.value ?? ""
+              }
+            >
+              <Rows rows={offboarding} split />
+            </Expandable>
+          )}
           <Expandable
             title="IT execution and notes"
             note={record.snapshot.execution?.executed_by_name ?? "—"}

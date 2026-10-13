@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import sharp from "sharp";
 import { describe, expect, test, vi } from "vitest";
-import { sampleRecord } from "./fixture";
+import { sampleOffboardingRecord, sampleRecord } from "./fixture";
 import { renderRecordPdf } from "./render";
 
 vi.mock("server-only", () => ({}));
@@ -23,6 +23,16 @@ describe("renderRecordPdf", () => {
     // A copy to look at by hand: RECORD_PREVIEW=<path> pnpm exec vitest run lib/records
     if (process.env.RECORD_PREVIEW) {
       await writeFile(process.env.RECORD_PREVIEW, bytes);
+    }
+  }, 60_000);
+
+  test("an offboarding record renders too (F09d-3)", async () => {
+    const { bytes } = await renderRecordPdf(sampleOffboardingRecord());
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect(pageCount(bytes)).toBeGreaterThanOrEqual(2);
+    // OFFBOARDING_PREVIEW=<path> pnpm exec vitest run lib/records
+    if (process.env.OFFBOARDING_PREVIEW) {
+      await writeFile(process.env.OFFBOARDING_PREVIEW, bytes);
     }
   }, 60_000);
 

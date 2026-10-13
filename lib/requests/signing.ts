@@ -1,6 +1,6 @@
 import * as z from "zod";
 import type { Json } from "@/lib/supabase/database.types";
-import { formatDate } from "./format";
+import { formatDate, formatDay, formatTime } from "./format";
 import { countryName, personName } from "./labels";
 import { splitBlockers } from "./offboarding";
 
@@ -29,7 +29,14 @@ export const snapshotSchema = z.object({
     execution_started_at: text,
   }),
   access: z.array(
-    z.object({ app: z.string(), action: z.string(), permission: text }),
+    z.object({
+      app: z.string(),
+      action: z.string(),
+      permission: text,
+      // Offboarding only (F09b-2): how and when it was removed.
+      removal_method: text.optional(),
+      done_at: text.optional(),
+    }),
   ),
   equipment: z.array(
     z.object({
@@ -37,10 +44,18 @@ export const snapshotSchema = z.object({
       action: z.string(),
       description: text,
       asset_tag: text,
+      return_status: text.optional(),
+      return_reason: text.optional(),
+      return_recorded_at: text.optional(),
     }),
   ),
   physical_access: z.array(
-    z.object({ type: z.string(), action: z.string(), scope: text }),
+    z.object({
+      type: z.string(),
+      action: z.string(),
+      scope: text,
+      done_at: text.optional(),
+    }),
   ),
   execution: z
     .object({
@@ -49,6 +64,27 @@ export const snapshotSchema = z.object({
       executed_by_name: text,
     })
     .nullable(),
+  /** Offboarding only: section 8, handover and mailbox (F09b-2). */
+  offboarding: z
+    .object({
+      sla_timeline: text,
+      last_working_day: text,
+      access_cutoff_at: text,
+      sla: z
+        .object({
+          due_at: text,
+          total: z.number(),
+          done: z.number(),
+          removed_at: text,
+          met: z.boolean().nullable(),
+        })
+        .nullable(),
+      sla_missed_reason: text,
+      handover_to: text,
+      mailbox_handling: text,
+      mailbox_recorded_at: text,
+    })
+    .optional(),
 });
 
 export type Snapshot = z.infer<typeof snapshotSchema>;
@@ -106,21 +142,114 @@ export function employeeRows(snapshot: Snapshot): Row[] {
   ].map((row) => ({ ...row, value: row.value || "—" }));
 }
 
-/** "Access & equipment" card: apps, then equipment, then physical access. */
-export function accessRows(snapshot: Snapshot): Row[] {
+const RETURNS: Record<string, string> = {
+  pending: "Return pending",
+  received: "Received",
+  not_returned: "Not returned",
+};
+
+/**
+ * "Access & equipment" card: apps, then equipment, then physical access. An
+ * offboarding says how and when each was removed (times in `timeZone`).
+ */
+export function accessRows(snapshot: Snapshot, timeZone?: string): Row[] {
   return [
-    ...snapshot.access.map((a) => ({
-      label: a.app,
-      value: join(a.action, a.permission),
-    })),
-    ...snapshot.equipment.map((e) => ({
-      label: join(e.type, e.description),
-      value: join(e.action, e.asset_tag),
-    })),
-    ...snapshot.physical_access.map((p) => ({
-      label: p.type,
-      value: join(p.action, p.scope),
-    })),
+    ...appRows(snapshot, timeZone),
+    ...equipmentRows(snapshot, timeZone),
+    ...physicalRows(snapshot, timeZone),
+  ];
+}
+
+function when(iso: string | null | undefined, timeZone?: string) {
+  return iso
+    ? `${formatDay(iso, timeZone)}, ${formatTime(iso, timeZone)}`
+    : null;
+}
+
+/** Section 5 rows (an offboarding: method, what they had, when removed). */
+export function appRows(snapshot: Snapshot, timeZone?: string): Row[] {
+  const off = Boolean(snapshot.offboarding);
+  return snapshot.access.map((a) => ({
+    label: a.app,
+    value: off
+      ? join(
+          a.removal_method ?? "Remove",
+          a.permission ? `had ${a.permission}` : null,
+          when(a.done_at, timeZone) ?? "not done",
+        )
+      : join(a.action, a.permission),
+  }));
+}
+
+/** Section 6 rows (an offboarding: return status, reason, when). */
+export function equipmentRows(snapshot: Snapshot, timeZone?: string): Row[] {
+  const off = Boolean(snapshot.offboarding);
+  return snapshot.equipment.map((e) => ({
+    label: join(e.type, e.description),
+    value: off
+      ? join(
+          RETURNS[e.return_status ?? "pending"] ?? "Return pending",
+          e.asset_tag,
+          e.return_status === "not_returned" ? e.return_reason : null,
+          when(e.return_recorded_at, timeZone),
+        )
+      : join(e.action, e.asset_tag),
+  }));
+}
+
+/** Section 7 rows (an offboarding: when disabled / removed). */
+export function physicalRows(snapshot: Snapshot, timeZone?: string): Row[] {
+  const off = Boolean(snapshot.offboarding);
+  return snapshot.physical_access.map((p) => ({
+    label: p.type,
+    value: off
+      ? join(p.action, p.scope, when(p.done_at, timeZone) ?? "not done")
+      : join(p.action, p.scope),
+  }));
+}
+
+const TIMELINES: Record<string, string> = {
+  same_day: "Same day",
+  within_24h: "Within 24h",
+  within_48h: "Within 48h",
+};
+
+/**
+ * Offboarding: section 8 and the handover, from the snapshot — for Review &
+ * sign, the approver, the record page and the PDF (times in `timeZone`).
+ */
+export function offboardingRows(snapshot: Snapshot, timeZone?: string): Row[] {
+  const o = snapshot.offboarding;
+  if (!o) return [];
+  const at = (iso: string | null | undefined) =>
+    iso ? `${formatDay(iso, timeZone)}, ${formatTime(iso, timeZone)}` : "—";
+  const sla = o.sla;
+  const result =
+    sla?.met === true
+      ? "Met"
+      : sla?.met === false
+        ? join("Missed", o.sla_missed_reason)
+        : "Not decided";
+  return [
+    { label: "Timeline", value: TIMELINES[o.sla_timeline ?? ""] ?? "—" },
+    { label: "Last working day", value: formatDate(o.last_working_day) },
+    { label: "Access cut-off", value: at(o.access_cutoff_at) },
+    { label: "Deadline", value: at(sla?.due_at) },
+    { label: "Last access removed", value: at(sla?.removed_at) },
+    {
+      label: "Removed within SLA",
+      value: sla ? `${result} · ${sla.done} of ${sla.total} removed` : result,
+    },
+    { label: "Data & mailbox go to", value: o.handover_to || "—" },
+    {
+      label: "Mailbox",
+      value:
+        o.mailbox_handling === "converted_shared"
+          ? "Converted to a shared mailbox"
+          : o.mailbox_handling === "no_mailbox"
+            ? "No mailbox to convert"
+            : "—",
+    },
   ];
 }
 
