@@ -1,5 +1,6 @@
 import * as z from "zod";
 import type { TablesUpdate } from "@/lib/supabase/database.types";
+import { zonedToIso } from "@/lib/time/zoned";
 import { COUNTRY_CODES } from "./countries";
 
 /**
@@ -19,35 +20,63 @@ const emptyOr = <T extends z.ZodType<string>>(schema: T) =>
     .union([z.literal(""), schema])
     .transform((value) => (value === "" ? null : value));
 
-export const draftValuesSchema = z.object({
-  type: z.enum(["onboarding", "offboarding", "access_modification"]),
-  priority: z.enum(["low", "medium", "high"]),
-  assignee: text,
-  first_name: text,
-  last_name: text,
-  work_email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .pipe(
-      emptyOr(
-        z.email("Enter a valid email address, e.g. anna.keller@laine.ai."),
+export const draftValuesSchema = z
+  .object({
+    type: z.enum(["onboarding", "offboarding", "access_modification"]),
+    priority: z.enum(["low", "medium", "high"]),
+    assignee: text,
+    first_name: text,
+    last_name: text,
+    work_email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .pipe(
+        emptyOr(
+          z.email("Enter a valid email address, e.g. anna.keller@laine.ai."),
+        ),
       ),
+    job_title: text,
+    department: z
+      .string()
+      .regex(/^\d*$/, "Choose a department from the list.")
+      .transform((value) => (value ? Number(value) : null)),
+    country: emptyOr(
+      z.string().refine((code) => COUNTRY_CODES.includes(code), {
+        message: "Choose a country from the list.",
+      }),
     ),
-  job_title: text,
-  department: z
-    .string()
-    .regex(/^\d*$/, "Choose a department from the list.")
-    .transform((value) => (value ? Number(value) : null)),
-  country: emptyOr(
-    z.string().refine((code) => COUNTRY_CODES.includes(code), {
-      message: "Choose a country from the list.",
-    }),
-  ),
-  manager_name: text,
-  requestor_name: text,
-  effective_date: emptyOr(z.iso.date("Enter a date.")),
-});
+    manager_name: text,
+    requestor_name: text,
+    effective_date: emptyOr(z.iso.date("Enter a date.")),
+    // Offboarding (F09c-2): section 8 and handover; "" on other request types.
+    sla_timeline: z
+      .union([z.literal(""), z.enum(["same_day", "within_24h", "within_48h"])])
+      .transform((value) => value || null),
+    last_working_day: emptyOr(z.iso.date("Enter a date.")),
+    cutoff_date: emptyOr(z.iso.date("Enter a date.")),
+    cutoff_time: emptyOr(
+      z
+        .string()
+        .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Enter a time, e.g. 18:00."),
+    ),
+    handover_to: z
+      .string()
+      .trim()
+      .max(120, "Keep it under 120 characters.")
+      .transform((value) => value || null),
+  })
+  .superRefine((values, ctx) => {
+    if (Boolean(values.cutoff_date) !== Boolean(values.cutoff_time)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [values.cutoff_date ? "cutoff_time" : "cutoff_date"],
+        message: values.cutoff_date
+          ? "Enter the cut-off time too."
+          : "Enter the cut-off date too.",
+      });
+    }
+  });
 
 /** Form values as the browser holds them: field key → text. */
 export type DraftFormValues = z.input<typeof draftValuesSchema>;
@@ -60,9 +89,32 @@ export const saveDraftSchema = z.object({
   version: z.int().positive(),
 });
 
-/** Field key (form_fields.key) → column on public.requests. */
-export function toColumns(values: DraftValues): TablesUpdate<"requests"> {
+/**
+ * Field key (form_fields.key) → column on public.requests. The offboarding
+ * cut-off is typed in the company timezone (companyTimeZone).
+ */
+export function toColumns(
+  values: DraftValues,
+  companyTimeZone: string,
+): TablesUpdate<"requests"> {
+  const offboarding: TablesUpdate<"requests"> =
+    values.type === "offboarding"
+      ? {
+          sla_timeline: values.sla_timeline,
+          last_working_day: values.last_working_day,
+          access_cutoff_at:
+            values.cutoff_date && values.cutoff_time
+              ? zonedToIso(
+                  values.cutoff_date,
+                  values.cutoff_time,
+                  companyTimeZone,
+                )
+              : null,
+          handover_to: values.handover_to,
+        }
+      : {};
   return {
+    ...offboarding,
     type: values.type,
     priority: values.priority,
     assignee_id: values.assignee,

@@ -12,3 +12,18 @@ export const displayTimezone = cache(async (): Promise<string> => {
   const { data, error } = await supabase.rpc("my_timezone");
   return !error && data ? data : COMPANY_TIMEZONE;
 });
+
+/**
+ * The company timezone (D3, Admin → Settings): PDF, ticket years, reports
+ * and the offboarding SLA use it, whatever the person's own choice.
+ */
+export const companyTimezone = cache(async (): Promise<string> => {
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("app_settings")
+    .select("company_timezone")
+    .maybeSingle();
+  return !error && data?.company_timezone
+    ? data.company_timezone
+    : COMPANY_TIMEZONE;
+});

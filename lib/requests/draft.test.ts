@@ -21,12 +21,64 @@ const empty: DraftFormValues = {
   manager_name: "",
   requestor_name: "",
   effective_date: "",
+  sla_timeline: "",
+  last_working_day: "",
+  cutoff_date: "",
+  cutoff_time: "",
+  handover_to: "",
 };
+
+describe("offboarding fields (F09c-2)", () => {
+  test("the cut-off is typed in the company timezone and saved as an instant", () => {
+    const result = draftValuesSchema.parse({
+      ...empty,
+      type: "offboarding",
+      sla_timeline: "within_24h",
+      last_working_day: "2026-09-30",
+      cutoff_date: "2026-09-30",
+      cutoff_time: "18:00",
+      handover_to: "  Giulia Bianchi ",
+    });
+    expect(toColumns(result, "Asia/Dubai")).toMatchObject({
+      sla_timeline: "within_24h",
+      last_working_day: "2026-09-30",
+      access_cutoff_at: "2026-09-30T14:00:00.000Z",
+      handover_to: "Giulia Bianchi",
+    });
+  });
+
+  test("date and time of the cut-off go together; times are checked", () => {
+    const result = draftValuesSchema.safeParse({
+      ...empty,
+      type: "offboarding",
+      cutoff_date: "2026-09-30",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(fieldErrorsOf(result.error).cutoff_time).toBe(
+        "Enter the cut-off time too.",
+      );
+    }
+    expect(
+      draftValuesSchema.safeParse({
+        ...empty,
+        cutoff_date: "2026-09-30",
+        cutoff_time: "25:00",
+      }).success,
+    ).toBe(false);
+  });
+
+  test("an onboarding never sends offboarding columns", () => {
+    const columns = toColumns(draftValuesSchema.parse(empty), "Asia/Dubai");
+    expect(columns).not.toHaveProperty("sla_timeline");
+    expect(columns).not.toHaveProperty("access_cutoff_at");
+  });
+});
 
 describe("draftValuesSchema", () => {
   test("an empty draft is valid and saves as empty (null) columns", () => {
     const result = draftValuesSchema.parse(empty);
-    expect(toColumns(result)).toMatchObject({
+    expect(toColumns(result, "Asia/Dubai")).toMatchObject({
       first_name: null,
       work_email: null,
       department_id: null,
@@ -45,7 +97,7 @@ describe("draftValuesSchema", () => {
       assignee: "user_123",
       effective_date: "2026-10-14",
     });
-    expect(toColumns(result)).toMatchObject({
+    expect(toColumns(result, "Asia/Dubai")).toMatchObject({
       first_name: "Anna",
       work_email: "anna.keller@laine.ai",
       department_id: 2,

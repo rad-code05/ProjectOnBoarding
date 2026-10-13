@@ -1,0 +1,66 @@
+/**
+ * Wall-clock date + time in a timezone ↔ an instant (F09c-2: the access
+ * cut-off is typed in the company timezone). Pure — works in the browser and
+ * on the server, daylight saving included.
+ */
+
+/** Minutes the zone is ahead of UTC at that instant. */
+function offsetMinutes(at: number, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(new Date(at));
+  const get = (type: string) =>
+    Number(parts.find((p) => p.type === type)?.value);
+  const asUtc = Date.UTC(
+    get("year"),
+    get("month") - 1,
+    get("day"),
+    get("hour"),
+    get("minute"),
+    get("second"),
+  );
+  return Math.round((asUtc - Math.floor(at / 1000) * 1000) / 60000);
+}
+
+/** "2026-09-30" + "18:00" in Asia/Dubai → "2026-09-30T14:00:00.000Z". */
+export function zonedToIso(
+  date: string,
+  time: string,
+  timeZone: string,
+): string {
+  const [y, m, d] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  const wall = Date.UTC(y, m - 1, d, hh, mm);
+  // Guess with the offset at the wall time, then correct once (DST edges).
+  let at = wall - offsetMinutes(wall, timeZone) * 60000;
+  at = wall - offsetMinutes(at, timeZone) * 60000;
+  return new Date(at).toISOString();
+}
+
+/** An instant → its date ("2026-09-30") and time ("18:00") in the zone. */
+export function zonedParts(
+  iso: string,
+  timeZone: string,
+): { date: string; time: string } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(new Date(iso));
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return {
+    date: `${get("year")}-${get("month")}-${get("day")}`,
+    time: `${get("hour")}:${get("minute")}`,
+  };
+}

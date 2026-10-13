@@ -21,6 +21,11 @@ const values: DraftFormValues = {
   manager_name: "",
   requestor_name: "",
   effective_date: "",
+  sla_timeline: "",
+  last_working_day: "",
+  cutoff_date: "",
+  cutoff_time: "",
+  handover_to: "",
 };
 
 const setup = () =>

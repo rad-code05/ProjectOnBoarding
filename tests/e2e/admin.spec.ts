@@ -432,6 +432,30 @@ test("New request → Offboarding: Who is leaving? and an empty offboarding draf
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
   await expect(page.getByText(/New request · Offboarding/)).toBeVisible();
 
+  // Section 8 first: timeline + cut-off (Dubai time) → the deadline preview.
+  const sla = page.getByRole("region", { name: "Access removal SLA" });
+  await expect(sla.getByRole("status")).toContainText(
+    "Set the timeline and the cut-off",
+  );
+  await sla.getByText("Within 24h", { exact: true }).click();
+  await sla.getByLabel("Last working day").fill("2026-09-30");
+  await sla.getByLabel("Access cut-off date").fill("2026-09-30");
+  await sla.getByLabel("Time", { exact: true }).fill("18:00");
+  await expect(sla.getByRole("status")).toContainText("1 Oct 2026, 18:00");
+  await page.getByLabel("Data & mailbox go to").fill("E2E Manager");
+  await page.getByRole("button", { name: "Save draft" }).click();
+  await expect(page.getByRole("status").first()).toHaveText(/^Saved \d\d:\d\d/);
+  await expect(
+    page.getByRole("heading", { name: "Applications to remove" }),
+  ).toBeVisible();
+
+  await page.reload();
+  await expect(sla.getByLabel("Access cut-off date")).toHaveValue("2026-09-30");
+  await expect(sla.getByLabel("Time", { exact: true })).toHaveValue("18:00");
+  await expect(page.getByLabel("Data & mailbox go to")).toHaveValue(
+    "E2E Manager",
+  );
+
   // Tidy up: test drafts never stay open.
   await page.getByRole("button", { name: "Cancel this request…" }).click();
   const cancel = page.getByRole("dialog", { name: "Cancel this request?" });

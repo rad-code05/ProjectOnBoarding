@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { displayTimezone } from "@/lib/time/display";
+import { companyTimezone, displayTimezone } from "@/lib/time/display";
+import { zonedParts } from "@/lib/time/zoned";
 import { countryOptions } from "./countries";
 import type { AccessChoices, CatalogCategory, OtherApp } from "./access";
 import type { DraftFormValues } from "./draft";
@@ -22,6 +23,7 @@ import {
   type RequestType,
 } from "./labels";
 import { flaggedSections, type ReturnInfo } from "./returned";
+import type { Removals } from "./offboarding";
 import type { SignedSection } from "./signing";
 
 export type RequestFormData = {
@@ -59,6 +61,13 @@ export type RequestFormData = {
   returned: ReturnInfo | null;
   /** The signed-in person's screen timezone (F05e). */
   timezone: string;
+  /** Offboarding only (F09c-2): SLA in the company timezone, what to remove. */
+  offboarding: {
+    companyTimezone: string;
+    /** The deadline the database worked out (null until set). */
+    dueAt: string | null;
+    removals: Removals;
+  } | null;
 };
 
 const EDITABLE_STATES: RequestState[] = ["draft", "in_execution", "returned"];
@@ -81,11 +90,12 @@ export async function loadRequestForm(
   const supabase = createServerSupabaseClient();
   // Asked in parallel with the queries below (one round trip less).
   const tzPromise = displayTimezone();
+  const companyTzPromise = companyTimezone();
 
   const { data: request, error } = await supabase
     .from("requests")
     .select(
-      "id, ticket_id, type, state, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
+      "id, ticket_id, type, state, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -137,7 +147,7 @@ export async function loadRequestForm(
       .order("sort_order", { referencedTable: "catalog_apps" }),
     supabase
       .from("request_access_items")
-      .select("id, app_id, app_name, action, permission, notes")
+      .select("id, app_id, app_name, category_name, action, permission, notes")
       .eq("request_id", request.id)
       .order("created_at"),
     supabase
@@ -157,8 +167,9 @@ export async function loadRequestForm(
       .order("sort_order"),
     supabase
       .from("request_physical_access_items")
-      .select("type_id, action, scope, notes")
-      .eq("request_id", request.id),
+      .select("id, type_id, type_name, action, scope, notes")
+      .eq("request_id", request.id)
+      .order("created_at"),
     supabase
       .from("execution_checklist_items")
       .select("key, label")
@@ -192,6 +203,10 @@ export async function loadRequestForm(
       .maybeSingle(),
   ]);
   const tz = await tzPromise;
+  const companyTz = await companyTzPromise;
+  const cutoff = request.access_cutoff_at
+    ? zonedParts(request.access_cutoff_at, companyTz)
+    : { date: "", time: "" };
   for (const result of [
     fields,
     departments,
@@ -287,6 +302,11 @@ export async function loadRequestForm(
       manager_name: request.manager_name ?? "",
       requestor_name: request.requestor_name ?? "",
       effective_date: request.effective_date ?? "",
+      sla_timeline: request.sla_timeline ?? "",
+      last_working_day: request.last_working_day ?? "",
+      cutoff_date: cutoff.date,
+      cutoff_time: cutoff.time,
+      handover_to: request.handover_to ?? "",
     },
     system: {
       ticket_id: request.ticket_id,
@@ -388,6 +408,33 @@ export async function loadRequestForm(
         ? returnInfo(lastReturn.data, request.return_reason, tz)
         : null,
     timezone: tz,
+    offboarding:
+      request.type === "offboarding"
+        ? {
+            companyTimezone: companyTz,
+            dueAt: request.sla_due_at,
+            removals: {
+              apps: (items.data ?? []).map((item) => ({
+                id: item.id,
+                name: item.app_name,
+                category: item.category_name,
+                had: item.permission,
+              })),
+              equipment: (equipment.data ?? []).map((item) => ({
+                id: item.id,
+                name: item.type_name,
+                assetTag: item.asset_tag,
+                description: item.description,
+              })),
+              access: (physical.data ?? []).map((row) => ({
+                id: row.id,
+                name: row.type_name,
+                action: row.action,
+                scope: row.scope,
+              })),
+            },
+          }
+        : null,
     others: (items.data ?? [])
       .filter((item) => item.app_id === null)
       .map((item) => ({

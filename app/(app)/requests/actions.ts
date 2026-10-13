@@ -27,6 +27,7 @@ import {
   setPhysicalSchema,
 } from "@/lib/requests/equipment";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { companyTimezone } from "@/lib/time/display";
 import type { TablesInsert } from "@/lib/supabase/database.types";
 
 /** New request → an empty onboarding draft, then its form. */
@@ -109,7 +110,7 @@ export async function saveDraft(input: {
   const supabase = createServerSupabaseClient();
   const { data, error } = await supabase
     .from("requests")
-    .update(toColumns(values.data))
+    .update(toColumns(values.data, await companyTimezone()))
     .eq("id", target.data.id)
     .eq("version", target.data.version)
     .select("version, updated_at")
