@@ -416,6 +416,7 @@ test("Raju cancels a request with a reason; it becomes read-only", async ({
 test("New request → Offboarding: Who is leaving? and an empty offboarding draft", async ({
   page,
 }) => {
+  test.slow(); // a journey: sheet, draft, SLA, reload, execution, cancel
   await openApp(page, "/requests");
   await page.getByRole("button", { name: "New request" }).first().click();
   const sheet = page.getByRole("dialog", { name: "New onboarding" });
@@ -455,6 +456,17 @@ test("New request → Offboarding: Who is leaving? and an empty offboarding draf
   await expect(page.getByLabel("Data & mailbox go to")).toHaveValue(
     "E2E Manager",
   );
+
+  // F09d: once execution starts, the SLA is fixed and the mailbox choice opens.
+  await page.getByRole("button", { name: "Start execution" }).click();
+  await page
+    .getByRole("dialog", { name: "Start execution?" })
+    .getByRole("button", { name: "Start execution" })
+    .click();
+  await expect(sla.getByText("Fixed", { exact: true })).toBeVisible();
+  await expect(sla.getByLabel("Access cut-off date")).toBeDisabled();
+  await page.getByRole("radio", { name: /No mailbox to convert/ }).check();
+  await expect(page.getByText(/^Recorded \d/)).toBeVisible();
 
   // Tidy up: test drafts never stay open.
   await page.getByRole("button", { name: "Cancel this request…" }).click();

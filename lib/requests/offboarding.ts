@@ -44,16 +44,63 @@ export function slaDeadline(
 }
 
 /** What an offboarding lists in sections 5–7 (pre-filled from the inventory). */
+export type RemovalMethod = "Delete" | "Suspend" | "Disable";
+export const REMOVAL_METHODS: RemovalMethod[] = [
+  "Delete",
+  "Suspend",
+  "Disable",
+];
+
+export type ReturnStatus = "pending" | "received" | "not_returned";
+export const RETURN_LABELS: Record<ReturnStatus, string> = {
+  pending: "Return pending",
+  received: "Received",
+  not_returned: "Not returned",
+};
+
+export type MailboxHandling = "converted_shared" | "no_mailbox";
+export const MAILBOX_LABELS: Record<MailboxHandling, string> = {
+  converted_shared: "Mailbox converted to a shared mailbox",
+  no_mailbox: "No mailbox to convert",
+};
+
+/** What an offboarding lists in sections 5–7, and the work recorded on them (F09d). */
 export type Removals = {
-  apps: { id: string; name: string; category: string; had: string | null }[];
+  apps: {
+    id: string;
+    name: string;
+    category: string;
+    had: string | null;
+    method: RemovalMethod | null;
+    /** When it was ticked (server time), or null. */
+    doneAt: string | null;
+  }[];
   equipment: {
     id: string;
     name: string;
     assetTag: string | null;
     description: string | null;
+    status: ReturnStatus;
+    reason: string | null;
+    recordedAt: string | null;
   }[];
-  access: { id: string; name: string; action: string; scope: string | null }[];
+  access: {
+    id: string;
+    name: string;
+    action: string;
+    scope: string | null;
+    doneAt: string | null;
+  }[];
 };
+
+/** Applications + access ticked, of all (equipment is outside the SLA). */
+export function removalProgress(removals: Removals): {
+  done: number;
+  total: number;
+} {
+  const rows = [...removals.apps, ...removals.access];
+  return { done: rows.filter((row) => row.doneAt).length, total: rows.length };
+}
 
 /** "7 applications, 1 device and 3 access types" */
 export function removalsSummary(removals: Removals): string {

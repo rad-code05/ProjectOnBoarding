@@ -23,7 +23,12 @@ import {
   type RequestType,
 } from "./labels";
 import { flaggedSections, type ReturnInfo } from "./returned";
-import type { Removals } from "./offboarding";
+import type {
+  MailboxHandling,
+  RemovalMethod,
+  Removals,
+  ReturnStatus,
+} from "./offboarding";
 import type { SignedSection } from "./signing";
 
 export type RequestFormData = {
@@ -67,6 +72,7 @@ export type RequestFormData = {
     /** The deadline the database worked out (null until set). */
     dueAt: string | null;
     removals: Removals;
+    mailbox: { handling: MailboxHandling | null; recordedAt: string | null };
   } | null;
 };
 
@@ -95,7 +101,7 @@ export async function loadRequestForm(
   const { data: request, error } = await supabase
     .from("requests")
     .select(
-      "id, ticket_id, type, state, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
+      "id, ticket_id, type, state, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, mailbox_handling, mailbox_recorded_at, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -147,7 +153,9 @@ export async function loadRequestForm(
       .order("sort_order", { referencedTable: "catalog_apps" }),
     supabase
       .from("request_access_items")
-      .select("id, app_id, app_name, category_name, action, permission, notes")
+      .select(
+        "id, app_id, app_name, category_name, action, permission, notes, removal_method, done_at",
+      )
       .eq("request_id", request.id)
       .order("created_at"),
     supabase
@@ -157,7 +165,9 @@ export async function loadRequestForm(
       .order("sort_order"),
     supabase
       .from("request_equipment_items")
-      .select("id, type_id, type_name, action, description, asset_tag, notes")
+      .select(
+        "id, type_id, type_name, action, description, asset_tag, notes, return_status, return_reason, return_recorded_at",
+      )
       .eq("request_id", request.id)
       .order("created_at"),
     supabase
@@ -167,7 +177,7 @@ export async function loadRequestForm(
       .order("sort_order"),
     supabase
       .from("request_physical_access_items")
-      .select("id, type_id, type_name, action, scope, notes")
+      .select("id, type_id, type_name, action, scope, notes, done_at")
       .eq("request_id", request.id)
       .order("created_at"),
     supabase
@@ -419,19 +429,29 @@ export async function loadRequestForm(
                 name: item.app_name,
                 category: item.category_name,
                 had: item.permission,
+                method: item.removal_method as RemovalMethod | null,
+                doneAt: item.done_at,
               })),
               equipment: (equipment.data ?? []).map((item) => ({
                 id: item.id,
                 name: item.type_name,
                 assetTag: item.asset_tag,
                 description: item.description,
+                status: (item.return_status ?? "pending") as ReturnStatus,
+                reason: item.return_reason,
+                recordedAt: item.return_recorded_at,
               })),
               access: (physical.data ?? []).map((row) => ({
                 id: row.id,
                 name: row.type_name,
                 action: row.action,
                 scope: row.scope,
+                doneAt: row.done_at,
               })),
+            },
+            mailbox: {
+              handling: request.mailbox_handling as MailboxHandling | null,
+              recordedAt: request.mailbox_recorded_at,
             },
           }
         : null,
