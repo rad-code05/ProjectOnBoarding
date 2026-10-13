@@ -3,7 +3,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(35);
+select plan(38);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -89,6 +89,24 @@ values ('user_sg_admin', 'initials', 'typed', 'AA');
 select throws_ok(
   $$select public.sign_request(id, public.request_snapshot_preview(id)) from ids where first_name = 'Ben'$$,
   '23514', 'required fields are empty: Job title / role', 'no signing with required fields empty');
+
+-- Since 2026-10-13: an incomplete section 9 is a warning, not a block (Raju).
+reset role;
+update public.requests set job_title = 'Analyst' where id = (select id from ids where first_name = 'Ben');
+update public.execution_confirmations set checks = checks || '{"security_controls": false}'
+where request_id = (select id from ids where first_name = 'Ben');
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"user_sg_admin","role":"authenticated"}', true);
+select is(
+  (select (c ->> 'checklist_complete')::boolean from public.signing_checks((select id from ids where first_name = 'Ben')) as c),
+  false, 'checks: Ben''s section 9 is reported incomplete');
+select lives_ok(
+  $$select public.sign_request(id, public.request_snapshot_preview(id)) from ids where first_name = 'Ben'$$,
+  'an incomplete section 9 no longer blocks signing');
+select is(
+  (select data -> 'execution' -> 'checks' ->> 'security_controls' from public.request_snapshots
+   where request_id = (select id from ids where first_name = 'Ben') and kind = 'it_signature'),
+  'false', 'the signed snapshot keeps the unticked item (printed as "No")');
 
 -- The snapshot shown in the sheet
 select ok(
@@ -193,7 +211,7 @@ select throws_ok(
 -- ---------------------------------------------------------------------------
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_sg_approver","role":"authenticated"}', true);
-select is((select count(*)::int from public.signatures s join ids on ids.id = s.request_id), 1,
+select is((select count(*)::int from public.signatures s join ids on ids.id = s.request_id where ids.first_name = 'Anna'), 1,
   'the approver sees the IT signature of a request awaiting confirmation');
 select public.return_request(id, 'Add the VPN group') from ids where first_name = 'Anna';
 

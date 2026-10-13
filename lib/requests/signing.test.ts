@@ -148,15 +148,50 @@ describe("blocking checks", () => {
       },
       {
         ok: false,
-        label: "Section 9 checklist is not complete",
-        fix: { section: 9 },
-      },
-      {
-        ok: false,
         label: "Add your signature or initials in My profile",
         fix: { href: "/profile" },
       },
     ]);
+    // Since 2026-10-13 an incomplete section 9 is a warning, not a block.
+    expect(checks.find((c) => c.warn)).toEqual({
+      ok: true,
+      warn: true,
+      label:
+        "Section 9 checklist not complete — you can still sign; unticked items show as “No” on the record",
+      fix: { section: 9 },
+    });
+  });
+
+  test("an offboarding device still Return pending is a warning (2026-10-13)", () => {
+    const off = {
+      ...snapshot,
+      equipment: [
+        {
+          type: "Laptop · macOS",
+          action: "Return",
+          description: null,
+          asset_tag: "LT-1",
+          return_status: "pending",
+          return_reason: null,
+          return_recorded_at: null,
+        },
+      ],
+      offboarding: {
+        sla_timeline: "within_24h",
+        last_working_day: "2026-09-30",
+        access_cutoff_at: null,
+        sla: null,
+        sla_missed_reason: null,
+        handover_to: "Mara",
+        mailbox_handling: "no_mailbox",
+        mailbox_recorded_at: null,
+      },
+    };
+    const checks = signingChecks(review({ snapshot: off }));
+    expect(checks.every((c) => c.ok)).toBe(true);
+    expect(checks.find((c) => c.warn)?.label).toMatch(
+      /^1 device is still Return pending — you can still sign/,
+    );
   });
 
   test("offboarding blockers get their own lines, each with its section (F09d-2)", () => {

@@ -97,9 +97,11 @@ select throws_ok(
 select set_config('app.request_signing', 'on', true);
 select set_config('app.request_confirming', 'on', true);
 select set_config('app.request_returning', 'on', true);
-select throws_ok(
-  $$select public.transition_request((select id from ids where first_name = 'Dora'), 'pending_confirmation')$$,
-  '23514', null, 'it cannot go for confirmation while the checklist is incomplete');
+-- Since 2026-10-13 an incomplete checklist no longer blocks (Raju): it is
+-- reported (signing_checks, signing.test.sql) and printed as "No".
+select is(
+  (select (c ->> 'checklist_complete')::boolean from public.signing_checks((select id from ids where first_name = 'Dora')) as c),
+  false, 'an incomplete checklist is still reported as incomplete');
 
 update public.execution_confirmations set checks = checks || '{"security_controls": true}'
 where request_id = (select id from ids where first_name = 'Dora');
