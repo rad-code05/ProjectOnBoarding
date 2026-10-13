@@ -59,7 +59,11 @@ export const snapshotSchema = z.object({
   ),
   execution: z
     .object({
-      checks: z.record(z.string(), z.boolean()),
+      // "not_needed" since 2026-10-13 (e.g. no device provided).
+      checks: z.record(
+        z.string(),
+        z.union([z.boolean(), z.literal("not_needed")]),
+      ),
       notes: text,
       executed_by_name: text,
     })

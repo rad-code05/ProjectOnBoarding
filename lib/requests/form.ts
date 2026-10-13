@@ -5,7 +5,12 @@ import { zonedParts } from "@/lib/time/zoned";
 import { countryOptions } from "./countries";
 import type { AccessChoices, CatalogCategory, OtherApp } from "./access";
 import type { DraftFormValues } from "./draft";
-import type { ChecklistItem, ExecutionRecord, WorkflowInfo } from "./execution";
+import type {
+  CheckValue,
+  ChecklistItem,
+  ExecutionRecord,
+  WorkflowInfo,
+} from "./execution";
 import type {
   EquipmentItem,
   EquipmentType,
@@ -386,7 +391,7 @@ export async function loadRequestForm(
     physicalTypes: physicalTypes.data ?? [],
     checklist: checklist.data ?? [],
     execution: {
-      checks: (execution.data?.checks ?? {}) as Record<string, boolean>,
+      checks: (execution.data?.checks ?? {}) as Record<string, CheckValue>,
       notes: execution.data?.notes ?? null,
       executedBy: execution.data
         ? personName(
