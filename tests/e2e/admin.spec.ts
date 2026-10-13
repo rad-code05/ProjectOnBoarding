@@ -463,10 +463,28 @@ test("New request → Offboarding: Who is leaving? and an empty offboarding draf
     .getByRole("dialog", { name: "Start execution?" })
     .getByRole("button", { name: "Start execution" })
     .click();
-  await expect(sla.getByText("Fixed", { exact: true })).toBeVisible();
-  await expect(sla.getByLabel("Access cut-off date")).toBeDisabled();
+  // The set-up turns into the SLA panel; the cut-off can't be typed any more.
+  await expect(page.getByLabel("Access cut-off date")).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: /^Access removal SLA/ }),
+  ).toBeVisible();
   await page.getByRole("radio", { name: /No mailbox to convert/ }).check();
   await expect(page.getByText(/^Recorded \d/)).toBeVisible();
+
+  // F09d-2: the SLA panel counts down (this cut-off is in the past) and
+  // Review & sign lists the offboarding's own blockers.
+  await expect(
+    page.getByRole("heading", { name: /^Overdue by / }),
+  ).toBeVisible();
+  await expect(page.getByText(/0 of 0 removed/)).toBeVisible();
+  await page
+    .getByRole("button", { name: "Review & sign", exact: true })
+    .click();
+  const review = page.getByRole("dialog", { name: "Review & sign" });
+  await expect(
+    review.getByText("At least one application or access to remove"),
+  ).toBeVisible();
+  await review.getByRole("button", { name: "Back to edit" }).click();
 
   // Tidy up: test drafts never stay open.
   await page.getByRole("button", { name: "Cancel this request…" }).click();

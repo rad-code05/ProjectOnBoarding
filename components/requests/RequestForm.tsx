@@ -36,6 +36,8 @@ import {
 } from "./OffboardingSections";
 import { MailboxChoice, WorkRemovalSections } from "./OffboardingWork";
 import { PhysicalSection } from "./PhysicalSection";
+import { SlaPanel } from "./SlaPanel";
+import type { SlaTimeline } from "@/lib/requests/offboarding";
 import { ProvisioningSection } from "./ProvisioningSection";
 import { ReturnedCard, SectionFlag, sectionFrame } from "./ReturnedCard";
 import { SectionNav, type SectionNavItem } from "./SectionNav";
@@ -374,16 +376,33 @@ export function RequestForm({
 
         {off && (
           <>
-            <SlaSection
-              values={values}
-              setValue={setValue}
-              errors={errors}
-              disabled={disabled}
-              fixed={form.state !== "draft"}
-              companyTimezone={off.companyTimezone}
-              dueAt={off.dueAt}
-              flag={flag(8)}
-            />
+            {started && off.dueAt ? (
+              <SlaPanel
+                dueAt={off.dueAt}
+                sla={off.sla}
+                timeline={(values.sla_timeline || null) as SlaTimeline | null}
+                cutoffDate={values.cutoff_date ?? ""}
+                cutoffTime={values.cutoff_time ?? ""}
+                lastWorkingDay={values.last_working_day ?? ""}
+                companyTimezone={off.companyTimezone}
+                reason={values.sla_missed_reason ?? ""}
+                onReasonChange={(value) => setValue("sla_missed_reason", value)}
+                reasonError={errors.sla_missed_reason}
+                disabled={disabled}
+                flag={flag(8)}
+              />
+            ) : (
+              <SlaSection
+                values={values}
+                setValue={setValue}
+                errors={errors}
+                disabled={disabled}
+                fixed={form.state !== "draft"}
+                companyTimezone={off.companyTimezone}
+                dueAt={off.dueAt}
+                flag={flag(8)}
+              />
+            )}
             <PrefillBanner removals={off.removals} />
           </>
         )}

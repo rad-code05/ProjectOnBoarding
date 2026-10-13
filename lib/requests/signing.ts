@@ -2,6 +2,7 @@ import * as z from "zod";
 import type { Json } from "@/lib/supabase/database.types";
 import { formatDate } from "./format";
 import { countryName, personName } from "./labels";
+import { splitBlockers } from "./offboarding";
 
 /**
  * Review & sign (F06): what the sheet shows and how its answers are worded.
@@ -140,7 +141,8 @@ export function signingChecks(review: SigningReview): Check[] {
       fix: null,
     });
   }
-  const missing = review.missingFields;
+  // Offboarding blockers get their own lines (F09d-2); the rest are fields.
+  const { fields: missing, blockers } = splitBlockers(review.missingFields);
   checks.push(
     missing.length === 0
       ? { ok: true, label: "All required fields complete", fix: null }
@@ -149,6 +151,11 @@ export function signingChecks(review: SigningReview): Check[] {
           label: `Required fields empty: ${missing.join(", ")}`,
           fix: { section: 2 },
         },
+    ...blockers.map((b) => ({
+      ok: false,
+      label: b.label,
+      fix: { section: b.section },
+    })),
     review.checklistComplete
       ? { ok: true, label: "Section 9 checklist complete", fix: null }
       : {

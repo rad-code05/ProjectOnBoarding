@@ -114,3 +114,82 @@ export function removalsSummary(removals: Removals): string {
     .join(", ")
     .replace(/, ([^,]*)$/, " and $1");
 }
+
+/** request_sla() as the screens use it. */
+export type SlaResult = {
+  total: number;
+  done: number;
+  /** Time of the last removal, once all are ticked. */
+  removedAt: string | null;
+  /** true / false, or null while not decided yet. */
+  met: boolean | null;
+};
+
+/** "6h 12m", "2d 3h", "45m" (at least 1m). */
+export function formatDuration(ms: number): string {
+  const minutes = Math.max(1, Math.round(Math.abs(ms) / 60_000));
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const rest = minutes % 60;
+  if (days > 0) return hours ? `${days}d ${hours}h` : `${days}d`;
+  if (hours > 0) return rest ? `${hours}h ${rest}m` : `${hours}h`;
+  return `${rest}m`;
+}
+
+/**
+ * The SLA panel's headline during execution (boards Offboarding in execution
+ * and SLA missed or met). The database decides met / missed; the clock only
+ * words the time left.
+ */
+export function slaHeadline(
+  dueAt: string,
+  sla: SlaResult,
+  now: number,
+): { kind: "due" | "overdue" | "met" | "missed"; text: string } {
+  const due = new Date(dueAt).getTime();
+  if (sla.met === true && sla.removedAt) {
+    return { kind: "met", text: "Removed in time" };
+  }
+  if (sla.met === false && sla.removedAt) {
+    return {
+      kind: "missed",
+      text: `Late by ${formatDuration(new Date(sla.removedAt).getTime() - due)}`,
+    };
+  }
+  if (now > due) {
+    return { kind: "overdue", text: `Overdue by ${formatDuration(now - due)}` };
+  }
+  return { kind: "due", text: `Due in ${formatDuration(due - now)}` };
+}
+
+/**
+ * Review & sign: private.offboarding_blockers() adds its lines to the
+ * "missing" list. They are shown as their own checks, each with the section
+ * that fixes it; the rest stay "Required fields empty". Keep the prefixes in
+ * step with the database function (supabase/migrations/…_offboarding_work.sql).
+ */
+const BLOCKER_SECTIONS: [prefix: string, section: number][] = [
+  ["Access removal SLA", 8],
+  ["Reason the access removal SLA was missed", 8],
+  ["At least one application or access to remove", 5],
+  ["Removal method", 5],
+  ["Applications removed", 5],
+  ["Equipment received or marked not returned", 6],
+  ["Access disabled or removed", 7],
+  ["Data & mailbox go to", 7],
+  ["Mailbox:", 7],
+];
+
+export function splitBlockers(missing: string[]): {
+  fields: string[];
+  blockers: { label: string; section: number }[];
+} {
+  const fields: string[] = [];
+  const blockers: { label: string; section: number }[] = [];
+  for (const label of missing) {
+    const hit = BLOCKER_SECTIONS.find(([prefix]) => label.startsWith(prefix));
+    if (hit) blockers.push({ label, section: hit[1] });
+    else fields.push(label);
+  }
+  return { fields, blockers };
+}

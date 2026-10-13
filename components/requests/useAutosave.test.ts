@@ -26,6 +26,7 @@ const values: DraftFormValues = {
   cutoff_date: "",
   cutoff_time: "",
   handover_to: "",
+  sla_missed_reason: "",
 };
 
 const setup = () =>
