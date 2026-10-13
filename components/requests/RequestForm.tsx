@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { Fragment, useState, type FormEvent } from "react";
 import {
   Button,
   ChevronRightIcon,
@@ -28,6 +28,12 @@ import { AccessSection } from "./AccessSection";
 import { EquipmentSection } from "./EquipmentSection";
 import { ExecutionSection } from "./ExecutionSection";
 import { FieldRenderer } from "./FieldRenderer";
+import {
+  HandoverSection,
+  PrefillBanner,
+  RemovalSections,
+  SlaSection,
+} from "./OffboardingSections";
 import { PhysicalSection } from "./PhysicalSection";
 import { ProvisioningSection } from "./ProvisioningSection";
 import { ReturnedCard, SectionFlag, sectionFrame } from "./ReturnedCard";
@@ -100,6 +106,7 @@ export function RequestForm({
   const conflict = status.kind === "conflict";
   const flag = (number: number) => flagLabel(form.returned, number);
   const disabled = !form.editable || conflict;
+  const off = form.offboarding;
 
   const toggle = (number: number, open?: boolean) =>
     setOpenSections((current) =>
@@ -156,6 +163,30 @@ export function RequestForm({
 
   function navItem(section: (typeof SECTIONS)[number]): SectionNavItem {
     const locked = lockedNote(section.number, values.type, started);
+    if (off && [5, 6, 7, 8].includes(section.number)) {
+      if (section.number === 8) {
+        const set =
+          values.sla_timeline && values.last_working_day && values.cutoff_date;
+        return {
+          ...section,
+          state: set ? "complete" : "todo",
+          note: set ? "Set" : "To fill",
+        };
+      }
+      const count = {
+        5: off.removals.apps.length,
+        6: off.removals.equipment.length,
+        7: off.removals.access.length,
+      }[section.number as 5 | 6 | 7];
+      const verb = { 5: "to remove", 6: "to return", 7: "to disable" }[
+        section.number as 5 | 6 | 7
+      ];
+      return {
+        ...section,
+        state: count > 0 ? "complete" : "empty",
+        note: `${count} ${verb}`,
+      };
+    }
     if (section.number === 9 && !locked) {
       const done = doneCount(form.checklist, checks);
       return {
@@ -271,7 +302,7 @@ export function RequestForm({
               {statusText(status, form.createdLabel)}
             </p>
           </div>
-          {typeField && (
+          {typeField && (form.choices.type ?? []).length > 1 && (
             <fieldset
               disabled={disabled}
               className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0"
@@ -327,8 +358,34 @@ export function RequestForm({
           </InlineError>
         )}
 
+        {off && (
+          <>
+            <SlaSection
+              values={values}
+              setValue={setValue}
+              errors={errors}
+              disabled={disabled}
+              fixed={form.state !== "draft"}
+              companyTimezone={off.companyTimezone}
+              dueAt={off.dueAt}
+              flag={flag(8)}
+            />
+            <PrefillBanner removals={off.removals} />
+          </>
+        )}
+
         {SECTIONS.map(({ number }) =>
-          number === 4 ? (
+          off && [4, 6, 7, 8].includes(number) ? null : off && number === 5 ? (
+            <Fragment key={number}>
+              <RemovalSections removals={off.removals} flag={flag} />
+              <HandoverSection
+                values={values}
+                setValue={setValue}
+                errors={errors}
+                disabled={disabled}
+              />
+            </Fragment>
+          ) : number === 4 ? (
             <ProvisioningSection key={number} />
           ) : number === 5 ? (
             <AccessSection
