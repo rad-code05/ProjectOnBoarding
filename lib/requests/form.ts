@@ -239,7 +239,16 @@ export async function loadRequestForm(
   };
   for (const field of fields.data ?? []) {
     if (field.field_type === "select" && Array.isArray(field.options)) {
-      choices[field.key] = field.options.map((option) => ({
+      // An offboarding is started from New request and stays one (the
+      // database refuses switching a draft to or from it).
+      const options =
+        field.key === "type"
+          ? field.options.filter(
+              (option) =>
+                (option === "offboarding") === (request.type === "offboarding"),
+            )
+          : field.options;
+      choices[field.key] = options.map((option) => ({
         value: String(option),
         label:
           field.key === "type"
