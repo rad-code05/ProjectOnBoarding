@@ -3,13 +3,19 @@
 import { useId, useState } from "react";
 import { Button, Sheet, sheetPill } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import type { AccessChoice } from "@/lib/requests/access";
+import {
+  joinRoles,
+  splitRoles,
+  type AccessChoice,
+} from "@/lib/requests/access";
 
 export type DialogApp = {
   name: string;
   actions: string[];
   /** null = free text (an "Other" app has no catalog options). */
   permissions: string[] | null;
+  /** Several permissions at once (Google Cloud roles): checkboxes. */
+  multiple?: boolean;
 };
 
 const fieldClass =
@@ -50,6 +56,14 @@ export function AppDialog({
   );
   const [permission, setPermission] = useState(choice?.permission ?? "");
   const [notes, setNotes] = useState(choice?.notes ?? "");
+  const roles = splitRoles(permission);
+  const toggleRole = (option: string, on: boolean) =>
+    setPermission(
+      joinRoles(
+        on ? [...roles, option] : roles.filter((role) => role !== option),
+        app.permissions ?? [],
+      ) ?? "",
+    );
   const complete = Boolean(action && name.trim());
 
   const done = () => {
@@ -115,7 +129,42 @@ export function AppDialog({
         </div>
       </fieldset>
 
-      {app.permissions ? (
+      {app.permissions && app.multiple ? (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="pb-2 text-xs font-semibold">
+            {permissionLabel === "Permission" ? "Roles" : permissionLabel}{" "}
+            <span className="font-normal text-graphite">
+              (one or more · {roles.length} chosen)
+            </span>
+          </legend>
+          <div className="flex flex-col gap-1.5">
+            {app.permissions.map((option) => {
+              const on = roles.includes(option);
+              return (
+                <label
+                  key={option}
+                  className={cn(
+                    "flex min-h-11 items-center gap-3 rounded-field px-3 text-sm",
+                    on
+                      ? "border-2 border-ink font-bold"
+                      : "border border-field-border font-medium",
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={on}
+                    onChange={(event) =>
+                      toggleRole(option, event.target.checked)
+                    }
+                    className="size-5 shrink-0 accent-ink"
+                  />
+                  {option}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+      ) : app.permissions ? (
         <fieldset className="flex flex-col gap-2">
           <legend className="pb-2 text-xs font-semibold">
             {permissionLabel}

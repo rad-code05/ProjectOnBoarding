@@ -175,6 +175,7 @@ export type Database = {
           active: boolean;
           category_id: number;
           id: number;
+          multi_permission: boolean;
           name: string;
           permissions: string[];
           sort_order: number;
@@ -184,6 +185,7 @@ export type Database = {
           active?: boolean;
           category_id: number;
           id?: never;
+          multi_permission?: boolean;
           name: string;
           permissions: string[];
           sort_order?: number;
@@ -193,6 +195,7 @@ export type Database = {
           active?: boolean;
           category_id?: number;
           id?: never;
+          multi_permission?: boolean;
           name?: string;
           permissions?: string[];
           sort_order?: number;
@@ -1263,6 +1266,7 @@ export type Database = {
           p_actions: string[];
           p_category_id: number;
           p_id: number;
+          p_multi_permission?: boolean;
           p_name: string;
           p_permissions: string[];
         };

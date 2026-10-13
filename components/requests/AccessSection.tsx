@@ -21,6 +21,7 @@ import {
 import { cn } from "@/lib/cn";
 import {
   choiceLabel,
+  rolesLabel,
   filterCatalog,
   type AccessChoice,
   type AccessChoices,
@@ -333,24 +334,44 @@ export function AccessSection({
                           <option key={action}>{action}</option>
                         ))}
                       </select>
-                      <select
-                        aria-label={`${app.name} permission`}
-                        disabled={disabled || !choice}
-                        value={choice?.permission ?? ""}
-                        onChange={(event) =>
-                          choice &&
-                          apply(app.id, {
-                            ...choice,
-                            permission: event.target.value || null,
-                          })
-                        }
-                        className={cn(selectClass, "w-24")}
-                      >
-                        <option value="">—</option>
-                        {app.permissions.map((permission) => (
-                          <option key={permission}>{permission}</option>
-                        ))}
-                      </select>
+                      {app.multiple ? (
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          aria-haspopup="dialog"
+                          aria-label={`${app.name} roles: ${choice?.permission ?? "none"}. Change`}
+                          title={choice?.permission ?? undefined}
+                          onClick={() =>
+                            setEditing({
+                              kind: "catalog",
+                              app,
+                              category: category.name,
+                            })
+                          }
+                          className={cn(selectClass, "w-24 truncate text-left")}
+                        >
+                          {rolesLabel(choice?.permission)}
+                        </button>
+                      ) : (
+                        <select
+                          aria-label={`${app.name} permission`}
+                          disabled={disabled || !choice}
+                          value={choice?.permission ?? ""}
+                          onChange={(event) =>
+                            choice &&
+                            apply(app.id, {
+                              ...choice,
+                              permission: event.target.value || null,
+                            })
+                          }
+                          className={cn(selectClass, "w-24")}
+                        >
+                          <option value="">—</option>
+                          {app.permissions.map((permission) => (
+                            <option key={permission}>{permission}</option>
+                          ))}
+                        </select>
+                      )}
                     </div>
                   </li>
                 );

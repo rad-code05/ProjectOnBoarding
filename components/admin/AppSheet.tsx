@@ -45,6 +45,7 @@ export function AppSheet({
   const [permissions, setPermissions] = useState<string[]>(
     app?.permissions ?? [],
   );
+  const [multiple, setMultiple] = useState(app?.multiple ?? false);
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -69,6 +70,7 @@ export function AppSheet({
         name,
         actions,
         permissions: withDraft(permissions, draft),
+        multiple,
       }),
     );
   const setActive = (active: boolean) =>
@@ -156,6 +158,24 @@ export function AppSheet({
         draft={draft}
         onDraftChange={setDraft}
       />
+
+      <label className="flex items-start gap-3 rounded-xl border border-field-border p-3.5">
+        <input
+          type="checkbox"
+          checked={multiple}
+          onChange={(e) => setMultiple(e.target.checked)}
+          className="mt-0.5 size-5.5 shrink-0 accent-ink"
+        />
+        <span className="flex flex-col gap-0.5">
+          <span className="text-[15px] font-semibold">
+            A person can have several of these at once
+          </span>
+          <span className="text-xs leading-normal text-graphite">
+            For roles that add up, like Google Cloud. A request then shows
+            checkboxes instead of one choice.
+          </span>
+        </span>
+      </label>
 
       {app && (
         <div

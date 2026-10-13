@@ -23,7 +23,9 @@ export async function loadCatalogAdmin(): Promise<{
       .order("sort_order"),
     supabase
       .from("catalog_apps")
-      .select("id, name, category_id, actions, permissions, active")
+      .select(
+        "id, name, category_id, actions, permissions, multi_permission, active",
+      )
       .order("sort_order"),
     supabase
       .from("request_access_items")
@@ -49,6 +51,7 @@ export async function loadCatalogAdmin(): Promise<{
       categoryId: app.category_id,
       actions: app.actions,
       permissions: app.permissions,
+      multiple: app.multi_permission,
       active: app.active,
       uses: uses.get(app.id) ?? 0,
     })),

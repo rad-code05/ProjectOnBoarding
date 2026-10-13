@@ -162,7 +162,7 @@ export async function loadRequestForm(
     supabase
       .from("catalog_categories")
       .select(
-        "id, name, catalog_apps(id, name, actions, permissions, active, sort_order)",
+        "id, name, catalog_apps(id, name, actions, permissions, multi_permission, active, sort_order)",
       )
       .eq("active", true)
       .order("sort_order")
@@ -358,9 +358,10 @@ export async function loadRequestForm(
       name: category.name,
       apps: category.catalog_apps
         .filter((app) => app.active)
-        .map(({ id, name, actions, permissions }) => ({
+        .map(({ id, name, actions, permissions, multi_permission }) => ({
           id,
           name,
+          multiple: multi_permission,
           // Only the actions this type of request offers (2026-10-13).
           actions: allowedActions(
             request.type,

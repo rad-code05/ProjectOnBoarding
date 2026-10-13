@@ -74,6 +74,7 @@ export async function saveApp(input: {
   name: string;
   actions: string[];
   permissions: string[];
+  multiple: boolean;
 }): Promise<AdminResult> {
   await requireRole("admin");
   const parsed = z
@@ -83,6 +84,7 @@ export async function saveApp(input: {
       name: shortText,
       actions: z.array(shortText).max(10),
       permissions: z.array(shortText).max(20),
+      multiple: z.boolean(),
     })
     .safeParse(input);
   if (!parsed.success) return { ok: false, message: "Check the fields." };
@@ -94,6 +96,7 @@ export async function saveApp(input: {
       p_name: parsed.data.name,
       p_actions: parsed.data.actions,
       p_permissions: parsed.data.permissions,
+      p_multi_permission: parsed.data.multiple,
     }),
   );
 }
