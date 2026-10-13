@@ -13,6 +13,8 @@ export type RequestRow = {
   work_email: string | null;
   country: string | null;
   effective_date: string | null;
+  /** Offboarding deadline (F09). */
+  sla_due_at: string | null;
   updated_at: string;
   assignee: { first_name: string | null; last_name: string | null } | null;
 };
@@ -26,7 +28,7 @@ export async function listRequests(filters: RequestFilters) {
   let query = supabase
     .from("requests")
     .select(
-      "id, ticket_id, type, state, first_name, last_name, work_email, country, effective_date, updated_at, assignee:app_users!requests_assignee_id_fkey(first_name, last_name)",
+      "id, ticket_id, type, state, first_name, last_name, work_email, country, effective_date, sla_due_at, updated_at, assignee:app_users!requests_assignee_id_fkey(first_name, last_name)",
       { count: "exact" },
     )
     .order("updated_at", { ascending: false })

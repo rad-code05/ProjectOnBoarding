@@ -440,6 +440,7 @@ export async function loadRequestForm(
             removals: {
               apps: (items.data ?? []).map((item) => ({
                 id: item.id,
+                appId: item.app_id,
                 name: item.app_name,
                 category: item.category_name,
                 had: item.permission,
@@ -457,6 +458,7 @@ export async function loadRequestForm(
               })),
               access: (physical.data ?? []).map((row) => ({
                 id: row.id,
+                typeId: row.type_id,
                 name: row.type_name,
                 action: row.action,
                 scope: row.scope,

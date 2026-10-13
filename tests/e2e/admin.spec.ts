@@ -471,6 +471,22 @@ test("New request → Offboarding: Who is leaving? and an empty offboarding draf
   await page.getByRole("radio", { name: /No mailbox to convert/ }).check();
   await expect(page.getByText(/^Recorded \d/)).toBeVisible();
 
+  // F09d-4: add an app to remove, then take it off again.
+  const apps = page.getByRole("region", { name: "Applications to remove" });
+  await apps.getByRole("button", { name: "Add an app to remove" }).click();
+  const add = page.getByRole("dialog", { name: "Add an app to remove" });
+  await add
+    .getByLabel("Application")
+    .selectOption({ label: "Slack · Core business" });
+  await add.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(
+    apps.getByRole("group", { name: "How Slack is removed" }),
+  ).toBeVisible();
+  await apps.getByRole("button", { name: "Take off Slack" }).click();
+  await expect(
+    apps.getByRole("group", { name: "How Slack is removed" }),
+  ).toHaveCount(0);
+
   // F09d-2: the SLA panel counts down (this cut-off is in the past) and
   // Review & sign lists the offboarding's own blockers.
   await expect(

@@ -31,6 +31,7 @@ import {
   type Removals,
   type ReturnStatus,
 } from "@/lib/requests/offboarding";
+import { AddRemoval, TakeOff, type RemovalEdit } from "./RemovalEditor";
 import { SectionFlag, sectionFrame } from "./ReturnedCard";
 
 /**
@@ -72,6 +73,7 @@ function WorkSection({
   flag,
   error,
   hint,
+  footer,
   children,
 }: {
   number: number;
@@ -80,6 +82,8 @@ function WorkSection({
   flag?: string | null;
   error: string | null;
   hint?: string;
+  /** "Add …" while the offboarding can be changed (F09d-4). */
+  footer?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -120,6 +124,7 @@ function WorkSection({
         </div>
       )}
       <ul className="border-t border-line-subtle">{children}</ul>
+      {footer}
     </section>
   );
 }
@@ -181,12 +186,16 @@ export function WorkRemovalSections({
   editable,
   timeZone,
   flag,
+  edit,
 }: {
   removals: Removals;
   editable: boolean;
   timeZone: string;
   flag: (section: number) => string | null;
+  /** Add / take off rows (F09d-4); only while editable. */
+  edit?: RemovalEdit;
 }) {
+  const changes = editable ? edit : undefined;
   const apps = useWork();
   const access = useWork();
   // What the screen shows: the server's rows plus changes still being saved.
@@ -243,6 +252,11 @@ export function WorkRemovalSections({
           editable
             ? "Choose how it was removed — Delete, Suspend or Disable — then tick it. The time is recorded by the system."
             : undefined
+        }
+        footer={
+          changes && (
+            <AddRemoval edit={changes} kind="app" removals={removals} />
+          )
         }
       >
         {shown.apps.map((app) => (
@@ -307,6 +321,11 @@ export function WorkRemovalSections({
                 ))}
               </div>
             </fieldset>
+            {changes && !app.doneAt && (
+              <div className="-mt-1 ml-9 flex md:ml-7.5">
+                <TakeOff edit={changes} kind="app" row={app} />
+              </div>
+            )}
           </li>
         ))}
       </WorkSection>
@@ -317,6 +336,11 @@ export function WorkRemovalSections({
         status={`${kitSettled} of ${removals.equipment.length}`}
         flag={flag(6)}
         error={null}
+        footer={
+          changes && (
+            <AddRemoval edit={changes} kind="equipment" removals={removals} />
+          )
+        }
       >
         {removals.equipment.map((item) => (
           <li
@@ -361,6 +385,11 @@ export function WorkRemovalSections({
                 />
               )}
             </button>
+            {changes && item.status === "pending" && (
+              <div className="-mt-2 flex justify-end px-4 md:px-5">
+                <TakeOff edit={changes} kind="equipment" row={item} />
+              </div>
+            )}
           </li>
         ))}
       </WorkSection>
@@ -371,6 +400,11 @@ export function WorkRemovalSections({
         status={`${accessDone} of ${shown.access.length}`}
         flag={flag(7)}
         error={access.error}
+        footer={
+          changes && (
+            <AddRemoval edit={changes} kind="access" removals={removals} />
+          )
+        }
       >
         {shown.access.map((row) => (
           <li
@@ -398,6 +432,11 @@ export function WorkRemovalSections({
                 )
               }
             />
+            {changes && !row.doneAt && (
+              <div className="-mt-1 ml-9 flex md:ml-7.5">
+                <TakeOff edit={changes} kind="access" row={row} />
+              </div>
+            )}
           </li>
         ))}
       </WorkSection>

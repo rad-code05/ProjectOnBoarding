@@ -68,6 +68,8 @@ export const MAILBOX_LABELS: Record<MailboxHandling, string> = {
 export type Removals = {
   apps: {
     id: string;
+    /** Catalog app, or null for an "Other" app typed on the request. */
+    appId: number | null;
     name: string;
     category: string;
     had: string | null;
@@ -86,6 +88,7 @@ export type Removals = {
   }[];
   access: {
     id: string;
+    typeId: number;
     name: string;
     action: string;
     scope: string | null;
@@ -192,4 +195,21 @@ export function splitBlockers(missing: string[]): {
     else fields.push(label);
   }
   return { fields, blockers };
+}
+
+/**
+ * The SLA badge in the Requests list (F09d-4): an offboarding being worked on
+ * (in execution or returned) with a deadline. The list doesn't know the
+ * ticks, so it only says whether the deadline is ahead or has passed.
+ */
+export function slaBadge(
+  row: { type: string; state: string; sla_due_at: string | null },
+  now: number,
+): { text: string; late: boolean } | null {
+  if (row.type !== "offboarding" || !row.sla_due_at) return null;
+  if (row.state !== "in_execution" && row.state !== "returned") return null;
+  const left = new Date(row.sla_due_at).getTime() - now;
+  return left > 0
+    ? { text: `SLA due in ${formatDuration(left)}`, late: false }
+    : { text: "SLA deadline passed", late: true };
 }

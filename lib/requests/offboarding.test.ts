@@ -4,6 +4,7 @@ import {
   formatDuration,
   removalsSummary,
   slaDeadline,
+  slaBadge,
   slaHeadline,
   splitBlockers,
 } from "./offboarding";
@@ -67,6 +68,7 @@ test("removalsSummary", () => {
       apps: [
         {
           id: "a",
+          appId: 1,
           name: "Slack",
           category: "Core",
           had: "Member",
@@ -75,6 +77,7 @@ test("removalsSummary", () => {
         },
         {
           id: "b",
+          appId: 1,
           name: "Figma",
           category: "Core",
           had: null,
@@ -153,4 +156,26 @@ test("splitBlockers: the database's offboarding lines get their own checks and s
   ]);
   expect(fields).toEqual(["Effective date"]);
   expect(blockers.map((b) => b.section)).toEqual([5, 5, 5, 7, 6, 7, 7, 8]);
+});
+
+test("slaBadge: only offboardings being worked on, with a deadline", () => {
+  const now = new Date("2026-10-01T08:00:00Z").getTime();
+  const row = (state: string, due: string | null, type = "offboarding") => ({
+    type,
+    state,
+    sla_due_at: due,
+  });
+  expect(slaBadge(row("in_execution", "2026-10-01T14:00:00Z"), now)).toEqual({
+    text: "SLA due in 6h",
+    late: false,
+  });
+  expect(slaBadge(row("returned", "2026-09-30T14:00:00Z"), now)).toEqual({
+    text: "SLA deadline passed",
+    late: true,
+  });
+  expect(slaBadge(row("draft", "2026-10-01T14:00:00Z"), now)).toBeNull();
+  expect(slaBadge(row("closed", "2026-10-01T14:00:00Z"), now)).toBeNull();
+  expect(
+    slaBadge(row("in_execution", "2026-10-01T14:00:00Z", "onboarding"), now),
+  ).toBeNull();
 });

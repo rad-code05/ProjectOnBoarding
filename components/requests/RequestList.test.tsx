@@ -13,6 +13,7 @@ const row = (overrides: Partial<RequestRow>): RequestRow => ({
   work_email: "anna.keller@example.test",
   country: "CH",
   effective_date: "2026-10-14",
+  sla_due_at: null,
   updated_at: "2026-10-07T11:55:00Z",
   assignee: { first_name: "Raju", last_name: "Bholani" },
   ...overrides,
@@ -21,6 +22,31 @@ const row = (overrides: Partial<RequestRow>): RequestRow => ({
 const now = new Date("2026-10-07T12:00:00Z");
 
 describe("RequestList", () => {
+  test("an offboarding in execution shows its SLA badge (F09d-4)", () => {
+    render(
+      <RequestList
+        rows={[
+          row({
+            type: "offboarding",
+            state: "in_execution",
+            sla_due_at: "2026-10-07T18:12:00Z",
+          }),
+          row({
+            id: "22222222-2222-2222-2222-222222222222",
+            type: "offboarding",
+            state: "returned",
+            sla_due_at: "2026-10-07T10:00:00Z",
+          }),
+        ]}
+        now={now}
+      />,
+    );
+    expect(screen.getAllByText("SLA due in 6h 12m").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("SLA deadline passed").length).toBeGreaterThan(
+      0,
+    );
+  });
+
   test("shows each request as a card (phone) and a table row (desktop)", () => {
     render(<RequestList rows={[row({})]} now={now} />);
     const card = document.querySelector("ul a")!;

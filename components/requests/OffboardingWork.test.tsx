@@ -32,6 +32,7 @@ const removals: Removals = {
   apps: [
     {
       id: "a1",
+      appId: 1,
       name: "Slack",
       category: "Core",
       had: "Member",
@@ -40,6 +41,7 @@ const removals: Removals = {
     },
     {
       id: "a2",
+      appId: 1,
       name: "Figma",
       category: "Core",
       had: "Editor",
@@ -61,6 +63,7 @@ const removals: Removals = {
   access: [
     {
       id: "p1",
+      typeId: 1,
       name: "Office access",
       action: "Disable",
       scope: "Badge",
