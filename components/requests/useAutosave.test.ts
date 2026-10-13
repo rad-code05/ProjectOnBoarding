@@ -127,3 +127,45 @@ describe("useAutosave", () => {
     );
   });
 });
+
+describe("the Save button (saveNow)", () => {
+  test("always confirms — even when everything was already saved", async () => {
+    const { result } = setup();
+    await act(async () => {
+      await result.current.saveNow();
+    });
+    expect(saveDraft).not.toHaveBeenCalled();
+    expect(result.current.status).toMatchObject({
+      kind: "saved",
+      confirmed: true,
+    });
+  });
+
+  test("saves what's waiting, then confirms", async () => {
+    saveDraft.mockResolvedValue(ok(2));
+    const { result } = setup();
+    act(() => result.current.setValue("first_name", "Anna"));
+    await act(async () => {
+      await result.current.saveNow();
+    });
+    expect(saveDraft).toHaveBeenCalledTimes(1);
+    expect(result.current.status).toMatchObject({
+      kind: "saved",
+      confirmed: true,
+    });
+  });
+
+  test("a refused save is not confirmed", async () => {
+    saveDraft.mockResolvedValue({
+      ok: false,
+      reason: "invalid",
+      fieldErrors: { work_email: "Enter a valid email address." },
+    });
+    const { result } = setup();
+    act(() => result.current.setValue("work_email", "nope"));
+    await act(async () => {
+      await result.current.saveNow();
+    });
+    expect(result.current.status).toEqual({ kind: "invalid" });
+  });
+});

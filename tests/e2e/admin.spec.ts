@@ -445,7 +445,9 @@ test("New request → Offboarding: Who is leaving? and an empty offboarding draf
   await expect(sla.getByRole("status")).toContainText("1 Oct 2026, 18:00");
   await page.getByLabel("Data & mailbox go to").fill("E2E Manager");
   await page.getByRole("button", { name: "Save draft" }).click();
-  await expect(page.getByRole("status").first()).toHaveText(/^Saved \d\d:\d\d/);
+  await expect(page.getByRole("status").first()).toHaveText(
+    /^(All changes saved|Saved) \d\d:\d\d/,
+  );
   await expect(
     page.getByRole("heading", { name: "Applications to remove" }),
   ).toBeVisible();
@@ -455,6 +457,11 @@ test("New request → Offboarding: Who is leaving? and an empty offboarding draf
   await expect(sla.getByLabel("Time", { exact: true })).toHaveValue("18:00");
   await expect(page.getByLabel("Data & mailbox go to")).toHaveValue(
     "E2E Manager",
+  );
+  // Save always confirms, even when everything was already saved.
+  await page.getByRole("button", { name: "Save draft" }).click();
+  await expect(page.getByRole("status").first()).toHaveText(
+    /^All changes saved \d\d:\d\d — you can leave and continue later$/,
   );
 
   // F09d: once execution starts, the SLA is fixed and the mailbox choice opens.
@@ -670,7 +677,9 @@ test("Raju reviews and signs a request; it awaits confirmation with his signatur
   await page.getByLabel("Requested by").fill("Rita Requestor");
   await page.getByLabel("Effective date").fill("2026-11-02");
   await page.getByRole("button", { name: "Save draft" }).click();
-  await expect(page.getByRole("status").first()).toHaveText(/^Saved/);
+  await expect(page.getByRole("status").first()).toHaveText(
+    /^(All changes saved|Saved) \d\d:\d\d/,
+  );
 
   await page.getByRole("button", { name: "Start execution" }).click();
   await page
