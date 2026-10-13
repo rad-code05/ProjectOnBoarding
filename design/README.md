@@ -42,7 +42,7 @@ All planned screens now have a first design. Nothing is built yet.
 | Reports | Draft, awaiting review |
 | Sign-in: new-device code, reset password | Draft, awaiting review |
 | My profile · Admin (4 screens) · Audit log | Draft, awaiting review |
-| Offboarding · Returned · Batch review (access modification described in spec) | Draft, awaiting review |
+| Offboarding · Returned · Batch review (access modification described in spec) | Offboarding built (F09, phone boards approved 2026-10-12) · Returned built (F07c) · Batch review: draft |
 | PDF document (2 pages) · System states · Email notifications (phase 2) | Draft, awaiting review |
 | Components sheet · shared components (TopBar, BrandPanel, AdminNav) | Draft |
 | Phone (D22): app shell (menu closed/open) · requests list (+ empty) · request form sections 1–2 (+ changed elsewhere) | Approved (2026-10-07) |
