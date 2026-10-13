@@ -235,6 +235,7 @@ function ListSection({
   empty,
   flag,
   footer,
+  hint,
   children,
 }: {
   number: number;
@@ -244,6 +245,8 @@ function ListSection({
   flag?: string | null;
   /** "Add …" while the draft can be changed. */
   footer?: ReactNode;
+  /** What happens to these rows after Start execution. */
+  hint?: string;
   children: ReactNode;
 }) {
   return (
@@ -270,6 +273,11 @@ function ListSection({
           {count}
         </span>
       </div>
+      {hint && (
+        <p className="px-4 text-xs leading-normal text-graphite md:px-5">
+          {hint}
+        </p>
+      )}
       {count === 0 ? (
         <p className="px-4 pb-2 text-sm text-graphite md:px-5">{empty}</p>
       ) : (
@@ -302,7 +310,8 @@ function Row({
           </span>
         )}
       </span>
-      <span className="shrink-0 rounded-pill bg-sand px-2.5 py-0.75 text-xs font-bold">
+      {/* A label, not a button: the work itself happens after Start execution. */}
+      <span className="shrink-0 text-xs whitespace-nowrap text-graphite">
         {tag}
       </span>
       {action}
@@ -330,6 +339,7 @@ export function RemovalSections({
         title="Applications to remove"
         count={removals.apps.length}
         empty="No applications on record."
+        hint="After Start execution you choose Delete, Suspend or Disable for each app and tick it when it's done. Take off anything the person doesn't have."
         flag={flag(5)}
         footer={
           edit && <AddRemoval edit={edit} kind="app" removals={removals} />
@@ -342,7 +352,7 @@ export function RemovalSections({
             detail={[app.category, app.had ? `had ${app.had}` : null]
               .filter(Boolean)
               .join(" · ")}
-            tag="Remove"
+            tag="will be removed"
             action={edit && <TakeOff edit={edit} kind="app" row={app} />}
           />
         ))}
@@ -352,6 +362,7 @@ export function RemovalSections({
         title="Equipment to return"
         count={removals.equipment.length}
         empty="No equipment on record."
+        hint="After Start execution you mark each device Received or Not returned."
         flag={flag(6)}
         footer={
           edit && (
@@ -369,7 +380,7 @@ export function RemovalSections({
             ]
               .filter(Boolean)
               .join(" · ")}
-            tag="Return"
+            tag="to return"
             action={edit && <TakeOff edit={edit} kind="equipment" row={item} />}
           />
         ))}
@@ -379,6 +390,7 @@ export function RemovalSections({
         title="Physical & logical access"
         count={removals.access.length}
         empty="No access on record."
+        hint="After Start execution you tick each one when it's disabled or removed."
         flag={flag(7)}
         footer={
           edit && <AddRemoval edit={edit} kind="access" removals={removals} />
@@ -389,7 +401,7 @@ export function RemovalSections({
             key={row.id}
             name={row.name}
             detail={row.scope ?? ""}
-            tag={row.action}
+            tag={`to ${row.action.toLowerCase()}`}
             action={edit && <TakeOff edit={edit} kind="access" row={row} />}
           />
         ))}
