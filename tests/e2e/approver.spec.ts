@@ -207,3 +207,130 @@ test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirm
       .digest("hex"),
   ).toBe(sha256);
 });
+
+test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises confirms, PDF", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(360_000); // two requests, four signatures
+
+  const rajuContext = await browser.newContext({
+    storageState: authFile("admin"),
+  });
+  const raju = await rajuContext.newPage();
+  await setupClerkTestingToken({ page: raju });
+  await saveInitials(raju);
+  await saveInitials(page);
+
+  // 1. Raju onboards Ola with Slack (Member); Moises closes it.
+  const onboardingTicket = await createExecutedRequest(raju, "Ola");
+  const email = await raju.getByLabel("Work email").inputValue();
+  await raju.getByLabel("Slack action").selectOption("Grant");
+  await raju.getByLabel("Slack permission").selectOption("Member");
+  // "N of M set" replaces "Saving…" once the choice is stored.
+  await expect(
+    raju
+      .getByRole("region", { name: "Application access" })
+      .getByRole("status")
+      .first(),
+  ).toHaveText(/^1 of \d+ set$/);
+  await openApp(raju, raju.url());
+  await expect(raju.getByLabel("Slack permission")).toHaveValue("Member");
+  await reviewAndSign(raju);
+
+  const confirmOnApprovals = async (ticketId: string) => {
+    await openApp(page, "/approvals");
+    await page
+      .getByRole("listitem")
+      .filter({ hasText: ticketId })
+      .getByRole("link", { name: "Review & confirm" })
+      .click();
+    await page.getByRole("button", { name: "Confirm & sign" }).click();
+    return page.getByRole("dialog", { name: "Confirm & sign" });
+  };
+  let confirm = await confirmOnApprovals(onboardingTicket);
+  await confirm.getByLabel(/I have reviewed this record/).check();
+  await confirm.getByRole("button", { name: "Confirm, sign & close" }).click();
+  await expect(page.getByRole("status")).toHaveText(
+    "Confirmed, signed and closed",
+  );
+
+  // 2. Who is leaving? Ola, found by email; Slack is pre-filled.
+  await openApp(raju, "/requests");
+  await raju.getByRole("button", { name: "New request" }).first().click();
+  await raju
+    .getByRole("dialog", { name: "New onboarding" })
+    .getByText("Offboarding", { exact: true })
+    .click();
+  const leaving = raju.getByRole("dialog", { name: "Who is leaving?" });
+  await leaving.getByLabel("Find the person").fill(email);
+  await leaving.getByRole("radio", { name: /Ola Loop/ }).check();
+  await leaving.getByRole("button", { name: "Offboard Ola" }).click();
+  await expect(raju).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  const offboardingUrl = raju.url();
+  const offboardingTicket = await raju
+    .getByText(/^UAM-\d{4}-\d{6}$/)
+    .first()
+    .innerText();
+  const apps = raju.getByRole("region", { name: "Applications to remove" });
+  await expect(apps).toContainText("Slack");
+  await expect(apps).toContainText("had Member");
+
+  // 3. SLA (within 48h of today 00:00 Dubai → met), handover, start.
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Dubai",
+  }).format(new Date());
+  const sla = raju.getByRole("region", { name: "Access removal SLA" });
+  await sla.getByText("Within 48h", { exact: true }).click();
+  await sla.getByLabel("Last working day").fill(today);
+  await sla.getByLabel("Access cut-off date").fill(today);
+  await sla.getByLabel("Time", { exact: true }).fill("00:00");
+  await raju.getByLabel("Effective date").fill(today);
+  await raju.getByLabel("Data & mailbox go to").fill("Mara Manager");
+  await raju.getByRole("button", { name: "Save draft" }).click();
+  await expect(raju.getByRole("status").first()).toHaveText(/^Saved/);
+  await raju.getByRole("button", { name: "Start execution" }).click();
+  await raju
+    .getByRole("dialog", { name: "Start execution?" })
+    .getByRole("button", { name: "Start execution" })
+    .click();
+
+  // 4. Delete Slack and tick it; mailbox; section 9.
+  const slack = apps.getByRole("group", { name: "How Slack is removed" });
+  await slack.getByText("Delete", { exact: true }).click();
+  await expect(apps.getByRole("checkbox", { name: /Slack/ })).toBeEnabled();
+  await apps.getByRole("checkbox", { name: /Slack/ }).check();
+  await expect(apps.getByText(/^Removed \d\d:\d\d$/)).toBeVisible();
+  await raju.getByRole("radio", { name: /No mailbox to convert/ }).check();
+  await expect(raju.getByText(/^Recorded \d/)).toBeVisible();
+  const section9 = raju.getByRole("region", {
+    name: "IT execution confirmation",
+  });
+  for (const box of await section9.getByRole("checkbox").all()) {
+    await box.check();
+    await expect(section9.getByRole("status")).not.toHaveText("Saving…");
+  }
+  await openApp(raju, offboardingUrl);
+  await expect(
+    raju.getByRole("heading", { name: "Removed in time" }),
+  ).toBeVisible();
+  await reviewAndSign(raju);
+  await rajuContext.close();
+
+  // 5. Moises sees the SLA result, confirms, lands on the offboarding record.
+  confirm = await confirmOnApprovals(offboardingTicket);
+  await expect(confirm.getByText("Met · 1 of 1 removed")).toBeVisible();
+  await confirm.getByLabel(/I have reviewed this record/).check();
+  await confirm.getByRole("button", { name: "Confirm, sign & close" }).click();
+  const offboardingId = offboardingUrl.split("/").pop();
+  await expect(page).toHaveURL(`/records/${offboardingId}?closed=1`);
+  await expect(
+    page.getByRole("region", { name: "Access record" }),
+  ).toContainText("ola.loop-offboarding.pdf");
+  const pdf = await page.request.get(`/records/${offboardingId}/pdf`);
+  expect(pdf.status()).toBe(200);
+  expect(pdf.headers()["content-disposition"]).toBe(
+    'attachment; filename="ola.loop-offboarding.pdf"',
+  );
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
+});
