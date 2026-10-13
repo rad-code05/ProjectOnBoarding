@@ -653,6 +653,7 @@ export type Database = {
           done_at: string | null;
           done_by: string | null;
           id: string;
+          inventory_id: string | null;
           notes: string | null;
           permission: string | null;
           removal_method: string | null;
@@ -668,6 +669,7 @@ export type Database = {
           done_at?: string | null;
           done_by?: string | null;
           id?: string;
+          inventory_id?: string | null;
           notes?: string | null;
           permission?: string | null;
           removal_method?: string | null;
@@ -683,6 +685,7 @@ export type Database = {
           done_at?: string | null;
           done_by?: string | null;
           id?: string;
+          inventory_id?: string | null;
           notes?: string | null;
           permission?: string | null;
           removal_method?: string | null;
@@ -705,6 +708,13 @@ export type Database = {
             referencedColumns: ["clerk_user_id"];
           },
           {
+            foreignKeyName: "request_access_items_inventory_id_fkey";
+            columns: ["inventory_id"];
+            isOneToOne: false;
+            referencedRelation: "employee_access_inventory";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "request_access_items_request_id_fkey";
             columns: ["request_id"];
             isOneToOne: false;
@@ -720,6 +730,7 @@ export type Database = {
           created_at: string;
           description: string | null;
           id: string;
+          inventory_id: string | null;
           notes: string | null;
           request_id: string;
           return_reason: string | null;
@@ -736,6 +747,7 @@ export type Database = {
           created_at?: string;
           description?: string | null;
           id?: string;
+          inventory_id?: string | null;
           notes?: string | null;
           request_id: string;
           return_reason?: string | null;
@@ -752,6 +764,7 @@ export type Database = {
           created_at?: string;
           description?: string | null;
           id?: string;
+          inventory_id?: string | null;
           notes?: string | null;
           request_id?: string;
           return_reason?: string | null;
@@ -763,6 +776,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "request_equipment_items_inventory_id_fkey";
+            columns: ["inventory_id"];
+            isOneToOne: false;
+            referencedRelation: "employee_access_inventory";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "request_equipment_items_request_id_fkey";
             columns: ["request_id"];
@@ -793,6 +813,7 @@ export type Database = {
           done_at: string | null;
           done_by: string | null;
           id: string;
+          inventory_id: string | null;
           notes: string | null;
           request_id: string;
           scope: string | null;
@@ -806,6 +827,7 @@ export type Database = {
           done_at?: string | null;
           done_by?: string | null;
           id?: string;
+          inventory_id?: string | null;
           notes?: string | null;
           request_id: string;
           scope?: string | null;
@@ -819,6 +841,7 @@ export type Database = {
           done_at?: string | null;
           done_by?: string | null;
           id?: string;
+          inventory_id?: string | null;
           notes?: string | null;
           request_id?: string;
           scope?: string | null;
@@ -833,6 +856,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "app_users";
             referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "request_physical_access_items_inventory_id_fkey";
+            columns: ["inventory_id"];
+            isOneToOne: false;
+            referencedRelation: "employee_access_inventory";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "request_physical_access_items_request_id_fkey";
@@ -1304,6 +1334,10 @@ export type Database = {
       approval_preview: { Args: { p_request_id: string }; Returns: Json };
       confirm_request: {
         Args: { p_request_id: string; p_reviewed: Json };
+        Returns: string;
+      };
+      create_access_modification: {
+        Args: { p_employee_id?: string };
         Returns: string;
       };
       create_offboarding: { Args: { p_employee_id?: string }; Returns: string };
