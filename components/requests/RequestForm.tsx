@@ -54,7 +54,22 @@ const SECTION_GRIDS: Record<number, string> = {
   2: "md:grid-cols-3",
 };
 
-function statusText(status: SaveStatus, created: string): string {
+/** Labels of the offboarding fields (they aren't form_fields). */
+const OFFBOARDING_LABELS: Record<string, string> = {
+  sla_timeline: "Timeline",
+  last_working_day: "Last working day",
+  cutoff_date: "Access cut-off date",
+  cutoff_time: "Cut-off time",
+  handover_to: "Data & mailbox go to",
+  sla_missed_reason: "Why was the SLA missed?",
+};
+
+function statusText(
+  status: SaveStatus,
+  created: string,
+  /** Fields that stop the save (a wrong email, date…). */
+  invalidFields: string[] = [],
+): string {
   switch (status.kind) {
     case "saving":
       return "Saving…";
@@ -63,7 +78,10 @@ function statusText(status: SaveStatus, created: string): string {
         ? `All changes saved ${status.at} — you can leave and continue later`
         : `Saved ${status.at} · created ${created}`;
     case "invalid":
-      return "Not saved — check the marked fields.";
+      // Name the field: one wrong value pauses the whole save (2026-10-13).
+      return invalidFields.length > 0
+        ? `Not saved — check ${invalidFields.join(", ")}.`
+        : "Not saved — check the marked fields.";
     case "error":
       return status.message;
     case "conflict":
@@ -340,7 +358,16 @@ export function RequestForm({
                   : "text-graphite",
               )}
             >
-              {statusText(status, form.createdLabel)}
+              {statusText(
+                status,
+                form.createdLabel,
+                Object.keys(errors).map(
+                  (key) =>
+                    form.fields.find((field) => field.key === key)?.label ??
+                    OFFBOARDING_LABELS[key] ??
+                    key,
+                ),
+              )}
             </p>
           </div>
           {typeField && (form.choices.type ?? []).length > 1 && (
