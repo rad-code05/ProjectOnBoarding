@@ -28,12 +28,19 @@ export function StartExecutionSheet({
   requestId,
   subtitle,
   onClose,
+  missing = [],
+  onFix,
 }: {
   requestId: string;
   subtitle: string;
   onClose: () => void;
+  /** Offboarding: section 8 fields still empty (execution can't start). */
+  missing?: string[];
+  /** Close and go to section 8. */
+  onFix?: () => void;
 }) {
   const { error, pending, run } = useStep(requestId, onClose);
+  const blocked = missing.length > 0;
   return (
     <Sheet eyebrow={subtitle} title="Start execution?" onClose={onClose}>
       <p className="text-[15px] leading-normal">
@@ -55,12 +62,32 @@ export function StartExecutionSheet({
         This step can&apos;t be undone — the start time stays on the record. If
         the request isn&apos;t needed any more, cancel it instead.
       </p>
+      {blocked && (
+        <div className="flex flex-col gap-2 rounded-field border-2 border-signal px-3 py-2.5">
+          <span className="text-sm font-semibold text-signal">
+            First complete section 8 · Access removal SLA: {missing.join(", ")}.
+          </span>
+          {onFix && (
+            <button
+              type="button"
+              onClick={onFix}
+              className="h-11 self-start text-sm font-semibold underline underline-offset-[3px] md:h-auto"
+            >
+              Go to section 8
+            </button>
+          )}
+        </div>
+      )}
       {error && <InlineError live>{error}</InlineError>}
       <div className="grid grid-cols-2 gap-2">
         <Button variant="secondary" onClick={onClose}>
           Not yet
         </Button>
-        <Button loading={pending} onClick={() => run("in_execution", null)}>
+        <Button
+          loading={pending}
+          disabled={blocked}
+          onClick={() => run("in_execution", null)}
+        >
           Start execution
         </Button>
       </div>
