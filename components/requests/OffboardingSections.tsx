@@ -12,6 +12,7 @@ import {
   type Removals,
   type SlaTimeline,
 } from "@/lib/requests/offboarding";
+import { AddRemoval, TakeOff, type RemovalEdit } from "./RemovalEditor";
 import { SectionFlag, sectionFrame } from "./ReturnedCard";
 
 type Props = {
@@ -233,6 +234,7 @@ function ListSection({
   count,
   empty,
   flag,
+  footer,
   children,
 }: {
   number: number;
@@ -240,6 +242,8 @@ function ListSection({
   count: number;
   empty: string;
   flag?: string | null;
+  /** "Add …" while the draft can be changed. */
+  footer?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -271,6 +275,7 @@ function ListSection({
       ) : (
         <ul className="border-t border-line-subtle">{children}</ul>
       )}
+      {footer}
     </section>
   );
 }
@@ -279,10 +284,13 @@ function Row({
   name,
   detail,
   tag,
+  action,
 }: {
   name: string;
   detail: string;
   tag: string;
+  /** "Take off" while the draft can be changed. */
+  action?: ReactNode;
 }) {
   return (
     <li className="flex min-h-14 items-center gap-3 border-b border-line-subtle px-4 py-2 last:border-b-0 md:min-h-11 md:px-5">
@@ -297,17 +305,23 @@ function Row({
       <span className="shrink-0 rounded-pill bg-sand px-2.5 py-0.75 text-xs font-bold">
         {tag}
       </span>
+      {action}
     </li>
   );
 }
 
-/** Sections 5–7 of an offboarding: what to remove, return and disable. */
+/**
+ * Sections 5–7 of an offboarding draft: what to remove, return and disable.
+ * With `edit`, rows can be added and taken off (F09d-4).
+ */
 export function RemovalSections({
   removals,
   flag,
+  edit,
 }: {
   removals: Removals;
   flag: (section: number) => string | null;
+  edit?: RemovalEdit;
 }) {
   return (
     <>
@@ -317,6 +331,9 @@ export function RemovalSections({
         count={removals.apps.length}
         empty="No applications on record."
         flag={flag(5)}
+        footer={
+          edit && <AddRemoval edit={edit} kind="app" removals={removals} />
+        }
       >
         {removals.apps.map((app) => (
           <Row
@@ -326,6 +343,7 @@ export function RemovalSections({
               .filter(Boolean)
               .join(" · ")}
             tag="Remove"
+            action={edit && <TakeOff edit={edit} kind="app" row={app} />}
           />
         ))}
       </ListSection>
@@ -335,6 +353,11 @@ export function RemovalSections({
         count={removals.equipment.length}
         empty="No equipment on record."
         flag={flag(6)}
+        footer={
+          edit && (
+            <AddRemoval edit={edit} kind="equipment" removals={removals} />
+          )
+        }
       >
         {removals.equipment.map((item) => (
           <Row
@@ -347,6 +370,7 @@ export function RemovalSections({
               .filter(Boolean)
               .join(" · ")}
             tag="Return"
+            action={edit && <TakeOff edit={edit} kind="equipment" row={item} />}
           />
         ))}
       </ListSection>
@@ -356,6 +380,9 @@ export function RemovalSections({
         count={removals.access.length}
         empty="No access on record."
         flag={flag(7)}
+        footer={
+          edit && <AddRemoval edit={edit} kind="access" removals={removals} />
+        }
       >
         {removals.access.map((row) => (
           <Row
@@ -363,6 +390,7 @@ export function RemovalSections({
             name={row.name}
             detail={row.scope ?? ""}
             tag={row.action}
+            action={edit && <TakeOff edit={edit} kind="access" row={row} />}
           />
         ))}
       </ListSection>

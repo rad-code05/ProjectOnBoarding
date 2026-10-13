@@ -110,6 +110,12 @@ export function RequestForm({
   const flag = (number: number) => flagLabel(form.returned, number);
   const disabled = !form.editable || conflict;
   const off = form.offboarding;
+  const removalEdit = {
+    requestId: form.id,
+    catalog: form.catalog,
+    equipmentTypes: form.equipmentTypes,
+    physicalTypes: form.physicalTypes,
+  };
 
   const toggle = (number: number, open?: boolean) =>
     setOpenSections((current) =>
@@ -418,9 +424,14 @@ export function RequestForm({
                   }
                   timeZone={form.timezone}
                   flag={flag}
+                  edit={removalEdit}
                 />
               ) : (
-                <RemovalSections removals={off.removals} flag={flag} />
+                <RemovalSections
+                  removals={off.removals}
+                  flag={flag}
+                  edit={disabled ? undefined : removalEdit}
+                />
               )}
               <HandoverSection
                 values={values}

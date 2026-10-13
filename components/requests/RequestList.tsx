@@ -8,6 +8,26 @@ import {
 import { formatDate, formatUpdated } from "@/lib/requests/format";
 import { TYPE_LABELS, countryName, personName } from "@/lib/requests/labels";
 import type { RequestRow } from "@/lib/requests/list";
+import { slaBadge } from "@/lib/requests/offboarding";
+
+function SlaBadge({
+  badge,
+}: {
+  badge: { text: string; late: boolean } | null;
+}) {
+  if (!badge) return null;
+  return (
+    <span
+      className={
+        badge.late
+          ? "rounded-pill bg-signal px-2 py-0.5 text-[11px] font-bold whitespace-nowrap text-paper"
+          : "rounded-pill border border-ink px-2 py-0.5 text-[11px] font-bold whitespace-nowrap"
+      }
+    >
+      {badge.text}
+    </span>
+  );
+}
 
 function view(row: RequestRow, now: Date) {
   const name = personName(row.first_name, row.last_name);
@@ -23,6 +43,7 @@ function view(row: RequestRow, now: Date) {
     assignee:
       personName(row.assignee?.first_name, row.assignee?.last_name) || "—",
     hasPdf: row.state === "closed",
+    sla: slaBadge(row, now.getTime()),
   };
 }
 
@@ -66,6 +87,7 @@ export function RequestList({
                   <span className="font-semibold text-ink">
                     {TYPE_LABELS[row.type]}
                   </span>
+                  <SlaBadge badge={v.sla} />
                   <span>{row.ticket_id}</span>
                   <span>{v.country}</span>
                 </span>
@@ -152,7 +174,12 @@ export function RequestList({
                     </span>
                   </td>
                   <td className="px-3 py-3 text-graphite">{row.ticket_id}</td>
-                  <td className="px-3 py-3">{TYPE_LABELS[row.type]}</td>
+                  <td className="px-3 py-3">
+                    <span className="flex flex-col items-start gap-1">
+                      {TYPE_LABELS[row.type]}
+                      <SlaBadge badge={v.sla} />
+                    </span>
+                  </td>
                   <td className="px-3 py-3">
                     <StatusPill state={row.state} />
                   </td>
