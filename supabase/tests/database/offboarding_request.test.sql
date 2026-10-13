@@ -4,7 +4,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(27);
+select plan(29);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -189,6 +189,16 @@ select set_config('request.jwt.claims', '{"sub":"user_ob_admin","role":"authenti
 update public.requests set handover_to = 'Giulia B.' where id = (select id from off where label = 'nina');
 select is((select sla_due_at from public.requests where id = (select id from off where label = 'nina')),
   '2026-09-30 23:59:59+04'::timestamptz, 'the deadline stays even if the company timezone changes later');
+reset role;
+
+-- New request (the app's createDraft) inserts as the signed-in user: the
+-- offboarding rules trigger must work for them too (CI caught this).
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"user_ob_admin","role":"authenticated"}', true);
+select lives_ok($$insert into public.requests (created_by) values ('user_ob_admin')$$,
+  'a signed-in requester still creates an onboarding draft');
+select lives_ok($$insert into public.requests (created_by, type) values ('user_ob_admin', 'offboarding')$$,
+  'a signed-in requester can insert an empty offboarding draft');
 reset role;
 
 -- The unique index guards every path, not only create_offboarding().

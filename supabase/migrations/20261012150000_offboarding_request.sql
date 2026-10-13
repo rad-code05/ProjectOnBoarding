@@ -56,9 +56,12 @@ as $$
 $$;
 comment on function private.sla_deadline(public.sla_timeline, timestamptz) is 'Same day = 23:59:59 of the cut-off day in the company timezone; 24h / 48h after the cut-off.';
 
+-- security definer: it runs for every request a signed-in user saves and calls
+-- the private deadline helper (not executable by users directly).
 create function private.request_offboarding_rules()
 returns trigger
 language plpgsql
+security definer
 set search_path = ''
 as $$
 begin
