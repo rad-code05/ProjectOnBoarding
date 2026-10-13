@@ -1,5 +1,6 @@
 import sharp from "sharp";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
+import { newOnboarding } from "./journey";
 import { openApp } from "./open";
 import { expect, test, type Page } from "@playwright/test";
 
@@ -183,7 +184,7 @@ test("New request creates a draft; Raju saves Anna Keller and finds her", async 
   page,
 }) => {
   await openApp(page, "/requests");
-  await page.getByRole("button", { name: "New request" }).first().click();
+  await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
   await expect(
     page.getByRole("heading", { level: 1, name: "New request" }),
@@ -218,7 +219,7 @@ test("two tabs: the later save is refused and says 'changed somewhere else'", as
   context,
 }) => {
   await openApp(page, "/requests");
-  await page.getByRole("button", { name: "New request" }).first().click();
+  await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
   const other = await context.newPage();
   await setupClerkTestingToken({ page: other });
@@ -249,7 +250,7 @@ test("Raju sets Slack, Figma and Google Workspace; Hexnode offers Enroll / Remov
   page,
 }) => {
   await openApp(page, "/requests");
-  await page.getByRole("button", { name: "New request" }).first().click();
+  await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
 
   await expect(
@@ -277,7 +278,7 @@ test("Raju adds an Other application (Notion) and it stays on the request", asyn
   page,
 }) => {
   await openApp(page, "/requests");
-  await page.getByRole("button", { name: "New request" }).first().click();
+  await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
 
   await page.getByRole("button", { name: "Add other application" }).click();
@@ -302,7 +303,7 @@ test("Raju records equipment (Other needs a description) and office access", asy
   page,
 }) => {
   await openApp(page, "/requests");
-  await page.getByRole("button", { name: "New request" }).first().click();
+  await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
 
   // Section 6: "Other" equipment needs a description before Done works.
@@ -349,7 +350,7 @@ test("Raju starts execution and ticks section 9; the start time is recorded", as
   page,
 }) => {
   await openApp(page, "/requests");
-  await page.getByRole("button", { name: "New request" }).first().click();
+  await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
 
   await page.getByRole("button", { name: "Start execution" }).click();
@@ -391,7 +392,7 @@ test("Raju cancels a request with a reason; it becomes read-only", async ({
   page,
 }) => {
   await openApp(page, "/requests");
-  await page.getByRole("button", { name: "New request" }).first().click();
+  await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
 
   await page.getByRole("button", { name: "Cancel this request…" }).click();
@@ -410,6 +411,35 @@ test("Raju cancels a request with a reason; it becomes read-only", async ({
   await expect(
     page.getByRole("button", { name: "Cancel this request…" }),
   ).toHaveCount(0);
+});
+
+test("New request → Offboarding: Who is leaving? and an empty offboarding draft", async ({
+  page,
+}) => {
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: "New request" }).first().click();
+  const sheet = page.getByRole("dialog", { name: "New onboarding" });
+  await sheet.getByText("Offboarding", { exact: true }).click();
+  const leaving = page.getByRole("dialog", { name: "Who is leaving?" });
+  await expect(leaving.getByLabel("Find the person")).toBeVisible();
+  await expect(
+    leaving.getByRole("button", { name: "Offboard", exact: true }),
+  ).toBeDisabled();
+
+  await leaving
+    .getByRole("button", { name: "Start an empty offboarding" })
+    .click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  await expect(page.getByText(/New request · Offboarding/)).toBeVisible();
+
+  // Tidy up: test drafts never stay open.
+  await page.getByRole("button", { name: "Cancel this request…" }).click();
+  const cancel = page.getByRole("dialog", { name: "Cancel this request?" });
+  await cancel.getByLabel(/^Reason/).fill("Browser test");
+  await cancel.getByRole("button", { name: "Cancel request" }).click();
+  await expect(page.getByRole("group", { name: "Status" })).toHaveText(
+    "Cancelled",
+  );
 });
 
 test("My profile: typed initials, then a PNG signature that becomes active", async ({
@@ -554,7 +584,7 @@ test("Raju reviews and signs a request; it awaits confirmation with his signatur
 
   // A fresh request with every required field.
   await openApp(page, "/requests");
-  await page.getByRole("button", { name: "New request" }).first().click();
+  await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
   await page.getByLabel("First name").fill("Sina");
   await page.getByLabel("Last name").fill("Signer");

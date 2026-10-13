@@ -13,13 +13,22 @@ export async function saveInitials(page: Page) {
   await expect(page.getByRole("radio", { checked: true })).toHaveCount(1);
 }
 
+/** As Raju: New request → Start onboarding (F09c: New request opens a sheet). */
+export async function newOnboarding(page: Page) {
+  await page.getByRole("button", { name: "New request" }).first().click();
+  await page
+    .getByRole("dialog", { name: "New onboarding" })
+    .getByRole("button", { name: "Start onboarding" })
+    .click();
+}
+
 /**
  * As Raju: a fresh request with every required field, executed (section 9
  * ticked). Returns its ticket ID; the page stays on the request.
  */
 export async function createExecutedRequest(page: Page, firstName: string) {
   await openApp(page, "/requests");
-  await page.getByRole("button", { name: "New request" }).first().click();
+  await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
   const ticketId = await page
     .getByText(/^UAM-\d{4}-\d{6}$/)

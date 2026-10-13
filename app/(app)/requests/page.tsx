@@ -2,16 +2,16 @@ import Link from "next/link";
 import { EmptyRequestsSwitch } from "@/components/requests/EmptyRequestsSwitch";
 import { RequestFilters } from "@/components/requests/RequestFilters";
 import { RequestList } from "@/components/requests/RequestList";
-import { NewRequestButton } from "@/components/requests/NewRequestButton";
+import { NewRequestMenu } from "@/components/requests/NewRequestSheet";
 import { Button, SummaryTile, buttonStyles } from "@/components/ui";
 import { requireRole } from "@/lib/auth";
-import { createDraft } from "./actions";
 import { PAGES } from "@/lib/navigation";
 import {
   PAGE_SIZE,
   hasActiveFilters,
   parseFilters,
 } from "@/lib/requests/filters";
+import { listLeavers } from "@/lib/requests/leavers";
 import { listRequests, requestSummary } from "@/lib/requests/list";
 
 export const metadata = { title: "Requests" };
@@ -21,9 +21,10 @@ export default async function RequestsPage({
 }: PageProps<"/requests">) {
   await requireRole(...PAGES.requests.roles);
   const filters = parseFilters(await searchParams);
-  const [{ rows, total }, counts] = await Promise.all([
+  const [{ rows, total }, counts, leavers] = await Promise.all([
     listRequests(filters),
     requestSummary(),
+    listLeavers(),
   ]);
 
   const moreParams = new URLSearchParams();
@@ -52,9 +53,12 @@ export default async function RequestsPage({
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 md:flex">
-          <form action={createDraft} className="md:order-2">
-            <NewRequestButton fullWidth className="md:h-10 md:text-[13px]" />
-          </form>
+          <div className="md:order-2">
+            <NewRequestMenu
+              leavers={leavers}
+              className="md:h-10 md:text-[13px]"
+            />
+          </div>
           <Button
             variant="secondary"
             disabled

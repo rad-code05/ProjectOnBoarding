@@ -1,4 +1,5 @@
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
+import { newOnboarding } from "./journey";
 import { openApp } from "./open";
 import { expect, test, type Page } from "@playwright/test";
 import { authFile } from "../../playwright.config";
@@ -79,7 +80,7 @@ test.describe("admin on a phone", () => {
     page,
   }) => {
     await openApp(page, "/requests");
-    await page.getByRole("button", { name: "New request" }).first().click();
+    await newOnboarding(page);
     await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
     const firstName = page.getByLabel("First name");
     await expect(firstName).toBeVisible();
@@ -165,7 +166,7 @@ test.describe("admin on a phone", () => {
     page,
   }) => {
     await openApp(page, "/requests");
-    await page.getByRole("button", { name: "New request" }).first().click();
+    await newOnboarding(page);
     await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
     await page.getByRole("button", { name: "Start execution" }).click();
     await page
