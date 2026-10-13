@@ -46,6 +46,41 @@ export async function createDraft() {
 }
 
 /**
+ * "Who is leaving?" (F09c): a new offboarding draft for the person (or an
+ * empty one), pre-filled by the database from their access inventory. Goes
+ * to the draft on success; otherwise says why.
+ */
+export async function startOffboarding(input: {
+  employeeId: string | null;
+}): Promise<{ ok: false; message: string }> {
+  await requireRole("admin", "requester");
+  const parsed = z.object({ employeeId: z.uuid().nullable() }).safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Choose a person first." };
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase.rpc("create_offboarding", {
+    p_employee_id: parsed.data.employeeId ?? undefined,
+  });
+  if (error || !data) {
+    if (error?.code === "23514" || error?.code === "23505") {
+      return {
+        ok: false,
+        message:
+          "An offboarding is already open for this person — find it in the Requests list.",
+      };
+    }
+    if (error?.code === "42501") {
+      return { ok: false, message: "You can't start an offboarding." };
+    }
+    return {
+      ok: false,
+      message:
+        "Could not start the offboarding. Check your connection and try again.",
+    };
+  }
+  redirect(`/requests/${data}`);
+}
+
+/**
  * Saves the form's values — only if the request still has the version the
  * form was loaded with (optimistic locking). Otherwise nothing is written and
  * the form says it was changed somewhere else. The audit log entry is written
