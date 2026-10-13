@@ -2,7 +2,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(27);
+select plan(29);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -18,7 +18,7 @@ insert into public.user_roles (clerk_user_id, role) values
 insert into public.requests (created_by, first_name) values ('user_ax_admin', 'Dora');
 insert into public.requests (created_by, first_name, state) values ('user_ax_admin', 'Pia', 'pending_confirmation');
 insert into public.request_access_items (request_id, app_id, action, permission)
-select r.id, a.id, 'Grant', 'Member'
+select r.id, a.id, 'Grant', 'Regular Member'
 from public.requests r, public.catalog_apps a
 where r.first_name = 'Pia' and a.name = 'Slack';
 
@@ -44,8 +44,15 @@ select is(
   (select actions from public.catalog_apps where name = 'Hexnode (MDM)'), array['Enroll', 'Remove'],
   'Hexnode has its own actions: Enroll / Remove');
 select is(
-  (select permissions from public.catalog_apps where name = 'Figma'), array['Viewer', 'Editor', 'Admin'],
-  'each app has its own permission options (Figma: Viewer / Editor / Admin)');
+  (select permissions from public.catalog_apps where name = 'Figma'), array['View', 'Dev', 'Full'],
+  'each app has its own permission options (Figma: View / Dev / Full)');
+select is(
+  (select permissions from public.catalog_apps where name = 'Slack'),
+  array['Regular Member', 'Workspace Owner', 'Primary Workspace Owner'],
+  'permissions use the roles the tool really has (Raju''s rights sheet)');
+select ok(
+  (select array['Viewer', 'Editor', 'Admin', 'Cloud Run Admin'] <@ permissions from public.catalog_apps where name = 'Google Cloud'),
+  'Google Cloud keeps its old options and adds the sheet''s roles');
 
 -- ---------------------------------------------------------------------------
 -- Admin / IT side on a draft
@@ -55,9 +62,9 @@ select set_config('request.jwt.claims', '{"sub":"user_ax_admin","role":"authenti
 
 select lives_ok(
   $$insert into public.request_access_items (request_id, app_id, action, permission, app_name, category_name)
-    select r.id, a.id, 'Grant', 'Editor', 'Fake name', 'Fake category'
+    select r.id, a.id, 'Grant', 'Dev', 'Fake name', 'Fake category'
     from public.requests r, public.catalog_apps a where r.first_name = 'Dora' and a.name = 'Figma'$$,
-  'Raju gives Figma (Grant · Editor) on a draft');
+  'Raju gives Figma (Grant · Dev) on a draft');
 select ok(
   exists (select 1 from public.request_access_items
           where app_name = 'Figma' and category_name = 'Core business'),
@@ -74,7 +81,7 @@ select throws_ok(
   '23514', null, 'a permission the app does not offer is refused');
 select throws_ok(
   $$insert into public.request_access_items (request_id, app_id, action, permission)
-    select r.id, a.id, 'Grant', 'Admin' from public.requests r, public.catalog_apps a
+    select r.id, a.id, 'Grant', 'Full' from public.requests r, public.catalog_apps a
     where r.first_name = 'Dora' and a.name = 'Figma'$$,
   '23505', null, 'an app appears only once per request');
 -- Actions by request type (2026-10-13): an onboarding only grants.
@@ -111,12 +118,12 @@ select throws_ok(
     select id, 'Notion2', 'Enroll' from public.requests where first_name = 'Dora'$$,
   '23514', null, 'other applications take Grant / Modify / Remove only');
 
-update public.request_access_items set permission = 'Admin' where app_name = 'Figma';
+update public.request_access_items set permission = 'Full' where app_name = 'Figma';
 select ok(
   exists (select 1 from public.audit_events
           where action = 'request.access_changed'
-            and diff -> 'before' ->> 'permission' = 'Editor'
-            and diff -> 'after' ->> 'permission' = 'Admin'),
+            and diff -> 'before' ->> 'permission' = 'Dev'
+            and diff -> 'after' ->> 'permission' = 'Full'),
   'a change is audited (before → after)');
 delete from public.request_access_items where app_name = 'Notion';
 select ok(

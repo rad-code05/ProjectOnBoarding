@@ -127,11 +127,11 @@ test.describe("admin on a phone", () => {
     await page.getByRole("button", { name: /^Figma: not set/ }).click();
     const sheet = page.getByRole("dialog", { name: "Figma" });
     await sheet.getByText("Grant", { exact: true }).click();
-    await sheet.getByText("Editor", { exact: true }).click();
+    await sheet.getByText("Dev", { exact: true }).click();
     await sheet.getByRole("button", { name: "Done" }).click();
     await expect(sheet).toHaveCount(0);
     await expect(
-      page.getByRole("button", { name: /^Figma: Grant · Editor/ }),
+      page.getByRole("button", { name: /^Figma: Grant · Dev/ }),
     ).toBeVisible();
     await expectNoSideScroll(page);
   });

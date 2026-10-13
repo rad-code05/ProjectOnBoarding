@@ -226,7 +226,7 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
   const onboardingTicket = await createExecutedRequest(raju, "Ola");
   const email = await raju.getByLabel("Work email").inputValue();
   await raju.getByLabel("Slack action").selectOption("Grant");
-  await raju.getByLabel("Slack permission").selectOption("Member");
+  await raju.getByLabel("Slack permission").selectOption("Regular Member");
   // "N of M set" replaces "Saving…" once the choice is stored.
   await expect(
     raju
@@ -235,7 +235,9 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
       .first(),
   ).toHaveText(/^1 of \d+ set$/);
   await openApp(raju, raju.url());
-  await expect(raju.getByLabel("Slack permission")).toHaveValue("Member");
+  await expect(raju.getByLabel("Slack permission")).toHaveValue(
+    "Regular Member",
+  );
   await reviewAndSign(raju);
 
   const confirmOnApprovals = async (ticketId: string) => {
@@ -274,7 +276,7 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
     .innerText();
   const apps = raju.getByRole("region", { name: "Applications to remove" });
   await expect(apps).toContainText("Slack");
-  await expect(apps).toContainText("had Member");
+  await expect(apps).toContainText("had Regular Member");
 
   // 3. SLA (within 48h of today 00:00 Dubai → met), handover, start.
   const today = new Intl.DateTimeFormat("en-CA", {
