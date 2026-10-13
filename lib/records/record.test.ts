@@ -120,3 +120,21 @@ describe("an offboarding record (F09d-3)", () => {
     ]);
   });
 });
+
+test("section 9 prints Not needed for an item that didn't apply (2026-10-13)", () => {
+  const input = sampleRecord();
+  input.snapshot.execution = {
+    ...input.snapshot.execution!,
+    checks: {
+      access_provisioned: true,
+      devices_enrolled: "not_needed",
+      security_controls: false,
+    },
+  };
+  const rows = recordSections(input).find((s) => s.number === 9)!.rows;
+  expect(rows.slice(0, 3).map((r) => r.value)).toEqual([
+    "Yes",
+    "Not needed",
+    "No",
+  ]);
+});

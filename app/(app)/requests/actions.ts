@@ -449,7 +449,7 @@ export async function changeState(input: {
 /** Section 9: saves the checklist and notes ("executed by" = you, set by the database). */
 export async function saveExecution(input: {
   requestId: string;
-  checks: Record<string, boolean>;
+  checks: Record<string, boolean | "not_needed">;
   notes: string | null;
 }): Promise<AccessResult> {
   const { userId } = await requireRole("admin", "requester", "it_operator");

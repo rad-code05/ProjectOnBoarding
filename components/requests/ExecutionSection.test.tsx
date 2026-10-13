@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, test, vi } from "vitest";
-import type { ChecklistItem } from "@/lib/requests/execution";
+import type { CheckValue, ChecklistItem } from "@/lib/requests/execution";
 import { ExecutionSection } from "./ExecutionSection";
 
 const saveExecution = vi.fn<(input: unknown) => Promise<{ ok: true }>>(
@@ -25,7 +25,7 @@ const items: ChecklistItem[] = [
 ];
 
 function Harness({ editable = true }: { editable?: boolean }) {
-  const [checks, setChecks] = useState<Record<string, boolean>>({
+  const [checks, setChecks] = useState<Record<string, CheckValue>>({
     access_provisioned: true,
   });
   return (
@@ -46,6 +46,35 @@ function Harness({ editable = true }: { editable?: boolean }) {
 }
 
 describe("ExecutionSection", () => {
+  test("an item that doesn't apply can be marked Not needed (2026-10-13)", async () => {
+    render(<Harness />);
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: "Devices issued and enrolled (MDM): not needed",
+      }),
+    );
+    expect(saveExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        checks: { access_provisioned: true, devices_enrolled: "not_needed" },
+      }),
+    );
+    expect(await screen.findByText("2 of 3 done")).toBeInTheDocument();
+    expect(screen.getByText("— not needed")).toBeInTheDocument();
+    expect(
+      screen.getByRole("checkbox", { name: /Devices issued and enrolled/ }),
+    ).toBeDisabled();
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: "Devices issued and enrolled (MDM): not needed",
+      }),
+    );
+    expect(saveExecution).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        checks: { access_provisioned: true, devices_enrolled: false },
+      }),
+    );
+  });
+
   test("shows the checklist of the ticket type with what is done", () => {
     render(<Harness />);
     expect(screen.getByText("1 of 3 done")).toBeInTheDocument();

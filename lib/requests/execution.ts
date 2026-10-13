@@ -4,9 +4,19 @@ import type { RequestState } from "./labels";
 /** One section 9 checklist item that applies to the request's type. */
 export type ChecklistItem = { key: string; label: string };
 
+/**
+ * One section 9 answer: done (true), not done yet (false) or "not_needed" —
+ * it doesn't apply, e.g. no device was provided (2026-10-13).
+ */
+export type CheckValue = boolean | "not_needed";
+
+/** Done or not needed: nothing left to do for this item. */
+export const isSettled = (value: CheckValue | undefined) =>
+  value === true || value === "not_needed";
+
 /** Section 9 as stored: answers, notes, who executed it. */
 export type ExecutionRecord = {
-  checks: Record<string, boolean>;
+  checks: Record<string, CheckValue>;
   notes: string | null;
   executedBy: string | null;
 };
@@ -24,7 +34,10 @@ export const EXECUTION_EDITABLE: RequestState[] = ["in_execution", "returned"];
 
 export const saveExecutionSchema = z.object({
   requestId: z.uuid(),
-  checks: z.record(z.string().regex(/^[a-z][a-z0-9_]*$/), z.boolean()),
+  checks: z.record(
+    z.string().regex(/^[a-z][a-z0-9_]*$/),
+    z.union([z.boolean(), z.literal("not_needed")]),
+  ),
   notes: z
     .string()
     .trim()
@@ -44,10 +57,10 @@ export const changeStateSchema = z.object({
     .transform((value) => value || null),
 });
 
-/** How many of the items are ticked. */
+/** How many of the items are done or not needed. */
 export function doneCount(
   items: ChecklistItem[],
-  checks: Record<string, boolean>,
+  checks: Record<string, CheckValue>,
 ) {
-  return items.filter((item) => checks[item.key]).length;
+  return items.filter((item) => isSettled(checks[item.key])).length;
 }

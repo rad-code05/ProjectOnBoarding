@@ -200,7 +200,12 @@ export function recordSections(input: RecordInput): RecordSection[] {
       rows: [
         ...input.checklist.map((item) => ({
           label: item.label,
-          value: snapshot.execution?.checks[item.key] ? "Yes" : "No",
+          value:
+            snapshot.execution?.checks[item.key] === "not_needed"
+              ? "Not needed"
+              : snapshot.execution?.checks[item.key] === true
+                ? "Yes"
+                : "No",
         })),
         {
           label: "Implementation notes",

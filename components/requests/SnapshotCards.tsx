@@ -212,17 +212,20 @@ export function ExecutionCard({
       </span>
       <ul className="flex flex-col gap-2 text-[13px]">
         {checklist.map((item) => {
-          const done = Boolean(execution?.checks[item.key]);
+          const value = execution?.checks[item.key];
+          const done = value === true;
+          const notNeeded = value === "not_needed";
           return (
             <li key={item.key} className="flex items-start gap-2">
-              {done ? (
+              {done || notNeeded ? (
                 <CheckIcon size={16} className="mt-px shrink-0" />
               ) : (
                 <AlertIcon size={16} className="mt-px shrink-0 text-signal" />
               )}
-              <span className={cn(!done && "text-signal")}>
+              <span className={cn(!done && !notNeeded && "text-signal")}>
                 {item.label}
-                {!done && " — not ticked"}
+                {notNeeded && " — not needed"}
+                {!done && !notNeeded && " — not ticked"}
               </span>
             </li>
           );

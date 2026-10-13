@@ -3,7 +3,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(31);
+select plan(32);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -87,7 +87,7 @@ select throws_ok(
 select throws_ok(
   $$update public.execution_confirmations set checks = '{"security_controls": "yes"}'
     where request_id = (select id from ids where first_name = 'Dora')$$,
-  '23514', null, 'checklist answers are true / false');
+  '23514', null, 'checklist answers are true, false or "not_needed" — nothing else');
 select throws_ok(
   $$select public.transition_request((select id from ids where first_name = 'Dora'), 'pending_confirmation')$$,
   '42501', null, 'it never goes for confirmation without Review & sign (F06)');
@@ -102,6 +102,12 @@ select set_config('app.request_returning', 'on', true);
 select is(
   (select (c ->> 'checklist_complete')::boolean from public.signing_checks((select id from ids where first_name = 'Dora')) as c),
   false, 'an incomplete checklist is still reported as incomplete');
+-- "Not needed" (2026-10-13): e.g. no device provided — counts as complete.
+update public.execution_confirmations set checks = checks || '{"security_controls": "not_needed"}'
+where request_id = (select id from ids where first_name = 'Dora');
+select is(
+  (select (c ->> 'checklist_complete')::boolean from public.signing_checks((select id from ids where first_name = 'Dora')) as c),
+  true, 'an item marked "not needed" counts as complete');
 
 update public.execution_confirmations set checks = checks || '{"security_controls": true}'
 where request_id = (select id from ids where first_name = 'Dora');

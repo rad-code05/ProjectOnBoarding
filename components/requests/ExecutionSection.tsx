@@ -2,6 +2,7 @@
 
 import { useId, useState, useTransition } from "react";
 import { saveExecution } from "@/app/(app)/requests/actions";
+import type { CheckValue } from "@/lib/requests/execution";
 import { InlineError } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
@@ -33,8 +34,8 @@ export function ExecutionSection({
   editable: boolean;
   startedLabel: string | null;
   /** Held by the form so the section chip shows the same count. */
-  checks: Record<string, boolean>;
-  onChecksChange: (checks: Record<string, boolean>) => void;
+  checks: Record<string, CheckValue>;
+  onChecksChange: (checks: Record<string, CheckValue>) => void;
   /** "Flagged by Moises" after a return, or null. */
   flag?: string | null;
 }) {
@@ -46,7 +47,7 @@ export function ExecutionSection({
   const [saving, startSaving] = useTransition();
   const done = doneCount(items, checks);
 
-  const save = (nextChecks: Record<string, boolean>, nextNotes: string) =>
+  const save = (nextChecks: Record<string, CheckValue>, nextNotes: string) =>
     startSaving(async () => {
       const result = await saveExecution({
         requestId,
@@ -63,7 +64,7 @@ export function ExecutionSection({
       }
     });
 
-  const toggle = (key: string, on: boolean) => {
+  const toggle = (key: string, on: CheckValue) => {
     const next = { ...checks, [key]: on };
     onChecksChange(next);
     save(next, notes);
@@ -99,31 +100,60 @@ export function ExecutionSection({
       <fieldset className="flex flex-col gap-2" disabled={!editable}>
         <legend className="pb-2 text-xs font-semibold">Checklist</legend>
         {items.map((item) => {
-          const on = Boolean(checks[item.key]);
+          const value = checks[item.key];
+          const on = value === true;
+          const notNeeded = value === "not_needed";
           return (
-            <label
+            <div
               key={item.key}
               className={cn(
-                "flex cursor-pointer items-start gap-3 rounded-xl border px-3.5 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ink md:py-2.5",
-                on ? "border-sand bg-sand" : "border-field-border",
-                !editable && "cursor-default",
+                "flex items-start gap-3 rounded-xl border px-3.5 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ink md:py-2.5",
+                on || notNeeded ? "border-sand bg-sand" : "border-field-border",
               )}
             >
-              <input
-                type="checkbox"
-                checked={on}
-                onChange={(event) => toggle(item.key, event.target.checked)}
-                className="mt-px size-5.5 shrink-0 accent-ink md:size-4.5"
-              />
-              <span
+              <label
                 className={cn(
-                  "text-[15px] leading-snug md:text-[13px]",
-                  on ? "font-semibold" : "font-medium",
+                  "flex flex-1 cursor-pointer items-start gap-3",
+                  (!editable || notNeeded) && "cursor-default",
                 )}
               >
-                {item.label}
-              </span>
-            </label>
+                <input
+                  type="checkbox"
+                  checked={on}
+                  disabled={!editable || notNeeded}
+                  onChange={(event) => toggle(item.key, event.target.checked)}
+                  className="mt-px size-5.5 shrink-0 accent-ink md:size-4.5"
+                />
+                <span
+                  className={cn(
+                    "text-[15px] leading-snug md:text-[13px]",
+                    on ? "font-semibold" : "font-medium",
+                    notNeeded && "text-graphite",
+                  )}
+                >
+                  {item.label}
+                  {notNeeded && (
+                    <span className="font-semibold text-ink">
+                      {" "}
+                      — not needed
+                    </span>
+                  )}
+                </span>
+              </label>
+              {editable && !on && (
+                <button
+                  type="button"
+                  aria-pressed={notNeeded}
+                  aria-label={`${item.label}: not needed`}
+                  onClick={() =>
+                    toggle(item.key, notNeeded ? false : "not_needed")
+                  }
+                  className="-my-2 h-11 shrink-0 px-1 text-xs font-semibold underline underline-offset-[3px] md:h-auto md:py-1"
+                >
+                  {notNeeded ? "Needed after all" : "Not needed"}
+                </button>
+              )}
+            </div>
           );
         })}
       </fieldset>
