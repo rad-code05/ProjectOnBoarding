@@ -431,11 +431,17 @@ export async function changeState(input: {
   });
   if (!error) return { ok: true };
   if (error.code === "23514") {
-    return {
-      ok: false,
-      message:
-        "This step isn't possible any more — reload to see where the request is now.",
-    };
+    // A rule the database explains in words (e.g. the offboarding SLA);
+    // only a move that no longer fits the state asks for a reload.
+    if (error.message.startsWith("a request cannot go from")) {
+      return {
+        ok: false,
+        message:
+          "This step isn't possible any more — reload to see where the request is now.",
+      };
+    }
+    const text = error.message.charAt(0).toUpperCase() + error.message.slice(1);
+    return { ok: false, message: text.endsWith(".") ? text : `${text}.` };
   }
   if (error.code === "42501") {
     return { ok: false, message: "You can't take this step on this request." };

@@ -438,6 +438,16 @@ test("New request → Offboarding: Who is leaving? and an empty offboarding draf
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
   await expect(page.getByText(/New request · Offboarding/)).toBeVisible();
 
+  // Start execution before section 8 is complete says what's missing.
+  await page.getByRole("button", { name: "Start execution" }).click();
+  const early = page.getByRole("dialog", { name: "Start execution?" });
+  await expect(early.getByText(/^First complete section 8/)).toBeVisible();
+  await expect(
+    early.getByRole("button", { name: "Start execution" }),
+  ).toBeDisabled();
+  await early.getByRole("button", { name: "Go to section 8" }).click();
+  await expect(early).toHaveCount(0);
+
   // Section 8 first: timeline + cut-off (Dubai time) → the deadline preview.
   const sla = page.getByRole("region", { name: "Access removal SLA" });
   await expect(sla.getByRole("status")).toContainText(

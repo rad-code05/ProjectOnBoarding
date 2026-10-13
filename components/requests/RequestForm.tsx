@@ -126,6 +126,23 @@ export function RequestForm({
         : current.filter((n) => n !== number),
     );
 
+  // Save what's typed first, so the database sees the latest data (e.g. a
+  // cut-off typed a second ago) before execution starts.
+  const openStart = async () => {
+    await saveNow();
+    setSheet("start");
+  };
+  const slaMissing = off
+    ? [
+        [values.sla_timeline, "timeline"],
+        [values.last_working_day, "last working day"],
+        [values.cutoff_date, "cut-off date"],
+        [values.cutoff_time, "cut-off time"],
+      ]
+        .filter(([value]) => !value)
+        .map(([, label]) => label as string)
+    : [];
+
   // Save what's typed first, so the review shows the latest data.
   const openReview = async () => {
     await saveNow();
@@ -594,7 +611,7 @@ export function RequestForm({
               <Button
                 disabled={conflict}
                 aria-haspopup="dialog"
-                onClick={() => setSheet("start")}
+                onClick={() => void openStart()}
               >
                 Start execution
               </Button>
@@ -620,6 +637,8 @@ export function RequestForm({
         <StartExecutionSheet
           requestId={form.id}
           subtitle={subtitle}
+          missing={slaMissing}
+          onFix={() => editSection(8)}
           onClose={() => setSheet(null)}
         />
       )}
