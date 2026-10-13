@@ -2,7 +2,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(24);
+select plan(27);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -74,9 +74,26 @@ select throws_ok(
   '23514', null, 'a permission the app does not offer is refused');
 select throws_ok(
   $$insert into public.request_access_items (request_id, app_id, action, permission)
-    select r.id, a.id, 'Modify', 'Admin' from public.requests r, public.catalog_apps a
+    select r.id, a.id, 'Grant', 'Admin' from public.requests r, public.catalog_apps a
     where r.first_name = 'Dora' and a.name = 'Figma'$$,
   '23505', null, 'an app appears only once per request');
+-- Actions by request type (2026-10-13): an onboarding only grants.
+select throws_ok(
+  $$insert into public.request_access_items (request_id, app_id, action)
+    select r.id, a.id, 'Remove' from public.requests r, public.catalog_apps a
+    where r.first_name = 'Dora' and a.name = 'Slack'$$,
+  '23514', 'an onboarding only grants applications (Grant, or Enroll for devices)',
+  'an onboarding cannot Remove an application');
+select throws_ok(
+  $$insert into public.request_equipment_items (request_id, type_id, action)
+    select r.id, t.id, 'Return' from public.requests r, public.equipment_types t
+    where r.first_name = 'Dora' and t.name = 'Mobile phone'$$,
+  '23514', 'an onboarding only issues equipment', 'an onboarding cannot Return equipment');
+select throws_ok(
+  $$insert into public.request_physical_access_items (request_id, type_id, action)
+    select r.id, t.id, 'Disable' from public.requests r, public.physical_access_types t
+    where r.first_name = 'Dora' and t.name = 'VPN / secure access'$$,
+  '23514', 'an onboarding only grants access', 'an onboarding cannot Disable access');
 select throws_ok(
   $$insert into public.request_access_items (request_id, app_id, action)
     select r.id, a.id, 'Grant' from public.requests r, public.catalog_apps a

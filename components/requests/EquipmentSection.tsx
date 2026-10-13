@@ -100,7 +100,9 @@ function EquipmentDialog({
                 checked={typeId === option.id}
                 onChange={() => {
                   setTypeId(option.id);
-                  if (!option.actions.includes(action)) setAction("");
+                  // One action left (e.g. Issue on an onboarding): choose it.
+                  if (option.actions.length === 1) setAction(option.actions[0]);
+                  else if (!option.actions.includes(action)) setAction("");
                 }}
                 className="sr-only"
               />

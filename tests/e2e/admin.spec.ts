@@ -246,7 +246,7 @@ test("two tabs: the later save is refused and says 'changed somewhere else'", as
   await expect(other.getByLabel("First name")).toHaveValue("Anna");
 });
 
-test("Raju sets Slack, Figma and Google Workspace; Hexnode offers Enroll / Remove", async ({
+test("Raju sets Slack, Figma and Google Workspace; on an onboarding Slack offers Grant and Hexnode Enroll", async ({
   page,
 }) => {
   await openApp(page, "/requests");
@@ -255,7 +255,12 @@ test("Raju sets Slack, Figma and Google Workspace; Hexnode offers Enroll / Remov
 
   await expect(
     page.getByLabel("Hexnode (MDM) action").locator("option"),
-  ).toHaveText(["—", "Enroll", "Remove"]);
+  ).toHaveText(["—", "Enroll"]);
+  // An onboarding only grants (2026-10-13): no Modify / Remove offered.
+  await expect(page.getByLabel("Slack action").locator("option")).toHaveText([
+    "—",
+    "Grant",
+  ]);
 
   for (const [app, action, permission] of [
     ["Slack", "Grant", "Member"],

@@ -50,6 +50,7 @@ export function AccessSection({
   onOthersChange,
   disabled,
   flag,
+  otherActions = OTHER_ACTIONS,
 }: {
   requestId: string;
   catalog: CatalogCategory[];
@@ -60,6 +61,8 @@ export function AccessSection({
   disabled: boolean;
   /** "Flagged by Moises" after a return, or null. */
   flag?: string | null;
+  /** Actions an "Other" application can take on this type of request. */
+  otherActions?: string[];
 }) {
   const [query, setQuery] = useState("");
   const [onlySet, setOnlySet] = useState(false);
@@ -421,7 +424,7 @@ export function AccessSection({
         <AppDialog
           app={{
             name: editing.item?.name ?? "",
-            actions: OTHER_ACTIONS,
+            actions: otherActions,
             permissions: null,
           }}
           category="Other application"
