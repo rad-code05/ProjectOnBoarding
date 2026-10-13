@@ -29,7 +29,7 @@ grant select on onb to authenticated;
 
 insert into public.request_access_items (request_id, app_id, action, permission)
 select (select id from onb), a.id, x.action, x.permission
-from (values ('Slack', 'Grant', 'Member'), ('Figma', 'Grant', 'Editor'), ('Hexnode (MDM)', 'Enroll', 'Device'))
+from (values ('Slack', 'Grant', 'Regular Member'), ('Figma', 'Grant', 'Dev'), ('Hexnode (MDM)', 'Enroll', 'Device'))
   as x (name, action, permission)
 join public.catalog_apps a on a.name = x.name;
 insert into public.request_access_items (request_id, app_name, action)
@@ -85,7 +85,7 @@ select is(
 select is(
   (select string_agg(app_name || ':' || action || ':' || coalesce(permission, '-'), ', ' order by app_name)
    from public.request_access_items where request_id = (select id from off where label = 'nina')),
-  'Figma:Remove:Editor, Hexnode (MDM):Remove:Device, Miro Board:Remove:-, Slack:Remove:Member',
+  'Figma:Remove:Dev, Hexnode (MDM):Remove:Device, Miro Board:Remove:-, Slack:Remove:Regular Member',
   'every application she holds is pre-filled as Remove, with what she had');
 select is(
   (select type_name || ':' || action || ':' || asset_tag from public.request_equipment_items
@@ -112,7 +112,7 @@ select is((select count(*)::int from public.request_access_items where request_i
 -- ---------------------------------------------------------------------------
 select throws_ok(
   $$insert into public.request_access_items (request_id, app_id, action, permission)
-    select (select id from off where label = 'empty'), id, 'Grant', 'Member' from public.catalog_apps where name = 'Slack'$$,
+    select (select id from off where label = 'empty'), id, 'Grant', 'Regular Member' from public.catalog_apps where name = 'Slack'$$,
   '23514', 'an offboarding only removes applications', 'no Grant on an offboarding');
 select lives_ok(
   $$insert into public.request_access_items (request_id, app_id, action)

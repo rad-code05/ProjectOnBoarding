@@ -263,8 +263,8 @@ test("Raju sets Slack, Figma and Google Workspace; on an onboarding Slack offers
   ]);
 
   for (const [app, action, permission] of [
-    ["Slack", "Grant", "Member"],
-    ["Figma", "Grant", "Editor"],
+    ["Slack", "Grant", "Regular Member"],
+    ["Figma", "Grant", "Dev"],
     ["Google Workspace", "Grant", "User"],
   ]) {
     await page.getByLabel(`${app} action`).selectOption(action);
@@ -274,7 +274,7 @@ test("Raju sets Slack, Figma and Google Workspace; on an onboarding Slack offers
 
   // "N of M set" replaces "Saving…" once every choice is stored.
   await openApp(page, page.url());
-  await expect(page.getByLabel("Figma permission")).toHaveValue("Editor");
+  await expect(page.getByLabel("Figma permission")).toHaveValue("Dev");
   await expect(page.getByLabel("Slack action")).toHaveValue("Grant");
   await expect(accessStatus(page)).toHaveText(/^3 of \d+ set$/);
 });

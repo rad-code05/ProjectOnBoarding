@@ -34,7 +34,7 @@ grant select on ids to authenticated;
 -- Request 1: Slack, Figma, Hexnode, an "Other" app, a laptop, a phone, office access.
 insert into public.request_access_items (request_id, app_id, action, permission)
 select (select id from ids where n = 1), a.id, x.action, x.permission
-from (values ('Slack', 'Grant', 'Member'), ('Figma', 'Grant', 'Editor'), ('Hexnode (MDM)', 'Enroll', 'Device'))
+from (values ('Slack', 'Grant', 'Regular Member'), ('Figma', 'Grant', 'Dev'), ('Hexnode (MDM)', 'Enroll', 'Device'))
   as x (name, action, permission)
 join public.catalog_apps a on a.name = x.name;
 insert into public.request_access_items (request_id, app_name, action, permission)
@@ -54,7 +54,7 @@ select is((select count(*)::int from public.request_access_items where request_i
   'request 2 starts empty');
 insert into public.request_access_items (request_id, app_id, action, permission)
 select (select id from ids where n = 2), a.id, x.action, x.permission
-from (values ('Slack', 'Modify', 'Admin'), ('Figma', 'Remove', null)) as x (name, action, permission)
+from (values ('Slack', 'Modify', 'Workspace Owner'), ('Figma', 'Remove', null)) as x (name, action, permission)
 join public.catalog_apps a on a.name = x.name;
 insert into public.request_access_items (request_id, app_name, action)
 values ((select id from ids where n = 2), 'miro board', 'Remove');
@@ -105,7 +105,7 @@ select is((select count(*)::int from nina where ended_at is null), 7,
 select ok((select bool_and(granted_request_id = (select id from ids where n = 1)) from nina),
   'every row points to the request that granted it');
 select is((select category_name || ' · ' || name || ' · ' || permission from nina where name = 'Slack'),
-  'Core business · Slack · Member', 'names and permission are copied from the request');
+  'Core business · Slack · Regular Member', 'names and permission are copied from the request');
 select is((select category_name from nina where name = 'Miro Board'), 'Other',
   'an "Other" app is kept with its typed name');
 select is((select asset_tag from nina where name = 'Laptop · macOS'), 'LT-1', 'the laptop keeps its asset tag');
@@ -123,9 +123,9 @@ select set_config('request.jwt.claims', '{"sub":"user_in_abe","role":"authentica
 select public.confirm_request(id, (select data from reviewed where n = 2)) from ids where n = 2;
 reset role;
 
-select is((select end_reason from nina where name = 'Slack' and permission = 'Member'), 'replaced',
-  'Slack Member is ended as replaced');
-select is((select count(*)::int from nina where name = 'Slack' and permission = 'Admin' and ended_at is null), 1,
+select is((select end_reason from nina where name = 'Slack' and permission = 'Regular Member'), 'replaced',
+  'Slack Regular Member is ended as replaced');
+select is((select count(*)::int from nina where name = 'Slack' and permission = 'Workspace Owner' and ended_at is null), 1,
   'Slack Admin is now held');
 select is((select end_reason from nina where name = 'Figma'), 'removed', 'Figma is removed');
 select ok((select ended_at is not null from nina where name = 'Miro Board'),
@@ -159,7 +159,7 @@ reset role;
 -- Even the table owner cannot rewrite history.
 select throws_ok(
   $$update public.employee_access_inventory set permission = 'Owner'
-    where id = (select id from nina where name = 'Slack' and permission = 'Admin')$$,
+    where id = (select id from nina where name = 'Slack' and permission = 'Workspace Owner')$$,
   '23514', 'inventory rows only end, once', 'what was granted never changes');
 select throws_ok(
   $$update public.employee_access_inventory set end_reason = 'replaced'

@@ -36,8 +36,8 @@ join (values (1, 'A'), (2, 'B'), (3, 'C'), (4, 'F')) as x (n, label) using (n);
 
 insert into public.request_access_items (request_id, app_id, action, permission)
 select (select id from r where label = x.label), a.id, x.action, x.permission
-from (values ('A', 'Slack', 'Grant', 'Member'), ('A', 'Figma', 'Grant', 'Editor'),
-             ('B', 'GitHub', 'Grant', 'Write'), ('C', 'Zoom', 'Grant', 'Basic'),
+from (values ('A', 'Slack', 'Grant', 'Regular Member'), ('A', 'Figma', 'Grant', 'Dev'),
+             ('B', 'GitHub', 'Grant', 'Maintain'), ('C', 'Zoom', 'Grant', 'Basic'),
              ('F', 'GitHub', 'Grant', 'Admin')) as x (label, app, action, permission)
 join public.catalog_apps a on a.name = x.app;
 insert into public.request_equipment_items (request_id, type_id, action, asset_tag)
@@ -72,7 +72,7 @@ insert into r select 'E', public.create_offboarding(null);
 select is(
   (select string_agg(app_name || ':' || permission, ', ' order by app_name) from public.request_access_items
    where request_id = (select id from r where label = 'N')),
-  'Figma:Editor, Slack:Member',
+  'Figma:Dev, Slack:Regular Member',
   'Nina: only her closed request — not the cancelled GitHub, not the draft Zoom, not Max''s GitHub');
 select is(
   (select string_agg(app_name || ':' || permission, ', ') from public.request_access_items
