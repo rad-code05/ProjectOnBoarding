@@ -65,6 +65,11 @@ export const draftValuesSchema = z
       .trim()
       .max(120, "Keep it under 120 characters.")
       .transform((value) => value || null),
+    sla_missed_reason: z
+      .string()
+      .trim()
+      .max(1000, "Keep it under 1000 characters.")
+      .transform((value) => value || null),
   })
   .superRefine((values, ctx) => {
     if (Boolean(values.cutoff_date) !== Boolean(values.cutoff_time)) {
@@ -111,6 +116,7 @@ export function toColumns(
                 )
               : null,
           handover_to: values.handover_to,
+          sla_missed_reason: values.sla_missed_reason,
         }
       : {};
   return {

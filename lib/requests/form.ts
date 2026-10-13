@@ -27,6 +27,7 @@ import type {
   MailboxHandling,
   RemovalMethod,
   Removals,
+  SlaResult,
   ReturnStatus,
 } from "./offboarding";
 import type { SignedSection } from "./signing";
@@ -73,6 +74,8 @@ export type RequestFormData = {
     dueAt: string | null;
     removals: Removals;
     mailbox: { handling: MailboxHandling | null; recordedAt: string | null };
+    /** request_sla(): removals done / total, last removal, met. */
+    sla: SlaResult;
   } | null;
 };
 
@@ -101,7 +104,7 @@ export async function loadRequestForm(
   const { data: request, error } = await supabase
     .from("requests")
     .select(
-      "id, ticket_id, type, state, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, mailbox_handling, mailbox_recorded_at, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
+      "id, ticket_id, type, state, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, sla_missed_reason, mailbox_handling, mailbox_recorded_at, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -213,6 +216,16 @@ export async function loadRequestForm(
       .maybeSingle(),
   ]);
   const tz = await tzPromise;
+  const slaRow =
+    request.type === "offboarding"
+      ? await supabase.rpc("request_sla", { p_request_id: request.id })
+      : null;
+  const slaJson = (slaRow?.data ?? null) as {
+    total?: number;
+    done?: number;
+    removed_at?: string | null;
+    met?: boolean | null;
+  } | null;
   const companyTz = await companyTzPromise;
   const cutoff = request.access_cutoff_at
     ? zonedParts(request.access_cutoff_at, companyTz)
@@ -317,6 +330,7 @@ export async function loadRequestForm(
       cutoff_date: cutoff.date,
       cutoff_time: cutoff.time,
       handover_to: request.handover_to ?? "",
+      sla_missed_reason: request.sla_missed_reason ?? "",
     },
     system: {
       ticket_id: request.ticket_id,
@@ -448,6 +462,12 @@ export async function loadRequestForm(
                 scope: row.scope,
                 doneAt: row.done_at,
               })),
+            },
+            sla: {
+              total: slaJson?.total ?? 0,
+              done: slaJson?.done ?? 0,
+              removedAt: slaJson?.removed_at ?? null,
+              met: slaJson?.met ?? null,
             },
             mailbox: {
               handling: request.mailbox_handling as MailboxHandling | null,

@@ -26,6 +26,7 @@ const empty: DraftFormValues = {
   cutoff_date: "",
   cutoff_time: "",
   handover_to: "",
+  sla_missed_reason: "",
 };
 
 describe("offboarding fields (F09c-2)", () => {

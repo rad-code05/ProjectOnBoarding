@@ -159,6 +159,41 @@ describe("blocking checks", () => {
     ]);
   });
 
+  test("offboarding blockers get their own lines, each with its section (F09d-2)", () => {
+    const checks = signingChecks(
+      review({
+        missingFields: [
+          "Applications removed (4 of 7)",
+          "Mailbox: converted to a shared mailbox, or no mailbox to convert",
+          "Reason the access removal SLA was missed",
+        ],
+      }),
+    );
+    expect(checks.filter((c) => !c.ok)).toEqual([
+      {
+        ok: false,
+        label: "Applications removed (4 of 7)",
+        fix: { section: 5 },
+      },
+      {
+        ok: false,
+        label:
+          "Mailbox: converted to a shared mailbox, or no mailbox to convert",
+        fix: { section: 7 },
+      },
+      {
+        ok: false,
+        label: "Reason the access removal SLA was missed",
+        fix: { section: 8 },
+      },
+    ]);
+    expect(checks[0]).toEqual({
+      ok: true,
+      label: "All required fields complete",
+      fix: null,
+    });
+  });
+
   test("a request that left execution can't be signed", () => {
     expect(signingChecks(review({ stateOk: false }))[0]).toMatchObject({
       ok: false,
