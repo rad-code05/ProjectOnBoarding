@@ -44,7 +44,10 @@ export function AppDialog({
   const permissionId = useId();
   const notesId = useId();
   const [name, setName] = useState(app.name);
-  const [action, setAction] = useState(choice?.action ?? "");
+  // One action offered (e.g. Grant on an onboarding): already chosen.
+  const [action, setAction] = useState(
+    choice?.action ?? (app.actions.length === 1 ? app.actions[0] : ""),
+  );
   const [permission, setPermission] = useState(choice?.permission ?? "");
   const [notes, setNotes] = useState(choice?.notes ?? "");
   const complete = Boolean(action && name.trim());

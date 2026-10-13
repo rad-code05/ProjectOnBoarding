@@ -465,6 +465,7 @@ export function RequestForm({
               onAccessChange={setAccess}
               others={others}
               onOthersChange={setOthers}
+              otherActions={form.otherActions}
               flag={flag(number)}
               disabled={disabled}
             />

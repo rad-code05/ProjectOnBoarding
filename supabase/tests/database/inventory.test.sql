@@ -4,7 +4,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(25);
+select plan(26);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -47,7 +47,11 @@ insert into public.request_physical_access_items (request_id, type_id, action, s
 select (select id from ids where n = 1), t.id, 'Grant', 'Badge'
 from public.physical_access_types t where t.name = 'Office access';
 
--- Request 2: Slack → Admin, Figma removed, laptop back, badge disabled, the Other app removed.
+-- Request 2 is an access modification: Slack → Admin, Figma removed, laptop back,
+-- badge disabled, the Other app removed (an onboarding only grants since 2026-10-13).
+update public.requests set type = 'access_modification' where id = (select id from ids where n = 2);
+select is((select count(*)::int from public.request_access_items where request_id = (select id from ids where n = 2)), 0,
+  'request 2 starts empty');
 insert into public.request_access_items (request_id, app_id, action, permission)
 select (select id from ids where n = 2), a.id, x.action, x.permission
 from (values ('Slack', 'Modify', 'Admin'), ('Figma', 'Remove', null)) as x (name, action, permission)

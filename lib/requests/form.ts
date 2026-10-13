@@ -3,7 +3,13 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone, displayTimezone } from "@/lib/time/display";
 import { zonedParts } from "@/lib/time/zoned";
 import { countryOptions } from "./countries";
-import type { AccessChoices, CatalogCategory, OtherApp } from "./access";
+import {
+  OTHER_ACTIONS,
+  type AccessChoices,
+  type CatalogCategory,
+  type OtherApp,
+} from "./access";
+import { allowedActions } from "./actions-by-type";
 import type { DraftFormValues } from "./draft";
 import type {
   CheckValue,
@@ -61,6 +67,8 @@ export type RequestFormData = {
   access: AccessChoices;
   /** Section 5: applications typed on this request ("Other"). */
   others: OtherApp[];
+  /** Actions an "Other" application can take on this type of request. */
+  otherActions: string[];
   /** Sections 6–7: their types and this request's rows. */
   equipmentTypes: EquipmentType[];
   equipment: EquipmentItem[];
@@ -353,9 +361,20 @@ export async function loadRequestForm(
         .map(({ id, name, actions, permissions }) => ({
           id,
           name,
-          actions,
+          // Only the actions this type of request offers (2026-10-13).
+          actions: allowedActions(
+            request.type,
+            "app",
+            actions,
+            (items.data ?? []).find((item) => item.app_id === id)?.action,
+          ),
           permissions,
-        })),
+        }))
+        // An app this type can't use at all isn't offered (offboarding adds
+        // its rows through its own sheet, so it keeps the whole catalog).
+        .filter(
+          (app) => request.type === "offboarding" || app.actions.length > 0,
+        ),
     })),
     access: Object.fromEntries(
       (items.data ?? []).flatMap((item) =>
@@ -376,7 +395,7 @@ export async function loadRequestForm(
     equipmentTypes: (equipmentTypes.data ?? []).map((type) => ({
       id: type.id,
       name: type.name,
-      actions: type.actions,
+      actions: allowedActions(request.type, "equipment", type.actions),
       needsDescription: type.needs_description,
     })),
     equipment: (equipment.data ?? []).map((item) => ({
@@ -388,7 +407,16 @@ export async function loadRequestForm(
       assetTag: item.asset_tag,
       notes: item.notes,
     })),
-    physicalTypes: physicalTypes.data ?? [],
+    physicalTypes: (physicalTypes.data ?? []).map((type) => ({
+      ...type,
+      actions: allowedActions(
+        request.type,
+        "access",
+        type.actions,
+        (physical.data ?? []).find((row) => row.type_id === type.id)?.action,
+      ),
+    })),
+    otherActions: allowedActions(request.type, "app", OTHER_ACTIONS),
     checklist: checklist.data ?? [],
     execution: {
       checks: (execution.data?.checks ?? {}) as Record<string, CheckValue>,
