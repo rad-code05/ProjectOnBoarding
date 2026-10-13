@@ -89,3 +89,67 @@ export function sampleRecord(patch: Partial<RecordInput> = {}): RecordInput {
     ...patch,
   };
 }
+
+/** The same person, offboarded (F09d-3): removals, returns, SLA, handover. */
+export function sampleOffboardingRecord(): RecordInput {
+  const base = sampleRecord();
+  return {
+    ...base,
+    fileName: "jose.muller-offboarding.pdf",
+    snapshot: {
+      ...base.snapshot,
+      request: { ...base.snapshot.request, type: "offboarding" },
+      access: [
+        {
+          app: "Slack",
+          action: "Remove",
+          permission: "Member",
+          removal_method: "Delete",
+          done_at: "2026-10-01T08:05:00.000000Z",
+        },
+        {
+          app: "Google Workspace",
+          action: "Remove",
+          permission: "User",
+          removal_method: "Suspend",
+          done_at: "2026-10-01T08:10:00.000000Z",
+        },
+      ],
+      equipment: [
+        {
+          type: "Laptop · macOS",
+          action: "Return",
+          description: null,
+          asset_tag: "LN-0042",
+          return_status: "not_returned",
+          return_reason: "Lost by the courier",
+          return_recorded_at: "2026-10-02T06:00:00.000000Z",
+        },
+      ],
+      physical_access: [
+        {
+          type: "Office access",
+          action: "Disable",
+          scope: "Badge",
+          done_at: "2026-10-01T08:20:00.000000Z",
+        },
+      ],
+      offboarding: {
+        sla_timeline: "within_24h",
+        last_working_day: "2026-09-30",
+        access_cutoff_at: "2026-09-30T14:00:00.000000Z",
+        sla: {
+          due_at: "2026-10-01T14:00:00.000000Z",
+          total: 3,
+          done: 3,
+          removed_at: "2026-10-01T08:20:00.000000Z",
+          met: true,
+        },
+        sla_missed_reason: null,
+        handover_to: "Mara Manager",
+        mailbox_handling: "converted_shared",
+        mailbox_recorded_at: "2026-10-01T08:30:00.000000Z",
+      },
+    },
+  };
+}

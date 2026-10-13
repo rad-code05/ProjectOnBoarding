@@ -5,6 +5,7 @@ import { formatDay, formatTime } from "@/lib/requests/format";
 import {
   accessRows,
   employeeRows,
+  offboardingRows,
   type Row,
   type Snapshot,
 } from "@/lib/requests/signing";
@@ -125,7 +126,8 @@ export function SnapshotCards({
   /** The viewer's screen timezone (F05e). */
   timeZone?: string;
 }) {
-  const access = accessRows(snapshot);
+  const access = accessRows(snapshot, timeZone);
+  const offboarding = offboardingRows(snapshot, timeZone);
   return (
     <>
       <div className="flex flex-col gap-3.5 md:grid md:grid-cols-2">
@@ -153,6 +155,18 @@ export function SnapshotCards({
           )}
         </section>
       </div>
+
+      {offboarding.length > 0 && (
+        <section aria-labelledby={`${idPrefix}-sla`} className={card}>
+          <CardHeader
+            id={`${idPrefix}-sla`}
+            title="8 · Access removal SLA & handover"
+            section={8}
+            onEdit={onEdit}
+          />
+          <Rows rows={offboarding} split />
+        </section>
+      )}
 
       <ExecutionCard
         snapshot={snapshot}

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { sampleRecord } from "./fixture";
+import { sampleOffboardingRecord, sampleRecord } from "./fixture";
 import { formatInZone, recordSections } from "./record";
 
 const rows = (number: number, input = sampleRecord()) =>
@@ -83,5 +83,40 @@ describe("the PDF record", () => {
       "Final reviewer": "Moises Larez",
       "Closure confirmation": "Confirmed complete",
     });
+  });
+});
+
+describe("an offboarding record (F09d-3)", () => {
+  const sections = recordSections(sampleOffboardingRecord());
+  const rows = (n: number) => sections.find((s) => s.number === n)?.rows ?? [];
+
+  test("section 5: how and when each application was removed, no 'No change' row", () => {
+    expect(rows(5)).toEqual([
+      { label: "Slack", value: "Delete · had Member · 1 Oct 2026, 12:05" },
+      {
+        label: "Google Workspace",
+        value: "Suspend · had User · 1 Oct 2026, 12:10",
+      },
+    ]);
+  });
+
+  test("sections 6 and 7: returns and disabled access", () => {
+    expect(rows(6)[0].value).toBe(
+      "Not returned · LN-0042 · Lost by the courier · 2 Oct 2026, 10:00",
+    );
+    expect(rows(7)[0].value).toBe("Disable · Badge · 1 Oct 2026, 12:20");
+  });
+
+  test("section 8: the SLA result and the handover, in the company timezone", () => {
+    expect(rows(8)).toEqual([
+      { label: "Timeline", value: "Within 24h" },
+      { label: "Last working day", value: "30 Sept 2026" },
+      { label: "Access cut-off", value: "30 Sept 2026, 18:00" },
+      { label: "Deadline", value: "1 Oct 2026, 18:00" },
+      { label: "Last access removed", value: "1 Oct 2026, 12:20" },
+      { label: "Removed within SLA", value: "Met · 3 of 3 removed" },
+      { label: "Data & mailbox go to", value: "Mara Manager" },
+      { label: "Mailbox", value: "Converted to a shared mailbox" },
+    ]);
   });
 });
