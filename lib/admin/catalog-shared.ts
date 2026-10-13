@@ -21,6 +21,8 @@ export type AdminApp = {
   categoryId: number;
   actions: string[];
   permissions: string[];
+  /** A request row may hold several permissions at once (Google Cloud roles). */
+  multiple: boolean;
   active: boolean;
   /** How many requests chose it (they keep its name if it changes). */
   uses: number;
@@ -29,9 +31,12 @@ export type AdminApp = {
 /** The chip filter: all active apps, one category, or the retired ones. */
 export type AppFilter = "all" | "retired" | number;
 
-/** "Grant · Modify · Remove — Viewer / Editor / Admin". */
-export function optionsLine(app: Pick<AdminApp, "actions" | "permissions">) {
-  return `${app.actions.join(" · ")} — ${app.permissions.join(" / ")}`;
+/** "Grant · Modify · Remove — Viewer / Editor / Admin" (+ "· several at once"). */
+export function optionsLine(
+  app: Pick<AdminApp, "actions" | "permissions"> & { multiple?: boolean },
+) {
+  const line = `${app.actions.join(" · ")} — ${app.permissions.join(" / ")}`;
+  return app.multiple ? `${line} · several at once` : line;
 }
 
 /**

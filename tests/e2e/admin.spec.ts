@@ -246,7 +246,7 @@ test("two tabs: the later save is refused and says 'changed somewhere else'", as
   await expect(other.getByLabel("First name")).toHaveValue("Anna");
 });
 
-test("Raju sets Slack, Figma and Google Workspace; on an onboarding Slack offers Grant and Hexnode Enroll", async ({
+test("Raju sets Slack, Figma, Google Workspace and two Google Cloud roles; on an onboarding Slack offers Grant and Hexnode Enroll", async ({
   page,
 }) => {
   await openApp(page, "/requests");
@@ -270,13 +270,26 @@ test("Raju sets Slack, Figma and Google Workspace; on an onboarding Slack offers
     await page.getByLabel(`${app} action`).selectOption(action);
     await page.getByLabel(`${app} permission`).selectOption(permission);
   }
-  await expect(accessStatus(page)).toHaveText(/^3 of \d+ set$/);
+  // Google Cloud takes several roles (2026-10-14): checkboxes in the sheet.
+  await page
+    .getByRole("button", { name: "Google Cloud roles: none. Change" })
+    .click();
+  const cloud = page.getByRole("dialog", { name: "Google Cloud" });
+  await cloud.getByRole("checkbox", { name: "Cloud Run Admin" }).check();
+  await cloud.getByRole("checkbox", { name: "Editor", exact: true }).check();
+  await cloud.getByRole("button", { name: "Done" }).click();
+  await expect(accessStatus(page)).toHaveText(/^4 of \d+ set$/);
 
   // "N of M set" replaces "Saving…" once every choice is stored.
   await openApp(page, page.url());
   await expect(page.getByLabel("Figma permission")).toHaveValue("Dev");
   await expect(page.getByLabel("Slack action")).toHaveValue("Grant");
-  await expect(accessStatus(page)).toHaveText(/^3 of \d+ set$/);
+  await expect(
+    page.getByRole("button", {
+      name: "Google Cloud roles: Editor; Cloud Run Admin. Change",
+    }),
+  ).toHaveText("2 roles");
+  await expect(accessStatus(page)).toHaveText(/^4 of \d+ set$/);
 });
 
 test("Raju adds an Other application (Notion) and it stays on the request", async ({

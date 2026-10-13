@@ -22,6 +22,7 @@ const app = (
   categoryId,
   actions: ["Grant", "Modify", "Remove"],
   permissions: ["User", "Admin"],
+  multiple: false,
   active,
   uses: 0,
 });
@@ -62,6 +63,11 @@ describe("filterApps", () => {
 describe("optionsLine", () => {
   test("actions, then permissions", () => {
     expect(optionsLine(apps[0])).toBe("Grant · Modify · Remove — User / Admin");
+  });
+  test("says when several can be held at once", () => {
+    expect(optionsLine({ ...apps[0], multiple: true })).toBe(
+      "Grant · Modify · Remove — User / Admin · several at once",
+    );
   });
 });
 

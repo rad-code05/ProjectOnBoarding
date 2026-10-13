@@ -31,6 +31,7 @@ const figma: AdminApp = {
   categoryId: 1,
   actions: ["Grant", "Modify", "Remove"],
   permissions: ["Viewer", "Editor", "Admin"],
+  multiple: false,
   active: true,
   uses: 12,
 };
@@ -75,6 +76,7 @@ describe("AppSheet", () => {
       name: "Notion",
       actions: ["Grant", "Remove"],
       permissions: ["Member", "Admin"],
+      multiple: false,
     });
     expect(refresh).toHaveBeenCalled();
   });
@@ -100,6 +102,29 @@ describe("AppSheet", () => {
     await waitFor(() =>
       expect(saveApp).toHaveBeenCalledWith(
         expect.objectContaining({ id: 8, permissions: ["Viewer", "Admin"] }),
+      ),
+    );
+  });
+
+  test("an admin lets an app take several roles at once", async () => {
+    const u = userEvent.setup();
+    render(
+      <AppSheet
+        app={figma}
+        categories={categories}
+        defaultCategoryId={1}
+        onClose={vi.fn()}
+      />,
+    );
+    await u.click(
+      screen.getByRole("checkbox", {
+        name: /A person can have several of these at once/,
+      }),
+    );
+    await u.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() =>
+      expect(saveApp).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 8, multiple: true }),
       ),
     );
   });

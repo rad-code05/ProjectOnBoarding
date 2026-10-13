@@ -6,6 +6,8 @@ export type CatalogApp = {
   name: string;
   actions: string[];
   permissions: string[];
+  /** Several permissions at once, stored as "A; B" (Google Cloud roles). */
+  multiple?: boolean;
 };
 
 export type CatalogCategory = { id: number; name: string; apps: CatalogApp[] };
@@ -27,7 +29,7 @@ export const setAccessSchema = z.object({
   permission: z
     .string()
     .trim()
-    .max(80)
+    .max(600)
     .nullable()
     .transform((value) => value || null),
   notes: z
@@ -44,6 +46,30 @@ export const clearAccessSchema = z.object({
 });
 
 export type AccessResult = { ok: true } | { ok: false; message: string };
+
+/** Between roles of an app that takes several (database: clean_permission). */
+export const ROLE_SEPARATOR = "; ";
+
+/** "Editor; Cloud Run Admin" → ["Editor", "Cloud Run Admin"]. */
+export function splitRoles(permission: string | null | undefined): string[] {
+  return (permission ?? "")
+    .split(";")
+    .map((role) => role.trim())
+    .filter(Boolean);
+}
+
+/** The chosen roles in the app's own order, as one value (null = none). */
+export function joinRoles(chosen: string[], options: string[]): string | null {
+  const roles = options.filter((option) => chosen.includes(option));
+  return roles.length > 0 ? roles.join(ROLE_SEPARATOR) : null;
+}
+
+/** Short form for a narrow cell: "—", "Editor", or "3 roles". */
+export function rolesLabel(permission: string | null | undefined): string {
+  const roles = splitRoles(permission);
+  if (roles.length === 0) return "—";
+  return roles.length === 1 ? roles[0] : `${roles.length} roles`;
+}
 
 /** "Grant · Editor", or "Not set". */
 export function choiceLabel(choice: AccessChoice | undefined): string {

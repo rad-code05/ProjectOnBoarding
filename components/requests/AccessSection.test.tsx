@@ -1,10 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { describe, expect, test, vi } from "vitest";
+import { beforeAll, describe, expect, test, vi } from "vitest";
 import {
   choiceLabel,
   filterCatalog,
+  joinRoles,
+  rolesLabel,
+  splitRoles,
   type AccessChoices,
   type OtherApp,
   type CatalogCategory,
@@ -20,6 +23,13 @@ vi.mock("@/app/(app)/requests/actions", () => ({
   saveOther: vi.fn(async () => ({ ok: true, id: "x" })),
   removeOther: vi.fn(async () => ({ ok: true })),
 }));
+
+beforeAll(() => {
+  // jsdom has no modal dialogs; the Sheet only needs showModal to exist.
+  HTMLDialogElement.prototype.showModal = function () {
+    this.setAttribute("open", "");
+  };
+});
 
 const catalog: CatalogCategory[] = [
   {
@@ -80,21 +90,39 @@ describe("access helpers", () => {
       ),
     ).toEqual(["Figma"]);
   });
+
+  test("several roles: split, join in the app's order, short label", () => {
+    expect(splitRoles(" Cloud Run Admin ;Editor; ")).toEqual([
+      "Cloud Run Admin",
+      "Editor",
+    ]);
+    expect(splitRoles(null)).toEqual([]);
+    const options = ["Viewer", "Editor", "Cloud Run Admin"];
+    expect(joinRoles(["Cloud Run Admin", "Editor"], options)).toBe(
+      "Editor; Cloud Run Admin",
+    );
+    expect(joinRoles([], options)).toBeNull();
+    expect(rolesLabel(null)).toBe("—");
+    expect(rolesLabel("Editor")).toBe("Editor");
+    expect(rolesLabel("Editor; Cloud Run Admin")).toBe("2 roles");
+  });
 });
 
 function Harness({
   initial = {},
   initialOthers = [],
+  apps = catalog,
 }: {
   initial?: AccessChoices;
   initialOthers?: OtherApp[];
+  apps?: CatalogCategory[];
 }) {
   const [access, setAccessState] = useState(initial);
   const [others, setOthers] = useState(initialOthers);
   return (
     <AccessSection
       requestId="0b8f6a3e-5d2c-4f1a-9e7b-2c3d4e5f6a7b"
-      catalog={catalog}
+      catalog={apps}
       access={access}
       onAccessChange={setAccessState}
       others={others}
@@ -154,5 +182,55 @@ describe("AccessSection", () => {
     expect(
       screen.getByRole("button", { name: "Add other application" }),
     ).toBeEnabled();
+  });
+
+  test("an app with several roles opens checkboxes and saves them in its order", async () => {
+    const cloud: CatalogCategory[] = [
+      {
+        id: 2,
+        name: "Engineering, cloud & data",
+        apps: [
+          {
+            id: 21,
+            name: "Google Cloud",
+            actions: ["Grant", "Modify", "Remove"],
+            permissions: ["Viewer", "Editor", "Cloud Run Admin"],
+            multiple: true,
+          },
+        ],
+      },
+    ];
+    render(
+      <Harness
+        apps={cloud}
+        initial={{ 21: { action: "Grant", permission: "Editor", notes: null } }}
+      />,
+    );
+    // Desktop: a button instead of the permission dropdown.
+    expect(screen.queryByLabelText("Google Cloud permission")).toBeNull();
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: "Google Cloud roles: Editor. Change",
+      }),
+    );
+    const sheet = screen.getByRole("dialog");
+    expect(sheet).toHaveTextContent("1 chosen");
+    await userEvent.click(
+      screen.getByRole("checkbox", { name: "Cloud Run Admin" }),
+    );
+    expect(sheet).toHaveTextContent("2 chosen");
+    await userEvent.click(screen.getByRole("button", { name: "Done" }));
+    expect(setAccess).toHaveBeenCalledWith(
+      expect.objectContaining({
+        appId: 21,
+        action: "Grant",
+        permission: "Editor; Cloud Run Admin",
+      }),
+    );
+    expect(
+      await screen.findByRole("button", {
+        name: "Google Cloud roles: Editor; Cloud Run Admin. Change",
+      }),
+    ).toHaveTextContent("2 roles");
   });
 });
