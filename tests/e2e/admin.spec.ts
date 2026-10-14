@@ -431,6 +431,36 @@ test("Raju cancels a request with a reason; it becomes read-only", async ({
   ).toHaveCount(0);
 });
 
+test("New request → Access change: Who is changing? and an empty access change", async ({
+  page,
+}) => {
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: "New request" }).first().click();
+  const sheet = page.getByRole("dialog", { name: "New onboarding" });
+  await sheet.getByText("Access change", { exact: true }).click();
+  const changing = page.getByRole("dialog", { name: "Who is changing?" });
+  await expect(changing.getByLabel("Find the person")).toBeVisible();
+  await expect(
+    changing.getByRole("button", { name: "Change access", exact: true }),
+  ).toBeDisabled();
+
+  await changing
+    .getByRole("button", { name: "Start an empty access change" })
+    .click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  await expect(
+    page.getByText(/New request · Access modification/),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Cancel this request…" }).click();
+  const cancel = page.getByRole("dialog", { name: "Cancel this request?" });
+  await cancel.getByLabel(/^Reason/).fill("Browser test");
+  await cancel.getByRole("button", { name: "Cancel request" }).click();
+  await expect(page.getByRole("group", { name: "Status" })).toHaveText(
+    "Cancelled",
+  );
+});
+
 test("New request → Offboarding: Who is leaving? and an empty offboarding draft", async ({
   page,
 }) => {

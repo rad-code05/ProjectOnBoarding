@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { buildLeavers, filterLeavers, leaverNote } from "./leavers-shared";
+import {
+  blockedReason,
+  buildLeavers,
+  filterLeavers,
+  leaverNote,
+} from "./leavers-shared";
 
 const people = [
   {
@@ -60,7 +65,14 @@ const leavers = buildLeavers({
       country: "AE",
     },
   ],
-  open: [{ employeeId: "p2", ticketId: "UAM-2026-000131" }],
+  open: [
+    { employeeId: "p2", ticketId: "UAM-2026-000131", type: "offboarding" },
+    {
+      employeeId: "p1",
+      ticketId: "UAM-2026-000140",
+      type: "access_modification",
+    },
+  ],
 });
 
 describe("buildLeavers", () => {
@@ -84,6 +96,19 @@ describe("buildLeavers", () => {
     );
     expect(leaverNote(leavers[1])).toBe(
       "Offboarding already open · UAM-2026-000131",
+    );
+  });
+
+  test("an access change: one at a time, and not while leaving", () => {
+    expect(leavers[0].openChange).toBe("UAM-2026-000140");
+    // An open access change doesn't stop an offboarding…
+    expect(blockedReason(leavers[0], "offboarding")).toBeNull();
+    // …but it stops a second access change, and leaving stops one too.
+    expect(leaverNote(leavers[0], "access_modification")).toBe(
+      "Access change already open · UAM-2026-000140",
+    );
+    expect(leaverNote(leavers[1], "access_modification")).toBe(
+      "Leaving — offboarding open · UAM-2026-000131",
     );
   });
 });

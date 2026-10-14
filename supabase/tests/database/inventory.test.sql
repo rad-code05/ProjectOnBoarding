@@ -19,12 +19,13 @@ insert into public.signature_assets (user_id, kind, source, typed_text) values
 
 -- Two requests about the same person (Nina): the first gives, the second changes.
 insert into public.requests
-  (created_by, first_name, last_name, work_email, job_title, department_id, country,
+  (created_by, type, first_name, last_name, work_email, job_title, department_id, country,
    manager_name, requestor_name, effective_date)
-select 'user_in_admin', 'Nina', 'Test', 'nina.test@example.test', 'Analyst',
+select 'user_in_admin', x.type::public.request_type, 'Nina', 'Test', 'nina.test@example.test', 'Analyst',
   (select id from public.departments where name = 'Engineering'), 'CH',
   'Mara Manager', 'Rita Requestor', date '2026-10-14'
-from generate_series(1, 2);
+from (values (1, 'onboarding'), (2, 'access_modification')) as x (n, type)
+order by x.n;
 
 create temporary table ids as
 select row_number() over (order by ticket_number) as n, id, ticket_id
@@ -49,7 +50,6 @@ from public.physical_access_types t where t.name = 'Office access';
 
 -- Request 2 is an access modification: Slack → Admin, Figma removed, laptop back,
 -- badge disabled, the Other app removed (an onboarding only grants since 2026-10-13).
-update public.requests set type = 'access_modification' where id = (select id from ids where n = 2);
 select is((select count(*)::int from public.request_access_items where request_id = (select id from ids where n = 2)), 0,
   'request 2 starts empty');
 insert into public.request_access_items (request_id, app_id, action, permission)
