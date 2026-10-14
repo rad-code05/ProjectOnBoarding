@@ -26,6 +26,11 @@ import {
   saveEquipmentSchema,
   setPhysicalSchema,
 } from "@/lib/requests/equipment";
+import {
+  heldChangeSchema,
+  keepHeldSchema,
+  type HeldKind,
+} from "@/lib/requests/access-change";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
 import type { TablesInsert } from "@/lib/supabase/database.types";
@@ -248,6 +253,157 @@ export async function clearAccess(input: {
     .eq("request_id", parsed.data.requestId)
     .eq("app_id", parsed.data.appId);
   return error ? accessError(error.code) : { ok: true };
+}
+
+/** Database refusals on an access change: its messages are written for people. */
+function heldError(error: { code?: string; message: string }): AccessResult {
+  if (error.code === "23514") {
+    const message =
+      error.message.charAt(0).toUpperCase() + error.message.slice(1);
+    return {
+      ok: false,
+      message: message.endsWith(".") ? message : `${message}.`,
+    };
+  }
+  if (error.code === "42501") {
+    return { ok: false, message: "This request can't be changed any more." };
+  }
+  return {
+    ok: false,
+    message: "Could not save. Check your connection and try again.",
+  };
+}
+
+/**
+ * Access change (F10c): change or remove one item the person holds — one
+ * line per held item, pointing to its inventory row. The database checks the
+ * item is still held, that a change picks something different, and keeps
+ * what they had on a removal (audited by the item triggers).
+ */
+export async function setHeldChange(input: {
+  requestId: string;
+  kind: HeldKind;
+  inventoryId: string;
+  action: string;
+  value: string | null;
+  notes: string | null;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = heldChangeSchema.safeParse(input);
+  if (!parsed.success)
+    return { ok: false, message: "That choice isn't valid." };
+  const { requestId, kind, inventoryId, action, value, notes } = parsed.data;
+  const supabase = createServerSupabaseClient();
+
+  const held = await supabase
+    .from("employee_access_inventory")
+    .select("app_id, name, equipment_type_id, access_type_id")
+    .eq("id", inventoryId)
+    .maybeSingle();
+  if (held.error || !held.data) {
+    return {
+      ok: false,
+      message: "That item isn't held any more — reload the request.",
+    };
+  }
+  const item = held.data;
+
+  if (kind === "application") {
+    const existing = await supabase
+      .from("request_access_items")
+      .select("id")
+      .eq("request_id", requestId)
+      .eq("inventory_id", inventoryId)
+      .maybeSingle();
+    if (existing.error) return heldError(existing.error);
+    const { error } = existing.data
+      ? await supabase
+          .from("request_access_items")
+          .update({ action, permission: value, notes })
+          .eq("id", existing.data.id)
+      : await supabase.from("request_access_items").insert({
+          request_id: requestId,
+          inventory_id: inventoryId,
+          app_id: item.app_id,
+          // The database copies the catalog name; an "Other" app keeps its own.
+          app_name: item.name,
+          action,
+          permission: value,
+          notes,
+        } as TablesInsert<"request_access_items">);
+    return error ? heldError(error) : { ok: true };
+  }
+
+  if (kind === "equipment") {
+    const existing = await supabase
+      .from("request_equipment_items")
+      .select("id")
+      .eq("request_id", requestId)
+      .eq("inventory_id", inventoryId)
+      .maybeSingle();
+    if (existing.error) return heldError(existing.error);
+    const { error } = existing.data
+      ? await supabase
+          .from("request_equipment_items")
+          .update({ action, notes })
+          .eq("id", existing.data.id)
+      : await supabase.from("request_equipment_items").insert({
+          request_id: requestId,
+          inventory_id: inventoryId,
+          // Type, asset tag and description are copied from the inventory.
+          type_id: item.equipment_type_id,
+          action,
+          notes,
+        } as TablesInsert<"request_equipment_items">);
+    return error ? heldError(error) : { ok: true };
+  }
+
+  const existing = await supabase
+    .from("request_physical_access_items")
+    .select("id")
+    .eq("request_id", requestId)
+    .eq("inventory_id", inventoryId)
+    .maybeSingle();
+  if (existing.error) return heldError(existing.error);
+  const { error } = existing.data
+    ? await supabase
+        .from("request_physical_access_items")
+        .update({ action, scope: value, notes })
+        .eq("id", existing.data.id)
+    : await supabase.from("request_physical_access_items").insert({
+        request_id: requestId,
+        inventory_id: inventoryId,
+        type_id: item.access_type_id,
+        action,
+        scope: value,
+        notes,
+      } as TablesInsert<"request_physical_access_items">);
+  return error ? heldError(error) : { ok: true };
+}
+
+/** Access change: keep a held item as it is — its line goes (audited). */
+export async function keepHeld(input: {
+  requestId: string;
+  kind: HeldKind;
+  inventoryId: string;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = keepHeldSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Unknown item." };
+  const { requestId, kind, inventoryId } = parsed.data;
+  const supabase = createServerSupabaseClient();
+  const table =
+    kind === "application"
+      ? "request_access_items"
+      : kind === "equipment"
+        ? "request_equipment_items"
+        : "request_physical_access_items";
+  const { error } = await supabase
+    .from(table)
+    .delete()
+    .eq("request_id", requestId)
+    .eq("inventory_id", inventoryId);
+  return error ? heldError(error) : { ok: true };
 }
 
 /** Section 5 "Add other application": adds or changes a one-off app (audited). */
