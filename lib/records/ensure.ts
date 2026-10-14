@@ -1,4 +1,5 @@
 import "server-only";
+import { labelFor } from "@/lib/requests/execution";
 import { createHash } from "node:crypto";
 import { SIGNATURE_BUCKET } from "@/lib/profile/signatures";
 import { personName } from "@/lib/requests/labels";
@@ -83,7 +84,7 @@ async function loadRecordInput(
     supabase.rpc("request_signature_marks", { p_request_id: requestId }),
     supabase
       .from("execution_checklist_items")
-      .select("key, label")
+      .select("key, label, type_labels")
       .contains("applies_to", [request.type])
       .eq("active", true)
       .order("sort_order"),
@@ -135,7 +136,7 @@ async function loadRecordInput(
       openedAt: request.created_at,
       closedAt: request.closed_at,
     },
-    checklist: checklist.data ?? [],
+    checklist: (checklist.data ?? []).map((row) => labelFor(row, request.type)),
     signatures,
   };
 }

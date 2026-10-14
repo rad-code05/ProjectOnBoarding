@@ -69,9 +69,11 @@ from public.physical_access_types t where t.name = 'Office access';
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_in_admin","role":"authenticated"}', true);
 select public.transition_request(id, 'in_execution') from ids;
+-- (the access change already has a pre-filled section 9 — 2026-10-14)
 insert into public.execution_confirmations (request_id, executed_by, checks)
 select id, 'user_in_admin',
-  '{"access_provisioned": true, "devices_enrolled": true, "security_controls": true}' from ids;
+  '{"access_provisioned": true, "devices_enrolled": true, "security_controls": true}' from ids
+on conflict (request_id) do update set checks = excluded.checks;
 select public.sign_request(id, public.request_snapshot_preview(id)) from ids;
 reset role;
 

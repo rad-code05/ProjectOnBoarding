@@ -1,6 +1,6 @@
 import { AlertIcon, CheckIcon } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import type { ChecklistItem } from "@/lib/requests/execution";
+import { CHECK_NOTES, type ChecklistItem } from "@/lib/requests/execution";
 import { formatDay, formatTime } from "@/lib/requests/format";
 import {
   accessRows,
@@ -255,7 +255,9 @@ export function ExecutionCard({
         {checklist.map((item) => {
           const value = execution?.checks[item.key];
           const done = value === true;
-          const notNeeded = value === "not_needed";
+          const other =
+            value === "not_needed" || value === "no_change" ? value : null;
+          const notNeeded = other !== null;
           return (
             <li key={item.key} className="flex items-start gap-2">
               {done || notNeeded ? (
@@ -265,7 +267,7 @@ export function ExecutionCard({
               )}
               <span className={cn(!done && !notNeeded && "text-signal")}>
                 {item.label}
-                {notNeeded && " — not needed"}
+                {other && ` — ${CHECK_NOTES[other]}`}
                 {!done && !notNeeded && " — not ticked"}
               </span>
             </li>

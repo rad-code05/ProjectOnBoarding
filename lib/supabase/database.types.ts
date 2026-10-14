@@ -420,6 +420,7 @@ export type Database = {
           key: string;
           label: string;
           sort_order: number;
+          type_labels: NonNullable<Json>;
         };
         Insert: {
           active?: boolean;
@@ -428,6 +429,7 @@ export type Database = {
           key: string;
           label: string;
           sort_order?: number;
+          type_labels?: NonNullable<Json>;
         };
         Update: {
           active?: boolean;
@@ -436,6 +438,7 @@ export type Database = {
           key?: string;
           label?: string;
           sort_order?: number;
+          type_labels?: NonNullable<Json>;
         };
         Relationships: [];
       };

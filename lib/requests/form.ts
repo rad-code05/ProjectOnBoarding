@@ -17,6 +17,7 @@ import type {
   ExecutionRecord,
   WorkflowInfo,
 } from "./execution";
+import { labelFor } from "./execution";
 import type {
   EquipmentItem,
   EquipmentType,
@@ -204,7 +205,7 @@ export async function loadRequestForm(
       .order("created_at"),
     supabase
       .from("execution_checklist_items")
-      .select("key, label")
+      .select("key, label, type_labels")
       .eq("active", true)
       .contains("applies_to", [request.type])
       .order("sort_order"),
@@ -448,7 +449,7 @@ export async function loadRequestForm(
         ),
       })),
     otherActions: allowedActions(request.type, "app", OTHER_ACTIONS),
-    checklist: checklist.data ?? [],
+    checklist: (checklist.data ?? []).map((row) => labelFor(row, request.type)),
     execution: {
       checks: (execution.data?.checks ?? {}) as Record<string, CheckValue>,
       notes: execution.data?.notes ?? null,
