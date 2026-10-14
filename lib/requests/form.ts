@@ -42,6 +42,8 @@ import type {
   ReturnStatus,
 } from "./offboarding";
 import type { SignedSection } from "./signing";
+import type { HeldItem, HeldKind, PreviousDetails } from "./access-change";
+import { loadAccessChange } from "./access-change-load";
 
 export type RequestFormData = {
   id: string;
@@ -80,6 +82,8 @@ export type RequestFormData = {
   returned: ReturnInfo | null;
   /** The signed-in person's screen timezone (F05e). */
   timezone: string;
+  /** Access change only (F10c): what they hold (+ this request's change), section 2 as it was. */
+  accessChange: { held: HeldItem[]; previous: PreviousDetails | null } | null;
   /** Offboarding only (F09c-2): SLA in the company timezone, what to remove. */
   offboarding: {
     companyTimezone: string;
@@ -117,7 +121,7 @@ export async function loadRequestForm(
   const { data: request, error } = await supabase
     .from("requests")
     .select(
-      "id, ticket_id, type, state, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, sla_missed_reason, mailbox_handling, mailbox_recorded_at, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
+      "id, ticket_id, type, state, employee_id, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, sla_missed_reason, mailbox_handling, mailbox_recorded_at, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -170,7 +174,7 @@ export async function loadRequestForm(
     supabase
       .from("request_access_items")
       .select(
-        "id, app_id, app_name, category_name, action, permission, notes, removal_method, done_at",
+        "id, app_id, app_name, category_name, action, permission, notes, removal_method, done_at, inventory_id",
       )
       .eq("request_id", request.id)
       .order("created_at"),
@@ -182,7 +186,7 @@ export async function loadRequestForm(
     supabase
       .from("request_equipment_items")
       .select(
-        "id, type_id, type_name, action, description, asset_tag, notes, return_status, return_reason, return_recorded_at",
+        "id, type_id, type_name, action, description, asset_tag, notes, return_status, return_reason, return_recorded_at, inventory_id",
       )
       .eq("request_id", request.id)
       .order("created_at"),
@@ -193,7 +197,9 @@ export async function loadRequestForm(
       .order("sort_order"),
     supabase
       .from("request_physical_access_items")
-      .select("id, type_id, type_name, action, scope, notes, done_at")
+      .select(
+        "id, type_id, type_name, action, scope, notes, done_at, inventory_id",
+      )
       .eq("request_id", request.id)
       .order("created_at"),
     supabase
@@ -262,6 +268,30 @@ export async function loadRequestForm(
       throw new Error(`Could not load the form: ${result.error.message}`);
     }
   }
+
+  // Access change (F10c): lines about something held are shown on its row,
+  // not in the regular sections; what they hold isn't offered as new.
+  const isChange = request.type === "access_modification";
+  const linked = (row: { inventory_id: string | null }) =>
+    isChange && row.inventory_id !== null;
+  const appRows = (items.data ?? []).filter((row) => !linked(row));
+  const equipmentRows = (equipment.data ?? []).filter((row) => !linked(row));
+  const physicalRows = (physical.data ?? []).filter((row) => !linked(row));
+  const accessChange = isChange
+    ? await loadAccessChange(supabase, request, [
+        ...(items.data ?? []).map((r) => ({ ...r, value: r.permission })),
+        ...(equipment.data ?? []).map((r) => ({ ...r, value: null })),
+        ...(physical.data ?? []).map((r) => ({ ...r, value: r.scope })),
+      ])
+    : null;
+  const heldIds = (kind: HeldKind) =>
+    new Set(
+      (accessChange?.held ?? [])
+        .filter((item) => item.kind === kind)
+        .map((item) => item.catalogId),
+    );
+  const heldApps = heldIds("application");
+  const heldAccess = heldIds("access");
 
   const assignees: Choice[] = (operators.data ?? []).map((row) => ({
     value: row.clerk_user_id,
@@ -355,7 +385,7 @@ export async function loadRequestForm(
       id: category.id,
       name: category.name,
       apps: category.catalog_apps
-        .filter((app) => app.active)
+        .filter((app) => app.active && !heldApps.has(app.id))
         .map(({ id, name, actions, permissions, multi_permission }) => ({
           id,
           name,
@@ -365,7 +395,7 @@ export async function loadRequestForm(
             request.type,
             "app",
             actions,
-            (items.data ?? []).find((item) => item.app_id === id)?.action,
+            appRows.find((item) => item.app_id === id)?.action,
           ),
           permissions,
         }))
@@ -376,7 +406,7 @@ export async function loadRequestForm(
         ),
     })),
     access: Object.fromEntries(
-      (items.data ?? []).flatMap((item) =>
+      appRows.flatMap((item) =>
         item.app_id === null
           ? []
           : [
@@ -397,7 +427,7 @@ export async function loadRequestForm(
       actions: allowedActions(request.type, "equipment", type.actions),
       needsDescription: type.needs_description,
     })),
-    equipment: (equipment.data ?? []).map((item) => ({
+    equipment: equipmentRows.map((item) => ({
       id: item.id,
       typeId: item.type_id,
       typeName: item.type_name,
@@ -406,15 +436,17 @@ export async function loadRequestForm(
       assetTag: item.asset_tag,
       notes: item.notes,
     })),
-    physicalTypes: (physicalTypes.data ?? []).map((type) => ({
-      ...type,
-      actions: allowedActions(
-        request.type,
-        "access",
-        type.actions,
-        (physical.data ?? []).find((row) => row.type_id === type.id)?.action,
-      ),
-    })),
+    physicalTypes: (physicalTypes.data ?? [])
+      .filter((type) => !heldAccess.has(type.id))
+      .map((type) => ({
+        ...type,
+        actions: allowedActions(
+          request.type,
+          "access",
+          type.actions,
+          physicalRows.find((row) => row.type_id === type.id)?.action,
+        ),
+      })),
     otherActions: allowedActions(request.type, "app", OTHER_ACTIONS),
     checklist: checklist.data ?? [],
     execution: {
@@ -446,7 +478,7 @@ export async function loadRequestForm(
       returnReason: request.return_reason,
     },
     physical: Object.fromEntries(
-      (physical.data ?? []).map((row) => [
+      physicalRows.map((row) => [
         row.type_id,
         { action: row.action, scope: row.scope, notes: row.notes },
       ]),
@@ -464,13 +496,14 @@ export async function loadRequestForm(
         ? returnInfo(lastReturn.data, request.return_reason, tz)
         : null,
     timezone: tz,
+    accessChange,
     offboarding:
       request.type === "offboarding"
         ? {
             companyTimezone: companyTz,
             dueAt: request.sla_due_at,
             removals: {
-              apps: (items.data ?? []).map((item) => ({
+              apps: appRows.map((item) => ({
                 id: item.id,
                 appId: item.app_id,
                 name: item.app_name,
@@ -479,7 +512,7 @@ export async function loadRequestForm(
                 method: item.removal_method as RemovalMethod | null,
                 doneAt: item.done_at,
               })),
-              equipment: (equipment.data ?? []).map((item) => ({
+              equipment: equipmentRows.map((item) => ({
                 id: item.id,
                 name: item.type_name,
                 assetTag: item.asset_tag,
@@ -488,7 +521,7 @@ export async function loadRequestForm(
                 reason: item.return_reason,
                 recordedAt: item.return_recorded_at,
               })),
-              access: (physical.data ?? []).map((row) => ({
+              access: physicalRows.map((row) => ({
                 id: row.id,
                 typeId: row.type_id,
                 name: row.type_name,
@@ -509,7 +542,7 @@ export async function loadRequestForm(
             },
           }
         : null,
-    others: (items.data ?? [])
+    others: appRows
       .filter((item) => item.app_id === null)
       .map((item) => ({
         id: item.id,
