@@ -470,6 +470,34 @@
       "w": 390,
       "h": 1300,
       "title": "Phone · SLA missed or met — F09 proposal"
+    },
+    "AccessChangeStartMobile.dc.html": {
+      "x": 15960,
+      "y": 13560,
+      "w": 390,
+      "h": 960,
+      "title": "Phone · Start an access change (who is changing?) — F10 proposal"
+    },
+    "AccessChangeDraftMobile.dc.html": {
+      "x": 16430,
+      "y": 13560,
+      "w": 390,
+      "h": 2480,
+      "title": "Phone · Access change draft (keep / change / remove) — F10 proposal"
+    },
+    "AccessChangeSheetMobile.dc.html": {
+      "x": 16900,
+      "y": 13560,
+      "w": 390,
+      "h": 844,
+      "title": "Phone · Change an app's permission (sheet) — F10 proposal"
+    },
+    "AccessChangeRecordMobile.dc.html": {
+      "x": 17370,
+      "y": 13560,
+      "w": 390,
+      "h": 1500,
+      "title": "Phone · Access change record (what changed) — F10 proposal"
     }
   },
   "createdOnFiles": {
@@ -491,7 +519,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 15880,
+      "maxW": 17760,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -595,7 +623,11 @@
     "OffboardDraftMobile.dc.html",
     "OffboardExecutionMobile.dc.html",
     "EquipmentReturnMobile.dc.html",
-    "SlaResultMobile.dc.html"
+    "SlaResultMobile.dc.html",
+    "AccessChangeStartMobile.dc.html",
+    "AccessChangeDraftMobile.dc.html",
+    "AccessChangeSheetMobile.dc.html",
+    "AccessChangeRecordMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Start an access change · Phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}
+a{color:#000000}a:hover{color:#cf2e2e}
+input::placeholder{color:#7e7e7e}
+</style>
+</helmet>
+<div style="width: 390px; height: 960px; position: relative; font-family: Raleway, sans-serif; background: rgba(0,0,0,0.45); color: #000000">
+
+<div role="dialog" aria-labelledby="sheet-title" style="position: absolute; left: 0; right: 0; bottom: 0; top: 40px; background: #FFFFFF; border-radius: 20px 20px 0 0; display: flex; flex-direction: column">
+<div style="padding: 10px 16px 0; display: flex; justify-content: center"><span style="width: 40px; height: 4px; border-radius: 100px; background: #dcd4c7"></span></div>
+<div style="padding: 12px 16px 8px; display: flex; align-items: flex-start; gap: 12px">
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #535353">New request</span>
+<h2 id="sheet-title" style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 26px">Who is changing?</h2>
+</div>
+<button type="button" aria-label="Close" style="width: 44px; height: 44px; border: none; background: transparent; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+
+<div style="flex-grow: 1; overflow: auto; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 14px">
+
+<div style="overflow-x: auto; margin: 0 -16px; padding: 0 16px">
+<div role="radiogroup" aria-label="Request type" style="display: inline-flex; gap: 3px; padding: 3px; background: #F4F0EA; border-radius: 100px; white-space: nowrap">
+<button type="button" role="radio" aria-checked="false" style="height: 38px; padding: 0 14px; border: none; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 500; color: #000000">Onboarding</button>
+<button type="button" role="radio" aria-checked="false" style="height: 38px; padding: 0 14px; border: none; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 500; color: #000000">Offboarding</button>
+<button type="button" role="radio" aria-checked="true" style="height: 38px; padding: 0 14px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">Access change</button>
+</div>
+</div>
+
+<p style="margin: 0; font-size: 13px; line-height: 1.5; color: #535353">For someone who stays: a new role, a new tool, or access they no longer need. Their current access is listed for you — keep, change or remove each item.</p>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="who" style="font-size: 13px; font-weight: 600">Find the person</label>
+<div style="height: 48px; box-sizing: border-box; padding: 0 12px; display: flex; align-items: center; gap: 10px; border: 1px solid #cfc7ba; border-radius: 10px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#535353" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+<input id="who" type="search" placeholder="Name or work email" style="flex-grow: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: Raleway, sans-serif; font-size: 16px; color: #000000">
+</div>
+<span style="font-size: 12px; line-height: 1.5; color: #535353">People with access on record — everything granted on their closed requests.</span>
+</div>
+
+<fieldset style="margin: 0; padding: 0; border: none">
+<legend style="position: absolute; width: 1px; height: 1px; overflow: hidden">Person</legend>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{people}}" as="p" hint-placeholder-count="4">
+<li>
+<label style="{{p.box}}">
+<sc-if value="{{p.on}}" hint-placeholder-val="{{false}}"><input type="radio" name="person" checked style="width: 22px; height: 22px; margin: 2px 0 0; accent-color: #000000; flex-shrink: 0"></sc-if><sc-if value="{{p.free}}" hint-placeholder-val="{{true}}"><input type="radio" name="person" style="width: 22px; height: 22px; margin: 2px 0 0; accent-color: #000000; flex-shrink: 0"></sc-if><sc-if value="{{p.blocked}}" hint-placeholder-val="{{false}}"><input type="radio" name="person" disabled style="width: 22px; height: 22px; margin: 2px 0 0; accent-color: #000000; flex-shrink: 0"></sc-if>
+<span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 15px; font-weight: 700; color: {{p.nameColor}}">{{p.name}}</span>
+<span style="font-size: 13px; color: #535353; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{p.detail}}</span>
+<span style="font-size: 12px; font-weight: 600; color: {{p.noteColor}}">{{p.note}}</span>
+</span>
+</label>
+</li>
+</sc-for>
+</ul>
+</fieldset>
+
+<div style="padding: 12px 14px; background: #F4F0EA; border-radius: 12px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; font-weight: 700">Not in the list?</span>
+<span style="font-size: 12px; line-height: 1.5; color: #535353">People who joined before the app are added with the Excel import later. Until then you can start an empty access change and add what they get by hand.</span>
+<button type="button" style="align-self: flex-start; height: 44px; padding: 0; border: none; background: transparent; font-family: Raleway, sans-serif; font-size: 14px; font-weight: 600; color: #000000; text-decoration: underline; text-underline-offset: 3px">Start an empty access change</button>
+</div>
+</div>
+
+<div style="padding: 12px 16px 20px; border-top: 1px solid #dcd4c7; display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px">
+<button type="button" style="height: 48px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Cancel</button>
+<button type="button" style="height: 48px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Change Anna's access</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":960}}'>
+class Component extends DCLogic {
+renderVals() {
+const person = (name, detail, note, state) => {
+const on = state === 'on';
+const blocked = state === 'blocked';
+return {
+name: name, detail: detail, note: note, on: on, blocked: blocked, free: !on && !blocked,
+nameColor: blocked ? '#535353' : '#000000',
+noteColor: blocked ? '#cf2e2e' : '#535353',
+box: 'display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; ' + (on ? 'border: 2px solid #000000' : 'border: 1px solid #dcd4c7')
+};
+};
+return {
+people: [
+person('Anna Keller', 'Engineering · Switzerland · anna.keller@laine.ai', '12 items on record · since UAM-2026-000101', 'on'),
+person('Lea Brunner', 'Marketing · Germany · lea.brunner@laine.ai', '7 items on record · since UAM-2026-000107'),
+person('Marco Rossi', 'Sales · Italy · marco.rossi@laine.ai', 'Access change already open · UAM-2026-000140', 'blocked'),
+person('Omar Haddad', 'Operations · UAE · omar.haddad@laine.ai', 'Leaving — offboarding open · UAM-2026-000131', 'blocked')
+]
+};
+}
+}
+</script>
+</body>
+</html>
