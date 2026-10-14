@@ -2,7 +2,7 @@
 
 import { useId, useState, useTransition } from "react";
 import { saveExecution } from "@/app/(app)/requests/actions";
-import type { CheckValue } from "@/lib/requests/execution";
+import { CHECK_NOTES, type CheckValue } from "@/lib/requests/execution";
 import { InlineError } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
@@ -102,7 +102,10 @@ export function ExecutionSection({
         {items.map((item) => {
           const value = checks[item.key];
           const on = value === true;
-          const notNeeded = value === "not_needed";
+          // Not needed (2026-10-13) or no changes made (access change, 2026-10-14).
+          const other =
+            value === "not_needed" || value === "no_change" ? value : null;
+          const notNeeded = other !== null;
           return (
             <div
               key={item.key}
@@ -132,10 +135,10 @@ export function ExecutionSection({
                   )}
                 >
                   {item.label}
-                  {notNeeded && (
+                  {other && (
                     <span className="font-semibold text-ink">
                       {" "}
-                      — not needed
+                      — {CHECK_NOTES[other]}
                     </span>
                   )}
                 </span>
@@ -144,13 +147,21 @@ export function ExecutionSection({
                 <button
                   type="button"
                   aria-pressed={notNeeded}
-                  aria-label={`${item.label}: not needed`}
+                  aria-label={
+                    other === "no_change"
+                      ? `${item.label}: changes were made after all`
+                      : `${item.label}: not needed`
+                  }
                   onClick={() =>
                     toggle(item.key, notNeeded ? false : "not_needed")
                   }
                   className="-my-2 h-11 shrink-0 px-1 text-xs font-semibold underline underline-offset-[3px] md:h-auto md:py-1"
                 >
-                  {notNeeded ? "Needed after all" : "Not needed"}
+                  {other === "no_change"
+                    ? "Changes were made after all"
+                    : notNeeded
+                      ? "Needed after all"
+                      : "Not needed"}
                 </button>
               )}
             </div>

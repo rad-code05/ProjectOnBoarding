@@ -354,4 +354,30 @@ describe("an access change (F10d)", () => {
       },
     ]);
   });
+
+  test("No changes made where this request does change something is a warning", () => {
+    const record = sampleAccessChangeRecord();
+    const checks = signingChecks(
+      review({
+        snapshot: {
+          ...record.snapshot,
+          execution: {
+            ...record.snapshot.execution!,
+            checks: {
+              access_provisioned: "no_change",
+              devices_enrolled: true,
+              security_controls: true,
+            },
+          },
+        },
+      }),
+    );
+    expect(checks).toContainEqual({
+      ok: true,
+      warn: true,
+      label:
+        "Section 9 says “No changes made” for access, but this request changes access — check section 9",
+      fix: { section: 9 },
+    });
+  });
 });

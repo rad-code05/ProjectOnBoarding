@@ -24,10 +24,14 @@ const items: ChecklistItem[] = [
   },
 ];
 
-function Harness({ editable = true }: { editable?: boolean }) {
-  const [checks, setChecks] = useState<Record<string, CheckValue>>({
-    access_provisioned: true,
-  });
+function Harness({
+  editable = true,
+  initial = { access_provisioned: true },
+}: {
+  editable?: boolean;
+  initial?: Record<string, CheckValue>;
+}) {
+  const [checks, setChecks] = useState<Record<string, CheckValue>>(initial);
   return (
     <ExecutionSection
       requestId="0b8f6a3e-5d2c-4f1a-9e7b-2c3d4e5f6a7b"
@@ -73,6 +77,30 @@ describe("ExecutionSection", () => {
         checks: { access_provisioned: true, devices_enrolled: false },
       }),
     );
+  });
+
+  test("an access change pre-filled with No changes made can be undone (2026-10-14)", async () => {
+    render(
+      <Harness
+        initial={{
+          devices_enrolled: "no_change",
+          security_controls: "no_change",
+        }}
+      />,
+    );
+    expect(screen.getByText("2 of 3 done")).toBeInTheDocument();
+    expect(screen.getAllByText("— no changes made")).toHaveLength(2);
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: "Devices issued and enrolled (MDM): changes were made after all",
+      }),
+    );
+    expect(saveExecution).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        checks: { devices_enrolled: false, security_controls: "no_change" },
+      }),
+    );
+    expect(await screen.findByText("1 of 3 done")).toBeInTheDocument();
   });
 
   test("shows the checklist of the ticket type with what is done", () => {

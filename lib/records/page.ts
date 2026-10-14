@@ -4,6 +4,7 @@ import {
   type AppliedSignature,
 } from "@/lib/approvals/review";
 import type { ChecklistItem } from "@/lib/requests/execution";
+import { labelFor } from "@/lib/requests/execution";
 import { formatDayTime } from "@/lib/requests/format";
 import type { RequestType } from "@/lib/requests/labels";
 import { snapshotSchema, type Snapshot } from "@/lib/requests/signing";
@@ -61,7 +62,7 @@ export async function loadRecordPage(id: string): Promise<RecordPage | null> {
     tzPromise.then((tz) => loadAppliedSignatures(supabase, id, tz)),
     supabase
       .from("execution_checklist_items")
-      .select("key, label")
+      .select("key, label, type_labels")
       .contains("applies_to", [request.type])
       .eq("active", true)
       .order("sort_order"),
@@ -89,7 +90,7 @@ export async function loadRecordPage(id: string): Promise<RecordPage | null> {
     closedLabel: formatDayTime(request.closed_at, tz),
     timezone: tz,
     snapshot: parsed.data,
-    checklist: checklist.data ?? [],
+    checklist: (checklist.data ?? []).map((row) => labelFor(row, request.type)),
     it: applied.it,
     approval: applied.approval,
     pdf,

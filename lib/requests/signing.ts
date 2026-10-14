@@ -65,7 +65,7 @@ export const snapshotSchema = z.object({
       // "not_needed" since 2026-10-13 (e.g. no device provided).
       checks: z.record(
         z.string(),
-        z.union([z.boolean(), z.literal("not_needed")]),
+        z.union([z.boolean(), z.literal("not_needed"), z.literal("no_change")]),
       ),
       notes: text,
       executed_by_name: text,
@@ -386,6 +386,40 @@ function pendingDevices(snapshot: Json): Check[] {
   ];
 }
 
+/**
+ * Access change: section 9 says "No changes made" for an area this request
+ * does change (it was pre-filled before a line was added) — a warning.
+ */
+function noChangeConflicts(snapshot: Json): Check[] {
+  const parsed = snapshotSchema.safeParse(snapshot);
+  if (!parsed.success || !parsed.data.access_modification) return [];
+  const s = parsed.data;
+  const checks = s.execution?.checks ?? {};
+  const added =
+    s.access.some((a) => a.had === undefined && a.action !== "Remove") ||
+    s.physical_access.some(
+      (p) => p.had === undefined && !["Disable", "Remove"].includes(p.action),
+    ) ||
+    s.equipment.some((e) => e.action === "Issue");
+  const conflicts: [string, boolean, string][] = [
+    [
+      "access_provisioned",
+      s.access.length + s.physical_access.length > 0,
+      "access",
+    ],
+    ["devices_enrolled", s.equipment.length > 0, "devices"],
+    ["security_controls", added, "security controls"],
+  ];
+  return conflicts
+    .filter(([key, changed]) => changed && checks[key] === "no_change")
+    .map(([, , area]) => ({
+      ok: true,
+      warn: true,
+      label: `Section 9 says “No changes made” for ${area}, but this request changes ${area} — check section 9`,
+      fix: { section: 9 },
+    }));
+}
+
 /** The checks at the top of the sheet: blocking ones and warnings. */
 export function signingChecks(review: SigningReview): Check[] {
   const checks: Check[] = [];
@@ -421,6 +455,7 @@ export function signingChecks(review: SigningReview): Check[] {
           fix: { section: 9 },
         },
     ...pendingDevices(review.snapshot),
+    ...noChangeConflicts(review.snapshot),
     review.signature
       ? { ok: true, label: "Your signature is on file", fix: null }
       : {
