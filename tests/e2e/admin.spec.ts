@@ -386,7 +386,7 @@ test("Raju starts execution and ticks section 9; the start time is recorded", as
     section9.getByText(/\d{1,2} \w{3} \d{4}, \d\d:\d\d/),
   ).toBeVisible();
   for (const item of [
-    "All authorised access provisioned or modified",
+    "All authorised access provisioned",
     "Devices issued and enrolled (MDM)",
     "Security controls applied (MFA, MDM, EDR)",
   ]) {
@@ -760,7 +760,7 @@ test("Raju reviews and signs a request; it awaits confirmation with his signatur
     name: "IT execution confirmation",
   });
   for (const item of [
-    "All authorised access provisioned or modified",
+    "All authorised access provisioned",
     "Devices issued and enrolled (MDM)",
     "Security controls applied (MFA, MDM, EDR)",
   ]) {
