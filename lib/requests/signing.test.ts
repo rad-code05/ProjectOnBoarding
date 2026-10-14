@@ -2,9 +2,12 @@
 import { createHash } from "node:crypto";
 import canonicalize from "canonicalize";
 import { describe, expect, test } from "vitest";
+import { sampleAccessChangeRecord } from "@/lib/records/fixture";
 import {
   accessRows,
+  employeeChangeRows,
   employeeRows,
+  keptRows,
   pdfFileName,
   signButtonLabel,
   signErrorMessage,
@@ -304,5 +307,51 @@ describe("pdfFileName", () => {
     [null, null, "onboarding", "request-onboarding.pdf"],
   ])("%s %s (%s) → %s", (first, last, type, expected) => {
     expect(pdfFileName(first, last, type)).toBe(expected);
+  });
+});
+
+describe("an access change (F10d)", () => {
+  const snapshot = snapshotSchema.parse(sampleAccessChangeRecord().snapshot);
+
+  test("rows say had → now, removed, added, returned", () => {
+    expect(accessRows(snapshot)).toEqual([
+      { label: "Figma", value: "Viewer → Full" },
+      { label: "Slack", value: "Removed · had Member" },
+      { label: "GitHub", value: "Added · Grant · Maintain" },
+      { label: "Laptop · macOS", value: "Returned · LN-0042" },
+      { label: "Office access", value: "Badge → Key" },
+    ]);
+  });
+
+  test("employee: only what differs from the previous request", () => {
+    expect(employeeChangeRows(snapshot)).toEqual([
+      { label: "Job title", value: "Product Designer → Design Lead" },
+    ]);
+  });
+
+  test("kept: everything left as it is, or one kind", () => {
+    expect(keptRows(snapshot)).toEqual([
+      { label: "Google Workspace", value: "User" },
+      { label: "Zoom", value: "Licensed" },
+    ]);
+    expect(keptRows(snapshot, "equipment")).toEqual([]);
+  });
+
+  test("nothing to change gets its own line with a Fix to section 5", () => {
+    const checks = signingChecks(
+      review({
+        missingFields: [
+          "At least one change: an application, device or access to change, remove or add",
+        ],
+      }),
+    );
+    expect(checks.filter((c) => !c.ok)).toEqual([
+      {
+        ok: false,
+        label:
+          "At least one change: an application, device or access to change, remove or add",
+        fix: { section: 5 },
+      },
+    ]);
   });
 });

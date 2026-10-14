@@ -4,7 +4,9 @@ import type { ChecklistItem } from "@/lib/requests/execution";
 import { formatDay, formatTime } from "@/lib/requests/format";
 import {
   accessRows,
+  employeeChangeRows,
   employeeRows,
+  keptRows,
   offboardingRows,
   type Row,
   type Snapshot,
@@ -128,6 +130,10 @@ export function SnapshotCards({
 }) {
   const access = accessRows(snapshot, timeZone);
   const offboarding = offboardingRows(snapshot, timeZone);
+  // Access change (F10d): what changed in section 2, and what is kept.
+  const isChange = Boolean(snapshot.access_modification);
+  const employeeChanges = employeeChangeRows(snapshot);
+  const kept = keptRows(snapshot);
   return (
     <>
       <div className="flex flex-col gap-3.5 md:grid md:grid-cols-2">
@@ -144,7 +150,7 @@ export function SnapshotCards({
         <section aria-labelledby={`${idPrefix}-access`} className={card}>
           <CardHeader
             id={`${idPrefix}-access`}
-            title="Access & equipment"
+            title={isChange ? "What changes" : "Access & equipment"}
             section={5}
             onEdit={onEdit}
           />
@@ -155,6 +161,41 @@ export function SnapshotCards({
           )}
         </section>
       </div>
+
+      {isChange && (
+        <div className="flex flex-col gap-3.5 md:grid md:grid-cols-2">
+          <section aria-labelledby={`${idPrefix}-was`} className={card}>
+            <CardHeader
+              id={`${idPrefix}-was`}
+              title="Employee · was → now"
+              section={2}
+              onEdit={onEdit}
+            />
+            {employeeChanges.length > 0 ? (
+              <Rows rows={employeeChanges} split />
+            ) : (
+              <p className="text-[13px] text-graphite">
+                No change to the employee details.
+              </p>
+            )}
+          </section>
+          <section aria-labelledby={`${idPrefix}-kept`} className={card}>
+            <CardHeader
+              id={`${idPrefix}-kept`}
+              title={`Kept unchanged · ${kept.length}`}
+              section={5}
+              onEdit={onEdit}
+            />
+            {kept.length > 0 ? (
+              <Rows rows={kept} split />
+            ) : (
+              <p className="text-[13px] text-graphite">
+                Nothing else on record.
+              </p>
+            )}
+          </section>
+        </div>
+      )}
 
       {offboarding.length > 0 && (
         <section aria-labelledby={`${idPrefix}-sla`} className={card}>

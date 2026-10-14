@@ -19,7 +19,9 @@ import type { RecordPage } from "@/lib/records/page";
 import { TYPE_LABELS, personName } from "@/lib/requests/labels";
 import {
   accessRows,
+  employeeChangeRows,
   employeeRows,
+  keptRows,
   offboardingRows,
 } from "@/lib/requests/signing";
 
@@ -41,6 +43,9 @@ export function RecordView({
   const pdfUrl = `/records/${record.id}/pdf`;
   const access = accessRows(record.snapshot, record.timezone);
   const offboarding = offboardingRows(record.snapshot, record.timezone);
+  const isChange = Boolean(record.snapshot.access_modification);
+  const employeeChanges = employeeChangeRows(record.snapshot);
+  const kept = keptRows(record.snapshot);
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-3.5">
@@ -173,7 +178,7 @@ export function RecordView({
             <Rows rows={employeeRows(record.snapshot)} />
           </Expandable>
           <Expandable
-            title="Access & equipment"
+            title={isChange ? "What changed" : "Access & equipment"}
             note={`${access.length} item${access.length === 1 ? "" : "s"}`}
           >
             {access.length > 0 ? (
@@ -182,6 +187,37 @@ export function RecordView({
               <p className="text-[13px] text-graphite">Nothing requested.</p>
             )}
           </Expandable>
+          {isChange && (
+            <>
+              <Expandable
+                title="Employee · was → now"
+                note={
+                  employeeChanges.map((row) => row.label).join(", ") ||
+                  "No change"
+                }
+              >
+                {employeeChanges.length > 0 ? (
+                  <Rows rows={employeeChanges} split />
+                ) : (
+                  <p className="text-[13px] text-graphite">
+                    No change to the employee details.
+                  </p>
+                )}
+              </Expandable>
+              <Expandable
+                title="Kept unchanged"
+                note={`${kept.length} item${kept.length === 1 ? "" : "s"}`}
+              >
+                {kept.length > 0 ? (
+                  <Rows rows={kept} split />
+                ) : (
+                  <p className="text-[13px] text-graphite">
+                    Nothing else on record.
+                  </p>
+                )}
+              </Expandable>
+            </>
+          )}
           {offboarding.length > 0 && (
             <Expandable
               title="Access removal SLA & handover"
