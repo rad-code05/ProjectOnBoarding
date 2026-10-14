@@ -62,18 +62,18 @@ select public.transition_request(id, 'in_execution') from chg;
 
 select is(
   (select checks from public.execution_confirmations where request_id = (select id from chg)),
-  '{"devices_enrolled": "no_change", "security_controls": "no_change"}'::jsonb,
-  'starting execution pre-fills "no change" for devices and security; access is left to tick');
+  '{"access_provisioned": true, "devices_enrolled": "no_change", "security_controls": "no_change"}'::jsonb,
+  'starting execution pre-fills Yes where access changed and "no change" for devices and security');
 reset role;
-select ok(not private.execution_complete((select id from chg)), 'not complete until access is ticked');
+select ok(private.execution_complete((select id from chg)), 'pre-filled = complete');
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_s9_admin","role":"authenticated"}', true);
 select lives_ok(
-  $$update public.execution_confirmations set checks = checks || '{"access_provisioned": true}'
+  $$update public.execution_confirmations set checks = checks || '{"access_provisioned": false}'
     where request_id = (select id from chg)$$,
-  'Raju ticks the access item');
+  'Raju can still untick an item');
 reset role;
-select ok(private.execution_complete((select id from chg)), '"no change" counts as complete');
+select ok(not private.execution_complete((select id from chg)), 'an unticked item is not complete');
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_s9_admin","role":"authenticated"}', true);
 select lives_ok(
