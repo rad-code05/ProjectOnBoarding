@@ -10,9 +10,10 @@ const OPEN_STATES = [
 ] as const;
 
 /**
- * "Who is leaving?" (F09c): everyone who holds something in the access
- * inventory (built from closed requests), with their last known department
- * and country, how many items they hold, and any offboarding already open.
+ * "Who is leaving?" (F09c) / "Who is changing?" (F10b): everyone who holds
+ * something in the access inventory (built from closed requests), with their
+ * last known department and country, how many items they hold, and any
+ * offboarding or access change already open.
  */
 export async function listLeavers(): Promise<Leaver[]> {
   const supabase = createServerSupabaseClient();
@@ -42,8 +43,8 @@ export async function listLeavers(): Promise<Leaver[]> {
       .order("closed_at", { ascending: false }),
     supabase
       .from("requests")
-      .select("employee_id, ticket_id")
-      .eq("type", "offboarding")
+      .select("employee_id, ticket_id, type")
+      .in("type", ["offboarding", "access_modification"])
       .in("state", OPEN_STATES)
       .in("employee_id", ids),
   ]);
@@ -79,7 +80,16 @@ export async function listLeavers(): Promise<Leaver[]> {
     ),
     open: (open.data ?? []).flatMap((r) =>
       r.employee_id
-        ? [{ employeeId: r.employee_id, ticketId: r.ticket_id }]
+        ? [
+            {
+              employeeId: r.employee_id,
+              ticketId: r.ticket_id,
+              type:
+                r.type === "access_modification"
+                  ? ("access_modification" as const)
+                  : ("offboarding" as const),
+            },
+          ]
         : [],
     ),
   });

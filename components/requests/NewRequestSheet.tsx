@@ -1,21 +1,34 @@
 "use client";
 
 import { useId, useState, useTransition } from "react";
-import { createDraft, startOffboarding } from "@/app/(app)/requests/actions";
+import {
+  createDraft,
+  startAccessChange,
+  startOffboarding,
+} from "@/app/(app)/requests/actions";
 import { Button, InlineError, PlusIcon, Sheet } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
+  blockedReason,
   filterLeavers,
   leaverNote,
   type Leaver,
+  type PickFor,
 } from "@/lib/requests/leavers-shared";
 
-type Kind = "onboarding" | "offboarding";
+type Kind = "onboarding" | PickFor;
+
+const TITLES: Record<Kind, string> = {
+  onboarding: "New onboarding",
+  offboarding: "Who is leaving?",
+  access_modification: "Who is changing?",
+};
 
 /**
- * "New request" (F09c, board Phone · Start an offboarding): choose the type;
- * an offboarding starts from "Who is leaving?" — people with access on
- * record, pre-filled by the database — or empty for someone not in the app.
+ * "New request" (F09c, board Phone · Start an offboarding; F10b, board Phone ·
+ * Start an access change): choose the type; an offboarding starts from "Who
+ * is leaving?" and an access change from "Who is changing?" — people with
+ * access on record — or empty for someone not in the app yet.
  */
 export function NewRequestMenu({
   leavers,
@@ -70,7 +83,7 @@ export function NewRequestSheet({
   return (
     <Sheet
       eyebrow="New request"
-      title={kind === "offboarding" ? "Who is leaving?" : "New onboarding"}
+      title={TITLES[kind]}
       onClose={onClose}
       footer={
         <div className="grid grid-cols-[1fr_1.4fr] gap-2">
@@ -81,7 +94,7 @@ export function NewRequestSheet({
             <Button loading={pending} onClick={() => go(() => createDraft())}>
               Start onboarding
             </Button>
-          ) : (
+          ) : kind === "offboarding" ? (
             <Button
               loading={pending}
               disabled={!person}
@@ -90,6 +103,18 @@ export function NewRequestSheet({
               }
             >
               {person ? `Offboard ${person.name.split(" ")[0]}` : "Offboard"}
+            </Button>
+          ) : (
+            <Button
+              loading={pending}
+              disabled={!person}
+              onClick={() =>
+                person && go(() => startAccessChange({ employeeId: person.id }))
+              }
+            >
+              {person
+                ? `Change ${person.name.split(" ")[0]}'s access`
+                : "Change access"}
             </Button>
           )}
         </div>
@@ -102,6 +127,7 @@ export function NewRequestSheet({
             [
               ["onboarding", "Onboarding"],
               ["offboarding", "Offboarding"],
+              ["access_modification", "Access change"],
             ] as const
           ).map(([value, label]) => (
             <label
@@ -115,6 +141,7 @@ export function NewRequestSheet({
                 checked={kind === value}
                 onChange={() => {
                   setKind(value);
+                  setChosen(null);
                   setError(null);
                 }}
                 className="sr-only"
@@ -122,12 +149,6 @@ export function NewRequestSheet({
               {label}
             </label>
           ))}
-          <span
-            aria-disabled="true"
-            className="flex h-9.5 items-center rounded-pill px-3.5 text-[13px] text-graphite"
-          >
-            Access change · soon
-          </span>
         </div>
       </fieldset>
 
@@ -138,6 +159,13 @@ export function NewRequestSheet({
         </p>
       ) : (
         <>
+          {kind === "access_modification" && (
+            <p className="text-[13px] leading-normal text-graphite">
+              For someone who stays: a new role, a new tool, or access they no
+              longer need. Their current access is listed for you — keep, change
+              or remove each item.
+            </p>
+          )}
           <div className="flex flex-col gap-1.5">
             <label htmlFor={searchId} className="text-[13px] font-semibold">
               Find the person
@@ -166,7 +194,7 @@ export function NewRequestSheet({
               </p>
             )}
             {shown.map((leaver) => {
-              const blocked = Boolean(leaver.openTicket);
+              const blocked = Boolean(blockedReason(leaver, kind));
               return (
                 <label
                   key={leaver.id}
@@ -207,7 +235,7 @@ export function NewRequestSheet({
                         blocked ? "text-signal" : "text-graphite",
                       )}
                     >
-                      {leaverNote(leaver)}
+                      {leaverNote(leaver, kind)}
                     </span>
                   </span>
                 </label>
@@ -219,16 +247,27 @@ export function NewRequestSheet({
             <span className="text-[13px] font-bold">Not in the list?</span>
             <span className="text-xs leading-normal text-graphite">
               People who joined before the app are added with the Excel import
-              later. Until then you can start an empty offboarding and add what
-              they have by hand.
+              later. Until then you can start an empty{" "}
+              {kind === "offboarding"
+                ? "offboarding and add what they have"
+                : "access change and add what they get"}{" "}
+              by hand.
             </span>
             <button
               type="button"
               disabled={pending}
-              onClick={() => go(() => startOffboarding({ employeeId: null }))}
+              onClick={() =>
+                go(() =>
+                  kind === "offboarding"
+                    ? startOffboarding({ employeeId: null })
+                    : startAccessChange({ employeeId: null }),
+                )
+              }
               className="h-11 self-start text-sm font-semibold underline underline-offset-[3px]"
             >
-              Start an empty offboarding
+              {kind === "offboarding"
+                ? "Start an empty offboarding"
+                : "Start an empty access change"}
             </button>
           </div>
         </>

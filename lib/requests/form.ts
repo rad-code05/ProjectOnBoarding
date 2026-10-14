@@ -290,14 +290,12 @@ export async function loadRequestForm(
   };
   for (const field of fields.data ?? []) {
     if (field.field_type === "select" && Array.isArray(field.options)) {
-      // An offboarding is started from New request and stays one (the
-      // database refuses switching a draft to or from it).
+      // Each type is started from New request and stays what it is: the
+      // database refuses switching a draft to or from an offboarding or an
+      // access change (and onboardings start from the same sheet).
       const options =
         field.key === "type"
-          ? field.options.filter(
-              (option) =>
-                (option === "offboarding") === (request.type === "offboarding"),
-            )
+          ? field.options.filter((option) => option === request.type)
           : field.options;
       choices[field.key] = options.map((option) => ({
         value: String(option),

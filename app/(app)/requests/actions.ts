@@ -82,6 +82,42 @@ export async function startOffboarding(input: {
 }
 
 /**
+ * "Who is changing?" (F10b): a new access-change draft for a person on
+ * record (section 2 from their last closed request, nothing pre-filled), or
+ * an empty one for someone not in the app yet; opens it.
+ */
+export async function startAccessChange(input: {
+  employeeId: string | null;
+}): Promise<{ ok: false; message: string }> {
+  await requireRole("admin", "requester");
+  const parsed = z.object({ employeeId: z.uuid().nullable() }).safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Choose a person first." };
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase.rpc("create_access_modification", {
+    p_employee_id: parsed.data.employeeId ?? undefined,
+  });
+  if (error || !data) {
+    if (error?.code === "23514") {
+      return {
+        ok: false,
+        message: error.message.includes("leaving")
+          ? "This person is leaving — an offboarding is open for them."
+          : "An access change is already open for this person — find it in the Requests list.",
+      };
+    }
+    if (error?.code === "42501") {
+      return { ok: false, message: "You can't start an access change." };
+    }
+    return {
+      ok: false,
+      message:
+        "Could not start the access change. Check your connection and try again.",
+    };
+  }
+  redirect(`/requests/${data}`);
+}
+
+/**
  * Saves the form's values — only if the request still has the version the
  * form was loaded with (optimistic locking). Otherwise nothing is written and
  * the form says it was changed somewhere else. The audit log entry is written

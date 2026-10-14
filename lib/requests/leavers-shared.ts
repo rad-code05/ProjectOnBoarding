@@ -1,6 +1,6 @@
 import { countryName, personName } from "./labels";
 
-/** One person "Who is leaving?" offers (F09c). */
+/** One person "Who is leaving?" (F09c) / "Who is changing?" (F10b) offers. */
 export type Leaver = {
   id: string;
   name: string;
@@ -13,7 +13,12 @@ export type Leaver = {
   since: string | null;
   /** An offboarding already open for them (only one at a time). */
   openTicket: string | null;
+  /** An access change already open for them (only one at a time). */
+  openChange: string | null;
 };
+
+/** What the person is picked for in the New request sheet. */
+export type PickFor = "offboarding" | "access_modification";
 
 type Held = { employeeId: string; grantedAt: string; ticketId: string | null };
 type Person = {
@@ -29,9 +34,13 @@ type Closed = {
   department: string | null;
   country: string | null;
 };
-type Open = { employeeId: string; ticketId: string };
+type Open = {
+  employeeId: string;
+  ticketId: string;
+  type: "offboarding" | "access_modification";
+};
 
-/** Pure: joins the inventory, people, their latest closed request and open offboardings. */
+/** Pure: joins the inventory, people, their latest closed request and open offboardings / access changes. */
 export function buildLeavers(input: {
   held: Held[];
   people: Person[];
@@ -50,7 +59,14 @@ export function buildLeavers(input: {
   for (const row of input.closed) {
     if (!latest.has(row.employeeId)) latest.set(row.employeeId, row);
   }
-  const open = new Map(input.open.map((row) => [row.employeeId, row.ticketId]));
+  const openOf = (type: Open["type"]) =>
+    new Map(
+      input.open
+        .filter((row) => row.type === type)
+        .map((row) => [row.employeeId, row.ticketId]),
+    );
+  const open = openOf("offboarding");
+  const openChange = openOf("access_modification");
 
   return input.people
     .filter((person) => byPerson.has(person.id))
@@ -77,6 +93,7 @@ export function buildLeavers(input: {
         items: rows.length,
         since: first?.ticketId ?? null,
         openTicket: open.get(person.id) ?? null,
+        openChange: openChange.get(person.id) ?? null,
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -92,10 +109,31 @@ export function filterLeavers(leavers: Leaver[], query: string): Leaver[] {
   );
 }
 
-/** "11 items on record · since UAM-2026-000098" */
-export function leaverNote(leaver: Leaver): string {
+/**
+ * Why the person can't be picked, or null. An offboarding: one at a time.
+ * An access change: one at a time, and none while they are leaving (same
+ * rules as the database: create_offboarding / create_access_modification).
+ */
+export function blockedReason(leaver: Leaver, kind: PickFor): string | null {
+  if (kind === "offboarding") {
+    return leaver.openTicket
+      ? `Offboarding already open · ${leaver.openTicket}`
+      : null;
+  }
   if (leaver.openTicket)
-    return `Offboarding already open · ${leaver.openTicket}`;
+    return `Leaving — offboarding open · ${leaver.openTicket}`;
+  if (leaver.openChange)
+    return `Access change already open · ${leaver.openChange}`;
+  return null;
+}
+
+/** "11 items on record · since UAM-2026-000098", or why they can't be picked. */
+export function leaverNote(
+  leaver: Leaver,
+  kind: PickFor = "offboarding",
+): string {
+  const blocked = blockedReason(leaver, kind);
+  if (blocked) return blocked;
   const items =
     leaver.items === 1 ? "1 item on record" : `${leaver.items} items on record`;
   return leaver.since ? `${items} · since ${leaver.since}` : items;

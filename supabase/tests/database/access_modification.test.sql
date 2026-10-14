@@ -5,7 +5,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(24);
+select plan(26);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -199,6 +199,16 @@ select throws_ok(
 select is(
   (select count(*)::int from public.employee_access_inventory where employee_id = (select id from nina) and ended_at is null),
   6, 'nothing changes in her inventory until the request closes');
+
+-- An access change stays one (F10b).
+select throws_ok(
+  $$update public.requests set type = 'onboarding' where id = (select id from chg where label = 'empty')$$,
+  '23514', 'an access change is started from New request and stays an access change',
+  'an access change cannot become an onboarding');
+select throws_ok(
+  $$update public.requests set type = 'access_modification' where id = (select id from dora)$$,
+  '23514', 'an access change is started from New request and stays an access change',
+  'an onboarding draft cannot become an access change');
 
 select * from finish();
 rollback;
