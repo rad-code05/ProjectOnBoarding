@@ -4,7 +4,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(26);
+select plan(27);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -118,6 +118,15 @@ select is(
 -- ---------------------------------------------------------------------------
 -- Request 2 closes → replace, remove, return
 -- ---------------------------------------------------------------------------
+-- An access change freezes what the person keeps (F10a-2): request 1 closed
+-- after request 2 was reviewed, so that review is out of date.
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"user_in_abe","role":"authenticated"}', true);
+select throws_ok(
+  $$select public.confirm_request(id, (select data from reviewed where n = 2)) from ids where n = 2$$,
+  '40001', null, 'an access change reviewed before the inventory changed must be reviewed again');
+reset role;
+update reviewed set data = private.request_snapshot_data((select id from ids where n = 2)) where n = 2;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_in_abe","role":"authenticated"}', true);
 select public.confirm_request(id, (select data from reviewed where n = 2)) from ids where n = 2;
