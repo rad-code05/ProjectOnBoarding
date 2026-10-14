@@ -81,7 +81,9 @@ export async function reviewAndSign(page: Page, note?: string) {
   await sheet.getByLabel(/I confirm the details above/).check();
   await sheet.getByRole("button", { name: /^Sign & send/ }).click();
   await expect(sheet).toHaveCount(0);
+  // The page reloads its data after signing — slow on a busy machine.
   await expect(page.getByRole("group", { name: "Status" })).toHaveText(
     "Awaiting confirmation",
+    { timeout: 30_000 },
   );
 }

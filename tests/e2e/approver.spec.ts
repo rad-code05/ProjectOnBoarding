@@ -339,11 +339,11 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
   expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });
 
-test("access change draft: Who is changing? lists what they hold; change Slack, new job title", async ({
+test("access change journey: Who is changing?, change / keep / add, sign, approver confirms, PDF", async ({
   page,
   browser,
 }) => {
-  test.setTimeout(360_000); // an onboarding closed first
+  test.setTimeout(480_000); // two requests, four signatures
 
   const rajuContext = await browser.newContext({
     storageState: authFile("admin"),
@@ -353,26 +353,35 @@ test("access change draft: Who is changing? lists what they hold; change Slack, 
   await saveInitials(raju);
   await saveInitials(page);
 
-  // 1. Raju onboards Ada with Slack (Regular Member); Moises closes it.
-  const ticket = await createExecutedRequest(raju, "Ada");
+  const confirmOnApprovals = async (ticketId: string) => {
+    await openApp(page, "/approvals");
+    await page
+      .getByRole("listitem")
+      .filter({ hasText: ticketId })
+      .getByRole("link", { name: "Review & confirm" })
+      .click();
+    await page.getByRole("button", { name: "Confirm & sign" }).click();
+    return page.getByRole("dialog", { name: "Confirm & sign" });
+  };
+
+  // 1. Raju onboards Ada with Slack and Figma; the approver closes it.
+  const onboardingTicket = await createExecutedRequest(raju, "Ada");
   const email = await raju.getByLabel("Work email").inputValue();
-  await raju.getByLabel("Slack action").selectOption("Grant");
-  await raju.getByLabel("Slack permission").selectOption("Regular Member");
+  for (const [app, permission] of [
+    ["Slack", "Regular Member"],
+    ["Figma", "Dev"],
+  ]) {
+    await raju.getByLabel(`${app} action`).selectOption("Grant");
+    await raju.getByLabel(`${app} permission`).selectOption(permission);
+  }
   await expect(
     raju
       .getByRole("region", { name: "Application access" })
       .getByRole("status")
       .first(),
-  ).toHaveText(/^1 of \d+ set$/);
+  ).toHaveText(/^2 of \d+ set$/);
   await reviewAndSign(raju);
-  await openApp(page, "/approvals");
-  await page
-    .getByRole("listitem")
-    .filter({ hasText: ticket })
-    .getByRole("link", { name: "Review & confirm" })
-    .click();
-  await page.getByRole("button", { name: "Confirm & sign" }).click();
-  const confirm = page.getByRole("dialog", { name: "Confirm & sign" });
+  let confirm = await confirmOnApprovals(onboardingTicket);
   await confirm.getByLabel(/I have reviewed this record/).check();
   await confirm.getByRole("button", { name: "Confirm, sign & close" }).click();
   await expect(page.getByRole("status")).toHaveText(
@@ -392,15 +401,23 @@ test("access change draft: Who is changing? lists what they hold; change Slack, 
   await changing.getByRole("radio", { name: /Ada Loop/ }).check();
   await changing.getByRole("button", { name: "Change Ada's access" }).click();
   await expect(raju).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  const changeUrl = raju.url();
+  const changeTicket = await raju
+    .getByText(/^UAM-\d{4}-\d{6}$/)
+    .first()
+    .innerText();
   await expect(raju.getByText(/What Ada has today/)).toContainText(
-    "1 application",
+    "2 applications",
   );
 
-  // 3. Slack is listed and kept; change it to Workspace Owner.
+  // 3. Slack → Workspace Owner; Figma kept; GitHub added as new.
   const apps = raju.getByRole("region", { name: "Applications they have" });
   await expect(apps).toContainText("Slack");
-  await expect(apps).toContainText("Regular Member");
-  await apps.getByText("Change", { exact: true }).click();
+  await expect(apps).toContainText("Figma");
+  await apps
+    .getByRole("group", { name: /^Slack: keep/ })
+    .getByText("Change", { exact: true })
+    .click();
   const sheet = raju.getByRole("dialog", { name: "Slack" });
   await expect(sheet).toContainText("Ada has today");
   await sheet.getByText("Workspace Owner", { exact: true }).click();
@@ -408,26 +425,78 @@ test("access change draft: Who is changing? lists what they hold; change Slack, 
     .getByRole("button", { name: "Change to Workspace Owner" })
     .click();
   await expect(apps).toContainText("Regular Member → Workspace Owner");
+  await expect(apps).toContainText("1 changed · 1 kept");
+  // Held apps aren't offered as new; GitHub is.
+  await expect(raju.getByLabel("Slack action")).toHaveCount(0);
+  await raju.getByLabel("GitHub action").selectOption("Grant");
+  await raju.getByLabel("GitHub permission").selectOption("Maintain");
+  await expect(
+    raju
+      .getByRole("region", { name: "Application access" })
+      .getByRole("status")
+      .first(),
+  ).toHaveText(/^1 of \d+ set$/);
 
-  // 4. A new role: the job title shows what it was.
+  // 4. A new role: the job title shows what it was; the date it applies.
   await raju.getByLabel("Job title / role").fill("Lead");
   await expect(raju.getByText("Was: Analyst")).toBeVisible();
-  await raju.getByRole("button", { name: /^Save/ }).first().click();
+  await raju.getByLabel("Effective date").fill("2026-11-16");
+  await raju.getByRole("button", { name: "Save draft" }).click();
   await expect(raju.getByRole("status").first()).toHaveText(
     /^(All changes saved|Saved) \d\d:\d\d/,
   );
 
-  // 5. After a reload everything is still there.
-  await openApp(raju, raju.url());
+  // 5. After a reload everything is still there; execution and section 9.
+  await openApp(raju, changeUrl);
   await expect(apps).toContainText("Regular Member → Workspace Owner");
   await expect(raju.getByLabel("Job title / role")).toHaveValue("Lead");
-
-  await raju.getByRole("button", { name: "Cancel this request…" }).click();
-  const cancel = raju.getByRole("dialog", { name: "Cancel this request?" });
-  await cancel.getByLabel(/^Reason/).fill("Browser test");
-  await cancel.getByRole("button", { name: "Cancel request" }).click();
-  await expect(raju.getByRole("group", { name: "Status" })).toHaveText(
-    "Cancelled",
-  );
+  await raju.getByRole("button", { name: "Start execution" }).click();
+  await raju
+    .getByRole("dialog", { name: "Start execution?" })
+    .getByRole("button", { name: "Start execution" })
+    .click();
+  const section9 = raju.getByRole("region", {
+    name: "IT execution confirmation",
+  });
+  await expect(section9.getByRole("checkbox").first()).toBeVisible();
+  for (const box of await section9.getByRole("checkbox").all()) {
+    await box.check();
+    await expect(section9.getByRole("status")).not.toHaveText("Saving…");
+  }
+  await reviewAndSign(raju);
   await rajuContext.close();
+
+  // 6. The approver sees what changes, was → now and what is kept; confirms.
+  confirm = await confirmOnApprovals(changeTicket);
+  await expect(
+    confirm.getByRole("region", { name: "What changes" }),
+  ).toContainText("Regular Member → Workspace Owner");
+  await expect(
+    confirm.getByRole("region", { name: "What changes" }),
+  ).toContainText("Added · Grant · Maintain");
+  await expect(
+    confirm.getByRole("region", { name: "Employee · was → now" }),
+  ).toContainText("Analyst → Lead");
+  await expect(
+    confirm.getByRole("region", { name: "Kept unchanged · 1" }),
+  ).toContainText("Figma");
+  await confirm.getByLabel(/I have reviewed this record/).check();
+  await confirm.getByRole("button", { name: "Confirm, sign & close" }).click();
+
+  // 7. The record page and the PDF.
+  const changeId = changeUrl.split("/").pop();
+  await expect(page).toHaveURL(`/records/${changeId}?closed=1`, {
+    timeout: 30_000,
+  });
+  await expect(
+    page.getByRole("region", { name: "Access record" }),
+  ).toContainText("ada.loop-access-modification.pdf");
+  await page.getByText("Kept unchanged", { exact: true }).click();
+  await expect(page.getByText("Dev", { exact: true })).toBeVisible();
+  const pdf = await page.request.get(`/records/${changeId}/pdf`);
+  expect(pdf.status()).toBe(200);
+  expect(pdf.headers()["content-disposition"]).toBe(
+    'attachment; filename="ada.loop-access-modification.pdf"',
+  );
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });
