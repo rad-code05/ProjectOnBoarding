@@ -52,6 +52,9 @@ export function approvalErrorMessage(
       return "This request was already confirmed or returned.";
     }
     if (message.includes("needs fixing")) return "Say what needs fixing.";
+    if (message.includes("after it was signed")) {
+      return "This request changed after the IT side signed it. Return it so it can be reviewed and signed again.";
+    }
   }
   return "Could not save. Check your connection and try again.";
 }

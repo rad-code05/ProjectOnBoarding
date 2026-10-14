@@ -4,7 +4,7 @@
 -- Run: pnpm db:test   (needs the local database: pnpm db:start)
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(27);
+select plan(28);
 
 -- Fixtures (fake people only), inserted as the table owner.
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
@@ -125,6 +125,19 @@ select set_config('request.jwt.claims', '{"sub":"user_in_abe","role":"authentica
 select throws_ok(
   $$select public.confirm_request(id, (select data from reviewed where n = 2)) from ids where n = 2$$,
   '40001', null, 'an access change reviewed before the inventory changed must be reviewed again');
+reset role;
+update reviewed set data = private.request_snapshot_data((select id from ids where n = 2)) where n = 2;
+-- A fresh review isn't enough: Ada signed the old one (F10d-1). Abe returns it,
+-- Ada signs again, then Abe confirms.
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"user_in_abe","role":"authenticated"}', true);
+select throws_ok(
+  $$select public.confirm_request(id, (select data from reviewed where n = 2)) from ids where n = 2$$,
+  '23514', 'the request changed after it was signed for IT — return it so it can be signed again',
+  'the approver confirms only what the IT side signed');
+select public.return_request(id, 'Her access changed since you signed — please sign again') from ids where n = 2;
+select set_config('request.jwt.claims', '{"sub":"user_in_admin","role":"authenticated"}', true);
+select public.sign_request(id, public.request_snapshot_preview(id)) from ids where n = 2;
 reset role;
 update reviewed set data = private.request_snapshot_data((select id from ids where n = 2)) where n = 2;
 set local role authenticated;
