@@ -36,6 +36,8 @@ export const snapshotSchema = z.object({
       // Offboarding only (F09b-2): how and when it was removed.
       removal_method: text.optional(),
       done_at: text.optional(),
+      // Access change only (F10a-2): what they had (a line about something held).
+      had: text.optional(),
     }),
   ),
   equipment: z.array(
@@ -55,6 +57,7 @@ export const snapshotSchema = z.object({
       action: z.string(),
       scope: text,
       done_at: text.optional(),
+      had: text.optional(),
     }),
   ),
   execution: z
@@ -87,6 +90,30 @@ export const snapshotSchema = z.object({
       handover_to: text,
       mailbox_handling: text,
       mailbox_recorded_at: text,
+    })
+    .optional(),
+  /** Access change only (F10a-2): section 2 as it was, and everything kept. */
+  access_modification: z
+    .object({
+      previous: z
+        .object({
+          ticket_id: z.string(),
+          job_title: text,
+          department: text,
+          country: text,
+          manager_name: text,
+        })
+        .nullable(),
+      kept: z.array(
+        z.object({
+          kind: z.enum(["application", "equipment", "access"]),
+          category: text,
+          name: z.string(),
+          permission: text,
+          asset_tag: text,
+          description: text,
+        }),
+      ),
     })
     .optional(),
 });
@@ -170,46 +197,120 @@ function when(iso: string | null | undefined, timeZone?: string) {
     : null;
 }
 
+const REMOVALS = ["Remove", "Disable", "Return"];
+const PAST: Record<string, string> = {
+  Remove: "Removed",
+  Disable: "Disabled",
+  Return: "Returned",
+};
+
+/**
+ * Access change (F10): "Regular Member → Workspace Owner", "Removed · had
+ * Dev", or "Added · Grant · Maintain" for something new.
+ */
+function changeValue(
+  action: string,
+  value: string | null,
+  had: string | null | undefined,
+): string {
+  if (had === undefined) {
+    return REMOVALS.includes(action)
+      ? join(PAST[action] ?? action, value)
+      : join("Added", action, value);
+  }
+  return REMOVALS.includes(action)
+    ? join(PAST[action] ?? action, `had ${had ?? "—"}`)
+    : `${had ?? "—"} → ${value ?? "—"}`;
+}
+
 /** Section 5 rows (an offboarding: method, what they had, when removed). */
 export function appRows(snapshot: Snapshot, timeZone?: string): Row[] {
   const off = Boolean(snapshot.offboarding);
+  const change = Boolean(snapshot.access_modification);
   return snapshot.access.map((a) => ({
     label: a.app,
-    value: off
-      ? join(
-          a.removal_method ?? "Remove",
-          a.permission ? `had ${a.permission}` : null,
-          when(a.done_at, timeZone) ?? "not done",
-        )
-      : join(a.action, a.permission),
+    value: change
+      ? changeValue(a.action, a.permission, a.had)
+      : off
+        ? join(
+            a.removal_method ?? "Remove",
+            a.permission ? `had ${a.permission}` : null,
+            when(a.done_at, timeZone) ?? "not done",
+          )
+        : join(a.action, a.permission),
   }));
 }
 
 /** Section 6 rows (an offboarding: return status, reason, when). */
 export function equipmentRows(snapshot: Snapshot, timeZone?: string): Row[] {
   const off = Boolean(snapshot.offboarding);
+  const change = Boolean(snapshot.access_modification);
   return snapshot.equipment.map((e) => ({
     label: join(e.type, e.description),
-    value: off
-      ? join(
-          RETURNS[e.return_status ?? "pending"] ?? "Return pending",
-          e.asset_tag,
-          e.return_status === "not_returned" ? e.return_reason : null,
-          when(e.return_recorded_at, timeZone),
-        )
-      : join(e.action, e.asset_tag),
+    value: change
+      ? e.action === "Return"
+        ? join("Returned", e.asset_tag)
+        : join("Added", e.action, e.asset_tag)
+      : off
+        ? join(
+            RETURNS[e.return_status ?? "pending"] ?? "Return pending",
+            e.asset_tag,
+            e.return_status === "not_returned" ? e.return_reason : null,
+            when(e.return_recorded_at, timeZone),
+          )
+        : join(e.action, e.asset_tag),
   }));
 }
 
 /** Section 7 rows (an offboarding: when disabled / removed). */
 export function physicalRows(snapshot: Snapshot, timeZone?: string): Row[] {
   const off = Boolean(snapshot.offboarding);
+  const change = Boolean(snapshot.access_modification);
   return snapshot.physical_access.map((p) => ({
     label: p.type,
-    value: off
-      ? join(p.action, p.scope, when(p.done_at, timeZone) ?? "not done")
-      : join(p.action, p.scope),
+    value: change
+      ? changeValue(p.action, p.scope, p.had)
+      : off
+        ? join(p.action, p.scope, when(p.done_at, timeZone) ?? "not done")
+        : join(p.action, p.scope),
   }));
+}
+
+/**
+ * Access change: the section 2 fields that differ from the previous closed
+ * request — "Job title: Analyst → Lead".
+ */
+export function employeeChangeRows(snapshot: Snapshot): Row[] {
+  const prev = snapshot.access_modification?.previous;
+  if (!prev) return [];
+  const r = snapshot.request;
+  const country = (code: string | null) => (code ? countryName(code) : null);
+  return (
+    [
+      ["Job title", prev.job_title, r.job_title],
+      ["Department", prev.department, r.department],
+      ["Country", country(prev.country), country(r.country)],
+      ["Manager", prev.manager_name, r.manager_name],
+    ] as const
+  )
+    .filter(([, was, now]) => (was ?? "") !== (now ?? ""))
+    .map(([label, was, now]) => ({
+      label,
+      value: `${was || "—"} → ${now || "—"}`,
+    }));
+}
+
+/** Access change: everything the person keeps as it is (optionally one kind). */
+export function keptRows(
+  snapshot: Snapshot,
+  kind?: "application" | "equipment" | "access",
+): Row[] {
+  return (snapshot.access_modification?.kept ?? [])
+    .filter((k) => !kind || k.kind === kind)
+    .map((k) => ({
+      label: k.kind === "equipment" ? join(k.name, k.description) : k.name,
+      value: (k.kind === "equipment" ? k.asset_tag : k.permission) ?? "Kept",
+    }));
 }
 
 const TIMELINES: Record<string, string> = {

@@ -153,3 +153,65 @@ export function sampleOffboardingRecord(): RecordInput {
     },
   };
 }
+
+/** The same person's access change (F10d): Lead now, Figma up, Slack gone, GitHub new. */
+export function sampleAccessChangeRecord(): RecordInput {
+  const base = sampleRecord();
+  return {
+    ...base,
+    fileName: "jose.muller-access-modification.pdf",
+    snapshot: {
+      ...base.snapshot,
+      request: {
+        ...base.snapshot.request,
+        ticket_id: "UAM-2026-000141",
+        type: "access_modification",
+        job_title: "Design Lead",
+        effective_date: "2026-10-20",
+      },
+      access: [
+        { app: "Figma", action: "Modify", permission: "Full", had: "Viewer" },
+        { app: "Slack", action: "Remove", permission: "Member", had: "Member" },
+        { app: "GitHub", action: "Grant", permission: "Maintain" },
+      ],
+      equipment: [
+        {
+          type: "Laptop · macOS",
+          action: "Return",
+          description: null,
+          asset_tag: "LN-0042",
+        },
+      ],
+      physical_access: [
+        { type: "Office access", action: "Grant", scope: "Key", had: "Badge" },
+      ],
+      access_modification: {
+        previous: {
+          ticket_id: "UAM-2026-000124",
+          job_title: "Product Designer",
+          department: "Engineering",
+          country: "AE",
+          manager_name: "Mara Manager",
+        },
+        kept: [
+          {
+            kind: "application",
+            category: "Core business",
+            name: "Google Workspace",
+            permission: "User",
+            asset_tag: null,
+            description: null,
+          },
+          {
+            kind: "application",
+            category: "Core business",
+            name: "Zoom",
+            permission: "Licensed",
+            asset_tag: null,
+            description: null,
+          },
+        ],
+      },
+    },
+  };
+}

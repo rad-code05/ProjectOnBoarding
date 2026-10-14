@@ -181,6 +181,8 @@ const BLOCKER_SECTIONS: [prefix: string, section: number][] = [
   ["Access disabled or removed", 7],
   ["Data & mailbox go to", 7],
   ["Mailbox:", 7],
+  // Access change (F10a-2): nothing to change = nothing to sign.
+  ["At least one change", 5],
 ];
 
 export function splitBlockers(missing: string[]): {

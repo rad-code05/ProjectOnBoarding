@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { sampleOffboardingRecord, sampleRecord } from "./fixture";
+import {
+  sampleAccessChangeRecord,
+  sampleOffboardingRecord,
+  sampleRecord,
+} from "./fixture";
 import { formatInZone, recordSections } from "./record";
 
 const rows = (number: number, input = sampleRecord()) =>
@@ -137,4 +141,38 @@ test("section 9 prints Not needed for an item that didn't apply (2026-10-13)", (
     "Not needed",
     "No",
   ]);
+});
+
+describe("an access change record (F10d)", () => {
+  const sections = recordSections(sampleAccessChangeRecord());
+  const rows = (n: number) => sections.find((s) => s.number === n)?.rows ?? [];
+
+  test("section 2 says what changed since the previous request", () => {
+    expect(rows(2)).toContainEqual({
+      label: "Job title (changed)",
+      value: "Product Designer to Design Lead",
+    });
+    // Only what differs: the department stayed the same.
+    expect(
+      rows(2)
+        .filter((row) => row.label.endsWith("(changed)"))
+        .map((row) => row.label),
+    ).toEqual(["Job title (changed)"]);
+  });
+
+  test("section 5: changed, removed, added, then what is kept", () => {
+    expect(rows(5)).toEqual([
+      // The PDF fonts have no arrow: "to" (screens show "Viewer → Full").
+      { label: "Figma", value: "Viewer to Full" },
+      { label: "Slack", value: "Removed · had Member" },
+      { label: "GitHub", value: "Added · Grant · Maintain" },
+      { label: "Google Workspace (kept)", value: "User" },
+      { label: "Zoom (kept)", value: "Licensed" },
+    ]);
+  });
+
+  test("sections 6 and 7: a returned device and a changed scope", () => {
+    expect(rows(6)[0].value).toBe("Returned · LN-0042");
+    expect(rows(7)[0].value).toBe("Badge to Key");
+  });
 });

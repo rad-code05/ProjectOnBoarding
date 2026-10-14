@@ -9,7 +9,9 @@ import {
 } from "@/lib/requests/labels";
 import {
   appRows,
+  employeeChangeRows,
   equipmentRows,
+  keptRows,
   offboardingRows,
   physicalRows,
   type Row,
@@ -59,6 +61,26 @@ export type RecordInput = {
 };
 
 export type RecordSection = { number: number; title: string; rows: Row[] };
+
+/**
+ * The PDF fonts have no "→" glyph: on the record "Viewer → Full" is written
+ * "Viewer to Full" (screens keep the arrow).
+ */
+function inWords(value: string): string {
+  return value.replaceAll(" → ", " to ");
+}
+const arrows = (row: Row): Row => ({ ...row, value: inWords(row.value) });
+
+/** Access change: what the person keeps, as "Slack (kept)" rows. */
+function kept(
+  snapshot: Snapshot,
+  kind: "application" | "equipment" | "access",
+): Row[] {
+  return keptRows(snapshot, kind).map((row) => ({
+    label: `${row.label} (kept)`,
+    value: row.value,
+  }));
+}
 
 /** "2 Oct 2026, 16:05" in the given timezone. */
 export function formatInZone(iso: string, timeZone: string): string {
@@ -138,6 +160,11 @@ export function recordSections(input: RecordInput): RecordSection[] {
           label: "Employment event · effective date",
           value: join(EMPLOYMENT_EVENTS[type], formatDate(r.effective_date)),
         },
+        // Access change (F10d): what section 2 was on the previous request.
+        ...employeeChangeRows(snapshot).map((row) => ({
+          label: `${row.label} (changed)`,
+          value: inWords(row.value),
+        })),
       ],
     },
     {
@@ -164,22 +191,36 @@ export function recordSections(input: RecordInput): RecordSection[] {
       number: 5,
       title: "Application access",
       rows: [
-        ...none(appRows(snapshot, timezone), "Applications"),
-        // An offboarding lists everything the person had; nothing else changes on onboarding.
+        ...none(appRows(snapshot, timezone), "Applications").map(arrows),
+        // An offboarding lists everything the person had; an access change
+        // lists what they keep; nothing else changes on onboarding.
         ...(type === "offboarding"
           ? []
-          : [{ label: "All other catalog applications", value: "No change" }]),
+          : type === "access_modification"
+            ? kept(snapshot, "application")
+            : [
+                { label: "All other catalog applications", value: "No change" },
+              ]),
       ],
     },
     {
       number: 6,
       title: "IT equipment",
-      rows: none(equipmentRows(snapshot, timezone), "Equipment"),
+      rows: [
+        ...none(equipmentRows(snapshot, timezone), "Equipment"),
+        ...kept(snapshot, "equipment"),
+      ],
     },
     {
       number: 7,
       title: "Physical & logical access",
-      rows: none(physicalRows(snapshot, timezone), "Physical & logical access"),
+      rows: [
+        ...none(
+          physicalRows(snapshot, timezone),
+          "Physical & logical access",
+        ).map(arrows),
+        ...kept(snapshot, "access"),
+      ],
     },
     {
       number: 8,

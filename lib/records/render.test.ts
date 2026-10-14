@@ -3,7 +3,11 @@ import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import sharp from "sharp";
 import { describe, expect, test, vi } from "vitest";
-import { sampleOffboardingRecord, sampleRecord } from "./fixture";
+import {
+  sampleAccessChangeRecord,
+  sampleOffboardingRecord,
+  sampleRecord,
+} from "./fixture";
 import { renderRecordPdf } from "./render";
 
 vi.mock("server-only", () => ({}));
@@ -33,6 +37,16 @@ describe("renderRecordPdf", () => {
     // OFFBOARDING_PREVIEW=<path> pnpm exec vitest run lib/records
     if (process.env.OFFBOARDING_PREVIEW) {
       await writeFile(process.env.OFFBOARDING_PREVIEW, bytes);
+    }
+  }, 60_000);
+
+  test("an access change record renders too (F10d)", async () => {
+    const { bytes } = await renderRecordPdf(sampleAccessChangeRecord());
+    expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+    expect(pageCount(bytes)).toBeGreaterThanOrEqual(2);
+    // ACCESS_CHANGE_PREVIEW=<path> pnpm exec vitest run lib/records
+    if (process.env.ACCESS_CHANGE_PREVIEW) {
+      await writeFile(process.env.ACCESS_CHANGE_PREVIEW, bytes);
     }
   }, 60_000);
 
