@@ -73,7 +73,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | C9 | Pending confirmations visible to **all** approvers; first to confirm closes; PDF records who | §10.1 | F07, F08 | F07 tests | ✅ every approver sees the queue; the first to confirm closes it (pgTAP); e2e full loop; PDF ⏳ F08 |
 | C10 | Offboarding: SLA required at creation, inventory pre-fills removals, countdown on request + list, missed reason before close | §5.2, `request-variants.md` | F09a–F09d | pgTAP `offboarding_request` / `offboarding_work`; unit `SlaPanel`, `OffboardingWork`, `RemovalEditor`, `NewRequestSheet`, `RequestList` (badge); browser *offboarding journey* (approver.spec) + empty offboarding (admin.spec) | ✅ F09 (2026-10-13) — SLA needed to **start execution** (not at creation: a draft may be incomplete) |
 | C11 | Access inventory per employee (built from closed requests) | §4.4 #2, D20 ✅ | F09a | pgTAP `inventory.test.sql` (filled at closing, replace / remove / return, back-fill, read-only, never deleted) | ✅ F09a (2026-10-12); pre-fill ✅ F09b-1, used by Who is leaving? (F09c-1) |
-| C12 | Access modification: keep / change / remove inventory rows + add from catalog | `request-variants.md` | F10a–F10d | pgTAP `access_modification` (start, links, change / remove / return / add rules) | 🟡 database F10a-1 (2026-10-14); screens F10b–F10d ⏳ |
+| C12 | Access modification: keep / change / remove inventory rows + add from catalog | `request-variants.md` | F10a–F10d | pgTAP `access_modification` (start, links, change / remove / return / add rules), `access_modification_record` (had / previous / kept in the snapshot, at least one change, inventory at closing, exact device) | 🟡 database ✅ F10a (2026-10-14); screens F10b–F10d ⏳ |
 
 ## D. Signatures
 
