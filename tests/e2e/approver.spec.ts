@@ -459,8 +459,11 @@ test("access change journey: Who is changing?, change / keep / add, sign, approv
     name: "IT execution confirmation",
   });
   await expect(section9.getByRole("checkbox").first()).toBeVisible();
-  // Pre-filled by what changed (2026-10-14): no device line → no changes made.
-  await expect(section9).toContainText("All authorised access modified");
+  // Pre-filled by what changed (2026-10-14): apps changed → Yes (ticked);
+  // no device line → no changes made.
+  await expect(
+    section9.getByRole("checkbox", { name: /All authorised access modified/ }),
+  ).toBeChecked();
   await expect(section9).toContainText(
     "Devices issued and enrolled (MDM) — no changes made",
   );
