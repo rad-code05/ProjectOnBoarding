@@ -14,6 +14,8 @@ export type FieldRendererProps = {
   choices?: Choice[];
   error?: string;
   disabled?: boolean;
+  /** Access change (F10c): the value on the previous request, when it changed. */
+  was?: string | null;
 };
 
 /** Pairs that sit side by side on a phone; other text fields take the full width. */
@@ -45,10 +47,12 @@ export function FieldRenderer({
   choices = [],
   error,
   disabled,
+  was,
 }: FieldRendererProps) {
   const id = useId();
   const errorId = error ? `${id}-error` : undefined;
   const hintId = field.help_text ? `${id}-hint` : undefined;
+  const wasId = was ? `${id}-was` : undefined;
 
   if (field.field_type === "system") {
     return (
@@ -75,7 +79,7 @@ export function FieldRenderer({
     disabled,
     "aria-invalid": error ? true : undefined,
     "aria-describedby":
-      [errorId, hintId].filter(Boolean).join(" ") || undefined,
+      [errorId, hintId, wasId].filter(Boolean).join(" ") || undefined,
     className: cn(control, border, disabled && "bg-sand text-graphite"),
   };
   const isSelect = ["select", "department", "country", "user"].includes(
@@ -113,6 +117,11 @@ export function FieldRenderer({
       {field.help_text && (
         <p id={hintId} className="text-xs text-graphite md:text-[11px]">
           {field.help_text}
+        </p>
+      )}
+      {was && (
+        <p id={wasId} className="text-xs text-graphite md:text-[11px]">
+          Was: {was}
         </p>
       )}
     </div>
