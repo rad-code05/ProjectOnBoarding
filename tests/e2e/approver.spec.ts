@@ -338,3 +338,96 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
   );
   expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });
+
+test("access change draft: Who is changing? lists what they hold; change Slack, new job title", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(360_000); // an onboarding closed first
+
+  const rajuContext = await browser.newContext({
+    storageState: authFile("admin"),
+  });
+  const raju = await rajuContext.newPage();
+  await setupClerkTestingToken({ page: raju });
+  await saveInitials(raju);
+  await saveInitials(page);
+
+  // 1. Raju onboards Ada with Slack (Regular Member); Moises closes it.
+  const ticket = await createExecutedRequest(raju, "Ada");
+  const email = await raju.getByLabel("Work email").inputValue();
+  await raju.getByLabel("Slack action").selectOption("Grant");
+  await raju.getByLabel("Slack permission").selectOption("Regular Member");
+  await expect(
+    raju
+      .getByRole("region", { name: "Application access" })
+      .getByRole("status")
+      .first(),
+  ).toHaveText(/^1 of \d+ set$/);
+  await reviewAndSign(raju);
+  await openApp(page, "/approvals");
+  await page
+    .getByRole("listitem")
+    .filter({ hasText: ticket })
+    .getByRole("link", { name: "Review & confirm" })
+    .click();
+  await page.getByRole("button", { name: "Confirm & sign" }).click();
+  const confirm = page.getByRole("dialog", { name: "Confirm & sign" });
+  await confirm.getByLabel(/I have reviewed this record/).check();
+  await confirm.getByRole("button", { name: "Confirm, sign & close" }).click();
+  await expect(page.getByRole("status")).toHaveText(
+    "Confirmed, signed and closed",
+    { timeout: 30_000 },
+  );
+
+  // 2. New request → Access change → Who is changing? → Ada.
+  await openApp(raju, "/requests");
+  await raju.getByRole("button", { name: "New request" }).first().click();
+  await raju
+    .getByRole("dialog", { name: "New onboarding" })
+    .getByText("Access change", { exact: true })
+    .click();
+  const changing = raju.getByRole("dialog", { name: "Who is changing?" });
+  await changing.getByLabel("Find the person").fill(email);
+  await changing.getByRole("radio", { name: /Ada Loop/ }).check();
+  await changing.getByRole("button", { name: "Change Ada's access" }).click();
+  await expect(raju).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  await expect(raju.getByText(/What Ada has today/)).toContainText(
+    "1 application",
+  );
+
+  // 3. Slack is listed and kept; change it to Workspace Owner.
+  const apps = raju.getByRole("region", { name: "Applications they have" });
+  await expect(apps).toContainText("Slack");
+  await expect(apps).toContainText("Regular Member");
+  await apps.getByText("Change", { exact: true }).click();
+  const sheet = raju.getByRole("dialog", { name: "Slack" });
+  await expect(sheet).toContainText("Ada has today");
+  await sheet.getByText("Workspace Owner", { exact: true }).click();
+  await sheet
+    .getByRole("button", { name: "Change to Workspace Owner" })
+    .click();
+  await expect(apps).toContainText("Regular Member → Workspace Owner");
+
+  // 4. A new role: the job title shows what it was.
+  await raju.getByLabel("Job title / role").fill("Lead");
+  await expect(raju.getByText("Was: Analyst")).toBeVisible();
+  await raju.getByRole("button", { name: /^Save/ }).first().click();
+  await expect(raju.getByRole("status").first()).toHaveText(
+    /^(All changes saved|Saved) \d\d:\d\d/,
+  );
+
+  // 5. After a reload everything is still there.
+  await openApp(raju, raju.url());
+  await expect(apps).toContainText("Regular Member → Workspace Owner");
+  await expect(raju.getByLabel("Job title / role")).toHaveValue("Lead");
+
+  await raju.getByRole("button", { name: "Cancel this request…" }).click();
+  const cancel = raju.getByRole("dialog", { name: "Cancel this request?" });
+  await cancel.getByLabel(/^Reason/).fill("Browser test");
+  await cancel.getByRole("button", { name: "Cancel request" }).click();
+  await expect(raju.getByRole("group", { name: "Status" })).toHaveText(
+    "Cancelled",
+  );
+  await rajuContext.close();
+});

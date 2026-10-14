@@ -10,11 +10,13 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { AccessChoices, OtherApp } from "@/lib/requests/access";
+import type { HeldItem } from "@/lib/requests/access-change";
 import type { DraftFieldKey } from "@/lib/requests/draft";
 import type { EquipmentItem, PhysicalChoices } from "@/lib/requests/equipment";
 import type { FormField } from "@/lib/requests/fields";
 import type { RequestFormData } from "@/lib/requests/form";
 import {
+  countryName,
   EMPLOYMENT_EVENTS,
   TYPE_LABELS,
   personName,
@@ -25,6 +27,7 @@ import { SECTIONS, fillNote, lockedNote } from "@/lib/requests/sections";
 import { ChangedElsewhere } from "./ChangedElsewhere";
 import { CollapsedSection } from "./CollapsedSection";
 import { AccessSection } from "./AccessSection";
+import { HeldSection, InventoryNote } from "./AccessChangeSections";
 import { EquipmentSection } from "./EquipmentSection";
 import { ExecutionSection } from "./ExecutionSection";
 import { FieldRenderer } from "./FieldRenderer";
@@ -118,6 +121,9 @@ export function RequestForm({
   const [equipment, setEquipment] = useState<EquipmentItem[]>(form.equipment);
   const [physical, setPhysical] = useState<PhysicalChoices>(form.physical);
   const [checks, setChecks] = useState(form.execution.checks);
+  // Access change (F10c): what they hold, each kept / changed / removed.
+  const change = form.accessChange;
+  const [held, setHeld] = useState<HeldItem[]>(change?.held ?? []);
   const [sheet, setSheet] = useState<"start" | "cancel" | "sign" | null>(null);
   const started = Boolean(form.workflow.executionStartedLabel);
   const cancellable = [
@@ -191,6 +197,39 @@ export function RequestForm({
     field.field_type === "system"
       ? (system[field.key] ?? "—")
       : (values[field.key as DraftFieldKey] ?? "");
+  // Access change: section 2 as it was on the previous request ("Was: …").
+  const wasOf = (field: FormField): string | null => {
+    const prev = change?.previous;
+    if (!prev) return null;
+    const now = values[field.key as DraftFieldKey] ?? "";
+    if (
+      field.key === "job_title" ||
+      field.key === "manager_name" ||
+      field.key === "requestor_name"
+    ) {
+      return (prev[field.key] ?? "") !== now ? prev[field.key] || "—" : null;
+    }
+    if (field.key === "department") {
+      return String(prev.department_id ?? "") !== now
+        ? prev.department || "—"
+        : null;
+    }
+    if (field.key === "country") {
+      return (prev.country ?? "") !== now
+        ? prev.country
+          ? countryName(prev.country)
+          : "—"
+        : null;
+    }
+    return null;
+  };
+  const heldProps = {
+    requestId: form.id,
+    firstName: values.first_name ?? "",
+    items: held,
+    onItemsChange: setHeld,
+    disabled,
+  };
   const fieldsOf = (section: number) =>
     form.fields.filter(
       (field) => field.section === section && field.key !== "type",
@@ -426,6 +465,10 @@ export function RequestForm({
           </InlineError>
         )}
 
+        {change && (
+          <InventoryNote firstName={values.first_name ?? ""} held={held} />
+        )}
+
         {off && (
           <>
             {started && off.dueAt ? (
@@ -501,38 +544,44 @@ export function RequestForm({
           ) : number === 4 ? (
             <ProvisioningSection key={number} />
           ) : number === 5 ? (
-            <AccessSection
-              key={number}
-              requestId={form.id}
-              catalog={form.catalog}
-              access={access}
-              onAccessChange={setAccess}
-              others={others}
-              onOthersChange={setOthers}
-              otherActions={form.otherActions}
-              flag={flag(number)}
-              disabled={disabled}
-            />
+            <Fragment key={number}>
+              {change && <HeldSection kind="application" {...heldProps} />}
+              <AccessSection
+                requestId={form.id}
+                catalog={form.catalog}
+                access={access}
+                onAccessChange={setAccess}
+                others={others}
+                onOthersChange={setOthers}
+                otherActions={form.otherActions}
+                flag={flag(number)}
+                disabled={disabled}
+              />
+            </Fragment>
           ) : number === 6 ? (
-            <EquipmentSection
-              key={number}
-              requestId={form.id}
-              types={form.equipmentTypes}
-              items={equipment}
-              onItemsChange={setEquipment}
-              flag={flag(number)}
-              disabled={disabled}
-            />
+            <Fragment key={number}>
+              {change && <HeldSection kind="equipment" {...heldProps} />}
+              <EquipmentSection
+                requestId={form.id}
+                types={form.equipmentTypes}
+                items={equipment}
+                onItemsChange={setEquipment}
+                flag={flag(number)}
+                disabled={disabled}
+              />
+            </Fragment>
           ) : number === 7 ? (
-            <PhysicalSection
-              key={number}
-              requestId={form.id}
-              types={form.physicalTypes}
-              choices={physical}
-              onChoicesChange={setPhysical}
-              flag={flag(number)}
-              disabled={disabled}
-            />
+            <Fragment key={number}>
+              {change && <HeldSection kind="access" {...heldProps} />}
+              <PhysicalSection
+                requestId={form.id}
+                types={form.physicalTypes}
+                choices={physical}
+                onChoicesChange={setPhysical}
+                flag={flag(number)}
+                disabled={disabled}
+              />
+            </Fragment>
           ) : number === 9 && started ? (
             <ExecutionSection
               key={number}
@@ -601,6 +650,7 @@ export function RequestForm({
                     choices={form.choices[field.key]}
                     error={errors[field.key as DraftFieldKey]}
                     disabled={disabled}
+                    was={wasOf(field)}
                   />
                 ))}
               </div>
