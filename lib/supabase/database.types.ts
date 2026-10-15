@@ -1335,6 +1335,40 @@ export type Database = {
         Returns: undefined;
       };
       approval_preview: { Args: { p_request_id: string }; Returns: Json };
+      audit_log: {
+        Args: {
+          p_actor?: string;
+          p_before_at?: string;
+          p_before_id?: number;
+          p_from?: string;
+          p_groups?: string[];
+          p_hide_test?: boolean;
+          p_limit?: number;
+          p_search?: string;
+          p_sources?: Database["public"]["Enums"]["audit_source"][];
+          p_to?: string;
+        };
+        Returns: {
+          action: string;
+          actor_email: string;
+          actor_id: string;
+          actor_name: string;
+          actor_roles: Database["public"]["Enums"]["app_role"][];
+          created_at: string;
+          diff: Json;
+          employee_name: string;
+          entity: string;
+          entity_id: string;
+          group_key: string;
+          id: number;
+          is_test_user: boolean;
+          request_id: string;
+          request_type: Database["public"]["Enums"]["request_type"];
+          source: Database["public"]["Enums"]["audit_source"];
+          ticket_id: string;
+          total_count: number;
+        }[];
+      };
       confirm_request: {
         Args: { p_request_id: string; p_reviewed: Json };
         Returns: string;
@@ -1344,6 +1378,36 @@ export type Database = {
         Returns: string;
       };
       create_offboarding: { Args: { p_employee_id?: string }; Returns: string };
+      export_audit_log: {
+        Args: {
+          p_actor?: string;
+          p_from?: string;
+          p_groups?: string[];
+          p_hide_test?: boolean;
+          p_search?: string;
+          p_sources?: Database["public"]["Enums"]["audit_source"][];
+          p_to?: string;
+        };
+        Returns: {
+          action: string;
+          actor_email: string;
+          actor_id: string;
+          actor_name: string;
+          actor_roles: Database["public"]["Enums"]["app_role"][];
+          created_at: string;
+          diff: Json;
+          employee_name: string;
+          entity: string;
+          entity_id: string;
+          group_key: string;
+          id: number;
+          is_test_user: boolean;
+          request_id: string;
+          request_type: Database["public"]["Enums"]["request_type"];
+          source: Database["public"]["Enums"]["audit_source"];
+          ticket_id: string;
+        }[];
+      };
       log_record_download: {
         Args: { p_request_id: string };
         Returns: undefined;
@@ -1357,6 +1421,20 @@ export type Database = {
           p_sha256: string;
         };
         Returns: string;
+      };
+      request_activity: {
+        Args: { p_request_id: string };
+        Returns: {
+          action: string;
+          actor_id: string;
+          actor_name: string;
+          created_at: string;
+          diff: Json;
+          flagged_sections: number[];
+          id: number;
+          note: string;
+          source: Database["public"]["Enums"]["audit_source"];
+        }[];
       };
       request_signature_marks: {
         Args: { p_request_id: string };
