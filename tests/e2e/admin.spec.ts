@@ -806,3 +806,55 @@ function accessStatus(page: Page) {
     .getByRole("status")
     .first();
 }
+
+test("Audit log: the test user's own new draft is hidden, then shown in plain words with its details", async ({
+  page,
+}) => {
+  await openApp(page, "/requests");
+  await newOnboarding(page);
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  const ticketId = await page
+    .getByText(/^UAM-\d{4}-\d{6}$/)
+    .first()
+    .innerText();
+
+  // This browser user is a test user: hidden by default.
+  await openApp(page, `/audit?q=${ticketId}`);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Audit log" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Filters · 2" })).toBeVisible();
+  await expect(page.getByText("No events match")).toBeVisible();
+
+  await page
+    .getByRole("button", { name: "Remove filter: Hiding test users" })
+    .click();
+  await expect(page).toHaveURL(/tests=show/);
+  const created = page.getByRole("button", {
+    name: new RegExp(`created the onboarding ${ticketId}`),
+  });
+  await expect(created).toBeVisible();
+  await expect(
+    page.getByText(/^\d+ events? · newest first · times in /),
+  ).toBeVisible();
+
+  await created.click();
+  const sheet = page.getByRole("dialog", {
+    name: new RegExp(`created the onboarding ${ticketId}$`),
+  });
+  await expect(sheet).toContainText("Audit event · People");
+  await expect(sheet).toContainText("server time");
+  await expect(sheet).toContainText("Admin, Requester, IT operator");
+  await expect(
+    sheet.getByRole("link", { name: new RegExp(`^${ticketId}`) }),
+  ).toHaveAttribute("href", /\/requests\/[0-9a-f-]{36}$/);
+  await sheet.getByRole("button", { name: "Close" }).click();
+
+  // Filters: only Sign-in & accounts → this draft's events are gone.
+  await page.getByRole("button", { name: /^Filters/ }).click();
+  const filters = page.getByRole("dialog", { name: "Filters" });
+  await filters.getByRole("checkbox", { name: /Sign-in & accounts/ }).check();
+  await filters.getByRole("button", { name: /^Show \d+ events?$/ }).click();
+  await expect(page).toHaveURL(/groups=accounts/);
+  await expect(page.getByText("No events match")).toBeVisible();
+});
