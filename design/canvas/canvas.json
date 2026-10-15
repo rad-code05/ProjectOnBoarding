@@ -498,6 +498,34 @@
       "w": 390,
       "h": 1500,
       "title": "Phone · Access change record (what changed) — F10 proposal"
+    },
+    "AuditLogMobile.dc.html": {
+      "x": 17840,
+      "y": 13560,
+      "w": 390,
+      "h": 1560,
+      "title": "Phone · Audit log — F11 proposal"
+    },
+    "AuditFiltersMobile.dc.html": {
+      "x": 18310,
+      "y": 13560,
+      "w": 390,
+      "h": 960,
+      "title": "Phone · Audit log filters (sheet) — F11 proposal"
+    },
+    "AuditEventMobile.dc.html": {
+      "x": 18780,
+      "y": 13560,
+      "w": 390,
+      "h": 844,
+      "title": "Phone · Audit event details (sheet) — F11 proposal"
+    },
+    "RequestActivityMobile.dc.html": {
+      "x": 19250,
+      "y": 13560,
+      "w": 390,
+      "h": 1240,
+      "title": "Phone · Request activity (timeline) — F11 proposal"
     }
   },
   "createdOnFiles": {
@@ -519,7 +547,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 17760,
+      "maxW": 19640,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -627,7 +655,11 @@
     "AccessChangeStartMobile.dc.html",
     "AccessChangeDraftMobile.dc.html",
     "AccessChangeSheetMobile.dc.html",
-    "AccessChangeRecordMobile.dc.html"
+    "AccessChangeRecordMobile.dc.html",
+    "AuditLogMobile.dc.html",
+    "AuditFiltersMobile.dc.html",
+    "AuditEventMobile.dc.html",
+    "RequestActivityMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
