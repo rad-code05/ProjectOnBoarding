@@ -9,7 +9,7 @@ We build **feature by feature**: first a thin walking skeleton, then one vertica
 | --- | --- | --- | --- |
 | Phase 0 | [phase-0-discovery.md](phase-0-discovery.md) | Decisions D1–D19, design review | In progress (D1, D2, D12, D13 done) |
 | Phase 1 | [phase-1-skeleton.md](phase-1-skeleton.md) | **S1–S7** walking skeleton: app, CI, design foundation, hosting, sign-in, users & roles, app shell | Done (S1–S7) |
-| Features | [features.md](features.md) | **F01–F23**, in order. After F08 onboarding works end-to-end; after F11 the app can go live | In progress — F01–F10, F05e, F19 done; F11 next — boards approved (2026-10-15) |
+| Features | [features.md](features.md) | **F01–F23**, in order. After F08 onboarding works end-to-end; after F11 the app can go live | In progress — F01–F11, F05e, F19 done (F11 audit log 2026-10-15); F12 Reports I next |
 | Release | [release.md](release.md) | **R1–R7** final review and go-live (after F11), then **Operate** (routine after go-live) | Not started |
 
 One skeleton step or feature = one branch = one pull request = roughly one session. A large item is split into parts (S6a, F06a, F06b) **before** building — see the PR size rules below.
@@ -36,10 +36,11 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 **Continue unfinished work**
 > Read CLAUDE.md, then continue F04 in plan/features.md. Check the session log and the open branch/PR to see where we stopped.
 
-**Next session (after 2026-10-15): build F11 (audit log)**
-> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date and the cloud database matches local (28 migrations). The "docs: session handover (F11 next)" PR should be merged — clean up its branch.
-> Then build F11 (Audit log page) in plan/features.md. The phone boards are approved (Audit log, Audit log filters, Audit event details, Request activity) and so is the PR split: F11a database, F11b audit log page, F11c CSV export + request activity timeline, F11d browser tests + wrap-up. Decided: the audit log page is for admins and auditors; every approver (Moises, Celine) sees the request activity timeline on records only (not drafts); "Hide the test users" is on by default; the CSV export follows the filters and is itself audited. Start with F11a.
-> Verify library APIs with Context7 before coding. Run the git commands for me (branch, commit, push, PR); I squash-merge on GitHub and say "done". After every merged migration, do the cloud db push dry run and wait for my "push". Update my learning guide (Rajulearning/Learn.md) at the end of every PR — Part 10, glossary, data model, repo map and roadmap — and record every configuration change there.
+**Next session (after F11, 2026-10-15): F12 Reports I**
+> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date and the cloud database matches local (29 migrations). The F11d PR should be merged — clean up its branch.
+> F11 (audit log) is done — first let me try the Audit log page, the CSV export and the Activity on a record myself (guide me; my account in a normal window, the test approver in a private window).
+> Then F12 (Reports I) in plan/features.md: brief me on where we are, what F12 builds and why now, propose the PR split, and draw its phone boards on the design canvas for my approval before building.
+> Verify library APIs with Context7 before coding. Run the git commands for me (branch, commit, push, PR); I squash-merge on GitHub and say "done". After every merged migration, do the cloud db push dry run and wait for my "push". Update my learning guide (Rajulearning/Learn.md) at the end of every PR — Part 10, glossary, data model, repo map and roadmap — and record every configuration change there. Browser tests from Claude's PC use the local Supabase only.
 
 **Check the state** (after a break or a disconnect)
 > Read CLAUDE.md and check everything: git status, branches, open PRs, CI, and whether the notes in CLAUDE.md match reality.

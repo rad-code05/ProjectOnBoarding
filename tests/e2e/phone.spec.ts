@@ -247,6 +247,26 @@ test.describe("admin on a phone", () => {
     );
     await expectNoSideScroll(page);
   });
+
+  test("Audit log and its filters sheet fit the phone", async ({ page }) => {
+    await openApp(page, "/audit?tests=show&period=all");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Audit log" }),
+    ).toBeVisible();
+    // 16 px or iPhone zooms in when the search box is tapped.
+    await expect(
+      page.getByRole("searchbox", { name: /Search people/ }),
+    ).toHaveCSS("font-size", "16px");
+    await expectNoSideScroll(page);
+    await page.getByRole("button", { name: /^Filters/ }).click();
+    const filters = page.getByRole("dialog", { name: "Filters" });
+    await expect(
+      filters.getByRole("switch", { name: /Hide the test users/ }),
+    ).not.toBeChecked();
+    await expect(filters.getByLabel("From")).toHaveCSS("font-size", "16px");
+    await expectNoSideScroll(page);
+    await filters.getByRole("button", { name: "Close" }).click();
+  });
 });
 
 test.describe("approver on a phone", () => {

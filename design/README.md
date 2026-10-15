@@ -41,7 +41,7 @@ All planned screens now have a first design. Nothing is built yet.
 | Moises: Approvals, Confirm & sign, Read-only request, Records/PDF export | Draft, awaiting review |
 | Reports | Draft, awaiting review |
 | Sign-in: new-device code, reset password | Draft, awaiting review |
-| My profile · Admin (4 screens) · Audit log | Draft, awaiting review |
+| My profile · Admin (4 screens) · Audit log | Phone boards approved; My profile, Admin apps/types/settings and **Audit log + Request activity built** (F05, F19, F11) |
 | Offboarding · Returned · Batch review (access modification described in spec) | Offboarding built (F09, phone boards approved 2026-10-12) · Returned built (F07c) · Batch review: draft |
 | PDF document (2 pages) · System states · Email notifications (phase 2) | Draft, awaiting review |
 | Components sheet · shared components (TopBar, BrandPanel, AdminNav) | Draft |
