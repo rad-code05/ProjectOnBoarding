@@ -1,6 +1,8 @@
 # Reports
 
-**Status:** draft for review (2026-09-30) · Canvas board: *Reports (Raju & Moises)* — interactive: click a report type in Play mode
+**Status:** desktop draft (2026-09-30) · Canvas board: *Reports (Raju & Moises)* — interactive: click a report type in Play mode · **Phone boards approved 2026-10-15 (F12):** *Phone · Reports (choose a report)*, *Phone · All users list*, *Phone · Onboarded by month*, *Phone · Report filters (sheet)*.
+
+**Decided 2026-10-15:** **D16** — "onboarded" = closed by the approver in the month (company timezone). Reports are for admins, approvers and auditors; approvers see the same request states as everywhere (awaiting confirmation, returned, closed). All users list = requests *created* in the period, cancelled left out.
 
 One Reports page for both roles (Raju: full; Moises / backup approver: read-only, same reports). Sample data in the mockup is illustrative only.
 
@@ -34,7 +36,7 @@ One Reports page for both roles (Raju: full; Moises / backup approver: read-only
 - Status results (SLA Met / Missed) always use a word, never colour alone; Missed and "Due in 6h" use signal red.
 
 ## Definitions (to confirm — see PROJECT_PLAN §9)
-- **Onboarded** = onboarding request whose IT execution was completed in the period (company timezone); drafts and cancelled excluded.
+- **Onboarded** = onboarding request **closed by the approver** in the period (company timezone) — D16, decided 2026-10-15; drafts, open and cancelled excluded.
 - Country / department use the values on the request at the time it closed.
 - Signature times are the server timestamps recorded at signing.
 

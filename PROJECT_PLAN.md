@@ -278,7 +278,7 @@ Rules: only the signed-in user can apply their own signature; the AI can never s
 `created_at`, `effective_date`, `execution_started_at`, `execution_completed_at` (Raju signs), `confirmed_at` (Moises signs), `closed_at`, `sla_due_at`.
 
 ### 9.2 Metric definitions (proposed — confirm in Section 17)
-- **"Onboarded this month"** = onboarding requests with `execution_completed_at` in the calendar month (company timezone). "Created this month" and "Closed this month" are available as separate views.
+- **"Onboarded this month"** = onboarding requests **closed by the approver** (`closed_at`) in the calendar month (company timezone) — D16, decided 2026-10-15 (was: `execution_completed_at`). "Created this month" and "Closed this month" are available as separate views.
 - **SLA met** = `execution_completed_at ≤ sla_due_at`.
 
 ### 9.3 Initial reports
@@ -560,7 +560,7 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 
 1. **Auth:** *resolved 2026-10-01 (D1)* — **Clerk**, email + password, **MFA required**, invitation-only (sign-up restricted). No SSO for now; Microsoft 365 / Google SSO can be added later without redesign.
 2. **Approval:** resolved — Moises signs once at the end (Section 5.1). Backup approver: an additional account with the Approver role (Section 10.1); person still to be named. Still open: how are role changes by an admin controlled (Section 10.1)? Is post-provisioning confirmation acceptable to Laine's auditor?
-3. **Monthly metric:** "onboarded" = execution completed (proposed), final review, or closure? (D16) — *2026-10-07 (D21):* the designed report list is enough for now; "monthly counts by ticket type" (§9.3 #1) can be added later.
+3. **Monthly metric:** "onboarded" = execution completed (proposed), final review, or closure? (D16) — **decided 2026-10-15: closure** — an onboarding counts in the month the approver confirmed, signed and closed it (company timezone); approvers see the same request states in reports as everywhere. — *2026-10-07 (D21):* the designed report list is enough for now; "monthly counts by ticket type" (§9.3 #1) can be added later.
 4. **Signature:** *resolved 2026-09-30 (D13)* — **internal acknowledgment only**, a record that the onboarding process was carried out and approved; not a legally binding e-signature, so no e-signature provider. Users sign with an uploaded PNG signature or initials (PNG or typed). See `ROLES.md`.
 5. **Edits after signing:** *resolved (design)* — any change after Raju signs (including after a return) clears his signature and requires signing again; closed requests are never edited (a new access-modification request is created instead).
 6. **Fields:** Country agreed; revisit the deferred fields in 4.5 after the first weeks of use.
