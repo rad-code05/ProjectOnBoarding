@@ -363,4 +363,20 @@ describe("eventChanges / eventFacts — the details sheet", () => {
       ).what,
     ).toBe("changed Slack — Member");
   });
+
+  test("a report export names the report, format and rows", () => {
+    expect(
+      describeEvent(
+        ev({
+          ...raju,
+          action: "report.exported",
+          entity_id: "all_users",
+          diff: { format: "csv", rows: 27, filters: {} },
+        }),
+      ),
+    ).toMatchObject({
+      what: "exported the All users list (CSV, 27 rows)",
+      context: "Reports",
+    });
+  });
 });

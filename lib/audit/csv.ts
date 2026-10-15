@@ -1,24 +1,14 @@
 import { ROLE_LABELS } from "@/lib/navigation";
 import { TYPE_LABELS } from "@/lib/requests/labels";
 import type { Database } from "@/lib/supabase/database.types";
+import { csvCell, toCsv } from "@/lib/csv";
 import { describeEvent } from "./describe";
 import { GROUP_LABELS, type AuditGroup } from "./filters";
 
+export { csvCell };
+
 export type ExportRow =
   Database["public"]["Functions"]["export_audit_log"]["Returns"][number];
-
-/** Excel would run a cell starting with these as a formula. */
-const FORMULA_START = /^[=+\-@\t\r]/;
-
-/**
- * One CSV cell: quoted when needed, quotes doubled, and a leading ' when the
- * text could be read as a spreadsheet formula (CSV injection).
- */
-export function csvCell(value: string | number | null | undefined): string {
-  let text = value === null || value === undefined ? "" : String(value);
-  if (FORMULA_START.test(text)) text = `'${text}`;
-  return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
-}
 
 /** "Asia/Dubai" → "Dubai". */
 const city = (timeZone: string) =>
@@ -75,9 +65,7 @@ export function auditCsv(
       row.employee_name,
       row.request_type ? TYPE_LABELS[row.request_type] : null,
       JSON.stringify(row.diff),
-    ]
-      .map(csvCell)
-      .join(",");
+    ];
   });
-  return `\uFEFF${[header.map(csvCell).join(","), ...lines].join("\r\n")}\r\n`;
+  return toCsv(header, lines);
 }
