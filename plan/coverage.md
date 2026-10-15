@@ -103,11 +103,11 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | --- | --- | --- | --- | --- | --- |
 | F-1 | Separate date fields (created, effective, execution started/completed, confirmed, closed, SLA due) | §9.1 | F01, F04, F06, F07, F09 | pgTAP | ⏳ |
 | F-2 | Agreed metric definitions ("onboarded" = ?) | §9.2 | F12 | — | ❓ D16 |
-| F-3 | All users list, Onboarded by month | §9.3, `reports.md` | F12 | F12 tests | ⏳ F12 |
+| F-3 | All users list, Onboarded by month | §9.3, `reports.md` | F12 | F12 tests | 🟡 database ✅ F12a (`report_all_users()`, `report_onboarded_by_month()` — D16 closed by the approver; pgTAP `reports.test.sql`); screens F12b–F12c |
 | F-4 | Onboarded by country / department, Signature log | `reports.md` | F13 | F13 tests | ⏳ F13 |
 | F-5 | Offboarding SLA, Access by application, Open requests by status | §9.3, `reports.md` | F14 | F14 tests | ⏳ F14 |
 | F-6 | Monthly counts created / submitted / approved / completed / closed by ticket type | §9.3 #1, D21 | later, as a new report type | — | ➖ not now (D21: designed reports are enough for now) |
-| F-7 | CSV + PDF export of any report, permission-checked and **audited** | §9.3 #6, `reports.md` | F12 | F12 tests | ⏳ F12 |
+| F-7 | CSV + PDF export of any report, permission-checked and **audited** | §9.3 #6, `reports.md` | F12 | F12 tests | 🟡 database ✅ F12a (`log_report_export()` → `report.exported`); CSV F12b–c, PDF F12d |
 | F-8 | Summary tiles on the requests list and approvals page | `request-list.md`, `approver-view.md` | F01c (list), F07 | e2e "requests list: tiles…" | 🟡 list ✅ ("Onboarded this month" waits for D16/F06), approvals ✅ F07b-1 (Waiting for you / Returned to Raju / Closed this month; e2e "Approvals shows the tiles…") |
 
 ## G. AI assistant

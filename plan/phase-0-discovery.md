@@ -29,7 +29,7 @@
 | ~~D13~~ | ✅ **Resolved 2026-09-30:** internal acknowledgment only (record of the process), not legally binding; PNG signature or initials (PNG or typed) | — |
 | D15 | **Clerk plan at go-live:** authenticator-app MFA + backup codes are Clerk *Pro* features (free in the development instance). Keep MFA required (paid plan in production) vs. password + device-trust email code only (free) vs. Microsoft/Google SSO later. Recommendation: keep MFA. | R7 |
 | ~~D14~~ | ✅ **Resolved 2026-10-11:** the original form PDF (*User Access Management Form v4*) is kept **locally only** in the git-ignored `Rajulearning/source/` for comparing the PDF layout — **never committed** (the repo is public) | — (F08) |
-| D16 | Report metric: "onboarded this month" = execution completed (proposed), final review, or closure? (`PROJECT_PLAN.md` §9.2, §17 #3) | F12 |
+| D16 | Report metric: "onboarded this month" = execution completed (proposed), final review, or closure? (`PROJECT_PLAN.md` §9.2, §17 #3) — ✅ **decided 2026-10-15: closure** (closed by the approver, company timezone) | F12 |
 | D17 | RBAC templates: where is the current RBAC document, and store templates as data? (§4.4 #1, §17 #7) | F21 (F02 uses "custom" until then) |
 | ~~D18~~ | ✅ **Resolved 2026-10-11:** keep the naming pattern for all three types (`firstname.lastname-onboarding.pdf` / `-offboarding.pdf` / `-access-modification.pdf`, stored under the ticket ID); **PDF only once approved (closed)** — no draft / watermarked exports | — (F08) |
 | D19 | Who signs off go-live (Raju alone, or Raju + Moises / management)? (§17 #14) | R7 |

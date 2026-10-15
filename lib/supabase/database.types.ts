@@ -1412,6 +1412,15 @@ export type Database = {
         Args: { p_request_id: string };
         Returns: undefined;
       };
+      log_report_export: {
+        Args: {
+          p_filters?: Json;
+          p_format: string;
+          p_report: string;
+          p_rows?: number;
+        };
+        Returns: undefined;
+      };
       my_timezone: { Args: Record<PropertyKey, never>; Returns: string };
       record_pdf: {
         Args: {
@@ -1421,6 +1430,47 @@ export type Database = {
           p_sha256: string;
         };
         Returns: string;
+      };
+      report_all_users: {
+        Args: {
+          p_country?: string;
+          p_department?: number;
+          p_from?: string;
+          p_limit?: number;
+          p_offset?: number;
+          p_search?: string;
+          p_to?: string;
+          p_type?: Database["public"]["Enums"]["request_type"];
+        };
+        Returns: {
+          closed_at: string;
+          country: string;
+          created_at: string;
+          department: string;
+          effective_date: string;
+          first_name: string;
+          id: string;
+          last_name: string;
+          last_working_day: string;
+          people_count: number;
+          state: Database["public"]["Enums"]["request_state"];
+          ticket_id: string;
+          total_count: number;
+          type: Database["public"]["Enums"]["request_type"];
+          work_email: string;
+        }[];
+      };
+      report_onboarded_by_month: {
+        Args: {
+          p_country?: string;
+          p_department?: number;
+          p_from_month: string;
+          p_to_month: string;
+        };
+        Returns: {
+          month: string;
+          onboarded: number;
+        }[];
       };
       request_activity: {
         Args: { p_request_id: string };

@@ -526,6 +526,34 @@
       "w": 390,
       "h": 1240,
       "title": "Phone · Request activity (timeline) — F11 proposal"
+    },
+    "ReportsMobile.dc.html": {
+      "x": 19720,
+      "y": 13560,
+      "w": 390,
+      "h": 1000,
+      "title": "Phone · Reports (choose a report) — F12 proposal"
+    },
+    "ReportUsersMobile.dc.html": {
+      "x": 20190,
+      "y": 13560,
+      "w": 390,
+      "h": 1560,
+      "title": "Phone · All users list — F12 proposal"
+    },
+    "ReportMonthMobile.dc.html": {
+      "x": 20660,
+      "y": 13560,
+      "w": 390,
+      "h": 1720,
+      "title": "Phone · Onboarded by month — F12 proposal"
+    },
+    "ReportFiltersMobile.dc.html": {
+      "x": 21130,
+      "y": 13560,
+      "w": 390,
+      "h": 900,
+      "title": "Phone · Report filters (sheet) — F12 proposal"
     }
   },
   "createdOnFiles": {
@@ -547,7 +575,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 19640,
+      "maxW": 21520,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -659,7 +687,11 @@
     "AuditLogMobile.dc.html",
     "AuditFiltersMobile.dc.html",
     "AuditEventMobile.dc.html",
-    "RequestActivityMobile.dc.html"
+    "RequestActivityMobile.dc.html",
+    "ReportsMobile.dc.html",
+    "ReportUsersMobile.dc.html",
+    "ReportMonthMobile.dc.html",
+    "ReportFiltersMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
