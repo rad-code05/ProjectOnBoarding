@@ -286,6 +286,28 @@ test.describe("approver on a phone", () => {
     await expect(menu).toHaveCount(0);
   });
 
+  test("Reports and the All users list fit the phone", async ({ page }) => {
+    await openApp(page, "/reports");
+    await expect(
+      page.getByRole("link", { name: /All users list/ }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+    await openApp(page, "/reports/all-users");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "All users list" }),
+    ).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: /Search/ })).toHaveCSS(
+      "font-size",
+      "16px",
+    );
+    await expectNoSideScroll(page);
+    await page.getByRole("button", { name: /^Filters/ }).click();
+    const filters = page.getByRole("dialog", { name: "Filters" });
+    await expect(filters.getByLabel("Country")).toHaveCSS("font-size", "16px");
+    await expectNoSideScroll(page);
+    await filters.getByRole("button", { name: "Close" }).click();
+  });
+
   test("Records fits the phone; search is 16 px so iPhone doesn't zoom", async ({
     page,
   }) => {

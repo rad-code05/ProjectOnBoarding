@@ -936,3 +936,58 @@ test("Audit log: the test user's own new draft is hidden, then shown in plain wo
   await expect(page).toHaveURL(/groups=accounts/);
   await expect(page.getByText("No events match")).toBeVisible();
 });
+
+test("Reports · All users list: a new draft is listed, exported as CSV, and the export is audited", async ({
+  page,
+}) => {
+  test.slow(); // a draft, the report, an export and the audit log
+  await openApp(page, "/requests");
+  await newOnboarding(page);
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  const ticketId = await page
+    .getByText(/^UAM-\d{4}-\d{6}$/)
+    .first()
+    .innerText();
+
+  // The Reports picker leads to the All users list.
+  await openApp(page, "/reports");
+  await page
+    .getByRole("main")
+    .getByRole("link", { name: /All users list/ })
+    .first()
+    .click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "All users list" }),
+  ).toBeVisible();
+  await expect(page.getByText(/^Definition:/)).toBeVisible();
+
+  await page.getByRole("searchbox", { name: /Search/ }).fill(ticketId);
+  await expect(page).toHaveURL(new RegExp(`q=${ticketId}`));
+  await expect(page.getByRole("status")).toContainText("1 request · 1 person");
+  const card = page.getByRole("listitem").filter({ hasText: ticketId });
+  await expect(card).toContainText("Draft");
+  await expect(card).toContainText("Onboarding");
+
+  const exportLink = page.getByRole("link", { name: "Export CSV" });
+  await expect(exportLink).toHaveAttribute(
+    "href",
+    `/reports/all-users/export?q=${ticketId}`,
+  );
+  const csv = await page.request.get(`/reports/all-users/export?q=${ticketId}`);
+  expect(csv.status()).toBe(200);
+  expect(csv.headers()["content-disposition"]).toMatch(
+    /^attachment; filename="all-users_\d{4}-\d{2}-\d{2}_\d{4}-\d{2}-\d{2}\.csv"$/,
+  );
+  const text = await csv.text();
+  expect(text.split("\r\n")[0]).toMatch(/^﻿?Ticket,Type,Status,/);
+  expect(text).toContain(`${ticketId},Onboarding,Draft`);
+
+  await openApp(page, "/audit?q=report.exported&tests=show&period=today");
+  await expect(
+    page
+      .getByRole("button", {
+        name: /exported the All users list \(CSV, 1 row\)/,
+      })
+      .first(),
+  ).toBeVisible();
+});

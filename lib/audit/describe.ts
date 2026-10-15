@@ -1,4 +1,5 @@
 import { ROLE_LABELS } from "@/lib/navigation";
+import { REPORTS } from "@/lib/reports/catalog";
 import { STATE_LABELS, TYPE_LABELS } from "@/lib/requests/labels";
 import type { Database, Json } from "@/lib/supabase/database.types";
 
@@ -404,6 +405,16 @@ export function describeEvent(
     case "audit.exported": {
       const rows = num(d, "rows");
       return say(`exported ${rows} audit event${rows === 1 ? "" : "s"} (CSV)`);
+    }
+    case "report.exported": {
+      const rows = num(d, "rows");
+      const name =
+        REPORTS.find((r) => r.key === ev.entity_id)?.name ?? "a report";
+      const format = (str(d, "format") ?? "csv").toUpperCase();
+      return say(
+        `exported ${name === "a report" ? name : `the ${name}`} (${format}, ${rows} row${rows === 1 ? "" : "s"})`,
+        "Reports",
+      );
     }
     case "employee.created":
       return say(
