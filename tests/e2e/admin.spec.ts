@@ -8,6 +8,52 @@ test.beforeEach(async ({ page }) => {
   await setupClerkTestingToken({ page });
 });
 
+/**
+ * Test catalog entries ("E2E App / Kit / Door …") a test has created. If the
+ * test fails before its own Retire step, afterEach retires them, so they
+ * never show on real requests (2026-10-15: an "E2E Door" was left active).
+ */
+type TestEntry = { kind: "app" | "equipment" | "access"; name: string };
+let created: TestEntry[] = [];
+
+test.afterEach(async ({ page }, testInfo) => {
+  const leftovers = created;
+  created = [];
+  if (testInfo.status === testInfo.expectedStatus) return;
+  for (const entry of leftovers) {
+    try {
+      await retireLeftover(page, entry);
+    } catch (error) {
+      // Cleanup must never hide the test's own failure.
+      console.warn(`Could not retire ${entry.name}:`, error);
+    }
+  }
+});
+
+async function retireLeftover(page: Page, { kind, name }: TestEntry) {
+  const row = page.getByRole("button", { name: new RegExp(name) });
+  if (kind === "app") {
+    await openApp(page, "/admin/applications");
+    await page.getByLabel("Find an application").fill(name);
+    // Retired applications leave the active list.
+    if ((await row.count()) === 0) return;
+    await row.first().click();
+    await page.getByRole("button", { name: "Retire application" }).click();
+    return;
+  }
+  await openApp(page, "/admin/types");
+  if ((await row.count()) === 0 || /Retired/.test(await row.innerText())) {
+    return;
+  }
+  await row.click();
+  await page
+    .getByRole("button", {
+      name:
+        kind === "equipment" ? "Retire equipment type" : "Retire access type",
+    })
+    .click();
+}
+
 test("admin lands on Requests with the admin menu", async ({ page }) => {
   await openApp(page, "/");
   await expect(page).toHaveURL(/\/requests$/);
@@ -48,6 +94,7 @@ test("Admin · Applications: add an application, change it, find it, retire it",
   page,
 }) => {
   const name = `E2E App ${Date.now() % 100000}`;
+  created.push({ kind: "app", name });
   await openApp(page, "/admin/applications");
   await expect(
     page.getByRole("heading", { level: 1, name: "Applications" }),
@@ -91,6 +138,10 @@ test("Admin · Equipment & access types: add one of each, then retire them", asy
   page,
 }) => {
   const stamp = Date.now() % 100000;
+  created.push(
+    { kind: "equipment", name: `E2E Kit ${stamp}` },
+    { kind: "access", name: `E2E Door ${stamp}` },
+  );
   await openApp(page, "/admin/types");
   await expect(
     page.getByRole("heading", { level: 1, name: "Equipment & access types" }),
