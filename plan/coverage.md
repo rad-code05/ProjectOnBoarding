@@ -146,8 +146,8 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | I2 | Sign-in / sign-out logged | §10.2 | S7c | pgTAP `session_audit`; verified in production 2026-10-06 | ✅ (expiry has no Clerk event) |
 | I3 | User and role changes logged | §10.2 | S6 (triggers) | pgTAP | ✅ |
 | I4 | Create / edit (field-level before → after) / transitions / sign / export / close logged, with source user/AI/system | §10.2, §14 | F01 onwards, each feature | pgTAP per feature | ⏳ F01 |
-| I5 | Audit log page: filters (person, action, source, period), details, CSV export (audited) | `profile-admin.md` | F11 | F11 tests | ⏳ F11 |
-| I6 | Per-request activity timeline (request detail "audit timeline", closed page "Recent activity") | §5.3, `pdf-export.md` | **F11** (assigned 2026-10-07; F08 shows the card once F11 exists) | F11 tests | ⏳ F11 |
+| I5 | Audit log page: filters (person, action, source, period), details, CSV export (audited) | `profile-admin.md`, phone boards approved 2026-10-15 | F11b–F11c | F11 tests | ⏳ F11 (boards approved) |
+| I6 | Per-request activity timeline (request detail "audit timeline", closed page "Recent activity") — every approver sees it on records only (decided 2026-10-15) | §5.3, `pdf-export.md` | **F11a + F11c** | F11 tests | ⏳ F11 (boards approved) |
 | I7 | Test users (`e2e.*+clerk_test`) sign in on every CI run → filter them out in the audit page | S7d lesson | F11 | F11 tests | ⏳ F11 |
 | I8 | Operational logs (Vercel) with personal data scrubbed; error monitoring | §10.2 | R3 | — | ⏳ R3 |
 
