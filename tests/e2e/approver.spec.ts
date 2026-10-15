@@ -128,6 +128,13 @@ test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirm
     .getByRole("button", { name: "Go to Application access" })
     .click();
   await expect(access).toBeInViewport();
+  // Activity (F11c) under Raju's request: the return with its comment.
+  const rajuActivity = raju.getByRole("region", { name: "Activity" });
+  await expect(rajuActivity).toContainText("returned it to IT");
+  await expect(rajuActivity).toContainText("“Add Figma as Viewer”");
+  await expect(
+    rajuActivity.getByRole("link", { name: "Open the full audit log" }),
+  ).toHaveAttribute("href", "/audit");
   await reviewAndSign(raju, "Figma is Viewer now");
   await rajuContext.close();
 
@@ -158,6 +165,18 @@ test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirm
   ).toHaveAttribute("href", `/records/${requestId}/pdf`);
   await expect(page.getByRole("region", { name: "Signatures" })).toContainText(
     "Figma is Viewer now",
+  );
+  // Activity (F11c): every approver sees the record's history.
+  const activity = page.getByRole("region", { name: "Activity" });
+  await expect(activity).toContainText("confirmed, signed and closed it");
+  await expect(activity).toContainText("signed again (Review & sign)");
+  await expect(activity).toContainText(
+    "Note for the approver: “Figma is Viewer now”",
+  );
+  await expect(activity).toContainText("returned it to IT");
+  await expect(activity).toContainText("“Add Figma as Viewer”");
+  await expect(activity).toContainText(
+    "Admins and auditors can open the full audit log.",
   );
   // The same page fits a phone (D22).
   await page.setViewportSize({ width: 390, height: 844 });

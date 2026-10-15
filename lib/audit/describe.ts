@@ -271,7 +271,7 @@ export function describeEvent(
       const reason = str(d, "reason");
       switch (toState) {
         case "in_execution":
-          return say(`started execution of ${it}`);
+          return say(`started execution${ref ? ` of ${ref}` : ""}`);
         case "cancelled":
           return say(`cancelled ${it}`, reason);
         case "pending_confirmation":
@@ -373,7 +373,7 @@ export function describeEvent(
     case "request.signed": {
       const hash = str(d, "snapshot_sha256");
       return say(
-        `signed ${it} (Review & sign)`,
+        `signed${ref ? ` ${ref}` : ""} (Review & sign)`,
         hash ? `fingerprint ${hash.slice(0, 8)}…` : null,
       );
     }

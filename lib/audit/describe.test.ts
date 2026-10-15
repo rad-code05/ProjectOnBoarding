@@ -179,7 +179,7 @@ describe("describeEvent — the board's examples", () => {
         }),
         opts,
       ).what,
-    ).toBe("started execution of it");
+    ).toBe("started execution");
   });
 
   test("accounts, roles and unknown actions", () => {
