@@ -3,7 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { loadMoreAudit } from "@/app/(app)/audit/actions";
-import { Avatar, Button, CloseIcon, InlineError } from "@/components/ui";
+import {
+  Avatar,
+  Button,
+  CloseIcon,
+  DownloadIcon,
+  InlineError,
+  buttonStyles,
+} from "@/components/ui";
 import {
   AUDIT_PAGE_SIZE,
   AUDIT_SOURCES,
@@ -20,6 +27,8 @@ import { AuditFiltersSheet } from "./AuditFiltersSheet";
 import { dayHeading, zoneCity } from "./time";
 
 const SEARCH_DELAY_MS = 300;
+/** export_audit_log() returns at most this many events. */
+const EXPORT_LIMIT = 10_000;
 
 const chipStyle: Record<AuditEntry["chip"], string> = {
   People: "border border-ink",
@@ -268,6 +277,26 @@ export function AuditLog({
         >
           Show {Math.min(AUDIT_PAGE_SIZE, total - entries.length)} more
         </Button>
+      )}
+
+      {total > 0 && (
+        <div className="flex flex-col gap-1.5 border-t border-line pt-4">
+          {/* A plain link (never prefetched): every export is recorded. */}
+          <a
+            href={`/audit/export?${auditParams(filters)}`}
+            download
+            className={`${buttonStyles("primary", "md")} w-full md:w-auto md:self-start`}
+          >
+            <DownloadIcon size={16} />
+            {total > EXPORT_LIMIT
+              ? `Export the newest ${EXPORT_LIMIT.toLocaleString("en-GB")} events (CSV)`
+              : `Export ${total === 1 ? "this event" : `these ${total} events`} (CSV)`}
+          </a>
+          <p className="text-xs leading-normal text-graphite">
+            The export follows the filters above and is itself recorded in the
+            audit log.
+          </p>
+        </div>
       )}
 
       {open && (

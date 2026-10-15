@@ -201,4 +201,19 @@ describe("AuditLog", () => {
       within(sheet).getByRole("radio", { name: "E2E Admin" }),
     ).toBeInTheDocument();
   });
+
+  test("the CSV export follows the filters and says it is recorded", () => {
+    show(
+      { entries: [entry(1)], total: 48, next: null },
+      { ...DEFAULT_AUDIT_FILTERS, groups: ["signatures"] },
+    );
+    const link = screen.getByRole("link", {
+      name: "Export these 48 events (CSV)",
+    });
+    expect(link).toHaveAttribute("href", "/audit/export?groups=signatures");
+    expect(link).toHaveAttribute("download");
+    expect(
+      screen.getByText(/is itself recorded in the audit log/),
+    ).toBeInTheDocument();
+  });
 });

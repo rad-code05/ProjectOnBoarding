@@ -810,6 +810,7 @@ function accessStatus(page: Page) {
 test("Audit log: the test user's own new draft is hidden, then shown in plain words with its details", async ({
   page,
 }) => {
+  test.slow(); // four pages, an export and two sheets
   await openApp(page, "/requests");
   await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
@@ -850,7 +851,33 @@ test("Audit log: the test user's own new draft is hidden, then shown in plain wo
   ).toHaveAttribute("href", /\/requests\/[0-9a-f-]{36}$/);
   await sheet.getByRole("button", { name: "Close" }).click();
 
+  // CSV export (F11c): follows the filters, and is itself recorded.
+  const exportLink = page.getByRole("link", {
+    name: /^Export (this event|these \d+ events) \(CSV\)$/,
+  });
+  await expect(exportLink).toHaveAttribute(
+    "href",
+    `/audit/export?q=${ticketId}&tests=show`,
+  );
+  const csv = await page.request.get(`/audit/export?q=${ticketId}&tests=show`);
+  expect(csv.status()).toBe(200);
+  expect(csv.headers()["content-type"]).toBe("text/csv; charset=utf-8");
+  expect(csv.headers()["content-disposition"]).toMatch(
+    /^attachment; filename="audit-log-\d{4}-\d{2}-\d{2}\.csv"$/,
+  );
+  const text = await csv.text();
+  expect(text.split("\r\n")[0]).toMatch(/^﻿?Event #,Time \(UTC\),/);
+  expect(text).toContain(`created the onboarding ${ticketId}`);
+  await openApp(page, "/audit?q=audit.exported&tests=show&period=today");
+  await expect(
+    page
+      .getByRole("button", { name: /exported \d+ audit events? \(CSV\)/ })
+      .first(),
+  ).toBeVisible();
+
   // Filters: only Sign-in & accounts → this draft's events are gone.
+  await openApp(page, `/audit?q=${ticketId}&tests=show`);
+  await expect(created).toBeVisible();
   await page.getByRole("button", { name: /^Filters/ }).click();
   const filters = page.getByRole("dialog", { name: "Filters" });
   await filters.getByRole("checkbox", { name: /Sign-in & accounts/ }).check();
