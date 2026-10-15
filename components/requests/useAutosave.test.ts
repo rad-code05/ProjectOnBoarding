@@ -131,9 +131,11 @@ describe("useAutosave", () => {
 describe("the Save button (saveNow)", () => {
   test("always confirms — even when everything was already saved", async () => {
     const { result } = setup();
+    let outcome: unknown;
     await act(async () => {
-      await result.current.saveNow();
+      outcome = await result.current.saveNow();
     });
+    expect(outcome).toEqual({ ok: true });
     expect(saveDraft).not.toHaveBeenCalled();
     expect(result.current.status).toMatchObject({
       kind: "saved",
@@ -163,9 +165,16 @@ describe("the Save button (saveNow)", () => {
     });
     const { result } = setup();
     act(() => result.current.setValue("work_email", "nope"));
+    let outcome: unknown;
     await act(async () => {
-      await result.current.saveNow();
+      outcome = await result.current.saveNow();
     });
     expect(result.current.status).toEqual({ kind: "invalid" });
+    // The Save button says which field stops it (the pop-up names it).
+    expect(outcome).toEqual({
+      ok: false,
+      reason: "invalid",
+      fields: ["work_email"],
+    });
   });
 });

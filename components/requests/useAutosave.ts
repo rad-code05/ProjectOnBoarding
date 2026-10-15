@@ -8,6 +8,13 @@ import { formatTime } from "@/lib/requests/format";
 /** Pause after the last keystroke before saving. */
 export const AUTOSAVE_DELAY_MS = 1500;
 
+/** What pressing Save ended with (the button and the pop-up say so). */
+export type SaveOutcome =
+  | { ok: true }
+  | { ok: false; reason: "invalid"; fields: string[] }
+  | { ok: false; reason: "conflict" }
+  | { ok: false; reason: "error"; message: string };
+
 export type SaveStatus =
   | { kind: "idle" }
   | { kind: "saving" }
@@ -57,6 +64,8 @@ export function useAutosave({
   const busy = useRef(false);
   const waiting = useRef<DraftFormValues | null>(null);
   const stopped = useRef(false);
+  // How the last save ended — what the Save button reports.
+  const outcome = useRef<SaveOutcome>({ ok: true });
 
   const run = useCallback(
     async (first: DraftFormValues) => {
@@ -81,6 +90,7 @@ export function useAutosave({
           }));
 
           if (result.ok) {
+            outcome.current = { ok: true };
             versionRef.current = result.version;
             savedRef.current = toSave;
             setSaved(toSave);
@@ -90,12 +100,23 @@ export function useAutosave({
               at: formatTime(result.savedAt, timeZone),
             });
           } else if (result.reason === "invalid") {
+            outcome.current = {
+              ok: false,
+              reason: "invalid",
+              fields: Object.keys(result.fieldErrors),
+            };
             setErrors(result.fieldErrors);
             setStatus({ kind: "invalid" });
           } else if (result.reason === "conflict") {
+            outcome.current = { ok: false, reason: "conflict" };
             stopped.current = true;
             setStatus({ kind: "conflict" });
           } else {
+            outcome.current = {
+              ok: false,
+              reason: "error",
+              message: result.message,
+            };
             setStatus({ kind: "error", message: result.message });
           }
         }
@@ -138,8 +159,23 @@ export function useAutosave({
      * The Save button: saves what's waiting, then always says so — even when
      * everything was already saved (it used to look as if nothing happened).
      */
-    saveNow: async () => {
-      await run(values);
+    saveNow: async (): Promise<SaveOutcome> => {
+      const wanted = values;
+      await run(wanted);
+      // An autosave was already running: wait for it (and what it queued).
+      while (busy.current) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      const stored = same(wanted, savedRef.current) && !stopped.current;
+      if (!stored) {
+        return outcome.current.ok
+          ? {
+              ok: false,
+              reason: "error",
+              message: "Could not save. Try again.",
+            }
+          : outcome.current;
+      }
       setStatus((current) =>
         current.kind === "saved"
           ? { ...current, confirmed: true }
@@ -151,6 +187,7 @@ export function useAutosave({
               }
             : current,
       );
+      return { ok: true };
     },
   };
 }
