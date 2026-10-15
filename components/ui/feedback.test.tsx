@@ -1,9 +1,11 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, test, vi } from "vitest";
 import { Avatar, initials } from "./Avatar";
 import { InlineError } from "./InlineError";
 import { Logo } from "./Logo";
 import { Notice } from "./Notice";
+import { Toast } from "./Toast";
 
 describe("InlineError", () => {
   test("shows the message, and announces it when live", () => {
@@ -57,5 +59,31 @@ describe("Logo", () => {
   test("has alt text", () => {
     render(<Logo />);
     expect(screen.getByAltText("Laine")).toBeInTheDocument();
+  });
+});
+
+describe("Toast", () => {
+  test("announces the message and closes by itself", () => {
+    vi.useFakeTimers();
+    const onClose = vi.fn();
+    render(<Toast onClose={onClose}>Draft saved</Toast>);
+    expect(screen.getByRole("status")).toHaveTextContent("Draft saved");
+    vi.advanceTimersByTime(4000);
+    expect(onClose).toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  test("an error is an alert and can be closed with ×", async () => {
+    const onClose = vi.fn();
+    render(
+      <Toast tone="error" onClose={onClose}>
+        Not saved — check Work email.
+      </Toast>,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Not saved — check Work email.",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(onClose).toHaveBeenCalled();
   });
 });

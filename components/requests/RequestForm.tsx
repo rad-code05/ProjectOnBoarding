@@ -1,12 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useState, type FormEvent } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   Button,
+  CheckIcon,
   ChevronRightIcon,
   InlineError,
   StatusPill,
+  Toast,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { AccessChoices, OtherApp } from "@/lib/requests/access";
@@ -46,7 +54,7 @@ import { ReturnedCard, SectionFlag, sectionFrame } from "./ReturnedCard";
 import { SectionNav, type SectionNavItem } from "./SectionNav";
 import { ReviewSignSheet } from "./ReviewSignSheet";
 import { SignaturesSection } from "./SignaturesSection";
-import { useAutosave, type SaveStatus } from "./useAutosave";
+import { useAutosave, type SaveOutcome, type SaveStatus } from "./useAutosave";
 import { CancelRequestSheet, StartExecutionSheet } from "./WorkflowSheets";
 
 /** Sections with fields so far; the rest are collapsed rows. */
@@ -184,9 +192,53 @@ export function RequestForm({
     );
   };
 
-  const submit = (event: FormEvent) => {
+  // Pressing Save says so (Raju, 2026-10-15): the button turns solid with a
+  // tick for two seconds and a pop-up confirms — or says what went wrong.
+  const [toast, setToast] = useState<{
+    tone: "ok" | "error";
+    text: string;
+    id: number;
+  } | null>(null);
+  const [justSaved, setJustSaved] = useState(false);
+  const closeToast = useCallback(() => setToast(null), []);
+  useEffect(() => {
+    if (!justSaved) return;
+    const timer = setTimeout(() => setJustSaved(false), 2000);
+    return () => clearTimeout(timer);
+  }, [justSaved]);
+
+  const problem = (result: Exclude<SaveOutcome, { ok: true }>): string => {
+    if (result.reason === "invalid") {
+      const labels = result.fields.map(
+        (key) =>
+          form.fields.find((field) => field.key === key)?.label ??
+          OFFBOARDING_LABELS[key] ??
+          key.replaceAll("_", " "),
+      );
+      return `Not saved — check ${labels.join(", ")}.`;
+    }
+    if (result.reason === "conflict") {
+      return "Not saved — this request was changed somewhere else. Reload to see the latest version.";
+    }
+    return result.message;
+  };
+
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
-    void saveNow();
+    const result = await saveNow();
+    if (result.ok) {
+      setJustSaved(true);
+      setToast({
+        tone: "ok",
+        text:
+          form.state === "draft"
+            ? "Draft saved — you can leave and continue later"
+            : "Changes saved",
+        id: Date.now(),
+      });
+    } else {
+      setToast({ tone: "error", text: problem(result), id: Date.now() });
+    }
   };
 
   const system: Record<string, string> = {
@@ -678,11 +730,16 @@ export function RequestForm({
           >
             <Button
               type="submit"
-              variant="secondary"
+              variant={justSaved ? "primary" : "secondary"}
+              iconLeft={justSaved ? <CheckIcon size={16} /> : undefined}
               disabled={conflict}
               loading={status.kind === "saving"}
             >
-              {form.state === "draft" ? "Save draft" : "Save"}
+              {justSaved
+                ? "Saved"
+                : form.state === "draft"
+                  ? "Save draft"
+                  : "Save"}
             </Button>
             {form.state === "draft" ? (
               <Button
@@ -707,6 +764,11 @@ export function RequestForm({
               </Button>
             )}
           </div>
+        )}
+        {toast && (
+          <Toast key={toast.id} tone={toast.tone} onClose={closeToast}>
+            {toast.text}
+          </Toast>
         )}
       </form>
 

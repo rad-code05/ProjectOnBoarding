@@ -51,6 +51,16 @@ export async function createExecutedRequest(page: Page, firstName: string) {
   await expect(page.getByRole("status").first()).toHaveText(
     /^(All changes saved|Saved) \d\d:\d\d/,
   );
+  // Pressing Save says so (2026-10-15): the button and a pop-up.
+  await expect(
+    page.getByText("Draft saved — you can leave and continue later"),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Saved", exact: true }),
+  ).toBeVisible();
+  if (process.env.SAVE_SCREENSHOT) {
+    await page.screenshot({ path: process.env.SAVE_SCREENSHOT });
+  }
 
   await page.getByRole("button", { name: "Start execution" }).click();
   await page

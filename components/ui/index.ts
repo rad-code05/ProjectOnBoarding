@@ -18,6 +18,7 @@ export {
 export { InlineError } from "./InlineError";
 export { Logo } from "./Logo";
 export { Notice } from "./Notice";
+export { Toast } from "./Toast";
 export { PasswordField } from "./PasswordField";
 export { Sheet, sheetPill } from "./Sheet";
 export { StatusPill } from "./StatusPill";
