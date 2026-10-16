@@ -23,6 +23,7 @@ const selectClass =
  * Search, active filters as removable chips and the Filters sheet (board:
  * Phone · Report filters). Filters live in the URL; the server runs the
  * report. `count` answers "Show N requests" while choices change.
+ * `counts`: a report of numbers (no search, no request type).
  */
 export function ReportFilterBar({
   filters,
@@ -30,12 +31,14 @@ export function ReportFilterBar({
   countries,
   count,
   noun = "requests",
+  counts = false,
 }: {
   filters: ReportFilters;
   departments: { id: number; name: string }[];
   countries: string[];
   count: (search: string) => Promise<number | null>;
   noun?: string;
+  counts?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -64,30 +67,32 @@ export function ReportFilterBar({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <label className="flex h-12 items-center gap-2.5 rounded-pill border border-field-border bg-paper px-4 md:h-[38px] md:w-80 md:px-3">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          aria-hidden="true"
-          className="shrink-0 text-graphite"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="M20 20l-3.5-3.5" />
-        </svg>
-        <input
-          type="search"
-          value={q}
-          onChange={(event) => setQ(event.target.value)}
-          aria-label="Search name, email or ticket"
-          placeholder="Name, email or ticket"
-          className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-stone md:text-xs"
-        />
-      </label>
+      {!counts && (
+        <label className="flex h-12 items-center gap-2.5 rounded-pill border border-field-border bg-paper px-4 md:h-[38px] md:w-80 md:px-3">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+            className="shrink-0 text-graphite"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3.5-3.5" />
+          </svg>
+          <input
+            type="search"
+            value={q}
+            onChange={(event) => setQ(event.target.value)}
+            aria-label="Search name, email or ticket"
+            placeholder="Name, email or ticket"
+            className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-stone md:text-xs"
+          />
+        </label>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         {chips.length > 0 && (
           <ul aria-label="Active filters" className="flex flex-wrap gap-1.5">
@@ -122,6 +127,7 @@ export function ReportFilterBar({
           countries={countries}
           count={count}
           noun={noun}
+          counts={counts}
           onClose={() => setOpen(false)}
           onApply={(next) => {
             setOpen(false);
@@ -139,6 +145,7 @@ function ReportFiltersSheet({
   countries,
   count,
   noun,
+  counts,
   onApply,
   onClose,
 }: {
@@ -147,6 +154,7 @@ function ReportFiltersSheet({
   countries: string[];
   count: (search: string) => Promise<number | null>;
   noun: string;
+  counts: boolean;
   onApply: (next: ReportFilters) => void;
   onClose: () => void;
 }) {
@@ -258,25 +266,27 @@ function ReportFiltersSheet({
         </p>
       </fieldset>
 
-      <label className="flex flex-col gap-1.5 text-sm font-semibold">
-        Request type
-        <select
-          value={draft.type ?? ""}
-          onChange={(e) =>
-            change({
-              type: (e.target.value || null) as ReportFilters["type"],
-            })
-          }
-          className={cn(selectClass, "font-normal")}
-        >
-          <option value="">All types</option>
-          {REQUEST_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {TYPE_LABELS[t]}
-            </option>
-          ))}
-        </select>
-      </label>
+      {!counts && (
+        <label className="flex flex-col gap-1.5 text-sm font-semibold">
+          Request type
+          <select
+            value={draft.type ?? ""}
+            onChange={(e) =>
+              change({
+                type: (e.target.value || null) as ReportFilters["type"],
+              })
+            }
+            className={cn(selectClass, "font-normal")}
+          >
+            <option value="">All types</option>
+            {REQUEST_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {TYPE_LABELS[t]}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <label className="flex flex-col gap-1.5 text-sm font-semibold">
         Country
         <select
