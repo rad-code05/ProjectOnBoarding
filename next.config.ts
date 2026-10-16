@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/records/*": ["./lib/records/fonts/*.ttf", "./public/brand/*.png"],
     "/approvals/*": ["./lib/records/fonts/*.ttf", "./public/brand/*.png"],
+    // Report PDFs (F12d) use the same fonts and logo.
+    "/reports/*": ["./lib/records/fonts/*.ttf", "./public/brand/*.png"],
   },
   experimental: {
     serverActions: {

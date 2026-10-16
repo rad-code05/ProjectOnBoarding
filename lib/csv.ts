@@ -16,5 +16,5 @@ export function csvCell(value: Cell): string {
 /** A whole CSV file Excel opens correctly: UTF-8 BOM, CRLF line ends. */
 export function toCsv(header: string[], rows: Cell[][]): string {
   const lines = [header, ...rows].map((row) => row.map(csvCell).join(","));
-  return `﻿${lines.join("\r\n")}\r\n`;
+  return `\uFEFF${lines.join("\r\n")}\r\n`;
 }

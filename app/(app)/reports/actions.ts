@@ -5,6 +5,8 @@ import { requireRole } from "@/lib/auth";
 import { PAGES } from "@/lib/navigation";
 import { allUsersArgs } from "@/lib/reports/all-users";
 import { parseReportFilters } from "@/lib/reports/filters";
+import { summarise } from "@/lib/reports/months";
+import { onboardedMonths, onboardedSpan } from "@/lib/reports/onboarded";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
 
@@ -23,4 +25,24 @@ export async function countAllUsers(search: string): Promise<number | null> {
   });
   if (error) return null;
   return Number(data?.[0]?.total_count ?? 0);
+}
+
+/** "Show N onboardings" for Onboarded by month. */
+export async function countOnboarded(search: string): Promise<number | null> {
+  await requireRole(...PAGES.reports.roles);
+  const parsed = z.string().max(1000).safeParse(search);
+  if (!parsed.success) return null;
+  const filters = parseReportFilters(
+    Object.fromEntries(new URLSearchParams(parsed.data)),
+  );
+  try {
+    const timeZone = await companyTimezone();
+    const months = await onboardedMonths(
+      await onboardedSpan(filters, timeZone),
+      filters,
+    );
+    return summarise(months).total;
+  } catch {
+    return null;
+  }
 }

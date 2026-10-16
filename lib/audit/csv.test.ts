@@ -46,7 +46,7 @@ describe("auditCsv", () => {
 
   test("header + one row per event, in plain words and raw details", () => {
     const csv = auditCsv([row], "Asia/Dubai", {});
-    expect(csv.startsWith("﻿")).toBe(true); // Excel reads UTF-8
+    expect(csv.startsWith("\uFEFF")).toBe(true); // Excel reads UTF-8
     const [header, line, end] = csv.slice(1).split("\r\n");
     expect(header).toBe(
       "Event #,Time (UTC),Time (Dubai),Who,Email,Roles,Source,Group,What happened,Ticket,Person,Request type,Details",

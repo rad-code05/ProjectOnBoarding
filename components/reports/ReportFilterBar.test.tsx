@@ -77,4 +77,27 @@ describe("ReportFilterBar", () => {
       { scroll: false },
     );
   });
+
+  test("a report of numbers has no search and no request type", async () => {
+    const user = userEvent.setup();
+    render(
+      <ReportFilterBar
+        filters={DEFAULT_REPORT_FILTERS}
+        departments={[]}
+        countries={["CH"]}
+        count={count}
+        noun="onboardings"
+        counts
+      />,
+    );
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Filters · 1" }));
+    const sheet = screen.getByRole("dialog", { name: "Filters" });
+    expect(
+      within(sheet).queryByLabelText("Request type"),
+    ).not.toBeInTheDocument();
+    expect(
+      await within(sheet).findByRole("button", { name: "Show 27 onboardings" }),
+    ).toBeInTheDocument();
+  });
 });

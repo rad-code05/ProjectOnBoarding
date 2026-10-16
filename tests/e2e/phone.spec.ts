@@ -286,7 +286,9 @@ test.describe("approver on a phone", () => {
     await expect(menu).toHaveCount(0);
   });
 
-  test("Reports and the All users list fit the phone", async ({ page }) => {
+  test("Reports, the All users list and Onboarded by month fit the phone", async ({
+    page,
+  }) => {
     await openApp(page, "/reports");
     await expect(
       page.getByRole("link", { name: /All users list/ }),
@@ -306,6 +308,14 @@ test.describe("approver on a phone", () => {
     await expect(filters.getByLabel("Country")).toHaveCSS("font-size", "16px");
     await expectNoSideScroll(page);
     await filters.getByRole("button", { name: "Close" }).click();
+    await openApp(page, "/reports/onboarded-by-month");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Onboarded by month" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("table", { name: "Every month" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
   });
 
   test("Records fits the phone; search is 16 px so iPhone doesn't zoom", async ({

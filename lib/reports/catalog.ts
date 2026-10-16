@@ -44,7 +44,7 @@ export const REPORTS: ReportInfo[] = [
     desc: "Onboardings closed by the approver, per month",
     definition:
       "Onboarding requests the approver confirmed, signed and closed in the month (company timezone). Drafts, open and cancelled requests are not counted.",
-    ready: false,
+    ready: true,
   },
   {
     slug: "onboarded-by-country",

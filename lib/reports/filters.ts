@@ -215,3 +215,18 @@ export function reportChips(
   }
   return chips;
 }
+
+/** The active filters in words, for a PDF ("Type: Onboarding", "Country: Switzerland"). */
+export function filterWords(
+  filters: ReportFilters,
+  departments: Record<number, string>,
+): string[] {
+  const words: string[] = [];
+  if (filters.type) words.push(`Type: ${TYPE_LABELS[filters.type]}`);
+  if (filters.country) words.push(`Country: ${countryName(filters.country)}`);
+  if (filters.department) {
+    words.push(`Department: ${departments[filters.department] ?? "—"}`);
+  }
+  if (filters.q) words.push(`Search: "${filters.q}"`);
+  return words;
+}
