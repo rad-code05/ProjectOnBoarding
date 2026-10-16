@@ -16,6 +16,7 @@ export type Database = {
           updated_at: string;
           updated_by: string | null;
         };
+        ComputedFields: never;
         Insert: {
           company_timezone?: string;
           id?: boolean;
@@ -49,6 +50,7 @@ export type Database = {
           timezone: string | null;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           active?: boolean;
           clerk_user_id: string;
@@ -83,6 +85,7 @@ export type Database = {
           signature_id: string | null;
           snapshot_id: string | null;
         };
+        ComputedFields: never;
         Insert: {
           comment?: string | null;
           decided_at?: string;
@@ -147,6 +150,7 @@ export type Database = {
           id: number;
           source: Database["public"]["Enums"]["audit_source"];
         };
+        ComputedFields: never;
         Insert: {
           action: string;
           actor_id?: string | null;
@@ -180,6 +184,7 @@ export type Database = {
           permissions: string[];
           sort_order: number;
         };
+        ComputedFields: never;
         Insert: {
           actions: string[];
           active?: boolean;
@@ -217,6 +222,7 @@ export type Database = {
           name: string;
           sort_order: number;
         };
+        ComputedFields: never;
         Insert: {
           active?: boolean;
           id?: never;
@@ -238,6 +244,7 @@ export type Database = {
           name: string;
           sort_order: number;
         };
+        ComputedFields: never;
         Insert: {
           active?: boolean;
           id?: never;
@@ -273,6 +280,7 @@ export type Database = {
           permission: string | null;
           source: string;
         };
+        ComputedFields: never;
         Insert: {
           access_type_id?: number | null;
           app_id?: number | null;
@@ -367,6 +375,7 @@ export type Database = {
           updated_at: string;
           work_email: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           first_name?: string | null;
@@ -394,6 +403,7 @@ export type Database = {
           needs_description: boolean;
           sort_order: number;
         };
+        ComputedFields: never;
         Insert: {
           actions?: string[];
           active?: boolean;
@@ -422,6 +432,7 @@ export type Database = {
           sort_order: number;
           type_labels: NonNullable<Json>;
         };
+        ComputedFields: never;
         Insert: {
           active?: boolean;
           applies_to: Database["public"]["Enums"]["request_type"][];
@@ -451,6 +462,7 @@ export type Database = {
           request_id: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           checks?: NonNullable<Json>;
           created_at?: string;
@@ -499,6 +511,7 @@ export type Database = {
           sort_order: number;
           storage: string;
         };
+        ComputedFields: never;
         Insert: {
           applies_to?: Database["public"]["Enums"]["request_type"][];
           field_type: string;
@@ -544,6 +557,7 @@ export type Database = {
           published_at: string;
           version: string;
         };
+        ComputedFields: never;
         Insert: {
           id?: never;
           is_current?: boolean;
@@ -571,6 +585,7 @@ export type Database = {
           storage_path: string;
           timezone: string;
         };
+        ComputedFields: never;
         Insert: {
           byte_size: number;
           file_name: string;
@@ -628,6 +643,7 @@ export type Database = {
           scopes: string[];
           sort_order: number;
         };
+        ComputedFields: never;
         Insert: {
           actions: string[];
           active?: boolean;
@@ -663,6 +679,7 @@ export type Database = {
           request_id: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           action: string;
           app_id?: number | null;
@@ -744,6 +761,7 @@ export type Database = {
           type_name: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           action: string;
           asset_tag?: string | null;
@@ -824,6 +842,7 @@ export type Database = {
           type_name: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           action: string;
           created_at?: string;
@@ -893,6 +912,7 @@ export type Database = {
           request_id: string;
           sha256: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           created_by: string;
@@ -971,6 +991,7 @@ export type Database = {
           version: number;
           work_email: string | null;
         };
+        ComputedFields: never;
         Insert: {
           access_cutoff_at?: string | null;
           assignee_id?: string | null;
@@ -1123,6 +1144,7 @@ export type Database = {
           user_id: string;
           width: number | null;
         };
+        ComputedFields: never;
         Insert: {
           byte_size?: number | null;
           created_at?: string;
@@ -1178,6 +1200,7 @@ export type Database = {
           signer_role: Database["public"]["Enums"]["app_role"];
           snapshot_id: string;
         };
+        ComputedFields: never;
         Insert: {
           cleared_at?: string | null;
           cleared_reason?: string | null;
@@ -1251,6 +1274,7 @@ export type Database = {
           granted_by: string | null;
           role: Database["public"]["Enums"]["app_role"];
         };
+        ComputedFields: never;
         Insert: {
           clerk_user_id: string;
           granted_at?: string;
