@@ -123,7 +123,7 @@ export default async function OnboardedByMonthPage({
       </section>
 
       <ExportBox
-        csvHref={`/reports/onboarded-by-month/export?${reportParams(filters)}`}
+        href={`/reports/onboarded-by-month/export?${reportParams(filters)}`}
         note="Exports every month above with these filters. Each export is recorded in the audit log."
       />
     </div>

@@ -937,7 +937,7 @@ test("Audit log: the test user's own new draft is hidden, then shown in plain wo
   await expect(page.getByText("No events match")).toBeVisible();
 });
 
-test("Reports · All users list: a new draft is listed, exported as CSV, and the export is audited", async ({
+test("Reports · All users list: a new draft is listed, exported as CSV and PDF, and the exports are audited", async ({
   page,
 }) => {
   test.slow(); // a draft, the report, an export and the audit log
@@ -982,11 +982,24 @@ test("Reports · All users list: a new draft is listed, exported as CSV, and the
   expect(text.split("\r\n")[0]).toMatch(/^\uFEFF?Ticket,Type,Status,/);
   expect(text).toContain(`${ticketId},Onboarding,Draft`);
 
+  // The same list as PDF (F12d), also audited.
+  await expect(page.getByRole("link", { name: "Export PDF" })).toHaveAttribute(
+    "href",
+    `/reports/all-users/export?q=${ticketId}&format=pdf`,
+  );
+  const pdf = await page.request.get(
+    `/reports/all-users/export?q=${ticketId}&format=pdf`,
+  );
+  expect(pdf.status()).toBe(200);
+  expect(pdf.headers()["content-type"]).toBe("application/pdf");
+  expect(pdf.headers()["content-disposition"]).toMatch(/all-users_.+\.pdf"$/);
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
+
   await openApp(page, "/audit?q=report.exported&tests=show&period=today");
   await expect(
     page
       .getByRole("button", {
-        name: /exported the All users list \(CSV, 1 row\)/,
+        name: /exported the All users list \(PDF, 1 row\)/,
       })
       .first(),
   ).toBeVisible();
@@ -995,6 +1008,7 @@ test("Reports · All users list: a new draft is listed, exported as CSV, and the
 test("Reports · Onboarded by month: tiles, chart, every month, CSV with a total", async ({
   page,
 }) => {
+  test.slow(); // the page, a CSV and a PDF
   await openApp(page, "/reports/onboarded-by-month?period=3m");
   await expect(
     page.getByRole("heading", { level: 1, name: "Onboarded by month" }),
@@ -1028,4 +1042,11 @@ test("Reports · Onboarded by month: tiles, chart, every month, CSV with a total
   expect(lines[0]).toBe("Month,Onboarded");
   expect(lines).toHaveLength(1 + 3 + 1);
   expect(lines.at(-1)).toMatch(/^Total,\d+$/);
+
+  const pdf = await page.request.get(
+    "/reports/onboarded-by-month/export?period=3m&format=pdf",
+  );
+  expect(pdf.status()).toBe(200);
+  expect(pdf.headers()["content-type"]).toBe("application/pdf");
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });

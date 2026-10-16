@@ -70,7 +70,7 @@ export default async function AllUsersReportPage({
             </Link>
           )}
           <ExportBox
-            csvHref={`/reports/all-users/export?${params}`}
+            href={`/reports/all-users/export?${params}`}
             note={`Exports the ${report.total} request${report.total === 1 ? "" : "s"} above with these filters. Each export is recorded in the audit log.`}
           />
         </>
