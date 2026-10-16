@@ -19,6 +19,6 @@ describe("ReportNav", () => {
     expect(
       screen.queryByRole("link", { name: /Signature log/ }),
     ).not.toBeInTheDocument();
-    expect(screen.getAllByText("Coming soon")).toHaveLength(7);
+    expect(screen.getAllByText("Coming soon")).toHaveLength(6);
   });
 });

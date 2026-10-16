@@ -917,7 +917,7 @@ test("Audit log: the test user's own new draft is hidden, then shown in plain wo
     /^attachment; filename="audit-log-\d{4}-\d{2}-\d{2}\.csv"$/,
   );
   const text = await csv.text();
-  expect(text.split("\r\n")[0]).toMatch(/^﻿?Event #,Time \(UTC\),/);
+  expect(text.split("\r\n")[0]).toMatch(/^\uFEFF?Event #,Time \(UTC\),/);
   expect(text).toContain(`created the onboarding ${ticketId}`);
   await openApp(page, "/audit?q=audit.exported&tests=show&period=today");
   await expect(
@@ -979,7 +979,7 @@ test("Reports · All users list: a new draft is listed, exported as CSV, and the
     /^attachment; filename="all-users_\d{4}-\d{2}-\d{2}_\d{4}-\d{2}-\d{2}\.csv"$/,
   );
   const text = await csv.text();
-  expect(text.split("\r\n")[0]).toMatch(/^﻿?Ticket,Type,Status,/);
+  expect(text.split("\r\n")[0]).toMatch(/^\uFEFF?Ticket,Type,Status,/);
   expect(text).toContain(`${ticketId},Onboarding,Draft`);
 
   await openApp(page, "/audit?q=report.exported&tests=show&period=today");
@@ -990,4 +990,42 @@ test("Reports · All users list: a new draft is listed, exported as CSV, and the
       })
       .first(),
   ).toBeVisible();
+});
+
+test("Reports · Onboarded by month: tiles, chart, every month, CSV with a total", async ({
+  page,
+}) => {
+  await openApp(page, "/reports/onboarded-by-month?period=3m");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Onboarded by month" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/closed in the month \(company timezone\)/),
+  ).toBeVisible();
+  // A report of numbers: no search box, no request type.
+  await expect(page.getByRole("searchbox")).toHaveCount(0);
+  for (const tile of ["This month", "In this period", "Busiest month"]) {
+    await expect(page.getByText(tile, { exact: true })).toBeVisible();
+  }
+  // 3 months = this month and the 2 before, whole calendar months.
+  const table = page.getByRole("table", { name: "Every month" });
+  await expect(table.getByRole("row")).toHaveCount(3 + 2);
+  await expect(
+    page.getByRole("img", { name: /^[A-Z][a-z]{2} \d{4}: \d+ onboarded$/ }),
+  ).toHaveCount(3);
+
+  const csv = await page.request.get(
+    "/reports/onboarded-by-month/export?period=3m",
+  );
+  expect(csv.status()).toBe(200);
+  expect(csv.headers()["content-disposition"]).toMatch(
+    /^attachment; filename="onboarded-by-month_\d{4}-\d{2}_\d{4}-\d{2}\.csv"$/,
+  );
+  const lines = (await csv.text())
+    .replace(/^\uFEFF/, "")
+    .trim()
+    .split("\r\n");
+  expect(lines[0]).toBe("Month,Onboarded");
+  expect(lines).toHaveLength(1 + 3 + 1);
+  expect(lines.at(-1)).toMatch(/^Total,\d+$/);
 });
