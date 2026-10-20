@@ -1050,3 +1050,39 @@ test("Reports · Onboarded by month: tiles, chart, every month, CSV with a total
   expect(pdf.headers()["content-type"]).toBe("application/pdf");
   expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });
+
+for (const [slug, title, column] of [
+  ["onboarded-by-country", "Onboarded by country", "Country"],
+  ["onboarded-by-department", "Onboarded by department", "Department"],
+] as const) {
+  test(`Reports · ${title}: page, CSV with a total, PDF`, async ({ page }) => {
+    test.slow(); // the page, a CSV and a PDF
+    await openApp(page, `/reports/${slug}?period=all`);
+    await expect(
+      page.getByRole("heading", { level: 1, name: title }),
+    ).toBeVisible();
+    await expect(page.getByText(/^Definition:/)).toBeVisible();
+    // A report of numbers: no search box.
+    await expect(page.getByRole("searchbox")).toHaveCount(0);
+    await expect(page.getByRole("status")).toContainText(/onboardings? · /);
+
+    const csv = await page.request.get(`/reports/${slug}/export?period=all`);
+    expect(csv.status()).toBe(200);
+    expect(csv.headers()["content-disposition"]).toMatch(
+      `attachment; filename="${slug}_all-time.csv"`,
+    );
+    const lines = (await csv.text())
+      .replace(/^\uFEFF/, "")
+      .trim()
+      .split("\r\n");
+    expect(lines[0]).toBe(`${column},Onboarded,Share`);
+    expect(lines.at(-1)).toMatch(/^Total,\d+,100%$/);
+
+    const pdf = await page.request.get(
+      `/reports/${slug}/export?period=all&format=pdf`,
+    );
+    expect(pdf.status()).toBe(200);
+    expect(pdf.headers()["content-type"]).toBe("application/pdf");
+    expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
+  });
+}

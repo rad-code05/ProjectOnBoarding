@@ -53,8 +53,8 @@ export const REPORTS: ReportInfo[] = [
     name: "Onboarded by country",
     desc: "Closed onboardings grouped by country",
     definition:
-      "Onboarding requests closed by the approver in the period, grouped by the country on the request.",
-    ready: false,
+      "Onboarding requests the approver confirmed, signed and closed in the period (company timezone), grouped by the country on the request.",
+    ready: true,
   },
   {
     slug: "onboarded-by-department",
@@ -63,8 +63,8 @@ export const REPORTS: ReportInfo[] = [
     name: "Onboarded by department",
     desc: "Closed onboardings grouped by department / team",
     definition:
-      "Onboarding requests closed by the approver in the period, grouped by the department on the request.",
-    ready: false,
+      "Onboarding requests the approver confirmed, signed and closed in the period (company timezone), grouped by the department on the request.",
+    ready: true,
   },
   {
     slug: "signature-log",
