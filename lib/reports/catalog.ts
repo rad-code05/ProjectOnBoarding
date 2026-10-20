@@ -102,8 +102,9 @@ export const REPORTS: ReportInfo[] = [
     group: "Sign-off & compliance",
     name: "Open requests by status",
     desc: "Where work is waiting",
-    definition: "Requests not yet closed or cancelled, by status.",
-    ready: false,
+    definition:
+      'Every request that is not closed or cancelled, right now, grouped by status. "Waiting" = time since the request reached its current status (server time). Approvers see the requests waiting for them and the returned ones.',
+    ready: true,
   },
 ];
 

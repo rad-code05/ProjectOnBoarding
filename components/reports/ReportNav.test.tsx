@@ -7,7 +7,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("ReportNav", () => {
-  test("two groups; ready reports link, the others say Coming soon", () => {
+  test("two groups; every report is ready and links", () => {
     render(<ReportNav variant="page" />);
     expect(screen.getByRole("heading", { name: "People" })).toBeInTheDocument();
     expect(
@@ -20,8 +20,8 @@ describe("ReportNav", () => {
       screen.getByRole("link", { name: /Offboarding SLA/ }),
     ).toHaveAttribute("href", "/reports/offboarding-sla");
     expect(
-      screen.queryByRole("link", { name: /Open requests by status/ }),
-    ).not.toBeInTheDocument();
-    expect(screen.getAllByText("Coming soon")).toHaveLength(1);
+      screen.getByRole("link", { name: /Open requests by status/ }),
+    ).toHaveAttribute("href", "/reports/open-requests");
+    expect(screen.queryByText("Coming soon")).not.toBeInTheDocument();
   });
 });

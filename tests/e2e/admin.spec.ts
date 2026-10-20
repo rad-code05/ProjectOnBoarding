@@ -1143,3 +1143,63 @@ test("Reports · Signature log: a request Raju signed is listed as waiting, with
       .first(),
   ).toBeVisible();
 });
+
+test("Reports · Open requests by status: a new draft waits under Draft, with CSV, PDF and an audited export", async ({
+  page,
+}) => {
+  test.slow(); // a draft, the report, two exports and the audit log
+  await openApp(page, "/requests");
+  await newOnboarding(page);
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  const ticketId = await page
+    .getByText(/^UAM-\d{4}-\d{6}$/)
+    .first()
+    .innerText();
+
+  await openApp(page, `/reports/open-requests?q=${ticketId}`);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Open requests by status" }),
+  ).toBeVisible();
+  await expect(page.getByText("Right now", { exact: true })).toBeVisible();
+  await expect(page.getByRole("status").first()).toContainText(
+    "1 open request",
+  );
+  const drafts = page.getByRole("region", { name: "Draft" });
+  await expect(
+    drafts.getByRole("heading", { name: "Draft · 1" }),
+  ).toBeVisible();
+  const card = drafts.getByRole("link").filter({ hasText: ticketId });
+  await expect(card).toContainText(/Waiting (< 1m|\d+m)/);
+  await expect(card).toHaveAttribute("href", /\/requests\/[0-9a-f-]{36}$/);
+
+  const csv = await page.request.get(
+    `/reports/open-requests/export?q=${ticketId}`,
+  );
+  expect(csv.status()).toBe(200);
+  expect(csv.headers()["content-disposition"]).toMatch(
+    /^attachment; filename="open-requests_\d{4}-\d{2}-\d{2}\.csv"$/,
+  );
+  const lines = (await csv.text())
+    .replace(/^\uFEFF/, "")
+    .trim()
+    .split("\r\n");
+  expect(lines[0]).toContain("Waiting for");
+  expect(lines[1]).toMatch(
+    new RegExp(`^${ticketId},Onboarding,Draft,IT \\(Raju\\),`),
+  );
+
+  const pdf = await page.request.get(
+    `/reports/open-requests/export?q=${ticketId}&format=pdf`,
+  );
+  expect(pdf.status()).toBe(200);
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
+
+  await openApp(page, "/audit?q=report.exported&tests=show&period=today");
+  await expect(
+    page
+      .getByRole("button", {
+        name: /exported the Open requests by status \(PDF, 1 row\)/,
+      })
+      .first(),
+  ).toBeVisible();
+});

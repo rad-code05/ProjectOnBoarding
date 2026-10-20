@@ -286,10 +286,10 @@ test.describe("approver on a phone", () => {
     await expect(menu).toHaveCount(0);
   });
 
-  test("Reports (All users, by month, by country, Signature log, Offboarding SLA, Access by application) fit the phone", async ({
+  test("Reports (All users, by month, by country, Signature log, Offboarding SLA, Access by application, Open requests) fit the phone", async ({
     page,
   }) => {
-    test.slow(); // seven report pages
+    test.slow(); // eight report pages
     await openApp(page, "/reports");
     await expect(
       page.getByRole("link", { name: /All users list/ }),
@@ -346,6 +346,11 @@ test.describe("approver on a phone", () => {
     ).toBeVisible();
     await expect(
       page.getByRole("navigation", { name: "What to show" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+    await openApp(page, "/reports/open-requests");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Open requests by status" }),
     ).toBeVisible();
     await expectNoSideScroll(page);
   });

@@ -11,6 +11,7 @@ import type { ReportGroup } from "@/lib/reports/groups";
 import { summarise } from "@/lib/reports/months";
 import { loadOnboardedBy } from "@/lib/reports/onboarded-by";
 import { onboardedMonths, onboardedSpan } from "@/lib/reports/onboarded";
+import { openArgs } from "@/lib/reports/open-load";
 import { slaArgs } from "@/lib/reports/offboarding-sla";
 import { signatureArgs } from "@/lib/reports/signature-log";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -146,4 +147,23 @@ export async function countAccess(
   );
   if (error) return null;
   return Number(data?.[0]?.total_people ?? 0);
+}
+
+/** "Show N requests" for Open requests by status. */
+export async function countOpenRequests(
+  search: string,
+): Promise<number | null> {
+  await requireRole(...PAGES.reports.roles);
+  const parsed = z.string().max(1000).safeParse(search);
+  if (!parsed.success) return null;
+  const filters = parseReportFilters(
+    Object.fromEntries(new URLSearchParams(parsed.data)),
+  );
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase.rpc("report_open_requests", {
+    ...openArgs(filters),
+    p_limit: 1,
+  });
+  if (error) return null;
+  return Number(data?.[0]?.total_count ?? 0);
 }

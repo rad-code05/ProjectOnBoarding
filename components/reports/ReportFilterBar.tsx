@@ -28,6 +28,7 @@ const selectClass =
  * `periods: false`: a "today" report (Access by application) — no period;
  * `lead` sits before the chips ("As of today"); `search` words the box;
  * `keep`: URL parameters that are not filters (the tab, the item) stay.
+ * `places: false`: no country / department (Open requests by status).
  */
 export function ReportFilterBar({
   filters,
@@ -42,6 +43,7 @@ export function ReportFilterBar({
   lead,
   search = "Name, email or ticket",
   keep,
+  places = true,
 }: {
   filters: ReportFilters;
   departments: { id: number; name: string }[];
@@ -56,6 +58,7 @@ export function ReportFilterBar({
   lead?: ReactNode;
   search?: string;
   keep?: Record<string, string>;
+  places?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -155,6 +158,7 @@ export function ReportFilterBar({
           nounOne={nounOne}
           types={types}
           periods={periods}
+          places={places}
           onClose={() => setOpen(false)}
           onApply={(next) => {
             setOpen(false);
@@ -175,6 +179,7 @@ function ReportFiltersSheet({
   nounOne,
   types,
   periods,
+  places,
   onApply,
   onClose,
 }: {
@@ -186,6 +191,7 @@ function ReportFiltersSheet({
   nounOne?: string;
   types: boolean;
   periods: boolean;
+  places: boolean;
   onApply: (next: ReportFilters) => void;
   onClose: () => void;
 }) {
@@ -323,40 +329,44 @@ function ReportFiltersSheet({
           </select>
         </label>
       )}
-      <label className="flex flex-col gap-1.5 text-sm font-semibold">
-        Country
-        <select
-          value={draft.country ?? ""}
-          onChange={(e) => change({ country: e.target.value || null })}
-          className={cn(selectClass, "font-normal")}
-        >
-          <option value="">All countries</option>
-          {countries.map((c) => (
-            <option key={c} value={c}>
-              {countryName(c)}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex flex-col gap-1.5 text-sm font-semibold">
-        Department
-        <select
-          value={draft.department ?? ""}
-          onChange={(e) =>
-            change({
-              department: e.target.value ? Number(e.target.value) : null,
-            })
-          }
-          className={cn(selectClass, "font-normal")}
-        >
-          <option value="">All departments</option>
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      {places && (
+        <>
+          <label className="flex flex-col gap-1.5 text-sm font-semibold">
+            Country
+            <select
+              value={draft.country ?? ""}
+              onChange={(e) => change({ country: e.target.value || null })}
+              className={cn(selectClass, "font-normal")}
+            >
+              <option value="">All countries</option>
+              {countries.map((c) => (
+                <option key={c} value={c}>
+                  {countryName(c)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-semibold">
+            Department
+            <select
+              value={draft.department ?? ""}
+              onChange={(e) =>
+                change({
+                  department: e.target.value ? Number(e.target.value) : null,
+                })
+              }
+              className={cn(selectClass, "font-normal")}
+            >
+              <option value="">All departments</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </>
+      )}
     </Sheet>
   );
 }

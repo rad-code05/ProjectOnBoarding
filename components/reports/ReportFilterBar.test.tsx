@@ -141,4 +141,25 @@ describe("ReportFilterBar", () => {
       { scroll: false },
     );
   });
+
+  test("places: false leaves out country and department", async () => {
+    const user = userEvent.setup();
+    render(
+      <ReportFilterBar
+        filters={DEFAULT_REPORT_FILTERS}
+        departments={[{ id: 2, name: "Sales" }]}
+        countries={["CH"]}
+        count={count}
+        periods={false}
+        places={false}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "Filters" }));
+    const sheet = screen.getByRole("dialog", { name: "Filters" });
+    expect(within(sheet).getByLabelText("Request type")).toBeInTheDocument();
+    expect(within(sheet).queryByLabelText("Country")).not.toBeInTheDocument();
+    expect(
+      within(sheet).queryByLabelText("Department"),
+    ).not.toBeInTheDocument();
+  });
 });
