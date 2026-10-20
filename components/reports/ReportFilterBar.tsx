@@ -24,6 +24,7 @@ const selectClass =
  * Phone · Report filters). Filters live in the URL; the server runs the
  * report. `count` answers "Show N requests" while choices change.
  * `counts`: a report of numbers (no search, no request type).
+ * `types: false`: one request type only (Offboarding SLA) — search, no type.
  */
 export function ReportFilterBar({
   filters,
@@ -32,6 +33,7 @@ export function ReportFilterBar({
   count,
   noun = "requests",
   counts = false,
+  types = !counts,
 }: {
   filters: ReportFilters;
   departments: { id: number; name: string }[];
@@ -39,6 +41,7 @@ export function ReportFilterBar({
   count: (search: string) => Promise<number | null>;
   noun?: string;
   counts?: boolean;
+  types?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -127,7 +130,7 @@ export function ReportFilterBar({
           countries={countries}
           count={count}
           noun={noun}
-          counts={counts}
+          types={types}
           onClose={() => setOpen(false)}
           onApply={(next) => {
             setOpen(false);
@@ -145,7 +148,7 @@ function ReportFiltersSheet({
   countries,
   count,
   noun,
-  counts,
+  types,
   onApply,
   onClose,
 }: {
@@ -154,7 +157,7 @@ function ReportFiltersSheet({
   countries: string[];
   count: (search: string) => Promise<number | null>;
   noun: string;
-  counts: boolean;
+  types: boolean;
   onApply: (next: ReportFilters) => void;
   onClose: () => void;
 }) {
@@ -266,7 +269,7 @@ function ReportFiltersSheet({
         </p>
       </fieldset>
 
-      {!counts && (
+      {types && (
         <label className="flex flex-col gap-1.5 text-sm font-semibold">
           Request type
           <select

@@ -286,7 +286,7 @@ test.describe("approver on a phone", () => {
     await expect(menu).toHaveCount(0);
   });
 
-  test("Reports (All users, by month, by country, Signature log) fit the phone", async ({
+  test("Reports (All users, by month, by country, Signature log, Offboarding SLA) fit the phone", async ({
     page,
   }) => {
     await openApp(page, "/reports");
@@ -326,6 +326,19 @@ test.describe("approver on a phone", () => {
       page.getByRole("heading", { level: 1, name: "Signature log" }),
     ).toBeVisible();
     await expectNoSideScroll(page);
+    await openApp(page, "/reports/offboarding-sla?period=all");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Offboarding SLA" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+    await page.getByRole("button", { name: /^Filters/ }).click();
+    await expect(
+      page.getByRole("dialog", { name: "Filters" }).getByLabel("Request type"),
+    ).toHaveCount(0);
+    await page
+      .getByRole("dialog", { name: "Filters" })
+      .getByRole("button", { name: "Close" })
+      .click();
   });
 
   test("Records fits the phone; search is 16 px so iPhone doesn't zoom", async ({

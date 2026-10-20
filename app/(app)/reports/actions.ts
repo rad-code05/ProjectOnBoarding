@@ -9,6 +9,7 @@ import type { ReportGroup } from "@/lib/reports/groups";
 import { summarise } from "@/lib/reports/months";
 import { loadOnboardedBy } from "@/lib/reports/onboarded-by";
 import { onboardedMonths, onboardedSpan } from "@/lib/reports/onboarded";
+import { slaArgs } from "@/lib/reports/offboarding-sla";
 import { signatureArgs } from "@/lib/reports/signature-log";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
@@ -88,6 +89,25 @@ export async function countSignatureLog(
   const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc("report_signature_log", {
     ...signatureArgs(filters, await companyTimezone()),
+    p_limit: 1,
+  });
+  if (error) return null;
+  return Number(data?.[0]?.total_count ?? 0);
+}
+
+/** "Show N offboardings" for the Offboarding SLA. */
+export async function countOffboardingSla(
+  search: string,
+): Promise<number | null> {
+  await requireRole(...PAGES.reports.roles);
+  const parsed = z.string().max(1000).safeParse(search);
+  if (!parsed.success) return null;
+  const filters = parseReportFilters(
+    Object.fromEntries(new URLSearchParams(parsed.data)),
+  );
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase.rpc("report_offboarding_sla", {
+    ...slaArgs(filters, await companyTimezone()),
     p_limit: 1,
   });
   if (error) return null;
