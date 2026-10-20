@@ -272,8 +272,10 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
   let confirm = await confirmOnApprovals(onboardingTicket);
   await confirm.getByLabel(/I have reviewed this record/).check();
   await confirm.getByRole("button", { name: "Confirm, sign & close" }).click();
+  // Closing makes the PDF record — slow on a busy runner.
   await expect(page.getByRole("status")).toHaveText(
     "Confirmed, signed and closed",
+    { timeout: 30_000 },
   );
 
   // 2. Who is leaving? Ola, found by email; Slack is pre-filled.
@@ -356,6 +358,38 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
     'attachment; filename="ola.loop-offboarding.pdf"',
   );
   expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
+
+  // 6. The Offboarding SLA report lists it as Met (deadline in 2 days —
+  // upcoming deadlines are included), with an audited CSV and PDF.
+  await openApp(page, `/reports/offboarding-sla?q=${offboardingTicket}`);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Offboarding SLA" }),
+  ).toBeVisible();
+  await expect(page.getByRole("status").first()).toContainText("1 offboarding");
+  const slaCard = page
+    .getByRole("listitem")
+    .filter({ hasText: offboardingTicket });
+  await expect(slaCard).toContainText("Within 48h · Closed");
+  await expect(slaCard.getByText("Met", { exact: true })).toBeVisible();
+  await expect(slaCard).toContainText(/All 1 · /);
+  await expect(slaCard).toContainText(/before the deadline/);
+  await expect(page.getByRole("table", { name: "By timeline" })).toContainText(
+    "Within 48h",
+  );
+  const slaCsv = await page.request.get(
+    `/reports/offboarding-sla/export?q=${offboardingTicket}`,
+  );
+  expect(slaCsv.status()).toBe(200);
+  const slaLines = (await slaCsv.text()).replace(/^﻿/, "").trim().split("\r\n");
+  expect(slaLines[0]).toContain("Missed reason");
+  expect(slaLines[1]).toMatch(new RegExp(`^${offboardingTicket},Closed,`));
+  expect(slaLines[1]).toContain(",Within 48h,");
+  expect(slaLines[1]).toContain(",Met,");
+  const slaPdf = await page.request.get(
+    `/reports/offboarding-sla/export?q=${offboardingTicket}&format=pdf`,
+  );
+  expect(slaPdf.status()).toBe(200);
+  expect((await slaPdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });
 
 test("access change journey: Who is changing?, change / keep / add, sign, approver confirms, PDF", async ({

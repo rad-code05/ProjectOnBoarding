@@ -83,8 +83,8 @@ export const REPORTS: ReportInfo[] = [
     name: "Offboarding SLA",
     desc: "Agreed removal time against actual: met or missed, with reason",
     definition:
-      "Offboardings with their agreed removal deadline and the time the last removal was ticked: met or missed, with the reason.",
-    ready: false,
+      "Offboardings whose access-removal deadline falls in the period (company timezone) — upcoming deadlines included — once execution has started. Met = the last access removal was ticked before the deadline (server time). Equipment returns are not part of the SLA. Cancelled offboardings are left out.",
+    ready: true,
   },
   {
     slug: "access-by-application",
