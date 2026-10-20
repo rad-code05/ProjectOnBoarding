@@ -17,8 +17,8 @@ describe("ReportNav", () => {
     expect(link).toHaveAttribute("href", "/reports/all-users");
     expect(link).toHaveAttribute("aria-current", "page");
     expect(
-      screen.queryByRole("link", { name: /Signature log/ }),
+      screen.queryByRole("link", { name: /Offboarding SLA/ }),
     ).not.toBeInTheDocument();
-    expect(screen.getAllByText("Coming soon")).toHaveLength(4);
+    expect(screen.getAllByText("Coming soon")).toHaveLength(3);
   });
 });

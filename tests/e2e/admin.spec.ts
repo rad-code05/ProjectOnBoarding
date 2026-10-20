@@ -1,6 +1,11 @@
 import sharp from "sharp";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
-import { newOnboarding } from "./journey";
+import {
+  createExecutedRequest,
+  newOnboarding,
+  reviewAndSign,
+  saveInitials,
+} from "./journey";
 import { openApp } from "./open";
 import { expect, test, type Page } from "@playwright/test";
 
@@ -1086,3 +1091,55 @@ for (const [slug, title, column] of [
     expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
   });
 }
+
+test("Reports · Signature log: a request Raju signed is listed as waiting, with CSV, PDF and an audited export", async ({
+  page,
+}) => {
+  test.slow(); // a signed request, the report, two exports and the audit log
+  await saveInitials(page);
+  const ticketId = await createExecutedRequest(page, "Sig");
+  await reviewAndSign(page);
+
+  await openApp(page, `/reports/signature-log?q=${ticketId}`);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Signature log" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/runs from the first Review & sign/),
+  ).toBeVisible();
+  await expect(page.getByRole("status")).toContainText(
+    "1 request signed by IT",
+  );
+  const card = page.getByRole("listitem").filter({ hasText: ticketId });
+  await expect(card).toContainText("Awaiting confirmation");
+  await expect(card).toContainText(/IT signed.+·/);
+  await expect(card).toContainText(/Not yet — waiting/);
+  await expect(card).toContainText("Made at approval");
+
+  const csv = await page.request.get(
+    `/reports/signature-log/export?q=${ticketId}`,
+  );
+  expect(csv.status()).toBe(200);
+  const lines = (await csv.text())
+    .replace(/^\uFEFF/, "")
+    .trim()
+    .split("\r\n");
+  expect(lines[0]).toContain("IT fingerprint (SHA-256)");
+  expect(lines[1]).toMatch(new RegExp(`^${ticketId},`));
+  expect(lines[1]).toMatch(/,[0-9a-f]{64},/);
+
+  const pdf = await page.request.get(
+    `/reports/signature-log/export?q=${ticketId}&format=pdf`,
+  );
+  expect(pdf.status()).toBe(200);
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
+
+  await openApp(page, "/audit?q=report.exported&tests=show&period=today");
+  await expect(
+    page
+      .getByRole("button", {
+        name: /exported the Signature log \(PDF, 1 row\)/,
+      })
+      .first(),
+  ).toBeVisible();
+});
