@@ -50,4 +50,14 @@ describe("MonthBarChart", () => {
       "No onboardings in this period",
     );
   });
+
+  test("axis: one letter on a phone, three letters on desktop", () => {
+    const { container } = render(<MonthBarChart months={months} />);
+    const labels = (cls: string) =>
+      [...container.querySelectorAll("text")]
+        .filter((t) => t.getAttribute("class") === cls)
+        .map((t) => t.textContent);
+    expect(labels("md:hidden")).toEqual(["J", "A", "S"]);
+    expect(labels("hidden md:inline")).toEqual(["Jul", "Aug", "Sep"]);
+  });
 });

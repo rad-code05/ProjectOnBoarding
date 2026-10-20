@@ -6,7 +6,7 @@ import { loadReportOptions } from "@/lib/reports/all-users";
 import { reportInfo } from "@/lib/reports/catalog";
 import { exportFileName } from "@/lib/reports/export";
 import { filterWords, parseReportFilters } from "@/lib/reports/filters";
-import { monthLabel, monthLetter, summarise } from "@/lib/reports/months";
+import { monthLabel, summarise } from "@/lib/reports/months";
 import { loadOnboardedByMonth } from "@/lib/reports/onboarded";
 import { fileHeaders, madeBy, renderReportPdf } from "@/lib/reports/pdf";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
         bars: months.map((m) => ({
           label:
             months.length <= 12
-              ? monthLetter(m.month)
+              ? monthLabel(m.month).slice(0, 3)
               : m.month.slice(5, 7) === "01"
                 ? m.month.slice(0, 4)
                 : "",
