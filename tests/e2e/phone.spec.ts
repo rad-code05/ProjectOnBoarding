@@ -286,9 +286,10 @@ test.describe("approver on a phone", () => {
     await expect(menu).toHaveCount(0);
   });
 
-  test("Reports (All users, by month, by country, Signature log, Offboarding SLA) fit the phone", async ({
+  test("Reports (All users, by month, by country, Signature log, Offboarding SLA, Access by application) fit the phone", async ({
     page,
   }) => {
+    test.slow(); // seven report pages
     await openApp(page, "/reports");
     await expect(
       page.getByRole("link", { name: /All users list/ }),
@@ -339,6 +340,14 @@ test.describe("approver on a phone", () => {
       .getByRole("dialog", { name: "Filters" })
       .getByRole("button", { name: "Close" })
       .click();
+    await openApp(page, "/reports/access-by-application");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Access by application" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("navigation", { name: "What to show" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
   });
 
   test("Records fits the phone; search is 16 px so iPhone doesn't zoom", async ({

@@ -24,7 +24,8 @@ export function ReportNav({ variant }: { variant: "page" | "side" }) {
           <ul className="flex flex-col overflow-hidden rounded-card border border-line bg-paper">
             {REPORTS.filter((r) => r.group === group).map((report) => {
               const href = `/reports/${report.slug}`;
-              const current = pathname === href;
+              const current =
+                pathname === href || pathname.startsWith(`${href}/`);
               const body = (
                 <>
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">

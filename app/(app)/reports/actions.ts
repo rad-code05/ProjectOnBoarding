@@ -3,6 +3,8 @@
 import * as z from "zod";
 import { requireRole } from "@/lib/auth";
 import { PAGES } from "@/lib/navigation";
+import { parseAccessKind, parseItemKey } from "@/lib/reports/access";
+import { accessArgs } from "@/lib/reports/access-load";
 import { allUsersArgs } from "@/lib/reports/all-users";
 import { parseReportFilters } from "@/lib/reports/filters";
 import type { ReportGroup } from "@/lib/reports/groups";
@@ -112,4 +114,36 @@ export async function countOffboardingSla(
   });
   if (error) return null;
   return Number(data?.[0]?.total_count ?? 0);
+}
+
+/** "Show N people" for Access by application (one item when `item` is set). */
+export async function countAccess(
+  kind: string,
+  item: string | null,
+  search: string,
+): Promise<number | null> {
+  await requireRole(...PAGES.reports.roles);
+  const parsed = z.string().max(1000).safeParse(search);
+  if (!parsed.success) return null;
+  const filters = parseReportFilters(
+    Object.fromEntries(new URLSearchParams(parsed.data)),
+  );
+  const accessKind = parseAccessKind(kind);
+  const supabase = createServerSupabaseClient();
+  const itemKey = parseItemKey(item ?? undefined);
+  if (itemKey) {
+    const { data, error } = await supabase.rpc("report_access_holders", {
+      ...accessArgs(accessKind, filters),
+      p_item_key: itemKey,
+      p_limit: 1,
+    });
+    if (error) return null;
+    return Number(data?.[0]?.total_count ?? 0);
+  }
+  const { data, error } = await supabase.rpc(
+    "report_access_by_item",
+    accessArgs(accessKind, filters),
+  );
+  if (error) return null;
+  return Number(data?.[0]?.total_people ?? 0);
 }

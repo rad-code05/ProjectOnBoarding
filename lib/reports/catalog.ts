@@ -93,8 +93,8 @@ export const REPORTS: ReportInfo[] = [
     name: "Access by application",
     desc: "Who holds access to each tool today",
     definition:
-      "Everyone who holds access to each application today, from the access inventory (closed requests).",
-    ready: false,
+      "Who holds each application, device or access type today, from the access inventory — what closed requests granted and no closed request has removed yet. Staff from before the app appear once the Excel import is done.",
+    ready: true,
   },
   {
     slug: "open-requests",

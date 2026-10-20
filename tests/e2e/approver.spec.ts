@@ -299,6 +299,42 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
   await expect(apps).toContainText("Slack");
   await expect(apps).toContainText("had Regular Member");
 
+  // Access by application: Ola holds Slack today, and is leaving.
+  await openApp(
+    raju,
+    `/reports/access-by-application?q=${encodeURIComponent(email)}`,
+  );
+  await expect(
+    raju.getByRole("heading", { level: 1, name: "Access by application" }),
+  ).toBeVisible();
+  await expect(raju.getByRole("status").first()).toContainText("1 person");
+  await raju.getByRole("link", { name: /^Slack/ }).click();
+  await expect(
+    raju.getByRole("heading", { level: 1, name: "Slack" }),
+  ).toBeVisible();
+  const holder = raju.getByRole("listitem").filter({ hasText: email });
+  await expect(holder).toContainText("Regular Member");
+  await expect(
+    holder.getByRole("link", { name: onboardingTicket }),
+  ).toBeVisible();
+  await expect(holder).toContainText(
+    `Leaving — offboarding ${offboardingTicket} is open`,
+  );
+  const accessCsv = await raju.request.get(
+    `/reports/access-by-application/export?kind=application&q=${encodeURIComponent(email)}`,
+  );
+  expect(accessCsv.status()).toBe(200);
+  const accessLines = (await accessCsv.text())
+    .replace(/^﻿/, "")
+    .trim()
+    .split("\r\n");
+  expect(accessLines).toHaveLength(2);
+  expect(accessLines[1]).toMatch(/^Slack,Core business,/);
+  expect(accessLines[1]).toContain(
+    `,${onboardingTicket},Request,${offboardingTicket}`,
+  );
+  await openApp(raju, offboardingUrl);
+
   // 3. SLA (within 48h of today 00:00 Dubai → met), handover, start.
   const today = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Dubai",

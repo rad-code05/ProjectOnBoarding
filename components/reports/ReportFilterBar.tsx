@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button, CloseIcon, Sheet, sheetPill } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
@@ -25,6 +25,9 @@ const selectClass =
  * report. `count` answers "Show N requests" while choices change.
  * `counts`: a report of numbers (no search, no request type).
  * `types: false`: one request type only (Offboarding SLA) — search, no type.
+ * `periods: false`: a "today" report (Access by application) — no period;
+ * `lead` sits before the chips ("As of today"); `search` words the box;
+ * `keep`: URL parameters that are not filters (the tab, the item) stay.
  */
 export function ReportFilterBar({
   filters,
@@ -34,6 +37,11 @@ export function ReportFilterBar({
   noun = "requests",
   counts = false,
   types = !counts,
+  periods = true,
+  nounOne,
+  lead,
+  search = "Name, email or ticket",
+  keep,
 }: {
   filters: ReportFilters;
   departments: { id: number; name: string }[];
@@ -42,6 +50,12 @@ export function ReportFilterBar({
   noun?: string;
   counts?: boolean;
   types?: boolean;
+  periods?: boolean;
+  /** Singular of `noun` when it is not just without the "s" ("person"). */
+  nounOne?: string;
+  lead?: ReactNode;
+  search?: string;
+  keep?: Record<string, string>;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -50,7 +64,11 @@ export function ReportFilterBar({
   const lastQ = useRef(filters.q);
 
   const apply = (patch: Partial<ReportFilters>) => {
-    const query = reportParams({ ...filters, ...patch }).toString();
+    const params = new URLSearchParams(keep);
+    for (const [key, value] of reportParams({ ...filters, ...patch })) {
+      params.set(key, value);
+    }
+    const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, {
       scroll: false,
     });
@@ -66,7 +84,10 @@ export function ReportFilterBar({
   });
 
   const names = Object.fromEntries(departments.map((d) => [d.id, d.name]));
-  const chips = reportChips(filters, names);
+  const chips = reportChips(
+    periods ? filters : { ...filters, period: "all", from: null, to: null },
+    names,
+  );
 
   return (
     <div className="flex flex-col gap-2.5">
@@ -90,13 +111,14 @@ export function ReportFilterBar({
             type="search"
             value={q}
             onChange={(event) => setQ(event.target.value)}
-            aria-label="Search name, email or ticket"
-            placeholder="Name, email or ticket"
+            aria-label={`Search ${search.charAt(0).toLowerCase()}${search.slice(1)}`}
+            placeholder={search}
             className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-stone md:text-xs"
           />
         </label>
       )}
       <div className="flex flex-wrap items-center gap-2">
+        {lead}
         {chips.length > 0 && (
           <ul aria-label="Active filters" className="flex flex-wrap gap-1.5">
             {chips.map((chip) => (
@@ -130,7 +152,9 @@ export function ReportFilterBar({
           countries={countries}
           count={count}
           noun={noun}
+          nounOne={nounOne}
           types={types}
+          periods={periods}
           onClose={() => setOpen(false)}
           onApply={(next) => {
             setOpen(false);
@@ -148,7 +172,9 @@ function ReportFiltersSheet({
   countries,
   count,
   noun,
+  nounOne,
   types,
+  periods,
   onApply,
   onClose,
 }: {
@@ -157,7 +183,9 @@ function ReportFiltersSheet({
   countries: string[];
   count: (search: string) => Promise<number | null>;
   noun: string;
+  nounOne?: string;
   types: boolean;
+  periods: boolean;
   onApply: (next: ReportFilters) => void;
   onClose: () => void;
 }) {
@@ -198,76 +226,81 @@ function ReportFiltersSheet({
           <Button onClick={() => onApply(draft)}>
             {n === null
               ? `Show ${noun}`
-              : `Show ${n} ${n === 1 ? noun.replace(/s$/, "") : noun}`}
+              : `Show ${n} ${n === 1 ? (nounOne ?? noun.replace(/s$/, "")) : noun}`}
           </Button>
         </div>
       }
     >
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-bold">Period</legend>
-        <div className="grid grid-cols-4 gap-1 rounded-pill bg-sand p-1">
-          {(["month", "3m", "12m"] as const).map((period) => {
-            const on = !datesSet && draft.period === period;
-            return (
-              <label
-                key={period}
-                className={sheetPill(on, on ? "bg-ink text-paper" : undefined)}
-              >
-                <input
-                  type="radio"
-                  name={`${id}-period`}
-                  checked={on}
-                  onChange={() => change({ period, from: null, to: null })}
-                  className="sr-only"
-                />
-                {PERIOD_LABELS[period]}
-              </label>
-            );
-          })}
-          <label
-            className={sheetPill(
-              datesSet || draft.period === "all",
-              datesSet || draft.period === "all"
-                ? "bg-ink text-paper"
-                : undefined,
-            )}
-          >
-            <input
-              type="radio"
-              name={`${id}-period`}
-              checked={datesSet || draft.period === "all"}
-              onChange={() => change({ period: "all" })}
-              className="sr-only"
-            />
-            Dates
-          </label>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="flex flex-col gap-1 text-xs text-graphite">
-            From
-            <input
-              type="date"
-              value={draft.from ?? ""}
-              max={draft.to ?? undefined}
-              onChange={(e) => change({ from: e.target.value || null })}
-              className={cn(selectClass, "text-ink")}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-graphite">
-            To
-            <input
-              type="date"
-              value={draft.to ?? ""}
-              min={draft.from ?? undefined}
-              onChange={(e) => change({ to: e.target.value || null })}
-              className={cn(selectClass, "text-ink")}
-            />
-          </label>
-        </div>
-        <p className="text-xs text-graphite">
-          Days in the company timezone. Empty dates = all time.
-        </p>
-      </fieldset>
+      {periods && (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-2 text-sm font-bold">Period</legend>
+          <div className="grid grid-cols-4 gap-1 rounded-pill bg-sand p-1">
+            {(["month", "3m", "12m"] as const).map((period) => {
+              const on = !datesSet && draft.period === period;
+              return (
+                <label
+                  key={period}
+                  className={sheetPill(
+                    on,
+                    on ? "bg-ink text-paper" : undefined,
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name={`${id}-period`}
+                    checked={on}
+                    onChange={() => change({ period, from: null, to: null })}
+                    className="sr-only"
+                  />
+                  {PERIOD_LABELS[period]}
+                </label>
+              );
+            })}
+            <label
+              className={sheetPill(
+                datesSet || draft.period === "all",
+                datesSet || draft.period === "all"
+                  ? "bg-ink text-paper"
+                  : undefined,
+              )}
+            >
+              <input
+                type="radio"
+                name={`${id}-period`}
+                checked={datesSet || draft.period === "all"}
+                onChange={() => change({ period: "all" })}
+                className="sr-only"
+              />
+              Dates
+            </label>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1 text-xs text-graphite">
+              From
+              <input
+                type="date"
+                value={draft.from ?? ""}
+                max={draft.to ?? undefined}
+                onChange={(e) => change({ from: e.target.value || null })}
+                className={cn(selectClass, "text-ink")}
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-graphite">
+              To
+              <input
+                type="date"
+                value={draft.to ?? ""}
+                min={draft.from ?? undefined}
+                onChange={(e) => change({ to: e.target.value || null })}
+                className={cn(selectClass, "text-ink")}
+              />
+            </label>
+          </div>
+          <p className="text-xs text-graphite">
+            Days in the company timezone. Empty dates = all time.
+          </p>
+        </fieldset>
+      )}
 
       {types && (
         <label className="flex flex-col gap-1.5 text-sm font-semibold">
