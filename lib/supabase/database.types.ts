@@ -1484,6 +1484,20 @@ export type Database = {
           work_email: string;
         }[];
       };
+      report_onboarded_by: {
+        Args: {
+          p_country?: string;
+          p_department?: number;
+          p_from?: string;
+          p_group: string;
+          p_to?: string;
+        };
+        Returns: {
+          key: string;
+          label: string;
+          onboarded: number;
+        }[];
+      };
       report_onboarded_by_month: {
         Args: {
           p_country?: string;
@@ -1494,6 +1508,41 @@ export type Database = {
         Returns: {
           month: string;
           onboarded: number;
+        }[];
+      };
+      report_signature_log: {
+        Args: {
+          p_country?: string;
+          p_department?: number;
+          p_from?: string;
+          p_limit?: number;
+          p_offset?: number;
+          p_search?: string;
+          p_to?: string;
+          p_type?: Database["public"]["Enums"]["request_type"];
+        };
+        Returns: {
+          approved_at: string;
+          approved_by: string;
+          approved_count: number;
+          final_sha256: string;
+          first_name: string;
+          first_signed_at: string;
+          first_signed_by: string;
+          id: string;
+          it_sha256: string;
+          last_name: string;
+          last_returned_at: string;
+          last_signed_at: string;
+          median_seconds: number;
+          pdf_generated_at: string;
+          returned_count: number;
+          returns: number;
+          state: Database["public"]["Enums"]["request_state"];
+          ticket_id: string;
+          total_count: number;
+          type: Database["public"]["Enums"]["request_type"];
+          work_email: string;
         }[];
       };
       request_activity: {

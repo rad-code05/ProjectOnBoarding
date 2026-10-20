@@ -554,6 +554,20 @@
       "w": 390,
       "h": 900,
       "title": "Phone · Report filters (sheet) — F12 proposal"
+    },
+    "ReportCountryMobile.dc.html": {
+      "x": 21600,
+      "y": 13560,
+      "w": 390,
+      "h": 1500,
+      "title": "Phone · Onboarded by country (by department looks the same) — F13 proposal"
+    },
+    "ReportSignaturesMobile.dc.html": {
+      "x": 22070,
+      "y": 13560,
+      "w": 390,
+      "h": 1640,
+      "title": "Phone · Signature log — F13 proposal"
     }
   },
   "createdOnFiles": {
@@ -575,7 +589,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 21520,
+      "maxW": 22460,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -691,7 +705,9 @@
     "ReportsMobile.dc.html",
     "ReportUsersMobile.dc.html",
     "ReportMonthMobile.dc.html",
-    "ReportFiltersMobile.dc.html"
+    "ReportFiltersMobile.dc.html",
+    "ReportCountryMobile.dc.html",
+    "ReportSignaturesMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

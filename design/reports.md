@@ -2,6 +2,8 @@
 
 **Status:** built for All users list + Onboarded by month (F12, 2026-10-16; phone boards + desktop side panel); other reports F13–F14 · desktop draft (2026-09-30) · Canvas board: *Reports (Raju & Moises)* — interactive: click a report type in Play mode · **Phone boards approved 2026-10-15 (F12):** *Phone · Reports (choose a report)*, *Phone · All users list*, *Phone · Onboarded by month*, *Phone · Report filters (sheet)*.
 
+**F13 (2026-10-20):** phone boards approved — *Phone · Onboarded by country* (department the same), *Phone · Signature log*; time to approve = first Review & sign → confirmation; the log lists requests first signed by IT in the period.
+
 **Decided 2026-10-15:** **D16** — "onboarded" = closed by the approver in the month (company timezone). Reports are for admins, approvers and auditors; approvers see the same request states as everywhere (awaiting confirmation, returned, closed). All users list = requests *created* in the period, cancelled left out.
 
 One Reports page for both roles (Raju: full; Moises / backup approver: read-only, same reports). Sample data in the mockup is illustrative only.
