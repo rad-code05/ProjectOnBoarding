@@ -2,7 +2,7 @@
 
 > **Read this first in every new session** (then `CLAUDE.md` → "Resume here" for the exact next step).
 > One page that explains *what* we build, *why*, *how* it fits together and *how we work*. Details live in the linked files — this file links, it does not repeat them.
-> Last updated: 2026-10-15.
+> Last updated: 2026-10-20.
 
 ## 1. What we are building
 **Laine onboarding rights** — an internal web app for Laine that replaces the PDF *Laine User Access Management Form v4*.
@@ -41,7 +41,7 @@ Enforced in the database (F04), not only in the UI. → `PROJECT_PLAN.md` §4.3,
 | PDF | React-PDF from the closure snapshot; `firstname.lastname-onboarding.pdf`; Download (+ SharePoint later) | F08, F22 |
 | Offboarding / modification | SLA panel, access inventory pre-fills removals | F09–F10 |
 | Audit log | Append-only; page with filters + details + audited CSV; Activity on every request / record | S6 (table), F11 (page) ✅ |
-| Reports | Side panel of report types, each with a definition, CSV/PDF (audited) | F12 ✅ + F13 ✅ (5 reports) – F14 |
+| Reports | Side panel of report types, each with a definition, CSV/PDF (audited) | F12 ✅ + F13 ✅ + F14 ✅ (8 reports) |
 | AI assistant | "Laine robot", closed by default; **Anthropic** (model chosen in Admin); fills / updates the form for you, batch onboarding, field suggestions, **reports and questions about the data**; you accept every write; never signs / approves | F15–F17 |
 
 ## 5. Architecture
@@ -82,7 +82,7 @@ Built: `app_users`, `user_roles`, `audit_events` (S6) · `employees`, `departmen
 | --- | --- | --- |
 | Phase 0 — decisions & design | D1–D19, design review | D1, D2, D12, D13 decided; others open (asked when a feature needs them) |
 | Phase 1 — walking skeleton | S1 app · S2 CI · S3 design foundation · S4 hosting · S5 sign-in · S6 database & roles · S7 app shell | S1–S7 merged (S6: #12, #13, #15, #16; S7: #18–#20 + S7d); walking skeleton complete |
-| Features | F01–F08 onboarding end-to-end · F19 admin apps (moved up) · F09–F11 offboarding, modification, audit page · F12–F23 reports, AI, admin, SharePoint, email · **F26** quarterly access review · then **F24** Excel import + **F25** AI screenshot check (complete data before production) | **F01–F08 done** (2026-10-11) — onboarding works end-to-end; **F05e** own timezone + **F19** Admin (applications, categories, equipment & access types, company timezone) done 2026-10-12; **F09** Offboarding done 2026-10-13 (inventory, SLA, removals, Who is leaving?, PDF); **F10** Access modification done 2026-10-14 (role names from the rights sheet, several Google Cloud roles, Who is changing?, keep / change / remove, What changed on the record and PDF); **F11** Audit log done 2026-10-15 (page with filters + details, audited CSV export, Activity on requests and records — approvers on records only; test users hidden by default); **F12** Reports I done 2026-10-16 (Reports page, All users list, Onboarded by month — D16 closed by the approver — audited CSV + PDF); **F13** Reports II done 2026-10-20 (onboarded by country / department, signature log); next **F14** Reports III |
+| Features | F01–F08 onboarding end-to-end · F19 admin apps (moved up) · F09–F11 offboarding, modification, audit page · F12–F23 reports, AI, admin, SharePoint, email · **F26** quarterly access review · then **F24** Excel import + **F25** AI screenshot check (complete data before production) | **F01–F08 done** (2026-10-11) — onboarding works end-to-end; **F05e** own timezone + **F19** Admin (applications, categories, equipment & access types, company timezone) done 2026-10-12; **F09** Offboarding done 2026-10-13 (inventory, SLA, removals, Who is leaving?, PDF); **F10** Access modification done 2026-10-14 (role names from the rights sheet, several Google Cloud roles, Who is changing?, keep / change / remove, What changed on the record and PDF); **F11** Audit log done 2026-10-15 (page with filters + details, audited CSV export, Activity on requests and records — approvers on records only; test users hidden by default); **F12** Reports I done 2026-10-16 (Reports page, All users list, Onboarded by month — D16 closed by the approver — audited CSV + PDF); **F13** Reports II done 2026-10-20 (onboarded by country / department, signature log); **F14** Reports III done 2026-10-20 (offboarding SLA, access by application, open requests — the Reports page is complete); next **F15** Assistant shell |
 | Release | R1–R7 security, accessibility, monitoring, backups, docs, automated DB deploys, go-live | after all features + the data load (F24, F25) — changed 2026-10-11 |
 | Operate | Weekly/monthly/quarterly/yearly routine | after go-live |
 

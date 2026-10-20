@@ -325,7 +325,7 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
   );
   expect(accessCsv.status()).toBe(200);
   const accessLines = (await accessCsv.text())
-    .replace(/^﻿/, "")
+    .replace(/^\uFEFF/, "")
     .trim()
     .split("\r\n");
   expect(accessLines).toHaveLength(2);
@@ -378,7 +378,17 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
   await reviewAndSign(raju);
   await rajuContext.close();
 
-  // 5. Moises sees the SLA result, confirms, lands on the offboarding record.
+  // 5. Open requests: it waits for Moises (approvers see only that and returned).
+  await openApp(page, `/reports/open-requests?q=${offboardingTicket}`);
+  await expect(
+    page
+      .getByRole("region", { name: "Awaiting confirmation" })
+      .getByRole("link")
+      .filter({ hasText: offboardingTicket }),
+  ).toHaveAttribute("href", /\/approvals\/[0-9a-f-]{36}$/);
+  await expect(page.getByRole("region", { name: "Draft" })).toHaveCount(0);
+
+  // Moises sees the SLA result, confirms, lands on the offboarding record.
   confirm = await confirmOnApprovals(offboardingTicket);
   await expect(confirm.getByText("Met · 1 of 1 removed")).toBeVisible();
   await confirm.getByLabel(/I have reviewed this record/).check();
@@ -416,7 +426,10 @@ test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises
     `/reports/offboarding-sla/export?q=${offboardingTicket}`,
   );
   expect(slaCsv.status()).toBe(200);
-  const slaLines = (await slaCsv.text()).replace(/^﻿/, "").trim().split("\r\n");
+  const slaLines = (await slaCsv.text())
+    .replace(/^\uFEFF/, "")
+    .trim()
+    .split("\r\n");
   expect(slaLines[0]).toContain("Missed reason");
   expect(slaLines[1]).toMatch(new RegExp(`^${offboardingTicket},Closed,`));
   expect(slaLines[1]).toContain(",Within 48h,");
