@@ -130,6 +130,9 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | G14 | Per-person memory (name, favourite reports / questions / request types), greeting by name (friendly, formal); the person can see + clear it | §6.6 | F15 | unit + pgTAP | ⏳ F15 |
 | G15 | System instructions never sent to the browser or revealed; no secrets in them | §6.6 | F15 | unit + attack tests | ⏳ F15 |
 | G16 | Attack tests in CI: hidden instructions in files, "ignore your rules", reaching other-role / forbidden tools | §6.6 | F15 (framework), F16–F17, F24 (per tool) | test suite | ⏳ F15 |
+| G19 | Questions about the app itself (how-to, statuses, roles, SLA rules) from a curated help library in the repo — never outside sources | §6.6 | F15 | unit + e2e | ⏳ F15 |
+| G20 | Single requests by chat for **all three types** (onboarding, offboarding, access change) with follow-up questions; values are suggestions | §6.6 | F16 | unit + e2e | ⏳ F16 |
+| G21 | **Batch** onboarding, offboarding and access change → batch grid with checks → `createBatchDrafts` (`needsApproval`) | §6.6 | F17 | unit + e2e | ⏳ F17 |
 | G17 | Custom reports (base report + columns + filters + grouping) exported as **Excel**, PDF or CSV, audited | §6.6 | F17 | unit + e2e | ⏳ F17 |
 | G18 | Import is admin only: xlsx, csv, text PDF (no scans yet) → preview → Confirm; audited `import.*` | §6.6 | F24 | unit + pgTAP + e2e | ⏳ F24 |
 
