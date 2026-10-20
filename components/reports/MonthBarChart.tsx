@@ -44,12 +44,20 @@ export function MonthBarChart({ months }: { months: MonthCount[] }) {
               : best,
           null,
         );
+  /** Axis label: one letter on a phone ("J"), three on desktop ("Jan"). */
   const label = (m: MonthCount, i: number) => {
-    if (months.length <= 12) return monthLetter(m.month);
+    if (months.length <= 12) {
+      return {
+        phone: monthLetter(m.month),
+        desktop: monthLabel(m.month).slice(0, 3),
+      };
+    }
     // Longer periods: only January and the first month get a label.
-    return i === 0 || m.month.slice(5, 7) === "01"
-      ? `${monthLabel(m.month).slice(0, 3)} ${m.month.slice(2, 4)}`
-      : "";
+    const text =
+      i === 0 || m.month.slice(5, 7) === "01"
+        ? `${monthLabel(m.month).slice(0, 3)} ${m.month.slice(2, 4)}`
+        : "";
+    return { phone: text, desktop: text };
   };
 
   return (
@@ -101,14 +109,28 @@ export function MonthBarChart({ months }: { months: MonthCount[] }) {
                 d={barPath(x, yOf(m.onboarded), barW)}
                 fill={faded ? "var(--color-stone)" : "var(--color-ink)"}
               />
+              {/* Both labels are drawn; the screen width picks one. */}
               <text
                 x={x + barW / 2}
                 y={H - 10}
                 textAnchor="middle"
                 fontSize="10"
                 fill="var(--color-graphite)"
+                className="md:hidden"
+                aria-hidden="true"
               >
-                {label(m, i)}
+                {label(m, i).phone}
+              </text>
+              <text
+                x={x + barW / 2}
+                y={H - 10}
+                textAnchor="middle"
+                fontSize="8"
+                fill="var(--color-graphite)"
+                className="hidden md:inline"
+                aria-hidden="true"
+              >
+                {label(m, i).desktop}
               </text>
               {/* Hit area bigger than the bar: the whole column. */}
               <rect
