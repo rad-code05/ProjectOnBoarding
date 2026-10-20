@@ -104,7 +104,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | F-1 | Separate date fields (created, effective, execution started/completed, confirmed, closed, SLA due) | §9.1 | F01, F04, F06, F07, F09 | pgTAP | ⏳ |
 | F-2 | Agreed metric definitions ("onboarded" = ?) | §9.2 | F12 | — | ❓ D16 |
 | F-3 | All users list, Onboarded by month | §9.3, `reports.md` | F12 | F12 tests | ✅ F12 (F12a database, F12b All users list, F12c Onboarded by month; `reports.test.sql`, `filters.test.ts`, `months.test.ts`, `AllUsersList.test.tsx`, `MonthBarChart.test.tsx` + e2e *Reports · …*, phone) |
-| F-4 | Onboarded by country / department, Signature log | `reports.md` | F13 | F13 tests | 🟡 database ✅ F13a (`report_onboarded_by()`, `report_signature_log()`; pgTAP `reports_ii.test.sql`); screens F13b–F13c |
+| F-4 | Onboarded by country / department, Signature log | `reports.md` | F13 | F13 tests | 🟡 database ✅ F13a; by country + by department ✅ F13b (`GroupReport`, `HBarChart`; `groups.test.ts`, `HBarChart.test.tsx` + e2e, phone); Signature log F13c |
 | F-5 | Offboarding SLA, Access by application, Open requests by status | §9.3, `reports.md` | F14 | F14 tests | ⏳ F14 |
 | F-6 | Monthly counts created / submitted / approved / completed / closed by ticket type | §9.3 #1, D21 | later, as a new report type | — | ➖ not now (D21: designed reports are enough for now) |
 | F-7 | CSV + PDF export of any report, permission-checked and **audited** | §9.3 #6, `reports.md` | F12 | F12 tests | ✅ F12 for All users list + Onboarded by month (CSV + PDF, `report.exported` logged before the file; `pdf.test.ts` + e2e) — later reports reuse the same export |
