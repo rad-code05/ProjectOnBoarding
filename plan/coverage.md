@@ -124,6 +124,14 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | G8 | Only needed fields go to the model; never signatures or secrets; provider chosen after data terms | §6.4 | F15 | review + test | ⏳ ❓ D7 |
 | G9 | AI field suggestions ("we need a field for X") and catalog suggestions ("add Notion") need admin confirmation | §6.1, §7 | F19 (catalog, moved up after F08) + F15/F16 (robot suggests; admin accepts — asked by Raju 2026-10-11), F20 (fields) | F19/F20 tests | ⏳ |
 | G10 | LangFuse tracing (optional, with redaction) | §2 | — | — | ➖ optional, not planned |
+| G11 | Tools one file each in `lib/ai/tools/`; the registry sends only the tools the person's roles allow; each tool re-checks the role + runs with the person's session (RLS) | §6.6 (2026-10-20) | F15 | unit (registry per role) + pgTAP / RLS | ⏳ F15 |
+| G12 | Approvers: report questions only — answers from report data, which report + filters named, no web search | §6.6, ROLES | F15 | unit + e2e (approver asks "how many in Dubai") | ⏳ F15 |
+| G13 | Chat history kept 60 days, deleted daily by the database | §6.6 | F15 | pgTAP | ⏳ F15 |
+| G14 | Per-person memory (name, favourite reports / questions / request types), greeting by name (friendly, formal); the person can see + clear it | §6.6 | F15 | unit + pgTAP | ⏳ F15 |
+| G15 | System instructions never sent to the browser or revealed; no secrets in them | §6.6 | F15 | unit + attack tests | ⏳ F15 |
+| G16 | Attack tests in CI: hidden instructions in files, "ignore your rules", reaching other-role / forbidden tools | §6.6 | F15 (framework), F16–F17, F24 (per tool) | test suite | ⏳ F15 |
+| G17 | Custom reports (base report + columns + filters + grouping) exported as **Excel**, PDF or CSV, audited | §6.6 | F17 | unit + e2e | ⏳ F17 |
+| G18 | Import is admin only: xlsx, csv, text PDF (no scans yet) → preview → Confirm; audited `import.*` | §6.6 | F24 | unit + pgTAP + e2e | ⏳ F24 |
 
 ## H. Admin & extensibility
 
