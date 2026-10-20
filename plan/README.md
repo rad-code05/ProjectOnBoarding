@@ -9,7 +9,7 @@ We build **feature by feature**: first a thin walking skeleton, then one vertica
 | --- | --- | --- | --- |
 | Phase 0 | [phase-0-discovery.md](phase-0-discovery.md) | Decisions D1–D19, design review | In progress (D1, D2, D12, D13 done) |
 | Phase 1 | [phase-1-skeleton.md](phase-1-skeleton.md) | **S1–S7** walking skeleton: app, CI, design foundation, hosting, sign-in, users & roles, app shell | Done (S1–S7) |
-| Features | [features.md](features.md) | **F01–F23**, in order. After F08 onboarding works end-to-end; after F11 the app can go live | In progress — F01–F12, F05e, F19 done (F12 Reports I 2026-10-16); F13 Reports II next |
+| Features | [features.md](features.md) | **F01–F23**, in order. After F08 onboarding works end-to-end; after F11 the app can go live | In progress — F01–F13, F05e, F19 done (F13 Reports II 2026-10-20); F14 Reports III next |
 | Release | [release.md](release.md) | **R1–R7** final review and go-live (after F11), then **Operate** (routine after go-live) | Not started |
 
 One skeleton step or feature = one branch = one pull request = roughly one session. A large item is split into parts (S6a, F06a, F06b) **before** building — see the PR size rules below.
@@ -36,10 +36,10 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 **Continue unfinished work**
 > Read CLAUDE.md, then continue F04 in plan/features.md. Check the session log and the open branch/PR to see where we stopped.
 
-**Next session (after F12, 2026-10-16): F13 Reports II**
-> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date and the cloud database matches local (30 migrations). The F12d PR should be merged — clean up its branch.
-> F12 is done — first let me try the Reports page myself (All users list, Onboarded by month, filters, CSV and PDF; my account and the test approver).
-> Then F13 (Reports II: onboarded by country, by department, signature log) in plan/features.md: brief me, propose the PR split, and draw its phone boards on the design canvas for my approval before building.
+**Next session (after F13, 2026-10-20): F14 Reports III**
+> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date and the cloud database matches local (31 migrations). The F13c PR should be merged — clean up its branch. If Docker is not running, start Docker Desktop first.
+> F13 is done — first let me try the three new reports myself (Onboarded by country, by department, Signature log; CSV and PDF; my account and the test approver).
+> Then F14 (Reports III: Offboarding SLA, Access by application, Open requests by status) in plan/features.md: brief me, propose the PR split, and draw its phone boards on the design canvas for my approval before building.
 > Verify library APIs with Context7 before coding. Run the git commands for me (branch, commit, push, PR); watch CI to the end and only tell me to squash-merge when every check is green; I say "done". After every merged migration, do the cloud db push dry run and wait for my "push". Update my learning guide (Rajulearning/Learn.md) at the end of every PR — Part 10, glossary, data model, repo map and roadmap — and record every configuration change there. Browser tests from Claude's PC use the local Supabase only.
 
 **Check the state** (after a break or a disconnect)

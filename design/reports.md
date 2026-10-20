@@ -1,6 +1,6 @@
 # Reports
 
-**Status:** built for All users list + Onboarded by month (F12, 2026-10-16; phone boards + desktop side panel); other reports F13–F14 · desktop draft (2026-09-30) · Canvas board: *Reports (Raju & Moises)* — interactive: click a report type in Play mode · **Phone boards approved 2026-10-15 (F12):** *Phone · Reports (choose a report)*, *Phone · All users list*, *Phone · Onboarded by month*, *Phone · Report filters (sheet)*.
+**Status:** built — All users list + Onboarded by month (F12, 2026-10-16), Onboarded by country / department + Signature log (F13, 2026-10-20); the last three reports F14 · desktop draft (2026-09-30) · Canvas board: *Reports (Raju & Moises)* — interactive: click a report type in Play mode · **Phone boards approved 2026-10-15 (F12):** *Phone · Reports (choose a report)*, *Phone · All users list*, *Phone · Onboarded by month*, *Phone · Report filters (sheet)*.
 
 **F13 (2026-10-20):** phone boards approved — *Phone · Onboarded by country* (department the same), *Phone · Signature log*; time to approve = first Review & sign → confirmation; the log lists requests first signed by IT in the period.
 

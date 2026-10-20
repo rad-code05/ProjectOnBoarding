@@ -73,8 +73,8 @@ export const REPORTS: ReportInfo[] = [
     name: "Signature log",
     desc: "When IT signed, when the approver confirmed, time to approve",
     definition:
-      "Every Review & sign and every confirmation, with server times and the time it took to approve.",
-    ready: false,
+      "Every request IT first signed (Review & sign) in the period, newest first. Time to approve runs from the first Review & sign to the approver's confirmation, returns included. Server times, company timezone.",
+    ready: true,
   },
   {
     slug: "offboarding-sla",

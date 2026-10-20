@@ -286,7 +286,7 @@ test.describe("approver on a phone", () => {
     await expect(menu).toHaveCount(0);
   });
 
-  test("Reports, the All users list, Onboarded by month and by country fit the phone", async ({
+  test("Reports (All users, by month, by country, Signature log) fit the phone", async ({
     page,
   }) => {
     await openApp(page, "/reports");
@@ -319,6 +319,11 @@ test.describe("approver on a phone", () => {
     await openApp(page, "/reports/onboarded-by-country?period=all");
     await expect(
       page.getByRole("heading", { level: 1, name: "Onboarded by country" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+    await openApp(page, "/reports/signature-log?period=all");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Signature log" }),
     ).toBeVisible();
     await expectNoSideScroll(page);
   });
