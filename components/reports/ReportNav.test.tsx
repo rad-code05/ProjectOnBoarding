@@ -22,6 +22,6 @@ describe("ReportNav", () => {
     expect(
       screen.queryByRole("link", { name: /Open requests by status/ }),
     ).not.toBeInTheDocument();
-    expect(screen.getAllByText("Coming soon")).toHaveLength(2);
+    expect(screen.getAllByText("Coming soon")).toHaveLength(1);
   });
 });

@@ -100,4 +100,45 @@ describe("ReportFilterBar", () => {
       await within(sheet).findByRole("button", { name: "Show 27 onboardings" }),
     ).toBeInTheDocument();
   });
+
+  test("a today report: no period or type, its own search, the tab is kept", async () => {
+    const user = userEvent.setup();
+    count.mockResolvedValue(1);
+    render(
+      <ReportFilterBar
+        filters={DEFAULT_REPORT_FILTERS}
+        departments={[{ id: 2, name: "Sales" }]}
+        countries={["CH"]}
+        count={count}
+        noun="people"
+        nounOne="person"
+        types={false}
+        periods={false}
+        search="Name, email or item"
+        keep={{ kind: "equipment" }}
+        lead={<span>As of today</span>}
+      />,
+    );
+    expect(screen.getByText("As of today")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Remove filter/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("searchbox", { name: "Search name, email or item" }),
+    ).toHaveAttribute("placeholder", "Name, email or item");
+    await user.click(screen.getByRole("button", { name: "Filters" }));
+    const sheet = screen.getByRole("dialog", { name: "Filters" });
+    expect(within(sheet).queryByText("Period")).not.toBeInTheDocument();
+    expect(
+      within(sheet).queryByLabelText("Request type"),
+    ).not.toBeInTheDocument();
+    await user.selectOptions(within(sheet).getByLabelText("Department"), "2");
+    await user.click(
+      await within(sheet).findByRole("button", { name: "Show 1 person" }),
+    );
+    expect(replace).toHaveBeenCalledWith(
+      "/reports/all-users?kind=equipment&department=2",
+      { scroll: false },
+    );
+  });
 });
