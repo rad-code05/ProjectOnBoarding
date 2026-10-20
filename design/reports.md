@@ -4,6 +4,8 @@
 
 **F13 (2026-10-20):** phone boards approved — *Phone · Onboarded by country* (department the same), *Phone · Signature log*; time to approve = first Review & sign → confirmation; the log lists requests first signed by IT in the period.
 
+**F14 (2026-10-20):** phone boards approved — *Phone · Offboarding SLA*, *Phone · Access by application*, *Phone · Access by application · one app (who holds it)*, *Phone · Open requests by status*. Offboarding SLA = offboardings whose deadline falls in the period (from Start execution on), Met / Missed / Due in … / Overdue … always written; Access by application = today (tabs Applications / Devices / Access, *Leaving* marker); Open requests = right now, waiting since the status was reached.
+
 **Decided 2026-10-15:** **D16** — "onboarded" = closed by the approver in the month (company timezone). Reports are for admins, approvers and auditors; approvers see the same request states as everywhere (awaiting confirmation, returned, closed). All users list = requests *created* in the period, cancelled left out.
 
 One Reports page for both roles (Raju: full; Moises / backup approver: read-only, same reports). Sample data in the mockup is illustrative only.

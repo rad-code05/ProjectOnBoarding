@@ -1455,6 +1455,58 @@ export type Database = {
         };
         Returns: string;
       };
+      report_access_by_item: {
+        Args: {
+          p_country?: string;
+          p_department?: number;
+          p_kind?: Database["public"]["Enums"]["inventory_kind"];
+          p_search?: string;
+        };
+        Returns: {
+          catalog_count: number;
+          category_name: string;
+          holders: number;
+          item_key: string;
+          items_in_use: number;
+          leaving_people: number;
+          name: string;
+          total_people: number;
+          total_rights: number;
+        }[];
+      };
+      report_access_holders: {
+        Args: {
+          p_country?: string;
+          p_department?: number;
+          p_item_key?: string;
+          p_kind?: Database["public"]["Enums"]["inventory_kind"];
+          p_limit?: number;
+          p_offset?: number;
+          p_search?: string;
+        };
+        Returns: {
+          asset_tag: string;
+          category_name: string;
+          country: string;
+          department: string;
+          description: string;
+          first_name: string;
+          granted_at: string;
+          granted_request_id: string;
+          granted_ticket_id: string;
+          inventory_id: string;
+          item_key: string;
+          last_name: string;
+          leaving_request_id: string;
+          leaving_ticket_id: string;
+          name: string;
+          permission: string;
+          permission_counts: Json;
+          source: string;
+          total_count: number;
+          work_email: string;
+        }[];
+      };
       report_all_users: {
         Args: {
           p_country?: string;
@@ -1484,6 +1536,51 @@ export type Database = {
           work_email: string;
         }[];
       };
+      report_offboarding_sla: {
+        Args: {
+          p_country?: string;
+          p_department?: number;
+          p_from?: string;
+          p_limit?: number;
+          p_offset?: number;
+          p_search?: string;
+          p_to?: string;
+        };
+        Returns: {
+          access_cutoff_at: string;
+          first_name: string;
+          id: string;
+          last_name: string;
+          removals_done: number;
+          removals_total: number;
+          removed_at: string;
+          result: string;
+          sla_due_at: string;
+          sla_missed_reason: string;
+          sla_timeline: Database["public"]["Enums"]["sla_timeline"];
+          state: Database["public"]["Enums"]["request_state"];
+          ticket_id: string;
+          total_count: number;
+          work_email: string;
+        }[];
+      };
+      report_offboarding_sla_summary: {
+        Args: {
+          p_country?: string;
+          p_department?: number;
+          p_from?: string;
+          p_search?: string;
+          p_to?: string;
+        };
+        Returns: {
+          met: number;
+          missed: number;
+          no_removals: number;
+          open: number;
+          overdue: number;
+          sla_timeline: Database["public"]["Enums"]["sla_timeline"];
+        }[];
+      };
       report_onboarded_by: {
         Args: {
           p_country?: string;
@@ -1508,6 +1605,27 @@ export type Database = {
         Returns: {
           month: string;
           onboarded: number;
+        }[];
+      };
+      report_open_requests: {
+        Args: {
+          p_limit?: number;
+          p_search?: string;
+          p_type?: Database["public"]["Enums"]["request_type"];
+        };
+        Returns: {
+          created_at: string;
+          first_name: string;
+          id: string;
+          last_name: string;
+          sla_due_at: string;
+          sla_result: string;
+          state: Database["public"]["Enums"]["request_state"];
+          ticket_id: string;
+          total_count: number;
+          type: Database["public"]["Enums"]["request_type"];
+          waiting_since: string;
+          work_email: string;
         }[];
       };
       report_signature_log: {

@@ -568,6 +568,34 @@
       "w": 390,
       "h": 1640,
       "title": "Phone · Signature log — F13 proposal"
+    },
+    "ReportSlaMobile.dc.html": {
+      "x": 22540,
+      "y": 13560,
+      "w": 390,
+      "h": 1720,
+      "title": "Phone · Offboarding SLA — F14 proposal"
+    },
+    "ReportAccessMobile.dc.html": {
+      "x": 23010,
+      "y": 13560,
+      "w": 390,
+      "h": 1640,
+      "title": "Phone · Access by application — F14 proposal"
+    },
+    "ReportAccessAppMobile.dc.html": {
+      "x": 23480,
+      "y": 13560,
+      "w": 390,
+      "h": 1500,
+      "title": "Phone · Access by application · one app (who holds it) — F14 proposal"
+    },
+    "ReportOpenMobile.dc.html": {
+      "x": 23950,
+      "y": 13560,
+      "w": 390,
+      "h": 1640,
+      "title": "Phone · Open requests by status — F14 proposal"
     }
   },
   "createdOnFiles": {
@@ -589,7 +617,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 22460,
+      "maxW": 24340,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -707,7 +735,11 @@
     "ReportMonthMobile.dc.html",
     "ReportFiltersMobile.dc.html",
     "ReportCountryMobile.dc.html",
-    "ReportSignaturesMobile.dc.html"
+    "ReportSignaturesMobile.dc.html",
+    "ReportSlaMobile.dc.html",
+    "ReportAccessMobile.dc.html",
+    "ReportAccessAppMobile.dc.html",
+    "ReportOpenMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
