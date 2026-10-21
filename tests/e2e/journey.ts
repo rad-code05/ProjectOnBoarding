@@ -4,9 +4,12 @@ import { openApp } from "./open";
 /** Makes sure the signed-in person has an active signature (typed initials). */
 export async function saveInitials(page: Page) {
   await openApp(page, "/profile");
-  await page
-    .getByLabel("Initials (up to 4 characters)")
-    .fill(`T${Date.now() % 1000}`.slice(0, 4));
+  const field = page.getByLabel("Initials (up to 4 characters)");
+  // Save stays disabled when nothing changed — never type the saved value.
+  const saved = await field.inputValue();
+  let next = `T${Date.now() % 1000}`.slice(0, 4);
+  if (next === saved) next = saved === "TX" ? "TY" : "TX";
+  await field.fill(next);
   await page.getByRole("button", { name: "Save" }).click();
   // Other tests may switch the same test user to a PNG at the same time;
   // what this needs is *an* active signature, whichever kind.
