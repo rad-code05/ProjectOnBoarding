@@ -7,7 +7,12 @@ export type FieldType =
   | "department"
   | "country"
   | "user"
-  | "system";
+  | "system"
+  // F27: where they work and nationality.
+  | "office"
+  | "region"
+  | "office_city"
+  | "nationality";
 
 /** One row of form_fields — the form is drawn from these, not hard-coded. */
 export type FormField = {

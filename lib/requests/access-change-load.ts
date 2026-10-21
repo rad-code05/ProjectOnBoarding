@@ -41,7 +41,7 @@ export async function loadAccessChange(
     supabase
       .from("requests")
       .select(
-        "ticket_id, job_title, department_id, country, manager_name, requestor_name, department:departments(name)",
+        "ticket_id, job_title, department_id, country, manager_name, requestor_name, office_id, region_id, office_city_id, nationalities, department:departments(name), office:offices(name), region:country_regions(name), office_city:office_cities(name)",
       )
       .eq("employee_id", request.employee_id)
       .eq("state", "closed")
@@ -131,6 +131,13 @@ export async function loadAccessChange(
           country: p.country,
           manager_name: p.manager_name,
           requestor_name: p.requestor_name,
+          office_id: p.office_id,
+          office: p.office?.name ?? null,
+          region_id: p.region_id,
+          region: p.region?.name ?? null,
+          office_city_id: p.office_city_id,
+          office_city: p.office_city?.name ?? null,
+          nationalities: p.nationalities ?? [],
         }
       : null,
   };

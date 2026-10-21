@@ -347,3 +347,34 @@ export async function setOfficeCityActive(input: {
     }),
   );
 }
+
+/**
+ * Add a city from the request form's City field ("Add “Miami” to Florida",
+ * admins only) — returns its id so the field can choose it straight away.
+ */
+export async function addOfficeCity(input: {
+  officeId: number;
+  regionId: number;
+  name: string;
+}): Promise<{ ok: true; id: number } | { ok: false; message: string }> {
+  await requireRole("admin");
+  const parsed = z
+    .object({ officeId: id, regionId: id, name: shortText })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Type the city's name." };
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase.rpc("admin_save_office_city", {
+    p_id: null as unknown as number,
+    p_office_id: parsed.data.officeId,
+    p_region_id: parsed.data.regionId,
+    p_name: parsed.data.name,
+  });
+  if (error || data === null) {
+    return {
+      ok: false,
+      message: catalogErrorMessage(error?.code, error?.message),
+    };
+  }
+  revalidatePath("/admin", "layout");
+  return { ok: true, id: data };
+}

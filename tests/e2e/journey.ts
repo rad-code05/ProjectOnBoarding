@@ -16,6 +16,28 @@ export async function saveInitials(page: Page) {
   await expect(page.getByRole("radio", { checked: true })).toHaveCount(1);
 }
 
+/**
+ * Picks an option of a searchable drop-down (F27 Combobox): types a few
+ * letters, then clicks the option with exactly that name.
+ */
+export async function choose(
+  page: Page,
+  label: string,
+  option: string,
+  // Nationality adds a chip and empties its box again.
+  { shows = true }: { shows?: boolean } = {},
+) {
+  const box = page.getByRole("combobox", { name: label, exact: true });
+  await box.click();
+  await box.fill(option.slice(0, 4));
+  // Only the open list's options (native drop-downs have options too).
+  await page
+    .getByRole("listbox")
+    .getByRole("option", { name: option, exact: true })
+    .click();
+  if (shows) await expect(box).toHaveValue(option);
+}
+
 /** As Raju: New request → Start onboarding (F09c: New request opens a sheet). */
 export async function newOnboarding(page: Page) {
   await page.getByRole("button", { name: "New request" }).first().click();
@@ -46,7 +68,11 @@ export async function createExecutedRequest(page: Page, firstName: string) {
   await page
     .getByLabel("Department / team")
     .selectOption({ label: "Engineering" });
-  await page.getByLabel("Country").selectOption("CH");
+  // Form v4.2 (F27): Office is required; it fills the country.
+  await choose(page, "Office", "Dubai");
+  await expect(
+    page.getByRole("combobox", { name: "Country", exact: true }),
+  ).toHaveValue("United Arab Emirates");
   await page.getByLabel("Manager").fill("Mara Manager");
   await page.getByLabel("Requested by").fill("Rita Requestor");
   await page.getByLabel("Effective date").fill("2026-11-02");

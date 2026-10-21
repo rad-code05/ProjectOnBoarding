@@ -20,6 +20,13 @@ const emptyOr = <T extends z.ZodType<string>>(schema: T) =>
     .union([z.literal(""), schema])
     .transform((value) => (value === "" ? null : value));
 
+/** A list choice held as its id ("" = none). */
+const idChoice = (message: string) =>
+  z
+    .string()
+    .regex(/^\d*$/, message)
+    .transform((value) => (value ? Number(value) : null));
+
 export const draftValuesSchema = z
   .object({
     type: z.enum(["onboarding", "offboarding", "access_modification"]),
@@ -46,6 +53,26 @@ export const draftValuesSchema = z
         message: "Choose a country from the list.",
       }),
     ),
+    // F27: office, then (US) state and city; up to two nationalities ("CH,IT").
+    office: idChoice("Choose an office from the list."),
+    region: idChoice("Choose a state from the list."),
+    office_city: idChoice("Choose a city from the list."),
+    nationalities: z
+      .string()
+      .transform((value) => value.split(",").filter(Boolean))
+      .pipe(
+        z
+          .array(
+            z.string().refine((code) => COUNTRY_CODES.includes(code), {
+              message: "Choose a nationality from the list.",
+            }),
+          )
+          .max(2, "Choose up to two nationalities.")
+          .refine((codes) => new Set(codes).size === codes.length, {
+            message: "Choose each nationality once.",
+          }),
+      )
+      .transform((codes) => (codes.length ? codes : null)),
     manager_name: text,
     requestor_name: text,
     effective_date: emptyOr(z.iso.date("Enter a date.")),
@@ -130,6 +157,10 @@ export function toColumns(
     job_title: values.job_title,
     department_id: values.department,
     country: values.country,
+    office_id: values.office,
+    region_id: values.office ? values.region : null,
+    office_city_id: values.office && values.region ? values.office_city : null,
+    nationalities: values.nationalities,
     manager_name: values.manager_name,
     requestor_name: values.requestor_name,
     effective_date: values.effective_date,

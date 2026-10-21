@@ -237,4 +237,12 @@ export type PreviousDetails = {
   country: string | null;
   manager_name: string | null;
   requestor_name: string | null;
+  /** F27: where they worked and nationalities, as on that request. */
+  office_id: number | null;
+  office: string | null;
+  region_id: number | null;
+  region: string | null;
+  office_city_id: number | null;
+  office_city: string | null;
+  nationalities: string[];
 };

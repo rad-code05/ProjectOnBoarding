@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import {
+  choose,
   createExecutedRequest,
   newOnboarding,
   reviewAndSign,
@@ -279,7 +280,7 @@ test("New request creates a draft; Raju saves Anna Keller and finds her", async 
   await expect(page.getByText(/Enter a valid email address/)).toBeVisible();
 
   await page.getByLabel("Work email").fill("anna.keller@laine.ai");
-  await page.getByLabel("Country").selectOption("CH");
+  await choose(page, "Country", "Switzerland");
   // No click: the form saves on its own after a short pause.
   await expect(page.getByRole("status").first()).toHaveText(/^Saved \d\d:\d\d/);
   await expect(
@@ -820,7 +821,7 @@ test("Raju reviews and signs a request; it awaits confirmation with his signatur
   await page
     .getByLabel("Department / team")
     .selectOption({ label: "Engineering" });
-  await page.getByLabel("Country").selectOption("CH");
+  await choose(page, "Office", "Geneva");
   await page.getByLabel("Manager").fill("Mara Manager");
   await page.getByLabel("Requested by").fill("Rita Requestor");
   await page.getByLabel("Effective date").fill("2026-11-02");
@@ -1296,5 +1297,82 @@ test("Admin · Offices: add an office and a US city, then retire both", async ({
         name: new RegExp(`added the city “${city}” \\(US · Texas\\)`),
       })
       .first(),
+  ).toBeVisible();
+});
+
+test("Section 2 (F27): Office fills the country; US asks for a state, then a city; two nationalities", async ({
+  page,
+}) => {
+  test.slow(); // a draft, an inline city, a reload, Admin → Offices
+  const town = `E2E Town ${Date.now() % 100000}`;
+  created.push({ kind: "city", name: town });
+  await openApp(page, "/requests");
+  await newOnboarding(page);
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  const url = page.url();
+
+  // Dubai: no state or city; the country follows the office.
+  await choose(page, "Office", "Dubai");
+  await expect(
+    page.getByRole("combobox", { name: "Country", exact: true }),
+  ).toHaveValue("United Arab Emirates");
+  await expect(page.getByRole("combobox", { name: "State" })).toHaveCount(0);
+
+  // US: State, then City — typed letters narrow the list.
+  await choose(page, "Office", "US");
+  await expect(
+    page.getByRole("combobox", { name: "Country", exact: true }),
+  ).toHaveValue("United States");
+  const state = page.getByRole("combobox", { name: "State", exact: true });
+  await state.click();
+  await state.fill("tex");
+  const list = page.getByRole("listbox");
+  await expect(list.getByRole("option")).toHaveText(["Texas"]);
+  await list.getByRole("option", { name: "Texas" }).click();
+
+  // A city that isn't listed yet: an admin adds it right here.
+  const city = page.getByRole("combobox", { name: "City", exact: true });
+  await city.click();
+  await city.fill(town);
+  await expect(
+    page.getByText(new RegExp(`No city in Texas matches “${town}”`)),
+  ).toBeVisible();
+  await page
+    .getByRole("listbox")
+    .getByRole("option", { name: `Add “${town}” to Texas` })
+    .click();
+  await expect(city).toHaveValue(town);
+
+  // Nationality: up to two.
+  await choose(page, "Nationality", "Switzerland", { shows: false });
+  await choose(page, "Nationality", "Italy", { shows: false });
+  await expect(
+    page.getByText("Two chosen — remove one to change."),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Save draft" }).click();
+  await expect(page.getByRole("status").first()).toHaveText(
+    /^(All changes saved|Saved) \d\d:\d\d/,
+  );
+  await openApp(page, url);
+  await expect(
+    page.getByRole("combobox", { name: "Office", exact: true }),
+  ).toHaveValue("US");
+  await expect(
+    page.getByRole("combobox", { name: "State", exact: true }),
+  ).toHaveValue("Texas");
+  await expect(
+    page.getByRole("combobox", { name: "City", exact: true }),
+  ).toHaveValue(town);
+  await expect(
+    page.getByRole("list", { name: "Nationality chosen" }),
+  ).toHaveText(/Switzerland.*Italy/);
+
+  // Tidy up: retire the test city.
+  await openApp(page, "/admin/offices");
+  await page.getByRole("button", { name: /^US/ }).first().click();
+  await page.getByRole("button", { name: `Retire ${town}, Texas` }).click();
+  await expect(
+    page.getByRole("button", { name: `Restore ${town}, Texas` }),
   ).toBeVisible();
 });

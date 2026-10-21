@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Fragment,
   useCallback,
@@ -16,7 +17,16 @@ import {
   StatusPill,
   Toast,
 } from "@/components/ui";
+import { addOfficeCity } from "@/app/(app)/admin/actions";
 import { cn } from "@/lib/cn";
+import {
+  cityChoices,
+  placeChanges,
+  placeWas,
+  regionChoices,
+  regionName,
+  usesRegions,
+} from "@/lib/requests/places";
 import type { AccessChoices, OtherApp } from "@/lib/requests/access";
 import type { HeldItem } from "@/lib/requests/access-change";
 import type { DraftFieldKey } from "@/lib/requests/draft";
@@ -110,11 +120,15 @@ function statusText(
 export function RequestForm({
   form,
   canSign,
+  canAddCities = false,
 }: {
   form: RequestFormData;
   /** IT operator or admin: may open Review & sign. */
   canSign: boolean;
+  /** Admin: a city missing from the City list can be added right there. */
+  canAddCities?: boolean;
 }) {
+  const router = useRouter();
   const { values, saved, errors, status, setValue, saveNow } = useAutosave({
     id: form.id,
     version: form.version,
@@ -254,6 +268,8 @@ export function RequestForm({
     const prev = change?.previous;
     if (!prev) return null;
     const now = values[field.key as DraftFieldKey] ?? "";
+    const place = placeWas(field.key, now, prev);
+    if (place !== null) return place;
     if (
       field.key === "job_title" ||
       field.key === "manager_name" ||
@@ -282,10 +298,64 @@ export function RequestForm({
     onItemsChange: setHeld,
     disabled,
   };
+  // F27: State and City only for an office that asks for them (the US).
+  const officeId = values.office ?? "";
+  const regionId = values.region ?? "";
   const fieldsOf = (section: number) =>
     form.fields.filter(
-      (field) => field.section === section && field.key !== "type",
+      (field) =>
+        field.section === section &&
+        field.key !== "type" &&
+        ((field.key !== "region" && field.key !== "office_city") ||
+          usesRegions(form.places, officeId)),
     );
+  const setField = (key: string, value: string) => {
+    for (const [k, v] of Object.entries(
+      placeChanges(form.places, key, value),
+    )) {
+      setValue(k, v);
+    }
+  };
+  const choicesOf = (field: FormField) =>
+    field.key === "region"
+      ? regionChoices(form.places, officeId)
+      : field.key === "office_city"
+        ? cityChoices(form.places, officeId, regionId, values.office_city ?? "")
+        : form.choices[field.key];
+  const state = regionName(form.places, regionId);
+  const [cityError, setCityError] = useState<string | null>(null);
+  const searchProps = (field: FormField) => {
+    if (field.key !== "office_city") return {};
+    return {
+      noMatch: (q: string) =>
+        !regionId
+          ? "Choose the state first"
+          : q
+            ? `No city in ${state} matches “${q}”`
+            : `No cities in ${state} yet`,
+      create:
+        canAddCities && regionId
+          ? {
+              label: (q: string) => `Add “${q}” to ${state}`,
+              onCreate: (q: string) => {
+                setCityError(null);
+                void addOfficeCity({
+                  officeId: Number(officeId),
+                  regionId: Number(regionId),
+                  name: q,
+                }).then((result) => {
+                  if (!result.ok) {
+                    setCityError(result.message);
+                    return;
+                  }
+                  setValue("office_city", String(result.id));
+                  router.refresh();
+                });
+              },
+            }
+          : undefined,
+    };
+  };
   const missing = (section: number) =>
     fieldsOf(section).filter(
       (field) =>
@@ -698,11 +768,17 @@ export function RequestForm({
                     key={field.key}
                     field={field}
                     value={valueOf(field)}
-                    onChange={(value) => setValue(field.key, value)}
-                    choices={form.choices[field.key]}
-                    error={errors[field.key as DraftFieldKey]}
+                    onChange={(value) => setField(field.key, value)}
+                    choices={choicesOf(field)}
+                    error={
+                      errors[field.key as DraftFieldKey] ??
+                      (field.key === "office_city"
+                        ? (cityError ?? undefined)
+                        : undefined)
+                    }
                     disabled={disabled}
                     was={wasOf(field)}
+                    {...searchProps(field)}
                   />
                 ))}
               </div>

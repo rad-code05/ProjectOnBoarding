@@ -34,6 +34,9 @@ insert into public.signature_assets (user_id, kind, source, typed_text) values
   ('user_rc_abe', 'initials', 'typed', 'AB');
 
 -- Ada executes and signs both; Abe confirms Anna (closed), Ben stays waiting.
+-- Form v4.2 (F27): new requests need an Office before Review & sign.
+update public.requests set office_id = (select id from public.offices where name = 'Dubai')
+where office_id is null and state not in ('closed', 'cancelled');
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_rc_admin","role":"authenticated"}', true);
 select public.transition_request(id, 'in_execution') from ids;

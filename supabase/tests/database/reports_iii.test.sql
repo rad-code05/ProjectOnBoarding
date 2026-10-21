@@ -50,6 +50,9 @@ join public.catalog_apps a on a.name = x.app;
 insert into public.request_physical_access_items (request_id, type_id, action, scope)
 select (select id from r where label = 'A'), id, 'Grant', 'Badge' from public.physical_access_types where name = 'Office access';
 
+-- Form v4.2 (F27): new requests need an Office before Review & sign.
+update public.requests set office_id = (select id from public.offices where name = 'Dubai')
+where office_id is null and state not in ('closed', 'cancelled');
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_r3_admin","role":"authenticated"}', true);
 select public.transition_request(id, 'in_execution') from r where label in ('A', 'B', 'C');
