@@ -73,7 +73,7 @@ a{color:#000000}a:hover{color:#cf2e2e}
 </li>
 </sc-for>
 </ul>
-<span style="margin-top: 6px; font-size: 12px; color: #535353">US is broken down by location. Tap a row for the list of people.</span>
+<span style="margin-top: 6px; font-size: 12px; color: #535353">US is broken down by state and city. Tap a row for the list of people.</span>
 </section>
 
 <section style="background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; overflow: hidden">
@@ -116,12 +116,12 @@ const t = (name, value, leaving, sub) => ({
 return {
   rows: [
     line('Dubai', 18), line('Geneva', 11), line('US', 9),
-    line('New York, NY', 5, true), line('Austin, TX', 3, true), line('San Francisco, CA', 1, true),
+    line('New York · New York City', 5, true), line('Texas · Austin', 2, true), line('Texas · Dallas', 1, true), line('California · San Francisco', 1, true),
     line('Abu Dhabi', 6)
   ],
   table: [
     t('Dubai', 18, 1), t('Geneva', 11, 0), t('US', 9, 1),
-    t('New York, NY', 5, 1, true), t('Austin, TX', 3, 0, true), t('San Francisco, CA', 1, 0, true),
+    t('New York · New York City', 5, 1, true), t('Texas · Austin', 2, 0, true), t('Texas · Dallas', 1, 0, true), t('California · San Francisco', 1, 0, true),
     t('Abu Dhabi', 6, 0)
   ]
 };

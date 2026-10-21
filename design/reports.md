@@ -6,7 +6,7 @@
 
 **F14 (2026-10-20):** phone boards approved — *Phone · Offboarding SLA*, *Phone · Access by application*, *Phone · Access by application · one app (who holds it)*, *Phone · Open requests by status*. Offboarding SLA = offboardings whose deadline falls in the period (from Start execution on; upcoming deadlines included unless an end date is typed), Met / Missed / Due in … / Overdue … always written; Access by application = today (tabs Applications / Devices / Access, *Leaving* marker); Open requests = right now, waiting since the status was reached.
 
-**F27 Offices & nationality (proposed 2026-10-21, boards waiting for approval):** *Phone · Admin · Offices*, *Phone · Add / edit office (sheet, US sub-locations)*, *Phone · Section 2 with Office, Location, Nationality*, *Phone · Report filters with Office & Nationality (sheet)*, *Phone · Employees by office (headcount)* — filters Office (+ location), Country, Nationality on every report; new reports Onboarded by office and Employees by office.
+**F27 Offices & nationality (proposed 2026-10-21, boards waiting for approval):** *Phone · Admin · Offices*, *Phone · Add / edit office (sheet, US sub-locations)*, *Phone · Section 2 with Office, State + City, Nationality*, *Phone · Report filters with Office & Nationality (sheet)*, *Phone · Employees by office (headcount)* — filters Office (+ location), Country, Nationality on every report; new reports Onboarded by office and Employees by office.
 
 **Decided 2026-10-15:** **D16** — "onboarded" = closed by the approver in the month (company timezone). Reports are for admins, approvers and auditors; approvers see the same request states as everywhere (awaiting confirmation, returned, closed). All users list = requests *created* in the period, cancelled left out.
 

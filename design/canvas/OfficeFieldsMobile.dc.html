@@ -52,11 +52,17 @@ input::placeholder{color:#7e7e7e}
 <label for="f-office" style="font-size: 12px; font-weight: 600">Office <span style="color: #cf2e2e">*</span></label>
 <select id="f-office" style="height: 48px; box-sizing: border-box; padding: 0 10px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; color: #000000"><option>Dubai</option><option>Abu Dhabi</option><option>Geneva</option><option selected>US</option></select>
 </div>
-<div style="display: flex; flex-direction: column; gap: 6px">
-<label for="f-loc" style="font-size: 12px; font-weight: 600">Location (state / city) <span style="font-weight: 500; color: #535353">— optional</span></label>
-<select id="f-loc" style="height: 48px; box-sizing: border-box; padding: 0 10px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; color: #000000"><option>Not set</option><option selected>New York, NY</option><option>Austin, TX</option><option>San Francisco, CA</option></select>
-<span style="font-size: 12px; color: #535353">Shown only for offices with locations (the US).</span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<label for="f-state" style="font-size: 12px; font-weight: 600">State <span style="font-weight: 500; color: #535353">— optional</span></label>
+<select id="f-state" style="height: 48px; box-sizing: border-box; padding: 0 10px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; color: #000000; min-width: 0"><option>Not set</option><option>Alabama</option><option>…</option><option selected>Texas</option><option>…</option><option>Wyoming</option></select>
 </div>
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<label for="f-city" style="font-size: 12px; font-weight: 600">City <span style="font-weight: 500; color: #535353">— optional</span></label>
+<select id="f-city" style="height: 48px; box-sizing: border-box; padding: 0 10px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; color: #000000; min-width: 0"><option>Not set</option><option selected>Austin</option><option>Dallas</option></select>
+</div>
+</div>
+<span style="margin-top: -6px; font-size: 12px; color: #535353">Shown only for the US. All 50 states + DC; the cities are the ones added for that state in Admin → Offices.</span>
 <div style="display: flex; flex-direction: column; gap: 6px">
 <label for="f-country" style="font-size: 12px; font-weight: 600">Country (works in)</label>
 <select id="f-country" style="height: 48px; box-sizing: border-box; padding: 0 10px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; color: #000000"><option selected>United States</option></select>

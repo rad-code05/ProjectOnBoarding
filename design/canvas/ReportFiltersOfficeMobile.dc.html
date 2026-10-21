@@ -46,11 +46,17 @@ a{color:#000000}a:hover{color:#cf2e2e}
 <label for="office" style="font-size: 13px; font-weight: 600">Office</label>
 <select id="office" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px"><option>All offices</option><option>Dubai</option><option>Abu Dhabi</option><option>Geneva</option><option selected>US</option><option>Not set</option></select>
 </div>
-<div style="display: flex; flex-direction: column; gap: 6px">
-<label for="loc" style="font-size: 13px; font-weight: 600">US location</label>
-<select id="loc" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px"><option selected>All US locations</option><option>New York, NY</option><option>Austin, TX</option><option>San Francisco, CA</option><option>Not set</option></select>
-<span style="font-size: 12px; color: #535353">Appears when the office has locations.</span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<label for="state" style="font-size: 13px; font-weight: 600">US state</label>
+<select id="state" style="height: 48px; box-sizing: border-box; padding: 0 10px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px; min-width: 0"><option>All states</option><option selected>Texas</option><option>Not set</option></select>
 </div>
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<label for="city" style="font-size: 13px; font-weight: 600">City</label>
+<select id="city" style="height: 48px; box-sizing: border-box; padding: 0 10px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px; min-width: 0"><option selected>All cities</option><option>Austin</option><option>Dallas</option><option>Not set</option></select>
+</div>
+</div>
+<span style="margin-top: -6px; font-size: 12px; color: #535353">Appear when US is chosen; City lists the chosen state's cities.</span>
 <div style="display: flex; flex-direction: column; gap: 6px">
 <label for="country" style="font-size: 13px; font-weight: 600">Country (works in)</label>
 <select id="country" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px"><option>All countries</option></select>
