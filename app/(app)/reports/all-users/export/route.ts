@@ -2,7 +2,11 @@ import type { NextRequest } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { toCsv } from "@/lib/csv";
 import { PAGES } from "@/lib/navigation";
-import { allUsersArgs, loadReportOptions } from "@/lib/reports/all-users";
+import {
+  allUsersArgs,
+  loadReportOptions,
+  officeText,
+} from "@/lib/reports/all-users";
 import { reportInfo } from "@/lib/reports/catalog";
 import { exportFileName, exportFilters } from "@/lib/reports/export";
 import {
@@ -20,6 +24,7 @@ import {
   countryName,
   personName,
 } from "@/lib/requests/labels";
+import { nationalityText } from "@/lib/requests/signing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
 
@@ -79,13 +84,15 @@ export async function GET(request: NextRequest) {
       table: {
         columns: [
           { label: "Ticket", width: 1.3 },
-          { label: "Name", width: 1.5 },
-          { label: "Work email", width: 2.2 },
-          { label: "Type", width: 1.3 },
-          { label: "Status", width: 1.3 },
-          { label: "Department", width: 1.2 },
-          { label: "Country", width: 1.1 },
-          { label: "Effective / last day", width: 1.2 },
+          { label: "Name", width: 1.4 },
+          { label: "Work email", width: 2 },
+          { label: "Type", width: 1.2 },
+          { label: "Status", width: 1.2 },
+          { label: "Department", width: 1.1 },
+          { label: "Country", width: 1 },
+          { label: "Office", width: 1.3 },
+          { label: "Nationality", width: 1.1 },
+          { label: "Effective / last day", width: 1.1 },
           { label: "Closed", width: 1 },
         ],
         rows: rows.map((r) => [
@@ -96,6 +103,8 @@ export async function GET(request: NextRequest) {
           STATE_LABELS[r.state],
           r.department ?? "—",
           r.country ? countryName(r.country) : "—",
+          officeText(r.office, r.location) ?? "—",
+          nationalityText(r.nationalities) || "—",
           formatDate(
             r.type === "offboarding" ? r.last_working_day : r.effective_date,
           ),
@@ -122,6 +131,9 @@ export async function GET(request: NextRequest) {
       "Work email",
       "Department",
       "Country",
+      "Office",
+      "Location",
+      "Nationality",
       "Effective date",
       "Last working day",
       "Created",
@@ -136,6 +148,9 @@ export async function GET(request: NextRequest) {
       r.work_email,
       r.department,
       r.country ? countryName(r.country) : null,
+      r.office,
+      r.location,
+      nationalityText(r.nationalities) || null,
       r.effective_date,
       r.last_working_day,
       formatDayTime(r.created_at, timeZone),

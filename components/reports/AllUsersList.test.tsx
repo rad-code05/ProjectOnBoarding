@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { AllUsersList } from "./AllUsersList";
 
 describe("AllUsersList", () => {
-  test("a card per request: who, status, ticket line, dates, link", () => {
+  test("a card per request: who, status, ticket line, office + nationality, dates, link", () => {
     render(
       <AllUsersList
         rows={[
@@ -16,6 +16,8 @@ describe("AllUsersList", () => {
             email: "anna.keller@example.com",
             department: "Design",
             country: "Switzerland",
+            office: "US · Texas · Austin",
+            nationality: "Switzerland, Italy",
             dates: "Effective 20 Oct 2026 · Closed 15 Oct 2026",
             href: "/records/r1",
           },
@@ -28,6 +30,8 @@ describe("AllUsersList", () => {
             email: "lea.brun@example.com",
             department: null,
             country: null,
+            office: null,
+            nationality: null,
             dates: "Effective 3 Nov 2026 · not closed yet",
             href: null,
           },
@@ -47,6 +51,10 @@ describe("AllUsersList", () => {
     );
     expect(within(lea).queryByRole("link")).not.toBeInTheDocument();
     expect(lea).toHaveTextContent("In execution");
+    expect(anna).toHaveTextContent(
+      "Office: US · Texas · Austin · Nationality: Switzerland, Italy",
+    );
     expect(lea).toHaveTextContent("UAM-2026-000139 · Onboarding");
+    expect(lea).not.toHaveTextContent("Office");
   });
 });

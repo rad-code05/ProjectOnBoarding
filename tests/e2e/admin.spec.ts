@@ -1010,6 +1010,9 @@ test("Reports · All users list: a new draft is listed, exported as CSV and PDF,
   const text = await csv.text();
   expect(text.split("\r\n")[0]).toMatch(/^\uFEFF?Ticket,Type,Status,/);
   expect(text).toContain(`${ticketId},Onboarding,Draft`);
+  expect(text.split("\r\n")[0]).toContain(
+    "Country,Office,Location,Nationality",
+  );
 
   // The same list as PDF (F12d), also audited.
   await expect(page.getByRole("link", { name: "Export PDF" })).toHaveAttribute(
@@ -1103,6 +1106,7 @@ test("Reports · Onboarded by month: tiles, chart, every month, CSV with a total
 for (const [slug, title, column] of [
   ["onboarded-by-country", "Onboarded by country", "Country"],
   ["onboarded-by-department", "Onboarded by department", "Department"],
+  ["onboarded-by-office", "Onboarded by office", "Office"],
 ] as const) {
   test(`Reports · ${title}: page, CSV with a total, PDF`, async ({ page }) => {
     test.slow(); // the page, a CSV and a PDF

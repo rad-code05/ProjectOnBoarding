@@ -1,10 +1,17 @@
 import { countryName } from "@/lib/requests/labels";
 
-/** "Onboarded by …" reports (F13b): the same page, grouped differently. */
-export type ReportGroup = "country" | "department";
+/** "Onboarded by …" reports (F13b, office F27d): the same page, grouped differently. */
+export type ReportGroup = "country" | "department" | "office";
+
+/** The report page of each grouping. */
+export const GROUP_SLUGS = {
+  country: "onboarded-by-country",
+  department: "onboarded-by-department",
+  office: "onboarded-by-office",
+} as const satisfies Record<ReportGroup, string>;
 
 export type GroupRow = {
-  /** Country code / department id; null = not filled in on the request. */
+  /** Country code / department or office id; null = not filled in on the request. */
   key: string | null;
   label: string;
   onboarded: number;
@@ -29,6 +36,13 @@ export const GROUP_WORDS: Record<
     label: "Departments",
     none: "No department",
     column: "Department",
+  },
+  office: {
+    one: "office",
+    many: "offices",
+    label: "Offices",
+    none: "Office not set",
+    column: "Office",
   },
 };
 

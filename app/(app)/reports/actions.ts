@@ -54,14 +54,14 @@ export async function countOnboarded(search: string): Promise<number | null> {
   }
 }
 
-/** "Show N onboardings" for Onboarded by country / department. */
+/** "Show N onboardings" for Onboarded by country / department / office. */
 export async function countOnboardedBy(
   group: ReportGroup,
   search: string,
 ): Promise<number | null> {
   await requireRole(...PAGES.reports.roles);
   const parsed = z
-    .tuple([z.enum(["country", "department"]), z.string().max(1000)])
+    .tuple([z.enum(["country", "department", "office"]), z.string().max(1000)])
     .safeParse([group, search]);
   if (!parsed.success) return null;
   const filters = parseReportFilters(
