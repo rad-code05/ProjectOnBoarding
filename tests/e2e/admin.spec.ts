@@ -56,6 +56,7 @@ async function retireLeftover(page: Page, { kind, name }: TestEntry) {
       return;
     }
     await page.getByRole("button", { name: /^US/ }).first().click();
+    await page.getByLabel("Find a city").fill(name);
     const retire = page.getByRole("button", { name: `Retire ${name}, Texas` });
     if ((await retire.count()) > 0) await retire.click();
     return;
@@ -1268,6 +1269,8 @@ test("Admin · Offices: add an office and a US city, then retire both", async ({
     .selectOption({ label: "Texas" });
   await usSheet.getByLabel("New city", { exact: true }).fill(city);
   await usSheet.getByRole("button", { name: "Add", exact: true }).click();
+  // Texas has dozens of cities (Census list) — find the new one.
+  await usSheet.getByLabel("Find a city").fill(city);
   await expect(
     usSheet.getByRole("button", { name: `Retire ${city}, Texas` }),
   ).toBeVisible();
@@ -1371,6 +1374,7 @@ test("Section 2 (F27): Office fills the country; US asks for a state, then a cit
   // Tidy up: retire the test city.
   await openApp(page, "/admin/offices");
   await page.getByRole("button", { name: /^US/ }).first().click();
+  await page.getByLabel("Find a city").fill(town);
   await page.getByRole("button", { name: `Retire ${town}, Texas` }).click();
   await expect(
     page.getByRole("button", { name: `Restore ${town}, Texas` }),

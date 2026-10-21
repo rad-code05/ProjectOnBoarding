@@ -8,7 +8,7 @@ import {
   setOfficeActive,
   setOfficeCityActive,
 } from "@/app/(app)/admin/actions";
-import { Button, InlineError, Sheet } from "@/components/ui";
+import { Button, InlineError, Sheet, foldText } from "@/components/ui";
 import {
   citiesByRegion,
   countriesWithRegions,
@@ -254,7 +254,20 @@ function OfficeCities({
   const id = useId();
   const [regionId, setRegionId] = useState("");
   const [cityName, setCityName] = useState("");
-  const groups = citiesByRegion(office.id, cities, regions);
+  const [find, setFind] = useState("");
+  const q = foldText(find);
+  // Find a city: matches the city or its state; matching states open.
+  const groups = citiesByRegion(office.id, cities, regions)
+    .map((g) => ({
+      ...g,
+      cities: !q
+        ? g.cities
+        : foldText(g.region.name).includes(q)
+          ? g.cities
+          : g.cities.filter((c) => foldText(c.name).includes(q)),
+    }))
+    .filter((g) => g.cities.length > 0);
+  const total = groups.reduce((n, g) => n + g.cities.length, 0);
 
   const add = () =>
     run(async () => {
@@ -274,54 +287,85 @@ function OfficeCities({
   return (
     <div className="flex flex-col gap-2.5">
       <span className="text-xs text-graphite">
-        States: all {regions.length} (fixed list). Cities: yours, per state.
+        States: all {regions.length} (fixed list). Cities: the big US cities
+        (Census, 100,000+ people) and any you add, per state.
       </span>
+      <input
+        type="search"
+        aria-label="Find a city"
+        placeholder="Find a city or state"
+        value={find}
+        onChange={(e) => setFind(e.target.value)}
+        className={fieldClass}
+      />
       {groups.length === 0 ? (
-        <p className="text-xs text-graphite">No cities yet.</p>
+        <p className="text-xs text-graphite">
+          {q ? "No city or state matches." : "No cities yet."}
+        </p>
       ) : (
-        <ul className="flex flex-col gap-2.5" aria-label="Cities by state">
+        <ul
+          className="flex flex-col gap-1.5"
+          aria-label="Cities by state"
+          aria-describedby={`${id}-count`}
+        >
           {groups.map((g) => (
-            <li key={g.region.id} className="flex flex-col gap-1.5">
-              <span className="text-xs font-bold tracking-[0.06em] text-graphite uppercase">
-                {g.region.name}
-              </span>
-              <ul className="flex flex-col gap-1.5">
-                {g.cities.map((c) => (
-                  <li
-                    key={c.id}
-                    className="flex min-h-11 items-center gap-2 rounded-[10px] bg-sand py-1 pr-1.5 pl-3"
-                  >
-                    <span
-                      className={cn(
-                        "flex-1 text-sm font-semibold",
-                        !c.active && "text-graphite line-through",
-                      )}
+            <li key={`${g.region.id}-${q ? "find" : "all"}`}>
+              <details
+                open={Boolean(q) || g.cities.length <= 3}
+                className="group rounded-[10px] border border-line-subtle"
+              >
+                <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-3 text-sm font-semibold">
+                  <span className="flex-1">{g.region.name}</span>
+                  <span className="text-xs font-normal text-graphite">
+                    {g.cities.length} cit{g.cities.length === 1 ? "y" : "ies"}
+                  </span>
+                </summary>
+                <ul className="flex flex-col gap-1.5 px-1.5 pb-1.5">
+                  {g.cities.map((c) => (
+                    <li
+                      key={c.id}
+                      className="flex min-h-11 items-center gap-2 rounded-[10px] bg-sand py-1 pr-1.5 pl-3"
                     >
-                      {c.name}
-                    </span>
-                    <span className="text-xs text-graphite">
-                      {c.active ? usesLine(c.uses) : "retired"}
-                    </span>
-                    <Button
-                      variant="text"
-                      size="sm"
-                      disabled={pending}
-                      aria-label={`${c.active ? "Retire" : "Restore"} ${c.name}, ${g.region.name}`}
-                      onClick={() =>
-                        run(() =>
-                          setOfficeCityActive({ id: c.id, active: !c.active }),
-                        )
-                      }
-                    >
-                      {c.active ? "Retire" : "Restore"}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
+                      <span
+                        className={cn(
+                          "flex-1 text-sm font-semibold",
+                          !c.active && "text-graphite line-through",
+                        )}
+                      >
+                        {c.name}
+                      </span>
+                      <span className="text-xs text-graphite">
+                        {c.active ? usesLine(c.uses) : "retired"}
+                      </span>
+                      <Button
+                        variant="text"
+                        size="sm"
+                        disabled={pending}
+                        aria-label={`${c.active ? "Retire" : "Restore"} ${c.name}, ${g.region.name}`}
+                        onClick={() =>
+                          run(() =>
+                            setOfficeCityActive({
+                              id: c.id,
+                              active: !c.active,
+                            }),
+                          )
+                        }
+                      >
+                        {c.active ? "Retire" : "Restore"}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </details>
             </li>
           ))}
         </ul>
       )}
+      <span id={`${id}-count`} className="text-xs text-graphite">
+        {total} cit{total === 1 ? "y" : "ies"} in {groups.length} state
+        {groups.length === 1 ? "" : "s"}
+        {q ? " match" : ""}
+      </span>
       <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
         <select
           aria-label="State of the new city"

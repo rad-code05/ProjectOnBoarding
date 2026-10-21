@@ -241,6 +241,12 @@ export function describeEvent(
     }
   }
 
+  if (ev.action === "office.cities_loaded") {
+    return say(
+      `loaded ${num(d, "cities")} US cities (Census, 100,000+ people)`,
+      "Admin → Offices",
+    );
+  }
   if (group === "office" && verb) {
     const match = verb.match(/^(city_)?(added|changed|retired|restored)$/);
     if (match) {

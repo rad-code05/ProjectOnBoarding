@@ -151,6 +151,45 @@ describe("OfficeSheet", () => {
     expect(refresh).toHaveBeenCalled();
   }, 15_000); // types several words key by key — slow on a busy machine
 
+  test("Find a city narrows the states and cities", async () => {
+    const u = userEvent.setup();
+    const many: AdminCity[] = [
+      ...cities,
+      {
+        id: 2,
+        officeId: 4,
+        regionId: 44,
+        name: "Dallas",
+        active: true,
+        uses: 0,
+      },
+      {
+        id: 3,
+        officeId: 4,
+        regionId: 10,
+        name: "Miami",
+        active: true,
+        uses: 0,
+      },
+    ];
+    render(
+      <OfficeSheet
+        office={us}
+        regions={regions}
+        cities={many}
+        onClose={vi.fn()}
+      />,
+    );
+    const list = screen.getByRole("list", { name: "Cities by state" });
+    expect(list).toHaveTextContent("Florida1 city");
+    expect(list).toHaveTextContent("Texas2 cities");
+    await u.type(screen.getByLabelText("Find a city"), "dal");
+    expect(list).toHaveTextContent("Dallas");
+    expect(list).not.toHaveTextContent("Austin");
+    expect(list).not.toHaveTextContent("Florida");
+    expect(screen.getByText("1 city in 1 state match")).toBeInTheDocument();
+  });
+
   test("a city needs a state and a name", async () => {
     const u = userEvent.setup();
     render(

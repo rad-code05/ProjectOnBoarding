@@ -167,6 +167,18 @@ describe("describeEvent — the board's examples", () => {
       ).what,
     ).toBe("retired the city “Dallas”");
     expect(
+      describeEvent(
+        ev({
+          action: "office.cities_loaded",
+          source: "system",
+          diff: { cities: 333 },
+        }),
+      ),
+    ).toMatchObject({
+      who: "System",
+      what: "loaded 333 US cities (Census, 100,000+ people)",
+    });
+    expect(
       describeEvent(ev({ ...moises, action: "session.created" })).what,
     ).toBe("signed in");
   });
