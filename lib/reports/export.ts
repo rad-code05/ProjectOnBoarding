@@ -13,6 +13,10 @@ export function exportFilters(filters: ReportFilters, timeZone: string): Json {
     type: filters.type,
     country: filters.country,
     department: filters.department,
+    office: filters.office,
+    state: filters.region,
+    city: filters.city,
+    nationality: filters.nationality,
     search: filters.q || null,
   };
 }

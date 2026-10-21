@@ -7,7 +7,7 @@ import {
   type RequestType,
 } from "@/lib/requests/labels";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { reportRange, type ReportFilters } from "./filters";
+import { placeArgs, reportRange, type ReportFilters } from "./filters";
 
 /** One request in the All users list (board: Phone · All users list). */
 export type AllUsersRow = {
@@ -29,23 +29,84 @@ export type ReportOptions = {
   departments: { id: number; name: string }[];
   /** Country codes in use on the requests this reader may see. */
   countries: string[];
+  /** Offices (retired ones too — old requests still name them). */
+  offices: {
+    id: number;
+    name: string;
+    country: string;
+    usesRegions: boolean;
+    active: boolean;
+  }[];
+  /** States of the countries whose office asks for one (US). */
+  regions: { id: number; country: string; name: string }[];
+  /** Cities per office and state. */
+  cities: { id: number; officeId: number; regionId: number; name: string }[];
+  /** Nationality codes in use on the requests this reader may see. */
+  nationalities: string[];
 };
 
-/** Departments and countries for the filters sheet. */
+const byCountryName = (a: string, b: string) =>
+  countryName(a).localeCompare(countryName(b));
+
+/** Departments, countries, offices, states, cities and nationalities for the filters sheet. */
 export async function loadReportOptions(): Promise<ReportOptions> {
   const supabase = createServerSupabaseClient();
-  const [departments, countries] = await Promise.all([
-    supabase.from("departments").select("id, name").order("sort_order"),
-    supabase.from("requests").select("country").not("country", "is", null),
-  ]);
-  if (departments.error || countries.error) {
+  const [departments, countries, offices, regions, cities, nationalities] =
+    await Promise.all([
+      supabase.from("departments").select("id, name").order("sort_order"),
+      supabase.from("requests").select("country").not("country", "is", null),
+      supabase
+        .from("offices")
+        .select("id, name, country, uses_regions, active")
+        .order("sort_order"),
+      supabase
+        .from("country_regions")
+        .select("id, country, name")
+        .order("name"),
+      supabase
+        .from("office_cities")
+        .select("id, office_id, region_id, name")
+        .order("name"),
+      supabase
+        .from("requests")
+        .select("nationalities")
+        .not("nationalities", "is", null),
+    ]);
+  if (
+    departments.error ||
+    countries.error ||
+    offices.error ||
+    regions.error ||
+    cities.error ||
+    nationalities.error
+  ) {
     throw new Error("Could not load the report filters.");
   }
+  const regionCountries = new Set(
+    offices.data.filter((o) => o.uses_regions).map((o) => o.country),
+  );
   return {
     departments: departments.data,
     countries: [
       ...new Set(countries.data.flatMap((r) => (r.country ? [r.country] : []))),
-    ].sort((a, b) => countryName(a).localeCompare(countryName(b))),
+    ].sort(byCountryName),
+    offices: offices.data.map((o) => ({
+      id: o.id,
+      name: o.name,
+      country: o.country,
+      usesRegions: o.uses_regions,
+      active: o.active,
+    })),
+    regions: regions.data.filter((r) => regionCountries.has(r.country)),
+    cities: cities.data.map((c) => ({
+      id: c.id,
+      officeId: c.office_id,
+      regionId: c.region_id,
+      name: c.name,
+    })),
+    nationalities: [
+      ...new Set(nationalities.data.flatMap((r) => r.nationalities ?? [])),
+    ].sort(byCountryName),
   };
 }
 
@@ -58,6 +119,7 @@ export function allUsersArgs(filters: ReportFilters, timeZone: string) {
     p_type: filters.type ?? undefined,
     p_country: filters.country ?? undefined,
     p_department: filters.department ?? undefined,
+    ...placeArgs(filters),
     p_search: filters.q || undefined,
   };
 }

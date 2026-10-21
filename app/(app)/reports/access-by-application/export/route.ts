@@ -13,7 +13,11 @@ import {
 import { accessArgs } from "@/lib/reports/access-load";
 import { loadReportOptions } from "@/lib/reports/all-users";
 import { reportInfo } from "@/lib/reports/catalog";
-import { filterWords, parseReportFilters } from "@/lib/reports/filters";
+import {
+  filterWords,
+  parseReportFilters,
+  reportNames,
+} from "@/lib/reports/filters";
 import { fileHeaders, madeBy, renderReportPdf } from "@/lib/reports/pdf";
 import { formatDay } from "@/lib/requests/format";
 import { countryName, personName } from "@/lib/requests/labels";
@@ -101,12 +105,7 @@ export async function GET(request: NextRequest) {
       group: report.group,
       definition: report.definition,
       period: `As of ${formatDay(new Date().toISOString(), timeZone)} (company time, ${city}) · ${info.tab}`,
-      filters: filterWords(
-        filters,
-        Object.fromEntries(
-          reportOptions.departments.map((d) => [d.id, d.name]),
-        ),
-      ),
+      filters: filterWords(filters, reportNames(reportOptions)),
       ...made,
       landscape: true,
       tiles: itemName

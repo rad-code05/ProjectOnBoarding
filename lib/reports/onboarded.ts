@@ -1,7 +1,7 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { zonedParts } from "@/lib/time/zoned";
-import type { ReportFilters } from "./filters";
+import { placeArgs, type PlaceKey, type ReportFilters } from "./filters";
 import { monthOf, monthSpan, type MonthCount } from "./months";
 
 /** The months a report covers for these filters (company timezone). */
@@ -28,7 +28,7 @@ export async function onboardedSpan(filters: ReportFilters, timeZone: string) {
 /** report_onboarded_by_month() for a span, with the country / department filters. */
 export async function onboardedMonths(
   span: { first: string; last: string },
-  filters: Pick<ReportFilters, "country" | "department">,
+  filters: Pick<ReportFilters, "country" | "department" | PlaceKey>,
 ): Promise<MonthCount[]> {
   const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc("report_onboarded_by_month", {
@@ -36,6 +36,7 @@ export async function onboardedMonths(
     p_to_month: span.last,
     p_country: filters.country ?? undefined,
     p_department: filters.department ?? undefined,
+    ...placeArgs(filters),
   });
   if (error) throw new Error(`Could not load the report: ${error.message}`);
   return (data ?? []).map((r) => ({ month: r.month, onboarded: r.onboarded }));

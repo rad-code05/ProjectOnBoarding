@@ -98,8 +98,7 @@ export default async function AccessHoldersPage({
 
       <ReportFilterBar
         filters={filters}
-        departments={options.departments}
-        countries={options.countries}
+        options={options}
         count={countAccess.bind(null, kind, item)}
         noun="people"
         nounOne="person"

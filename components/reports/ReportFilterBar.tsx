@@ -2,12 +2,20 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { Button, CloseIcon, Sheet, sheetPill } from "@/components/ui";
+import {
+  Button,
+  CloseIcon,
+  Combobox,
+  Sheet,
+  sheetPill,
+  type ComboboxOption,
+} from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
   DEFAULT_REPORT_FILTERS,
   PERIOD_LABELS,
   reportChips,
+  reportNames,
   reportParams,
   type ReportFilters,
 } from "@/lib/reports/filters";
@@ -15,6 +23,22 @@ import { REQUEST_TYPES, TYPE_LABELS, countryName } from "@/lib/requests/labels";
 
 const SEARCH_DELAY_MS = 300;
 const COUNT_DELAY_MS = 300;
+
+/** What the sheet offers (`loadReportOptions`); offices etc. are optional. */
+export type FilterOptions = {
+  departments: { id: number; name: string }[];
+  countries: string[];
+  offices?: {
+    id: number;
+    name: string;
+    country: string;
+    usesRegions: boolean;
+    active: boolean;
+  }[];
+  regions?: { id: number; country: string; name: string }[];
+  cities?: { id: number; officeId: number; regionId: number; name: string }[];
+  nationalities?: string[];
+};
 
 const selectClass =
   "h-12 rounded-[10px] border border-field-border bg-paper px-3 text-base";
@@ -28,12 +52,12 @@ const selectClass =
  * `periods: false`: a "today" report (Access by application) — no period;
  * `lead` sits before the chips ("As of today"); `search` words the box;
  * `keep`: URL parameters that are not filters (the tab, the item) stay.
- * `places: false`: no country / department (Open requests by status).
+ * `places: false`: no country / department / office / nationality (Open
+ * requests by status).
  */
 export function ReportFilterBar({
   filters,
-  departments,
-  countries,
+  options,
   count,
   noun = "requests",
   counts = false,
@@ -46,8 +70,7 @@ export function ReportFilterBar({
   places = true,
 }: {
   filters: ReportFilters;
-  departments: { id: number; name: string }[];
-  countries: string[];
+  options: FilterOptions;
   count: (search: string) => Promise<number | null>;
   noun?: string;
   counts?: boolean;
@@ -86,7 +109,7 @@ export function ReportFilterBar({
     return () => clearTimeout(timer);
   });
 
-  const names = Object.fromEntries(departments.map((d) => [d.id, d.name]));
+  const names = reportNames(options);
   const chips = reportChips(
     periods ? filters : { ...filters, period: "all", from: null, to: null },
     names,
@@ -151,8 +174,7 @@ export function ReportFilterBar({
       {open && (
         <ReportFiltersSheet
           filters={filters}
-          departments={departments}
-          countries={countries}
+          options={options}
           count={count}
           noun={noun}
           nounOne={nounOne}
@@ -172,8 +194,7 @@ export function ReportFilterBar({
 
 function ReportFiltersSheet({
   filters,
-  departments,
-  countries,
+  options,
   count,
   noun,
   nounOne,
@@ -184,8 +205,7 @@ function ReportFiltersSheet({
   onClose,
 }: {
   filters: ReportFilters;
-  departments: { id: number; name: string }[];
-  countries: string[];
+  options: FilterOptions;
   count: (search: string) => Promise<number | null>;
   noun: string;
   nounOne?: string;
@@ -330,43 +350,165 @@ function ReportFiltersSheet({
         </label>
       )}
       {places && (
-        <>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold">
-            Country
-            <select
-              value={draft.country ?? ""}
-              onChange={(e) => change({ country: e.target.value || null })}
-              className={cn(selectClass, "font-normal")}
-            >
-              <option value="">All countries</option>
-              {countries.map((c) => (
-                <option key={c} value={c}>
-                  {countryName(c)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm font-semibold">
-            Department
-            <select
-              value={draft.department ?? ""}
-              onChange={(e) =>
-                change({
-                  department: e.target.value ? Number(e.target.value) : null,
-                })
-              }
-              className={cn(selectClass, "font-normal")}
-            >
-              <option value="">All departments</option>
-              {departments.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </>
+        <WhereFields id={id} draft={draft} options={options} change={change} />
       )}
     </Sheet>
+  );
+}
+
+/**
+ * "Where they work" — Office, then (US) State + City, Country, Department —
+ * and Nationality (board: Phone · Report filters with office).
+ */
+function WhereFields({
+  id,
+  draft,
+  options,
+  change,
+}: {
+  id: string;
+  draft: ReportFilters;
+  options: FilterOptions;
+  change: (patch: Partial<ReportFilters>) => void;
+}) {
+  const offices = options.offices ?? [];
+  const office = offices.find((o) => o.id === draft.office);
+  const officeChoices: ComboboxOption[] = offices.length
+    ? [
+        ...offices.map((o) => ({
+          value: String(o.id),
+          label: o.active ? o.name : `${o.name} (retired)`,
+        })),
+        { value: "0", label: "Not set" },
+      ]
+    : [];
+  const regionChoices: ComboboxOption[] = office?.usesRegions
+    ? (options.regions ?? [])
+        .filter((r) => r.country === office.country)
+        .map((r) => ({ value: String(r.id), label: r.name }))
+    : [];
+  const cityChoices: ComboboxOption[] =
+    office && draft.region
+      ? (options.cities ?? [])
+          .filter(
+            (c) => c.officeId === office.id && c.regionId === draft.region,
+          )
+          .map((c) => ({ value: String(c.id), label: c.name }))
+      : [];
+  const nationalityChoices: ComboboxOption[] = [
+    ...(options.nationalities ?? []).map((c) => ({
+      value: c,
+      label: countryName(c),
+    })),
+    { value: "none", label: "Not set" },
+  ];
+  const num = (value: string) => (value === "" ? null : Number(value));
+
+  return (
+    <>
+      <fieldset className="flex flex-col gap-3">
+        <legend className="mb-2 text-sm font-bold">Where they work</legend>
+        {officeChoices.length > 0 && (
+          <div className="flex flex-col gap-1.5 text-sm font-semibold">
+            <label htmlFor={`${id}-office`}>Office</label>
+            <Combobox
+              id={`${id}-office`}
+              value={draft.office === null ? "" : String(draft.office)}
+              onChange={(value) =>
+                change({ office: num(value), region: null, city: null })
+              }
+              options={officeChoices}
+              placeholder="All offices"
+              noMatch={() => "No office matches"}
+              className="font-normal"
+            />
+          </div>
+        )}
+        {regionChoices.length > 0 && (
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-1.5 text-sm font-semibold">
+              <label htmlFor={`${id}-state`}>State</label>
+              <Combobox
+                id={`${id}-state`}
+                value={draft.region ? String(draft.region) : ""}
+                onChange={(value) => change({ region: num(value), city: null })}
+                options={regionChoices}
+                placeholder="All states"
+                noMatch={() => "No state matches"}
+                className="font-normal"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5 text-sm font-semibold">
+              <label htmlFor={`${id}-city`}>City</label>
+              <Combobox
+                id={`${id}-city`}
+                value={draft.city ? String(draft.city) : ""}
+                onChange={(value) => change({ city: num(value) })}
+                options={cityChoices}
+                placeholder="All cities"
+                disabled={!draft.region}
+                noMatch={() => "No city in this state matches"}
+                className="font-normal"
+              />
+            </div>
+          </div>
+        )}
+        <label className="flex flex-col gap-1.5 text-sm font-semibold">
+          Country (works in)
+          <select
+            value={draft.country ?? ""}
+            onChange={(e) => change({ country: e.target.value || null })}
+            className={cn(selectClass, "font-normal")}
+          >
+            <option value="">All countries</option>
+            {options.countries.map((c) => (
+              <option key={c} value={c}>
+                {countryName(c)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-semibold">
+          Department
+          <select
+            value={draft.department ?? ""}
+            onChange={(e) =>
+              change({
+                department: e.target.value ? Number(e.target.value) : null,
+              })
+            }
+            className={cn(selectClass, "font-normal")}
+          >
+            <option value="">All departments</option>
+            {options.departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      </fieldset>
+      {options.nationalities && (
+        <div className="flex flex-col gap-1.5 text-sm font-semibold">
+          <label htmlFor={`${id}-nationality`}>Nationality</label>
+          <Combobox
+            id={`${id}-nationality`}
+            value={draft.nationality ?? ""}
+            onChange={(value) => change({ nationality: value || null })}
+            options={nationalityChoices}
+            placeholder="All nationalities"
+            noMatch={() => "No nationality matches"}
+            describedBy={`${id}-nationality-note`}
+            className="font-normal"
+          />
+          <p
+            id={`${id}-nationality-note`}
+            className="text-xs font-normal text-graphite"
+          >
+            Someone with two nationalities matches either one.
+          </p>
+        </div>
+      )}
+    </>
   );
 }

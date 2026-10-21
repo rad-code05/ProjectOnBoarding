@@ -45,8 +45,7 @@ export async function GroupReport({
       <ReportHeader report={reportInfo(slug)} />
       <ReportFilterBar
         filters={filters}
-        departments={options.departments}
-        countries={options.countries}
+        options={options}
         count={count}
         noun="onboardings"
         counts

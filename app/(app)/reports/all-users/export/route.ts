@@ -7,6 +7,7 @@ import { reportInfo } from "@/lib/reports/catalog";
 import { exportFileName, exportFilters } from "@/lib/reports/export";
 import {
   filterWords,
+  reportNames,
   parseReportFilters,
   rangeLabel,
   reportDays,
@@ -72,10 +73,7 @@ export async function GET(request: NextRequest) {
       group: info.group,
       definition: info.definition,
       period: `${rangeLabel(days)} (company time, ${city})`,
-      filters: filterWords(
-        filters,
-        Object.fromEntries(options.departments.map((d) => [d.id, d.name])),
-      ),
+      filters: filterWords(filters, reportNames(options)),
       ...made,
       landscape: true,
       table: {

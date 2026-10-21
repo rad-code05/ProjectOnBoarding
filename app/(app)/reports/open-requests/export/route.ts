@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       group: info.group,
       definition: info.definition,
       period: `Right now — ${formatDayTime(now.toISOString(), timeZone)} (company time, ${city})`,
-      filters: filterWords(filters, {}),
+      filters: filterWords(filters),
       ...made,
       landscape: true,
       tiles: [

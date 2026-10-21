@@ -5,7 +5,11 @@ import { PAGES } from "@/lib/navigation";
 import { loadReportOptions } from "@/lib/reports/all-users";
 import { reportInfo } from "@/lib/reports/catalog";
 import { exportFileName } from "@/lib/reports/export";
-import { filterWords, parseReportFilters } from "@/lib/reports/filters";
+import {
+  filterWords,
+  parseReportFilters,
+  reportNames,
+} from "@/lib/reports/filters";
 import { monthLabel, summarise } from "@/lib/reports/months";
 import { loadOnboardedByMonth } from "@/lib/reports/onboarded";
 import { fileHeaders, madeBy, renderReportPdf } from "@/lib/reports/pdf";
@@ -76,10 +80,7 @@ export async function GET(request: NextRequest) {
       group: info.group,
       definition: info.definition,
       period: `${period} (whole months, company time, ${city})`,
-      filters: filterWords(
-        filters,
-        Object.fromEntries(options.departments.map((d) => [d.id, d.name])),
-      ),
+      filters: filterWords(filters, reportNames(options)),
       ...made,
       tiles: [
         {
