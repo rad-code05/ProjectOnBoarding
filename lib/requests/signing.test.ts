@@ -121,6 +121,33 @@ describe("summary cards", () => {
     expect(rows).toContainEqual({ label: "Requested by", value: "—" });
   });
 
+  test("form v4.2 (F27): office, location and nationality — only when there", () => {
+    expect(employeeRows(snapshot).map((r) => r.label)).not.toContain("Office");
+    const placed = snapshotSchema.parse({
+      ...snapshot,
+      request: {
+        ...snapshot.request,
+        form_version: "4.2",
+        office: "US",
+        region: "Texas",
+        office_city: "Austin",
+        nationalities: ["CH", "IT"],
+      },
+    });
+    const rows = employeeRows(placed);
+    expect(rows).toContainEqual({ label: "Office", value: "US" });
+    expect(rows).toContainEqual({ label: "Location", value: "Texas · Austin" });
+    expect(rows).toContainEqual({
+      label: "Nationality",
+      value: "Switzerland, Italy",
+    });
+    expect(rows.map((r) => r.label).slice(3, 6)).toEqual([
+      "Department",
+      "Office",
+      "Location",
+    ]);
+  });
+
   test("access rows: apps, equipment, physical access", () => {
     expect(accessRows(snapshot)).toEqual([
       { label: "Figma", value: "Grant · Editor" },
@@ -327,6 +354,36 @@ describe("an access change (F10d)", () => {
     expect(employeeChangeRows(snapshot)).toEqual([
       { label: "Job title", value: "Product Designer → Design Lead" },
     ]);
+  });
+
+  test("employee: office, location and nationality changes (F27); the PDF leaves nationality out", () => {
+    const moved = snapshotSchema.parse({
+      ...snapshot,
+      request: {
+        ...snapshot.request,
+        office: "US",
+        region: "Texas",
+        office_city: "Austin",
+        nationalities: ["CH", "IT"],
+      },
+      access_modification: {
+        ...snapshot.access_modification!,
+        previous: {
+          ...snapshot.access_modification!.previous!,
+          office: "Geneva",
+          nationalities: ["CH"],
+        },
+      },
+    });
+    expect(employeeChangeRows(moved)).toEqual([
+      { label: "Job title", value: "Product Designer → Design Lead" },
+      { label: "Office", value: "Geneva → US" },
+      { label: "Location", value: "— → Texas · Austin" },
+      { label: "Nationality", value: "Switzerland → Switzerland, Italy" },
+    ]);
+    expect(
+      employeeChangeRows(moved, { withNationality: false }).map((r) => r.label),
+    ).toEqual(["Job title", "Office", "Location"]);
   });
 
   test("kept: everything left as it is, or one kind", () => {
