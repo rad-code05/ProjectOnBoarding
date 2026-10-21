@@ -134,6 +134,39 @@ describe("describeEvent — the board's examples", () => {
       context: "Admin → Applications",
     });
     expect(
+      describeEvent(
+        ev({
+          ...raju,
+          action: "office.added",
+          diff: { after: { name: "Riyadh", country: "SA" } },
+        }),
+      ),
+    ).toMatchObject({
+      what: "added the office “Riyadh”",
+      context: "Admin → Offices",
+    });
+    expect(
+      describeEvent(
+        ev({
+          ...raju,
+          action: "office.city_added",
+          diff: {
+            city_id: 4,
+            after: { office: "US", region: "Texas", name: "Austin" },
+          },
+        }),
+      ).what,
+    ).toBe("added the city “Austin” (US · Texas)");
+    expect(
+      describeEvent(
+        ev({
+          ...raju,
+          action: "office.city_retired",
+          diff: { name: "Dallas" },
+        }),
+      ).what,
+    ).toBe("retired the city “Dallas”");
+    expect(
       describeEvent(ev({ ...moises, action: "session.created" })).what,
     ).toBe("signed in");
   });

@@ -18,7 +18,10 @@ test.beforeEach(async ({ page }) => {
  * test fails before its own Retire step, afterEach retires them, so they
  * never show on real requests (2026-10-15: an "E2E Door" was left active).
  */
-type TestEntry = { kind: "app" | "equipment" | "access"; name: string };
+type TestEntry = {
+  kind: "app" | "equipment" | "access" | "office" | "city";
+  name: string;
+};
 let created: TestEntry[] = [];
 
 test.afterEach(async ({ page }, testInfo) => {
@@ -37,6 +40,25 @@ test.afterEach(async ({ page }, testInfo) => {
 
 async function retireLeftover(page: Page, { kind, name }: TestEntry) {
   const row = page.getByRole("button", { name: new RegExp(name) });
+  if (kind === "office" || kind === "city") {
+    await openApp(page, "/admin/offices");
+    if (kind === "office") {
+      const office = page.getByRole("button", { name: new RegExp(`^${name}`) });
+      if (
+        (await office.count()) === 0 ||
+        /Retired/.test(await office.innerText())
+      ) {
+        return;
+      }
+      await office.click();
+      await page.getByRole("button", { name: "Retire office" }).click();
+      return;
+    }
+    await page.getByRole("button", { name: /^US/ }).first().click();
+    const retire = page.getByRole("button", { name: `Retire ${name}, Texas` });
+    if ((await retire.count()) > 0) await retire.click();
+    return;
+  }
   if (kind === "app") {
     await openApp(page, "/admin/applications");
     await page.getByLabel("Find an application").fill(name);
@@ -1199,6 +1221,79 @@ test("Reports · Open requests by status: a new draft waits under Draft, with CS
     page
       .getByRole("button", {
         name: /exported the Open requests by status \(PDF, 1 row\)/,
+      })
+      .first(),
+  ).toBeVisible();
+});
+
+test("Admin · Offices: add an office and a US city, then retire both", async ({
+  page,
+}) => {
+  test.slow(); // two sheets, four saves, the audit log
+  const stamp = Date.now() % 100000;
+  const office = `E2E Office ${stamp}`;
+  const city = `E2E City ${stamp}`;
+  created.push({ kind: "office", name: office }, { kind: "city", name: city });
+
+  await openApp(page, "/admin");
+  await page.getByRole("link", { name: /^Offices/ }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Offices" }),
+  ).toBeVisible();
+  for (const name of ["Dubai", "Abu Dhabi", "Geneva", "US"]) {
+    await expect(
+      page.getByRole("button", { name: new RegExp(`^${name}`) }).first(),
+    ).toBeVisible();
+  }
+
+  // A new office (no states outside the US).
+  await page.getByRole("button", { name: "Add an office" }).click();
+  const add = page.getByRole("dialog", { name: "Add an office" });
+  await add.getByLabel("Office name").fill(office);
+  await add.getByLabel(/^City/).fill("Riyadh");
+  await add.getByLabel("Country").selectOption("SA");
+  await expect(add.getByRole("checkbox")).toBeDisabled();
+  await add.getByRole("button", { name: "Add office" }).click();
+  await expect(add).toHaveCount(0);
+  const row = page.getByRole("button", { name: new RegExp(`^${office}`) });
+  await expect(row).toContainText("Riyadh · Saudi Arabia");
+  await expect(row).toContainText("No sub-locations");
+
+  // A city for US · Texas, added in the sheet (which stays open).
+  await page.getByRole("button", { name: /^US/ }).first().click();
+  const usSheet = page.getByRole("dialog", { name: "Edit US" });
+  await usSheet
+    .getByLabel("State of the new city")
+    .selectOption({ label: "Texas" });
+  await usSheet.getByLabel("New city", { exact: true }).fill(city);
+  await usSheet.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(
+    usSheet.getByRole("button", { name: `Retire ${city}, Texas` }),
+  ).toBeVisible();
+  await usSheet.getByRole("button", { name: `Retire ${city}, Texas` }).click();
+  await expect(
+    usSheet.getByRole("button", { name: `Restore ${city}, Texas` }),
+  ).toBeVisible();
+  await usSheet.getByRole("button", { name: "Cancel" }).click();
+
+  // Retire the test office.
+  await row.click();
+  await page
+    .getByRole("dialog", { name: `Edit ${office}` })
+    .getByRole("button", { name: "Retire office" })
+    .click();
+  await expect(row).toContainText("Retired");
+
+  await openApp(page, "/audit?q=office.&tests=show&period=today");
+  await expect(
+    page
+      .getByRole("button", { name: new RegExp(`added the office “${office}”`) })
+      .first(),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole("button", {
+        name: new RegExp(`added the city “${city}” \\(US · Texas\\)`),
       })
       .first(),
   ).toBeVisible();

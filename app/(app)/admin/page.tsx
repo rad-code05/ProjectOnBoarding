@@ -31,6 +31,11 @@ export default async function AdminPage() {
       note: `${o.equipmentTypes} equipment types · ${o.accessTypes} access types`,
     },
     {
+      href: "/admin/offices",
+      title: "Offices",
+      note: `${o.offices} offices · ${o.officeCities} cities`,
+    },
+    {
       href: "/admin/settings",
       title: "Settings",
       note: `Company timezone: ${o.companyTimezone}`,
