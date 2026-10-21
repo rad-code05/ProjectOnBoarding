@@ -124,6 +124,22 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | G8 | Only needed fields go to the model; never signatures or secrets; provider chosen after data terms | §6.4 | F15 | review + test | ⏳ ❓ D7 |
 | G9 | AI field suggestions ("we need a field for X") and catalog suggestions ("add Notion") need admin confirmation | §6.1, §7 | F19 (catalog, moved up after F08) + F15/F16 (robot suggests; admin accepts — asked by Raju 2026-10-11), F20 (fields) | F19/F20 tests | ⏳ |
 | G10 | LangFuse tracing (optional, with redaction) | §2 | — | — | ➖ optional, not planned |
+| G11 | Tools one file each in `lib/ai/tools/`; the registry sends only the tools the person's roles allow; each tool re-checks the role + runs with the person's session (RLS) | §6.6 (2026-10-20) | F15 | unit (registry per role) + pgTAP / RLS | ⏳ F15 |
+| G12 | Approvers: report questions only — answers from report data, which report + filters named, no web search | §6.6, ROLES | F15 | unit + e2e (approver asks "how many in Dubai") | ⏳ F15 |
+| G13 | Chat history kept 60 days, deleted daily by the database | §6.6 | F15 | pgTAP | ⏳ F15 |
+| G14 | Per-person memory (name, favourite reports / questions / request types), greeting by name (friendly, formal); the person can see + clear it | §6.6 | F15 | unit + pgTAP | ⏳ F15 |
+| G15 | System instructions never sent to the browser or revealed; no secrets in them | §6.6 | F15 | unit + attack tests | ⏳ F15 |
+| G16 | Attack tests in CI: hidden instructions in files, "ignore your rules", reaching other-role / forbidden tools | §6.6 | F15 (framework), F16–F17, F24 (per tool) | test suite | ⏳ F15 |
+| G19 | Questions about the app itself (how-to, statuses, roles, SLA rules) from a curated help library in the repo — never outside sources | §6.6 | F15 | unit + e2e | ⏳ F15 |
+| G20 | Single requests by chat for **all three types** (onboarding, offboarding, access change) with follow-up questions; values are suggestions | §6.6 | F16 | unit + e2e | ⏳ F16 |
+| G21 | **Batch** onboarding, offboarding and access change → batch grid with checks → `createBatchDrafts` (`needsApproval`) | §6.6 | F17 | unit + e2e | ⏳ F17 |
+| O1 | Offices as an admin-managed list (Dubai, Abu Dhabi, Geneva, US to start) — add / edit / retire by hand or with the AI (admin, Confirm), audited | Raju 2026-10-21 | F27a–F27b (AI: F15–F16) | pgTAP + e2e | ⏳ F27 |
+| O2 | Optional sub-locations per office (US states / cities), admin-managed list | Raju 2026-10-21 | F27a–F27b | pgTAP + e2e | ⏳ F27 |
+| O3 | Section 2 on all three types: Office (required), Location (when the office has sub-locations), Nationality (optional, up to two); office fills the work country; pre-fill + "Was: …"; PDF shows office, not nationality | Raju 2026-10-21 | F27a, F27c | pgTAP + unit + e2e | ⏳ F27 |
+| O4 | Report filters Office / Location / Country / Nationality on every report; columns in All users + exports; Onboarded by office | Raju 2026-10-21 | F27d | pgTAP + unit + e2e | ⏳ F27 |
+| O5 | Employees by office: headcount today (onboarded, not offboarded; leaving still counted, marked), sub-location breakdown, CSV / PDF | Raju 2026-10-21 | F27e | pgTAP + unit + e2e | ⏳ F27 |
+| G17 | Custom reports (base report + columns + filters + grouping) exported as **Excel**, PDF or CSV, audited | §6.6 | F17 | unit + e2e | ⏳ F17 |
+| G18 | Import is admin only: xlsx, csv, text PDF (no scans yet) → preview → Confirm; audited `import.*` | §6.6 | F24 | unit + pgTAP + e2e | ⏳ F24 |
 
 ## H. Admin & extensibility
 

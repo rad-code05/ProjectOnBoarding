@@ -18,7 +18,7 @@ Accounts are created by Raju only (invitation). There is **no sign-up page**. Ac
 | --- | --- | --- |
 | **Admin** | Users & roles, applications catalog, form fields & versions, RBAC templates, defaults, audit log | Give themselves the Approver role; approve their own requests |
 | **Requester / IT operator** | Create and edit requests, use the assistant and batch onboarding, record IT work, sign section 9 ("Review & sign"), cancel before signing | Approve or close requests |
-| **Approver** | See requests that are *Awaiting confirmation*, *Returned* or *Closed* (read-only); **Confirm, sign & close** or **Return to Raju** (comment required); reports; download PDF / save to SharePoint | See drafts or in-progress requests; create or edit requests; use the assistant; Admin |
+| **Approver** | See requests that are *Awaiting confirmation*, *Returned* or *Closed* (read-only); **Confirm, sign & close** or **Return to Raju** (comment required); reports; download PDF / save to SharePoint | See drafts or in-progress requests; create or edit requests; use the assistant for anything but report questions; Admin |
 | **Auditor** (optional) | Read-only records, reports, audit log | Change anything |
 
 A person can hold several roles. Permissions are enforced on the server and in the database, not only hidden on screen.
@@ -29,7 +29,7 @@ A person can hold several roles. Permissions are enforced on the server and in t
 | --- | --- | --- |
 | Lands on | **Requests** list (+ New request, Batch onboarding) | **Approvals** (waiting for you, recently closed) |
 | Top menu | Requests · Reports · Audit log · Admin | Approvals · Records · Reports |
-| Laine robot assistant | Yes (on the request form) | No |
+| Laine robot assistant | Yes — every tool his roles allow (questions, filling requests, reports & exports, **import — admin only**) | **Report questions only** (read-only, from the reports' data, no web search) — decided 2026-10-20 |
 
 ## Workflow and signing
 

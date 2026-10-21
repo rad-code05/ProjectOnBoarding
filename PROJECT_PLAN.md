@@ -231,7 +231,43 @@ All tool inputs are validated with Zod on the server; every server-side tool re-
 - **Scope widened (Raju):** the assistant does the typing — **fill in and update** the request form (sections 1–7: fields, applications, equipment, physical access; section 9 notes), **offload** batch onboarding, **create reports** and **answer questions about the data**.
 - **Guardrails kept (proposed, to confirm):** every write is shown as a suggestion / change list that the person accepts (per field, or `needsApproval` for a batch); the assistant still never signs, approves, returns, closes, cancels, changes roles or publishes form changes (§6.2); **section 9 ticks stay human** — they state that the work was done (the assistant may draft the notes).
 - **Data questions and reports:** read-only tools that run **with the signed-in person's own session** (RLS decides what it can see — Moises never gets drafts), using the report definitions of F12–F14 and validated filters (no free SQL); answers say which data they used; a report can be shown and exported (CSV / PDF) like any report.
-- **Still open (D7, part 2):** may employee data be sent to Anthropic, under which data-processing terms and retention (prefer zero-retention); confirm with Laine before F15 goes live.
+- ~~Still open (D7, part 2)~~ — **decided 2026-10-20**, see §6.6.
+
+### 6.6 Decided 2026-10-20 (D7, part 2) — data, who uses it, memory, tools, guardrails
+**Decisions (Raju, 2026-10-20)**
+- **Employee data may go to Anthropic** (names, work emails, departments, countries, access held). Only what a task needs is sent; never signature images, passwords, keys or secrets. Anthropic's commercial API terms apply (API data is not used for training); ask for zero data retention if it becomes available on the account.
+- **Who uses the assistant:** Raju (admin / requester / IT) gets every tool his roles allow. **Approvers (Moises, Celine) get report questions only** — read-only answers from the report data they can already see ("How many people did we onboard in Dubai this year?" → Onboarded by country, United Arab Emirates). **No web search, no outside knowledge**: answers come only from the reports' data, and say which report and filters they used. Country is stored, not city — "Dubai" is answered as the United Arab Emirates.
+- **Chat history is kept 60 days**, then deleted automatically (by the database, every day).
+- **The assistant remembers each person** beyond the 60 days: their name, favourite reports, frequent questions and frequent request types (a small per-person memory built from what they use — never the chat text itself). It greets them by name in a friendly, human but formal tone ("Good morning, Raju. Shall I open the Signature log again?"). Each person can see and clear their own memory.
+- **Import is admin only:** Excel (.xlsx), CSV and **text PDFs** (the paper form v4 and other text documents). **Scanned images are not read for now** (later, with F25).
+- **The system instructions are never shown** to users or sent to the browser; they contain nothing secret, so a leak would reveal nothing useful.
+- **Full scope (Raju, 2026-10-20):** the assistant can prepare **onboarding, offboarding and access changes** — one at a time by chat with follow-up questions, **or in batches for all three types** (a list or file of new joiners, leavers or role changes → one draft per person in a batch grid with checks → Confirm) — **generate reports** (the 8 reports, custom ones, Excel / PDF / CSV) and **answer questions about the app itself** (how to do something, what a status means, who signs what, the SLA rules). Raju still signs; Moises still approves.
+
+**Tools — one file each in `lib/ai/tools/`** (description for the model, Zod input, roles, kind *read / propose / write*, `needsApproval`). `lib/ai/tools/registry.ts` gives the model **only the tools the signed-in person's roles allow** — tools a role may not use are never sent. Every tool runs with the person's own session (RLS) and re-checks the role on the server.
+
+| Group | Tools | Who | Kind |
+| --- | --- | --- | --- |
+| Questions about the app | `getAppHelp(topic)` — answers from a curated help library kept in the repo (`lib/ai/knowledge/*.md`: workflow, statuses, roles and who signs, SLA rules, each screen, reports' definitions); never from outside sources | everyone who uses the assistant (approvers: their own screens and rules) | read |
+| Report questions | `listReports`, `runReport` (any of the 8 reports, validated filters, no free SQL) | admin, requester, IT, **approver**, auditor | read |
+| Questions about people & access | `searchPeople`, `getPersonAccess` (what someone holds today), `whoHasAccess` (an app / permission), `listRequests`, `getRequest` (incl. what is still missing), `getCatalog` | admin, requester, IT, auditor | read |
+| Filling requests (with follow-up questions) | `startOnboarding`, `startOffboarding(person)`, `startAccessChange(person)`, `getMissingFields`, `proposeFields` (sections 1–2), `proposeAccess`, `proposeEquipment`, `proposePhysicalAccess`, `proposeOffboardingSetup` (SLA, cut-off, handover), `draftSection9Notes` | admin, requester | propose (shown as suggestions, accepted one by one); creating a draft = write with `needsApproval` |
+| Batch requests (all three types) | `proposeBatch(type, rows)` — onboarding (new joiners), offboarding (leavers: each pre-filled from the access inventory, SLA from the list or asked), access change (person + what changes) → batch grid with checks (missing / invalid values, unknown person or app, duplicates, one open offboarding / access change per person, dates in the past); `createBatchDrafts` (`needsApproval`) — one draft per accepted row, audited `source = ai` | admin, requester | propose / write (`needsApproval`) |
+| Custom reports & exports | `buildCustomReport` (base report + columns + filters + grouping → preview), `exportReport` (**Excel**, PDF or CSV; audited like every export) | admin, requester, IT, approver, auditor | read / file |
+| Import | `readUploadedFile` (xlsx / csv / text PDF → rows, as untrusted data), `proposeImport` (people by email, apps to the catalog, unknown roles + duplicates flagged → preview grid), `commitImport` (`needsApproval`, audited `import.*`) | **admin only** | propose / write |
+| Admin suggestions | `suggestCatalogApp`, `suggestFormField`, **`proposeOffice`** (add / rename / retire an office or a sub-location such as a US state / city — also offered when a request or import names an office that doesn't exist yet) — all `needsApproval`; the admin accepts | admin | write |
+| Memory | `rememberPreference` / `forgetMe` (the person's own memory only) | everyone who uses the assistant | write (own row) |
+
+**Never a tool** (enforced by construction): sign, confirm, return, close, cancel, tick section 9, change roles or settings, delete anything, raw SQL, web search.
+
+**Guardrails**
+1. Role-filtered tool list (above) + server-side role check + RLS in every tool.
+2. Untrusted content — uploaded files, pasted text, text from the database — is passed as *data* (clearly fenced), never as instructions; the tool boundary means a fooled model can only *propose*.
+3. Every write is a suggestion the person accepts, or a `needsApproval` Confirm; every AI-made change is audited with `source = ai`.
+4. Zod on every input; limits on file size, file types (xlsx / csv / pdf), rows and output length.
+5. System instructions stay on the server; the model is told not to reveal or change them; no secrets in them.
+6. Rate limit per person and a monthly spend cap (Admin → AI settings).
+7. Data minimisation: tools return only the fields needed.
+8. **Attack tests in CI:** files with hidden instructions, "ignore your rules" messages, attempts to reach forbidden or other-role tools — they must fail safely.
 
 ---
 

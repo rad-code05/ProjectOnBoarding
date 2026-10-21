@@ -35,7 +35,7 @@ Enforced in the database (F04), not only in the UI. → `PROJECT_PLAN.md` §4.3,
 ## 4. Main capabilities (v1)
 | Capability | In short | Built in |
 | --- | --- | --- |
-| Request form | The 11 sections of form v4 (+ Country); dense; sections 6–11 collapsed until relevant; apps in two columns | F01–F04 |
+| Request form | The 11 sections of form v4 (+ Country; + Office, Location and Nationality — F27); dense; sections 6–11 collapsed until relevant; apps in two columns | F01–F04 |
 | Extensibility | Apps, categories, equipment, form fields are **data** (admin-editable, versioned) — no code change to add a tool | F02, F19–F21 |
 | Signatures | PNG or initials from *My profile*; server time; SHA-256 of a frozen snapshot | F05–F07 |
 | PDF | React-PDF from the closure snapshot; `firstname.lastname-onboarding.pdf`; Download (+ SharePoint later) | F08, F22 |
@@ -87,7 +87,7 @@ Built: `app_users`, `user_roles`, `audit_events` (S6) · `employees`, `departmen
 | Operate | Weekly/monthly/quarterly/yearly routine | after go-live |
 
 ## 10. Decisions
-Decided: **D1** Clerk email+password+MFA invite-only · **D2** Supabase Frankfurt · **D4** backup approver = Celine · **D7 part 1** AI = Anthropic, model chosen in Admin · **D12** personal accounts, `*.vercel.app` until go-live · **D13** signature = internal acknowledgment · **D14** original form PDF kept locally only (never committed) · **D18** PDF filename pattern for all three types, PDF only once approved · **D3** company timezone Asia/Dubai (admin can change) · **D11** import existing Excel + AI screenshot check before go-live (F24, F25) · **D20–D22** (access inventory in v1, designed reports, mobile-first) · **D16** "onboarded" = closed by the approver (2026-10-15). Open: D5 admin role-change control · D6 auditor OK with end-only approval · D7 part 2 AI data policy · D8 batch format · D9 SharePoint · D10 notifications · D15 Clerk Pro · D17 RBAC templates · D19 go-live sign-off. → `plan/phase-0-discovery.md`, `PROJECT_PLAN.md` §17.
+Decided: **D1** Clerk email+password+MFA invite-only · **D2** Supabase Frankfurt · **D4** backup approver = Celine · **D7 part 1** AI = Anthropic, model chosen in Admin · **D12** personal accounts, `*.vercel.app` until go-live · **D13** signature = internal acknowledgment · **D14** original form PDF kept locally only (never committed) · **D18** PDF filename pattern for all three types, PDF only once approved · **D3** company timezone Asia/Dubai (admin can change) · **D11** import existing Excel + AI screenshot check before go-live (F24, F25) · **D20–D22** (access inventory in v1, designed reports, mobile-first) · **D16** "onboarded" = closed by the approver (2026-10-15) · **D7 part 2** AI data policy (2026-10-20: employee data may be sent; approvers get report questions only; history 60 days; per-person memory; import admin only — PROJECT_PLAN §6.6). Open: D5 admin role-change control · D6 auditor OK with end-only approval · D8 batch format · D9 SharePoint · D10 notifications · D15 Clerk Pro · D17 RBAC templates · D19 go-live sign-off. → `plan/phase-0-discovery.md`, `PROJECT_PLAN.md` §17.
 
 ## 11. Document map
 | Need | File |
