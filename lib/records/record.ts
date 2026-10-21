@@ -10,6 +10,7 @@ import {
 import {
   appRows,
   employeeChangeRows,
+  locationText,
   equipmentRows,
   keptRows,
   offboardingRows,
@@ -151,6 +152,9 @@ export function recordSections(input: RecordInput): RecordSection[] {
         { label: "Work email", value: dash(r.work_email) },
         { label: "Job title / role", value: dash(r.job_title) },
         { label: "Department / team", value: dash(r.department) },
+        // F27 (form v4.2): office and location — nationality stays off the PDF.
+        ...(r.office ? [{ label: "Office", value: r.office }] : []),
+        ...(r.region ? [{ label: "Location", value: locationText(r) }] : []),
         {
           label: "Manager / requestor",
           value: `${dash(r.manager_name)} / ${dash(r.requestor_name)}`,
@@ -161,10 +165,12 @@ export function recordSections(input: RecordInput): RecordSection[] {
           value: join(EMPLOYMENT_EVENTS[type], formatDate(r.effective_date)),
         },
         // Access change (F10d): what section 2 was on the previous request.
-        ...employeeChangeRows(snapshot).map((row) => ({
-          label: `${row.label} (changed)`,
-          value: inWords(row.value),
-        })),
+        ...employeeChangeRows(snapshot, { withNationality: false }).map(
+          (row) => ({
+            label: `${row.label} (changed)`,
+            value: inWords(row.value),
+          }),
+        ),
       ],
     },
     {

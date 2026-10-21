@@ -90,6 +90,30 @@ describe("the PDF record", () => {
   });
 });
 
+describe("form v4.2 (F27)", () => {
+  test("section 2 shows office and location, never nationality", () => {
+    const base = sampleRecord();
+    const placed = sampleRecord({
+      snapshot: {
+        ...base.snapshot,
+        request: {
+          ...base.snapshot.request,
+          office: "US",
+          region: "Texas",
+          office_city: "Austin",
+          nationalities: ["CH"],
+        },
+      },
+    });
+    expect(rows(2, placed)).toMatchObject({
+      Office: "US",
+      Location: "Texas · Austin",
+    });
+    expect(Object.keys(rows(2, placed))).not.toContain("Nationality");
+    expect(Object.keys(rows(2))).not.toContain("Office");
+  });
+});
+
 describe("an offboarding record (F09d-3)", () => {
   const sections = recordSections(sampleOffboardingRecord());
   const rows = (n: number) => sections.find((s) => s.number === n)?.rows ?? [];

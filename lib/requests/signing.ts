@@ -23,6 +23,11 @@ export const snapshotSchema = z.object({
     job_title: text,
     department: text,
     country: text,
+    // F27 (form v4.2): only in the snapshot when filled.
+    office: text.optional(),
+    region: text.optional(),
+    office_city: text.optional(),
+    nationalities: z.array(z.string()).optional(),
     manager_name: text,
     requestor_name: text,
     effective_date: text,
@@ -102,6 +107,10 @@ export const snapshotSchema = z.object({
           department: text,
           country: text,
           manager_name: text,
+          office: text.optional(),
+          region: text.optional(),
+          office_city: text.optional(),
+          nationalities: z.array(z.string()).optional(),
         })
         .nullable(),
       kept: z.array(
@@ -158,16 +167,52 @@ export type Row = { label: string; value: string };
 const join = (...parts: (string | null | undefined)[]) =>
   parts.filter(Boolean).join(" · ");
 
+/** "Texas · Austin" — the state, then the city (F27). */
+export function locationText(place: {
+  region?: string | null;
+  office_city?: string | null;
+}): string {
+  return join(place.region, place.office_city);
+}
+
+/** "Switzerland, Italy" (F27). */
+export function nationalityText(codes: string[] | null | undefined): string {
+  return (codes ?? []).map(countryName).join(", ");
+}
+
+/**
+ * Office, Location and Nationality rows — only when the snapshot has them
+ * (form v4.2), so records signed on v4.1 read exactly as before.
+ */
+function placeRows(
+  r: Snapshot["request"],
+  { withNationality }: { withNationality: boolean },
+): { office: Row[]; nationality: Row[] } {
+  return {
+    office: [
+      ...(r.office ? [{ label: "Office", value: r.office }] : []),
+      ...(r.region ? [{ label: "Location", value: locationText(r) }] : []),
+    ],
+    nationality:
+      withNationality && r.nationalities?.length
+        ? [{ label: "Nationality", value: nationalityText(r.nationalities) }]
+        : [],
+  };
+}
+
 /** "Employee" card. */
 export function employeeRows(snapshot: Snapshot): Row[] {
   const r = snapshot.request;
+  const place = placeRows(r, { withNationality: true });
   return [
     { label: "Name", value: personName(r.first_name, r.last_name) },
     { label: "Work email", value: r.work_email ?? "" },
     { label: "Job title", value: r.job_title ?? "" },
     { label: "Department", value: r.department ?? "" },
+    ...place.office,
     { label: "Manager", value: r.manager_name ?? "" },
     { label: "Country", value: r.country ? countryName(r.country) : "" },
+    ...place.nationality,
     { label: "Effective date", value: formatDate(r.effective_date) },
     { label: "Requested by", value: r.requestor_name ?? "" },
   ].map((row) => ({ ...row, value: row.value || "—" }));
@@ -280,19 +325,31 @@ export function physicalRows(snapshot: Snapshot, timeZone?: string): Row[] {
  * Access change: the section 2 fields that differ from the previous closed
  * request — "Job title: Analyst → Lead".
  */
-export function employeeChangeRows(snapshot: Snapshot): Row[] {
+export function employeeChangeRows(
+  snapshot: Snapshot,
+  // The PDF record leaves nationality out (decided 2026-10-21).
+  { withNationality = true }: { withNationality?: boolean } = {},
+): Row[] {
   const prev = snapshot.access_modification?.previous;
   if (!prev) return [];
   const r = snapshot.request;
   const country = (code: string | null) => (code ? countryName(code) : null);
-  return (
-    [
-      ["Job title", prev.job_title, r.job_title],
-      ["Department", prev.department, r.department],
-      ["Country", country(prev.country), country(r.country)],
-      ["Manager", prev.manager_name, r.manager_name],
-    ] as const
-  )
+  const rows: (readonly [string, string | null, string | null])[] = [
+    ["Job title", prev.job_title, r.job_title],
+    ["Department", prev.department, r.department],
+    ["Office", prev.office ?? null, r.office ?? null],
+    ["Location", locationText(prev) || null, locationText(r) || null],
+    ["Country", country(prev.country), country(r.country)],
+    ["Manager", prev.manager_name, r.manager_name],
+  ];
+  if (withNationality) {
+    rows.push([
+      "Nationality",
+      nationalityText(prev.nationalities) || null,
+      nationalityText(r.nationalities) || null,
+    ]);
+  }
+  return rows
     .filter(([, was, now]) => (was ?? "") !== (now ?? ""))
     .map(([label, was, now]) => ({
       label,

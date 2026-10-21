@@ -158,6 +158,10 @@ test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirm
   await expect(page.getByRole("status")).toHaveText(
     "Confirmed, signed and closed",
   );
+  // Form v4.2 (F27): the record names the office.
+  await expect(page.locator("dt:text-is('Office') + dd").first()).toHaveText(
+    "Dubai",
+  );
   const pdfCard = page.getByRole("region", { name: "Access record" });
   await expect(pdfCard).toContainText("lina.loop-onboarding.pdf");
   await expect(

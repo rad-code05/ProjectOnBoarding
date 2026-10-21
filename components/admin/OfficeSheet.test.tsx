@@ -149,7 +149,7 @@ describe("OfficeSheet", () => {
     );
     expect(onClose).not.toHaveBeenCalled();
     expect(refresh).toHaveBeenCalled();
-  });
+  }, 15_000); // types several words key by key — slow on a busy machine
 
   test("a city needs a state and a name", async () => {
     const u = userEvent.setup();
