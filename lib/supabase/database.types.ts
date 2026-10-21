@@ -1616,9 +1616,13 @@ export type Database = {
       };
       report_access_by_item: {
         Args: {
+          p_city?: number;
           p_country?: string;
           p_department?: number;
           p_kind?: Database["public"]["Enums"]["inventory_kind"];
+          p_nationality?: string;
+          p_office?: number;
+          p_region?: number;
           p_search?: string;
         };
         Returns: {
@@ -1635,12 +1639,16 @@ export type Database = {
       };
       report_access_holders: {
         Args: {
+          p_city?: number;
           p_country?: string;
           p_department?: number;
           p_item_key?: string;
           p_kind?: Database["public"]["Enums"]["inventory_kind"];
           p_limit?: number;
+          p_nationality?: string;
+          p_office?: number;
           p_offset?: number;
+          p_region?: number;
           p_search?: string;
         };
         Returns: {
@@ -1659,6 +1667,7 @@ export type Database = {
           leaving_request_id: string;
           leaving_ticket_id: string;
           name: string;
+          office: string;
           permission: string;
           permission_counts: Json;
           source: string;
@@ -1668,11 +1677,15 @@ export type Database = {
       };
       report_all_users: {
         Args: {
+          p_city?: number;
           p_country?: string;
           p_department?: number;
           p_from?: string;
           p_limit?: number;
+          p_nationality?: string;
+          p_office?: number;
           p_offset?: number;
+          p_region?: number;
           p_search?: string;
           p_to?: string;
           p_type?: Database["public"]["Enums"]["request_type"];
@@ -1687,6 +1700,9 @@ export type Database = {
           id: string;
           last_name: string;
           last_working_day: string;
+          location: string;
+          nationalities: string[];
+          office: string;
           people_count: number;
           state: Database["public"]["Enums"]["request_state"];
           ticket_id: string;
@@ -1697,11 +1713,15 @@ export type Database = {
       };
       report_offboarding_sla: {
         Args: {
+          p_city?: number;
           p_country?: string;
           p_department?: number;
           p_from?: string;
           p_limit?: number;
+          p_nationality?: string;
+          p_office?: number;
           p_offset?: number;
+          p_region?: number;
           p_search?: string;
           p_to?: string;
         };
@@ -1725,9 +1745,13 @@ export type Database = {
       };
       report_offboarding_sla_summary: {
         Args: {
+          p_city?: number;
           p_country?: string;
           p_department?: number;
           p_from?: string;
+          p_nationality?: string;
+          p_office?: number;
+          p_region?: number;
           p_search?: string;
           p_to?: string;
         };
@@ -1742,10 +1766,14 @@ export type Database = {
       };
       report_onboarded_by: {
         Args: {
+          p_city?: number;
           p_country?: string;
           p_department?: number;
           p_from?: string;
           p_group: string;
+          p_nationality?: string;
+          p_office?: number;
+          p_region?: number;
           p_to?: string;
         };
         Returns: {
@@ -1756,9 +1784,13 @@ export type Database = {
       };
       report_onboarded_by_month: {
         Args: {
+          p_city?: number;
           p_country?: string;
           p_department?: number;
           p_from_month: string;
+          p_nationality?: string;
+          p_office?: number;
+          p_region?: number;
           p_to_month: string;
         };
         Returns: {
@@ -1789,11 +1821,15 @@ export type Database = {
       };
       report_signature_log: {
         Args: {
+          p_city?: number;
           p_country?: string;
           p_department?: number;
           p_from?: string;
           p_limit?: number;
+          p_nationality?: string;
+          p_office?: number;
           p_offset?: number;
+          p_region?: number;
           p_search?: string;
           p_to?: string;
           p_type?: Database["public"]["Enums"]["request_type"];
