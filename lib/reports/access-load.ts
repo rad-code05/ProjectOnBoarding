@@ -10,7 +10,7 @@ import {
   type AccessKind,
   type AccessTotals,
 } from "./access";
-import type { ReportFilters } from "./filters";
+import { placeArgs, type ReportFilters } from "./filters";
 import type { GroupRow } from "./groups";
 
 /** Arguments shared by both access functions (no period: today). */
@@ -19,6 +19,7 @@ export function accessArgs(kind: AccessKind, filters: ReportFilters) {
     p_kind: kind,
     p_department: filters.department ?? undefined,
     p_country: filters.country ?? undefined,
+    ...placeArgs(filters),
     p_search: filters.q || undefined,
   };
 }

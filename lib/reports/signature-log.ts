@@ -1,6 +1,6 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { reportRange, type ReportFilters } from "./filters";
+import { placeArgs, reportRange, type ReportFilters } from "./filters";
 import { signatureRow, type SignatureRow } from "./signatures";
 
 /** The report_signature_log() arguments for these filters. */
@@ -12,6 +12,7 @@ export function signatureArgs(filters: ReportFilters, timeZone: string) {
     p_type: filters.type ?? undefined,
     p_country: filters.country ?? undefined,
     p_department: filters.department ?? undefined,
+    ...placeArgs(filters),
     p_search: filters.q || undefined,
   };
 }

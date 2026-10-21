@@ -1,6 +1,6 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { ReportFilters } from "./filters";
+import { placeArgs, type ReportFilters } from "./filters";
 import {
   slaRange,
   slaReportRow,
@@ -20,6 +20,7 @@ export function slaArgs(filters: ReportFilters, timeZone: string) {
     p_to: range.to ?? undefined,
     p_country: filters.country ?? undefined,
     p_department: filters.department ?? undefined,
+    ...placeArgs(filters),
     p_search: filters.q || undefined,
   };
 }

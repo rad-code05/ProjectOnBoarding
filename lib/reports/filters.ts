@@ -28,6 +28,14 @@ export type ReportFilters = {
   type: RequestType | null;
   country: string | null;
   department: number | null;
+  /** Office id; 0 = "Not set" (requests from before form v4.2). */
+  office: number | null;
+  /** US state id (only with an office that asks for a state). */
+  region: number | null;
+  /** City id (only with a state). */
+  city: number | null;
+  /** Nationality ISO code, or "none" = "Not set"; two nationalities match either. */
+  nationality: string | null;
   /** How many rows to show ("Show 20 more" adds a page). */
   limit: number;
 };
@@ -40,6 +48,10 @@ export const DEFAULT_REPORT_FILTERS: ReportFilters = {
   type: null,
   country: null,
   department: null,
+  office: null,
+  region: null,
+  city: null,
+  nationality: null,
   limit: REPORT_PAGE_SIZE,
 };
 
@@ -61,6 +73,21 @@ export function parseReportFilters(params: SearchParams): ReportFilters {
   const country = first(params.country).toUpperCase();
   const department = Number.parseInt(first(params.department), 10);
   const limit = Number.parseInt(first(params.limit), 10);
+  const office = Number.parseInt(first(params.office), 10);
+  const region = Number.parseInt(first(params.state), 10);
+  const city = Number.parseInt(first(params.city), 10);
+  const nationality = first(params.nationality);
+  const validOffice =
+    Number.isInteger(office) && office >= 0 && office < 32768 ? office : null;
+  // A state only under a chosen office, a city only under a state.
+  const validRegion =
+    validOffice && Number.isInteger(region) && region > 0 && region < 32768
+      ? region
+      : null;
+  const validCity =
+    validRegion && Number.isInteger(city) && city > 0 && city < 2 ** 31
+      ? city
+      : null;
   return {
     q: first(params.q).slice(0, 100),
     period: REPORT_PERIODS.includes(period as ReportPeriod)
@@ -76,6 +103,15 @@ export function parseReportFilters(params: SearchParams): ReportFilters {
       Number.isInteger(department) && department > 0 && department < 32768
         ? department
         : null,
+    office: validOffice,
+    region: validRegion,
+    city: validCity,
+    nationality:
+      nationality === "none"
+        ? "none"
+        : /^[A-Z]{2}$/.test(nationality.toUpperCase())
+          ? nationality.toUpperCase()
+          : null,
     limit: Number.isFinite(limit)
       ? Math.min(Math.max(limit, REPORT_PAGE_SIZE), MAX_LIMIT)
       : REPORT_PAGE_SIZE,
@@ -95,6 +131,14 @@ export function reportParams(filters: ReportFilters): URLSearchParams {
   if (filters.type) params.set("type", filters.type);
   if (filters.country) params.set("country", filters.country);
   if (filters.department) params.set("department", String(filters.department));
+  if (filters.office !== null) {
+    params.set("office", String(filters.office));
+    if (filters.office && filters.region) {
+      params.set("state", String(filters.region));
+      if (filters.city) params.set("city", String(filters.city));
+    }
+  }
+  if (filters.nationality) params.set("nationality", filters.nationality);
   return params;
 }
 
@@ -178,11 +222,88 @@ export function rangeLabel(days: {
 
 export type ReportChip = { label: string; clear: Partial<ReportFilters> };
 
+/** Names for the ids in the filters (departments, offices, states, cities). */
+export type ReportNames = {
+  departments?: Record<number, string>;
+  offices?: Record<number, string>;
+  regions?: Record<number, string>;
+  cities?: Record<number, string>;
+};
+
+/** The names from the filter options (`loadReportOptions`). */
+export function reportNames(options: {
+  departments: { id: number; name: string }[];
+  offices?: { id: number; name: string }[];
+  regions?: { id: number; name: string }[];
+  cities?: { id: number; name: string }[];
+}): ReportNames {
+  const byId = (list: { id: number; name: string }[] = []) =>
+    Object.fromEntries(list.map((x) => [x.id, x.name]));
+  return {
+    departments: byId(options.departments),
+    offices: byId(options.offices),
+    regions: byId(options.regions),
+    cities: byId(options.cities),
+  };
+}
+
+/** "Dubai", "Office not set", "Texas", "Austin", "Nationality: Switzerland". */
+function placeLabels(filters: ReportFilters, names: ReportNames) {
+  const labels: {
+    key: "office" | "region" | "city" | "nationality";
+    label: string;
+    words: string;
+  }[] = [];
+  if (filters.office !== null) {
+    const name =
+      filters.office === 0
+        ? "Not set"
+        : (names.offices?.[filters.office] ?? "Office");
+    labels.push({
+      key: "office",
+      label: filters.office === 0 ? "Office not set" : name,
+      words: `Office: ${name}`,
+    });
+  }
+  if (filters.region) {
+    const name = names.regions?.[filters.region] ?? "State";
+    labels.push({ key: "region", label: name, words: `State: ${name}` });
+  }
+  if (filters.city) {
+    const name = names.cities?.[filters.city] ?? "City";
+    labels.push({ key: "city", label: name, words: `City: ${name}` });
+  }
+  if (filters.nationality) {
+    const name =
+      filters.nationality === "none"
+        ? "Not set"
+        : countryName(filters.nationality);
+    labels.push({
+      key: "nationality",
+      label:
+        filters.nationality === "none"
+          ? "Nationality not set"
+          : `Nationality: ${name}`,
+      words: `Nationality: ${name}`,
+    });
+  }
+  return labels;
+}
+
+/** What removing a place chip clears (an office takes its state and city along). */
+const PLACE_CLEAR: Record<string, Partial<ReportFilters>> = {
+  office: { office: null, region: null, city: null },
+  region: { region: null, city: null },
+  city: { city: null },
+  nationality: { nationality: null },
+};
+
 /** Active filters as removable chips ("Last 12 months ×", "Sales ×"). */
 export function reportChips(
   filters: ReportFilters,
-  departments: Record<number, string>,
+  names: ReportNames = {},
 ): ReportChip[] {
+  const departments = names.departments ?? {};
   const chips: ReportChip[] = [];
   if (filters.from || filters.to) {
     chips.push({
@@ -213,20 +334,38 @@ export function reportChips(
       clear: { department: null },
     });
   }
+  for (const place of placeLabels(filters, names)) {
+    chips.push({ label: place.label, clear: PLACE_CLEAR[place.key] });
+  }
   return chips;
 }
 
 /** The active filters in words, for a PDF ("Type: Onboarding", "Country: Switzerland"). */
 export function filterWords(
   filters: ReportFilters,
-  departments: Record<number, string>,
+  names: ReportNames = {},
 ): string[] {
+  const departments = names.departments ?? {};
   const words: string[] = [];
   if (filters.type) words.push(`Type: ${TYPE_LABELS[filters.type]}`);
   if (filters.country) words.push(`Country: ${countryName(filters.country)}`);
   if (filters.department) {
     words.push(`Department: ${departments[filters.department] ?? "—"}`);
   }
+  for (const place of placeLabels(filters, names)) words.push(place.words);
   if (filters.q) words.push(`Search: "${filters.q}"`);
   return words;
+}
+
+/** The place filters (F27d). */
+export type PlaceKey = "office" | "region" | "city" | "nationality";
+
+/** The office / state / city / nationality arguments every report function takes (F27d). */
+export function placeArgs(filters: Pick<ReportFilters, PlaceKey>) {
+  return {
+    p_office: filters.office ?? undefined,
+    p_region: filters.region ?? undefined,
+    p_city: filters.city ?? undefined,
+    p_nationality: filters.nationality ?? undefined,
+  };
 }

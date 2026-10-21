@@ -51,8 +51,7 @@ export default async function OffboardingSlaPage({
       <ReportHeader report={reportInfo("offboarding-sla")} />
       <ReportFilterBar
         filters={filters}
-        departments={options.departments}
-        countries={options.countries}
+        options={options}
         count={countOffboardingSla}
         noun="offboardings"
         types={false}

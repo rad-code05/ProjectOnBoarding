@@ -45,8 +45,7 @@ export default async function AllUsersReportPage({
       <ReportHeader report={reportInfo("all-users")} />
       <ReportFilterBar
         filters={filters}
-        departments={options.departments}
-        countries={options.countries}
+        options={options}
         count={countAllUsers}
       />
       <span role="status" className="text-xs text-graphite">

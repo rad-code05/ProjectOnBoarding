@@ -70,8 +70,7 @@ export default async function AccessByApplicationPage({
       <AccessKindTabs kind={kind} hrefFor={(k) => withKind(k)} />
       <ReportFilterBar
         filters={filters}
-        departments={options.departments}
-        countries={options.countries}
+        options={options}
         count={countAccess.bind(null, kind, null)}
         noun="people"
         nounOne="person"

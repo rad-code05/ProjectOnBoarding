@@ -43,8 +43,7 @@ export default async function OnboardedByMonthPage({
       <ReportHeader report={reportInfo("onboarded-by-month")} />
       <ReportFilterBar
         filters={filters}
-        departments={options.departments}
-        countries={options.countries}
+        options={options}
         count={countOnboarded}
         noun="onboardings"
         counts

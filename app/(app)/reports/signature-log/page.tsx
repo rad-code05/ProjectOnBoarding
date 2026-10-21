@@ -47,8 +47,7 @@ export default async function SignatureLogPage({
       <ReportHeader report={reportInfo("signature-log")} />
       <ReportFilterBar
         filters={filters}
-        departments={options.departments}
-        countries={options.countries}
+        options={options}
         count={countSignatureLog}
       />
       <span role="status" className="text-xs text-graphite">

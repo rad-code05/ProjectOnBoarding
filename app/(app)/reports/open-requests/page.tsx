@@ -50,8 +50,7 @@ export default async function OpenRequestsPage({
       <ReportHeader report={reportInfo("open-requests")} />
       <ReportFilterBar
         filters={filters}
-        departments={options.departments}
-        countries={options.countries}
+        options={options}
         count={countOpenRequests}
         periods={false}
         places={false}

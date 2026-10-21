@@ -1024,6 +1024,26 @@ test("Reports · All users list: a new draft is listed, exported as CSV and PDF,
   expect(pdf.headers()["content-disposition"]).toMatch(/all-users_.+\.pdf"$/);
   expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
 
+  // F27d: the new draft has no office yet — "Not set" keeps it, Dubai hides it.
+  await page.getByRole("button", { name: /^Filters/ }).click();
+  await choose(page, "Office", "Not set");
+  await page
+    .getByRole("dialog", { name: "Filters" })
+    .getByRole("button", { name: /^Show 1 request$/ })
+    .click();
+  await expect(page).toHaveURL(/office=0/);
+  await expect(
+    page.getByRole("button", { name: "Remove filter: Office not set" }),
+  ).toBeVisible();
+  await expect(card).toBeVisible();
+  await page.getByRole("button", { name: /^Filters/ }).click();
+  await choose(page, "Office", "Dubai");
+  await page
+    .getByRole("dialog", { name: "Filters" })
+    .getByRole("button", { name: /^Show 0 requests$/ })
+    .click();
+  await expect(page.getByText("No requests match")).toBeVisible();
+
   await openApp(page, "/audit?q=report.exported&tests=show&period=today");
   await expect(
     page

@@ -18,15 +18,40 @@ beforeAll(() => {
 
 const count = vi.fn();
 
+/** Click an option in the open searchable list (not a <select>'s). */
+const pick = (user: ReturnType<typeof userEvent.setup>, name: string) =>
+  user.click(within(screen.getByRole("listbox")).getByRole("option", { name }));
+
 function show() {
   render(
     <ReportFilterBar
       filters={DEFAULT_REPORT_FILTERS}
-      departments={[
-        { id: 2, name: "Sales" },
-        { id: 3, name: "Design" },
-      ]}
-      countries={["CH", "DE"]}
+      options={{
+        departments: [
+          { id: 2, name: "Sales" },
+          { id: 3, name: "Design" },
+        ],
+        countries: ["CH", "DE"],
+        offices: [
+          {
+            id: 1,
+            name: "Dubai",
+            country: "AE",
+            usesRegions: false,
+            active: true,
+          },
+          { id: 4, name: "US", country: "US", usesRegions: true, active: true },
+        ],
+        regions: [
+          { id: 44, country: "US", name: "Texas" },
+          { id: 10, country: "US", name: "Florida" },
+        ],
+        cities: [
+          { id: 9, officeId: 4, regionId: 44, name: "Austin" },
+          { id: 8, officeId: 4, regionId: 10, name: "Miami" },
+        ],
+        nationalities: ["CH", "IT"],
+      }}
       count={count}
     />,
   );
@@ -59,7 +84,7 @@ describe("ReportFilterBar", () => {
       within(sheet).getByLabelText("Request type"),
       "onboarding",
     );
-    await user.selectOptions(within(sheet).getByLabelText("Country"), "CH");
+    await user.selectOptions(within(sheet).getByLabelText(/Country/), "CH");
     await user.selectOptions(
       within(sheet).getByLabelText("Department"),
       "Sales",
@@ -83,8 +108,7 @@ describe("ReportFilterBar", () => {
     render(
       <ReportFilterBar
         filters={DEFAULT_REPORT_FILTERS}
-        departments={[]}
-        countries={["CH"]}
+        options={{ departments: [], countries: ["CH"] }}
         count={count}
         noun="onboardings"
         counts
@@ -107,8 +131,7 @@ describe("ReportFilterBar", () => {
     render(
       <ReportFilterBar
         filters={DEFAULT_REPORT_FILTERS}
-        departments={[{ id: 2, name: "Sales" }]}
-        countries={["CH"]}
+        options={{ departments: [{ id: 2, name: "Sales" }], countries: ["CH"] }}
         count={count}
         noun="people"
         nounOne="person"
@@ -147,8 +170,7 @@ describe("ReportFilterBar", () => {
     render(
       <ReportFilterBar
         filters={DEFAULT_REPORT_FILTERS}
-        departments={[{ id: 2, name: "Sales" }]}
-        countries={["CH"]}
+        options={{ departments: [{ id: 2, name: "Sales" }], countries: ["CH"] }}
         count={count}
         periods={false}
         places={false}
@@ -157,9 +179,66 @@ describe("ReportFilterBar", () => {
     await user.click(screen.getByRole("button", { name: "Filters" }));
     const sheet = screen.getByRole("dialog", { name: "Filters" });
     expect(within(sheet).getByLabelText("Request type")).toBeInTheDocument();
-    expect(within(sheet).queryByLabelText("Country")).not.toBeInTheDocument();
+    expect(within(sheet).queryByLabelText(/Country/)).not.toBeInTheDocument();
     expect(
       within(sheet).queryByLabelText("Department"),
     ).not.toBeInTheDocument();
+    expect(within(sheet).queryByLabelText("Office")).not.toBeInTheDocument();
+    expect(
+      within(sheet).queryByLabelText("Nationality"),
+    ).not.toBeInTheDocument();
+  });
+
+  test("office: US asks for a state, then lists that state's cities; nationality", async () => {
+    const user = userEvent.setup();
+    show();
+    await user.click(screen.getByRole("button", { name: "Filters · 1" }));
+    const sheet = screen.getByRole("dialog", { name: "Filters" });
+    expect(within(sheet).queryByLabelText("State")).not.toBeInTheDocument();
+    await user.type(within(sheet).getByLabelText("Office"), "US");
+    await pick(user, "US");
+    expect(within(sheet).getByLabelText("City")).toBeDisabled();
+    await user.type(within(sheet).getByLabelText("State"), "tex");
+    await pick(user, "Texas");
+    await user.click(within(sheet).getByLabelText("City"));
+    expect(
+      within(within(sheet).getByRole("listbox"))
+        .getAllByRole("option")
+        .map((o) => o.textContent),
+    ).toEqual(["Austin"]);
+    await pick(user, "Austin");
+    await user.type(within(sheet).getByLabelText("Nationality"), "swi");
+    await pick(user, "Switzerland");
+    await waitFor(() =>
+      expect(count).toHaveBeenLastCalledWith(
+        "office=4&state=44&city=9&nationality=CH",
+      ),
+    );
+    await user.click(
+      await within(sheet).findByRole("button", { name: "Show 27 requests" }),
+    );
+    expect(replace).toHaveBeenLastCalledWith(
+      "/reports/all-users?office=4&state=44&city=9&nationality=CH",
+      { scroll: false },
+    );
+  });
+
+  test('"Not set" office and nationality; Dubai has no state', async () => {
+    const user = userEvent.setup();
+    show();
+    await user.click(screen.getByRole("button", { name: "Filters · 1" }));
+    const sheet = screen.getByRole("dialog", { name: "Filters" });
+    await user.type(within(sheet).getByLabelText("Office"), "Dub");
+    await pick(user, "Dubai");
+    expect(within(sheet).queryByLabelText("State")).not.toBeInTheDocument();
+    await user.click(within(sheet).getByLabelText("Office"));
+    await user.clear(within(sheet).getByLabelText("Office"));
+    await user.type(within(sheet).getByLabelText("Office"), "not");
+    await pick(user, "Not set");
+    await user.type(within(sheet).getByLabelText("Nationality"), "not");
+    await pick(user, "Not set");
+    await waitFor(() =>
+      expect(count).toHaveBeenLastCalledWith("office=0&nationality=none"),
+    );
   });
 });

@@ -10,6 +10,7 @@ import { reportInfo } from "./catalog";
 import { exportFileName, exportFilters } from "./export";
 import {
   filterWords,
+  reportNames,
   parseReportFilters,
   rangeLabel,
   reportDays,
@@ -72,10 +73,7 @@ export async function exportOnboardedBy(
       group: info.group,
       definition: info.definition,
       period: `${rangeLabel(days)} (company time, ${city})`,
-      filters: filterWords(
-        filters,
-        Object.fromEntries(options.departments.map((d) => [d.id, d.name])),
-      ),
+      filters: filterWords(filters, reportNames(options)),
       ...made,
       tiles: [
         {

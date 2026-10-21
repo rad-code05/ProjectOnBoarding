@@ -2,10 +2,13 @@ import { describe, expect, test } from "vitest";
 import { exportFileName, exportFilters } from "./export";
 import {
   DEFAULT_REPORT_FILTERS,
+  filterWords,
   parseReportFilters,
+  placeArgs,
   rangeLabel,
   reportChips,
   reportDays,
+  reportNames,
   reportParams,
   reportRange,
 } from "./filters";
@@ -102,7 +105,7 @@ describe("reportChips", () => {
           country: "CH",
           department: 2,
         },
-        { 2: "Sales" },
+        { departments: { 2: "Sales" } },
       ).map((c) => c.label),
     ).toEqual([
       "1 Oct 2026 – 15 Oct 2026",
@@ -139,7 +142,110 @@ describe("export", () => {
       type: null,
       country: "CH",
       department: null,
+      office: null,
+      state: null,
+      city: null,
+      nationality: null,
       search: null,
+    });
+  });
+});
+
+describe("place filters (F27d)", () => {
+  const names = {
+    offices: { 4: "US", 1: "Dubai" },
+    regions: { 44: "Texas" },
+    cities: { 9: "Austin" },
+  };
+
+  test("office, state, city and nationality round-trip through the URL", () => {
+    const filters = parseReportFilters({
+      office: "4",
+      state: "44",
+      city: "9",
+      nationality: "ch",
+    });
+    expect(filters).toMatchObject({
+      office: 4,
+      region: 44,
+      city: 9,
+      nationality: "CH",
+    });
+    expect(reportParams(filters).toString()).toBe(
+      "office=4&state=44&city=9&nationality=CH",
+    );
+    expect(placeArgs(filters)).toEqual({
+      p_office: 4,
+      p_region: 44,
+      p_city: 9,
+      p_nationality: "CH",
+    });
+  });
+
+  test('"Not set" is office 0 and nationality none; a state needs an office, a city a state', () => {
+    expect(
+      parseReportFilters({ office: "0", state: "44", nationality: "none" }),
+    ).toMatchObject({ office: 0, region: null, nationality: "none" });
+    expect(parseReportFilters({ state: "44", city: "9" })).toMatchObject({
+      office: null,
+      region: null,
+      city: null,
+    });
+    expect(parseReportFilters({ office: "4", city: "9" }).city).toBeNull();
+    expect(
+      parseReportFilters({ office: "x", nationality: "Swiss" }),
+    ).toMatchObject({ office: null, nationality: null });
+  });
+
+  test("chips and PDF words; removing the office takes its state and city along", () => {
+    const filters = {
+      ...DEFAULT_REPORT_FILTERS,
+      period: "all" as const,
+      office: 4,
+      region: 44,
+      city: 9,
+      nationality: "CH",
+    };
+    const chips = reportChips(filters, names);
+    expect(chips.map((c) => c.label)).toEqual([
+      "US",
+      "Texas",
+      "Austin",
+      "Nationality: Switzerland",
+    ]);
+    expect(chips[0].clear).toEqual({ office: null, region: null, city: null });
+    expect(chips[1].clear).toEqual({ region: null, city: null });
+    expect(filterWords(filters, names)).toEqual([
+      "Office: US",
+      "State: Texas",
+      "City: Austin",
+      "Nationality: Switzerland",
+    ]);
+    expect(
+      reportChips(
+        {
+          ...filters,
+          office: 0,
+          region: null,
+          city: null,
+          nationality: "none",
+        },
+        names,
+      ).map((c) => c.label),
+    ).toEqual(["Office not set", "Nationality not set"]);
+  });
+
+  test("reportNames turns the options into lookups", () => {
+    expect(
+      reportNames({
+        departments: [{ id: 2, name: "Sales" }],
+        offices: [{ id: 1, name: "Dubai" }],
+      }),
+    ).toEqual({
+      departments: { 2: "Sales" },
+      offices: { 1: "Dubai" },
+      regions: {},
+      cities: {},
     });
   });
 });

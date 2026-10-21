@@ -1,6 +1,11 @@
 import "server-only";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { reportRange, type ReportFilters } from "./filters";
+import {
+  placeArgs,
+  reportRange,
+  type PlaceKey,
+  type ReportFilters,
+} from "./filters";
 import { groupRows, type ReportGroup } from "./groups";
 
 /**
@@ -12,7 +17,7 @@ export async function loadOnboardedBy(
   group: ReportGroup,
   filters: Pick<
     ReportFilters,
-    "period" | "from" | "to" | "country" | "department"
+    "period" | "from" | "to" | "country" | "department" | PlaceKey
   >,
   timeZone: string,
 ) {
@@ -27,6 +32,7 @@ export async function loadOnboardedBy(
     p_to: range.to ?? undefined,
     p_country: filters.country ?? undefined,
     p_department: filters.department ?? undefined,
+    ...placeArgs(filters),
   });
   if (error) throw new Error(`Could not load the report: ${error.message}`);
   return groupRows(data ?? [], group);
