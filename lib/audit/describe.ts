@@ -237,6 +237,22 @@ export function describeEvent(
     }
   }
 
+  if (group === "office" && verb) {
+    const match = verb.match(/^(city_)?(added|changed|retired|restored)$/);
+    if (match) {
+      const after = obj(d, "after");
+      const name =
+        str(after, "name") ?? str(d, "name") ?? str(obj(d, "before"), "name");
+      const where = [str(after, "office"), str(after, "region")]
+        .filter(Boolean)
+        .join(" · ");
+      return say(
+        `${CATALOG_VERBS[match[2]]} ${match[1] ? "the city" : "the office"}${name ? ` “${name}”` : ""}${where ? ` (${where})` : ""}`,
+        "Admin → Offices",
+      );
+    }
+  }
+
   switch (ev.action) {
     case "request.created": {
       const type = (str(d, "type") ?? ev.request_type) as RequestType | null;

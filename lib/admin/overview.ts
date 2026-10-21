@@ -11,27 +11,38 @@ export type AdminOverview = {
   categories: number;
   equipmentTypes: number;
   accessTypes: number;
+  offices: number;
+  officeCities: number;
   companyTimezone: string;
 };
 
 export async function loadAdminOverview(): Promise<AdminOverview> {
   const supabase = createServerSupabaseClient();
-  const [apps, categories, equipment, access, settings] = await Promise.all([
-    supabase.from("catalog_apps").select("active"),
-    supabase
-      .from("catalog_categories")
-      .select("id", { count: "exact", head: true })
-      .eq("active", true),
-    supabase
-      .from("equipment_types")
-      .select("id", { count: "exact", head: true })
-      .eq("active", true),
-    supabase
-      .from("physical_access_types")
-      .select("id", { count: "exact", head: true })
-      .eq("active", true),
-    supabase.from("app_settings").select("company_timezone").maybeSingle(),
-  ]);
+  const [apps, categories, equipment, access, offices, cities, settings] =
+    await Promise.all([
+      supabase.from("catalog_apps").select("active"),
+      supabase
+        .from("catalog_categories")
+        .select("id", { count: "exact", head: true })
+        .eq("active", true),
+      supabase
+        .from("equipment_types")
+        .select("id", { count: "exact", head: true })
+        .eq("active", true),
+      supabase
+        .from("physical_access_types")
+        .select("id", { count: "exact", head: true })
+        .eq("active", true),
+      supabase
+        .from("offices")
+        .select("id", { count: "exact", head: true })
+        .eq("active", true),
+      supabase
+        .from("office_cities")
+        .select("id", { count: "exact", head: true })
+        .eq("active", true),
+      supabase.from("app_settings").select("company_timezone").maybeSingle(),
+    ]);
   const rows = apps.data ?? [];
   return {
     appsActive: rows.filter((a) => a.active).length,
@@ -39,6 +50,8 @@ export async function loadAdminOverview(): Promise<AdminOverview> {
     categories: categories.count ?? 0,
     equipmentTypes: equipment.count ?? 0,
     accessTypes: access.count ?? 0,
+    offices: offices.count ?? 0,
+    officeCities: cities.count ?? 0,
     companyTimezone: settings.data?.company_timezone ?? "Asia/Dubai",
   };
 }

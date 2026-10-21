@@ -247,3 +247,103 @@ export async function setAccessTypeActive(input: {
     }),
   );
 }
+
+// ---------------------------------------------------------------------------
+// Admin · Offices (F27b)
+// ---------------------------------------------------------------------------
+
+const cityId = z.number().int().positive().max(2147483647);
+
+/** Add (no id) or change an office. */
+export async function saveOffice(input: {
+  id: number | null;
+  name: string;
+  city: string;
+  country: string;
+  usesRegions: boolean;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z
+    .object({
+      id: id.nullable(),
+      name: shortText,
+      city: shortText,
+      country: z.string().regex(/^[A-Z]{2}$/),
+      usesRegions: z.boolean(),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Check the fields." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_save_office", {
+      p_id: parsed.data.id as number,
+      p_name: parsed.data.name,
+      p_city: parsed.data.city,
+      p_country: parsed.data.country,
+      p_uses_regions: parsed.data.usesRegions,
+    }),
+  );
+}
+
+/** Retire (false) or restore (true) an office. */
+export async function setOfficeActive(input: {
+  id: number;
+  active: boolean;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z.object({ id, active: z.boolean() }).safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Unknown office." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_set_office_active", {
+      p_id: parsed.data.id,
+      p_active: parsed.data.active,
+    }),
+  );
+}
+
+/** Add (no id) or rename a city of an office in a state. */
+export async function saveOfficeCity(input: {
+  id: number | null;
+  officeId: number;
+  regionId: number;
+  name: string;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z
+    .object({
+      id: cityId.nullable(),
+      officeId: id,
+      regionId: id,
+      name: shortText,
+    })
+    .safeParse(input);
+  if (!parsed.success)
+    return { ok: false, message: "Choose a state and a name." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_save_office_city", {
+      p_id: parsed.data.id as number,
+      p_office_id: parsed.data.officeId,
+      p_region_id: parsed.data.regionId,
+      p_name: parsed.data.name,
+    }),
+  );
+}
+
+/** Retire (false) or restore (true) a city. */
+export async function setOfficeCityActive(input: {
+  id: number;
+  active: boolean;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = z.object({ id: cityId, active: z.boolean() }).safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Unknown city." };
+  const supabase = createServerSupabaseClient();
+  return rpcResult(
+    supabase.rpc("admin_set_office_city_active", {
+      p_id: parsed.data.id,
+      p_active: parsed.data.active,
+    }),
+  );
+}

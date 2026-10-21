@@ -223,7 +223,10 @@ test.describe("admin on a phone", () => {
     await expectNoSideScroll(page);
   });
 
-  test("Admin home and Settings fit the phone", async ({ page }) => {
+  test("Admin home, lists, Offices and Settings fit the phone", async ({
+    page,
+  }) => {
+    test.slow(); // five admin pages
     await openApp(page, "/admin");
     await expect(
       page.getByRole("heading", { level: 1, name: "Admin" }),
@@ -240,6 +243,19 @@ test.describe("admin on a phone", () => {
       page.getByRole("heading", { level: 1, name: "Equipment & access types" }),
     ).toBeVisible();
     await expectNoSideScroll(page);
+    await openApp(page, "/admin/offices");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Offices" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+    await page.getByRole("button", { name: /^US/ }).first().click();
+    const sheet = page.getByRole("dialog", { name: "Edit US" });
+    await expect(sheet.getByLabel("New city", { exact: true })).toHaveCSS(
+      "font-size",
+      "16px",
+    );
+    await expectNoSideScroll(page);
+    await sheet.getByRole("button", { name: "Cancel" }).click();
     await openApp(page, "/admin/settings");
     await expect(page.getByLabel("Timezone", { exact: true })).toHaveCSS(
       "font-size",
