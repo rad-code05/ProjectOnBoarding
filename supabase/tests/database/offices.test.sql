@@ -65,13 +65,13 @@ select is((select array_agg(action order by created_at, id) from public.audit_ev
 select is((select private.audit_group('office.added')), 'admin', 'office changes belong to Admin in the audit log');
 
 -- 16–20. Cities -------------------------------------------------------------------------------------
-select lives_ok($$select public.admin_save_office_city(null, (select us from v), (select tx from v), 'Austin')$$,
-  'add Austin to US · Texas');
-select lives_ok($$select public.admin_save_office_city(null, (select us from v), (select tx from v), 'Dallas')$$,
-  'add Dallas to US · Texas');
+select lives_ok($$select public.admin_save_office_city(null, (select us from v), (select tx from v), 'Ofton')$$,
+  'add Ofton to US · Texas');
+select lives_ok($$select public.admin_save_office_city(null, (select us from v), (select tx from v), 'Ofville')$$,
+  'add Ofville to US · Texas');
 select throws_ok($$select public.admin_save_office_city(null, (select us from v), (select tx from v), 'austin')$$,
   '23505', null, 'a city once per office and state');
-select throws_ok($$select public.admin_save_office_city(null, (select dubai from v), (select tx from v), 'Austin')$$,
+select throws_ok($$select public.admin_save_office_city(null, (select dubai from v), (select tx from v), 'Ofton')$$,
   '23514', null, 'no cities for an office without states');
 select is((select action from public.audit_events where action = 'office.city_added' order by created_at desc, id desc limit 1),
   'office.city_added', 'cities audited');
@@ -84,11 +84,11 @@ select ok((select (public.signing_checks((select id from ids where label = 'lena
   'on form v4.2 an empty Office blocks Review & sign');
 
 select lives_ok($$update public.requests set office_id = (select us from v), region_id = (select tx from v),
-    office_city_id = (select id from public.office_cities where name = 'Austin'), country = 'US'
-  where id = (select id from ids where label = 'lena')$$, 'US · Texas · Austin');
+    office_city_id = (select id from public.office_cities where name = 'Ofton'), country = 'US'
+  where id = (select id from ids where label = 'lena')$$, 'US · Texas · Ofton');
 select ok((select not ((public.signing_checks((select id from ids where label = 'lena')) -> 'missing_fields') ? 'Office')),
   'Office filled → no longer missing');
-select throws_ok($$update public.requests set office_city_id = (select id from public.office_cities where name = 'Austin'),
+select throws_ok($$update public.requests set office_city_id = (select id from public.office_cities where name = 'Ofton'),
     region_id = (select ca from v) where id = (select id from ids where label = 'lena')$$,
   '23514', null, 'a city must belong to the chosen state');
 select throws_ok($$update public.requests set office_id = (select dubai from v), office_city_id = null
@@ -110,7 +110,7 @@ select is((select private.request_snapshot_data((select id from ids where label 
            -> 'office')::text, '"US"', 'the snapshot names the office');
 select is((select (d -> 'region')::text || (d -> 'office_city')::text || (d -> 'nationalities')::text
            from (select private.request_snapshot_data((select id from ids where label = 'lena')) -> 'request' as d) s),
-  '"Texas""Austin"["CH", "IT"]', 'state, city and nationalities too');
+  '"Texas""Ofton"["CH", "IT"]', 'state, city and nationalities too');
 insert into public.requests (created_by, first_name, work_email)
 values ('user_of_admin', 'Old', 'old.of@example.test');
 select ok((select not ((private.request_snapshot_data(r.id) -> 'request') ?| array['office', 'region', 'office_city', 'nationalities'])
@@ -130,12 +130,12 @@ select x.ticket, 2026, x.n, 'onboarding', 'closed', 'user_of_admin',
   x.office, x.region, x.city, x.nat, (select v42 from v), now() - interval '1 day'
 from (values
   ('UAM-2026-930001', 930001, 'mia.of@example.test', 'Mia', 'US', (select us from v), (select tx from v),
-   (select id from public.office_cities where name = 'Dallas'), array['IT']),
+   (select id from public.office_cities where name = 'Ofville'), array['IT']),
   ('UAM-2026-930002', 930002, 'sam.of@example.test', 'Sam', 'SA', (select id from public.offices where name = 'Riyadh HQ'),
    null::smallint, null::integer, null::text[])
 ) as x (ticket, n, email, first, country, office, region, city, nat);
 alter table public.requests enable trigger user;
-update public.office_cities set active = false where name = 'Dallas';
+update public.office_cities set active = false where name = 'Ofville';
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_of_admin","role":"authenticated"}', true);
@@ -161,7 +161,7 @@ select set_config('request.jwt.claims', '{"sub":"user_of_admin","role":"authenti
 select lives_ok($$update public.requests set job_title = 'Analyst' where id = (select id from ids where label = 'mia_off')$$,
   'editing another field keeps the office');
 select set_config('request.jwt.claims', '{"sub":"user_of_abe","role":"authenticated"}', true);
-select throws_ok($$select public.admin_set_office_city_active((select id from public.office_cities where name = 'Austin'), false)$$,
+select throws_ok($$select public.admin_set_office_city_active((select id from public.office_cities where name = 'Ofton'), false)$$,
   '42501', null, 'only an admin retires a city');
 reset role;
 select ok((select not has_table_privilege('anon', 'public.offices', 'select')), 'nothing for anonymous visitors');

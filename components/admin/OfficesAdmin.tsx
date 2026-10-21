@@ -128,16 +128,19 @@ export function OfficesAdmin({
                 No cities yet — open the office to add one.
               </p>
             ) : (
-              <ul className="flex flex-col gap-2">
-                {groups.map((g) => (
-                  <li key={g.region.id} className="flex flex-col gap-0.5">
-                    <span className="text-xs font-bold">{g.region.name}</span>
-                    <span className="text-[13px] text-graphite">
-                      {g.cities.map((c) => c.name).join(" · ")}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <p className="text-[13px] leading-normal text-graphite">
+                <span className="font-semibold text-ink">
+                  {groups.reduce((n, g) => n + g.cities.length, 0)} cities in{" "}
+                  {groups.length} states
+                </span>
+                {" — "}
+                {[...groups]
+                  .sort((a, b) => b.cities.length - a.cities.length)
+                  .slice(0, 5)
+                  .map((g) => `${g.region.name} ${g.cities.length}`)
+                  .join(" · ")}
+                {groups.length > 5 ? " · …" : ""}
+              </p>
             )}
             <span className="text-xs leading-normal text-graphite">
               All {regions.filter((r) => r.country === office.country).length}{" "}
