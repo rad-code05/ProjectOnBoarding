@@ -35,7 +35,7 @@ Enforced in the database (F04), not only in the UI. → `PROJECT_PLAN.md` §4.3,
 ## 4. Main capabilities (v1)
 | Capability | In short | Built in |
 | --- | --- | --- |
-| Request form | The 11 sections of form v4 (+ Country); dense; sections 6–11 collapsed until relevant; apps in two columns | F01–F04 |
+| Request form | The 11 sections of form v4 (+ Country; + Office, Location and Nationality — F27); dense; sections 6–11 collapsed until relevant; apps in two columns | F01–F04 |
 | Extensibility | Apps, categories, equipment, form fields are **data** (admin-editable, versioned) — no code change to add a tool | F02, F19–F21 |
 | Signatures | PNG or initials from *My profile*; server time; SHA-256 of a frozen snapshot | F05–F07 |
 | PDF | React-PDF from the closure snapshot; `firstname.lastname-onboarding.pdf`; Download (+ SharePoint later) | F08, F22 |

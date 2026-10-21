@@ -133,6 +133,11 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | G19 | Questions about the app itself (how-to, statuses, roles, SLA rules) from a curated help library in the repo — never outside sources | §6.6 | F15 | unit + e2e | ⏳ F15 |
 | G20 | Single requests by chat for **all three types** (onboarding, offboarding, access change) with follow-up questions; values are suggestions | §6.6 | F16 | unit + e2e | ⏳ F16 |
 | G21 | **Batch** onboarding, offboarding and access change → batch grid with checks → `createBatchDrafts` (`needsApproval`) | §6.6 | F17 | unit + e2e | ⏳ F17 |
+| O1 | Offices as an admin-managed list (Dubai, Abu Dhabi, Geneva, US to start) — add / edit / retire by hand or with the AI (admin, Confirm), audited | Raju 2026-10-21 | F27a–F27b (AI: F15–F16) | pgTAP + e2e | ⏳ F27 |
+| O2 | Optional sub-locations per office (US states / cities), admin-managed list | Raju 2026-10-21 | F27a–F27b | pgTAP + e2e | ⏳ F27 |
+| O3 | Section 2 on all three types: Office (required), Location (when the office has sub-locations), Nationality (optional, up to two); office fills the work country; pre-fill + "Was: …"; PDF shows office, not nationality | Raju 2026-10-21 | F27a, F27c | pgTAP + unit + e2e | ⏳ F27 |
+| O4 | Report filters Office / Location / Country / Nationality on every report; columns in All users + exports; Onboarded by office | Raju 2026-10-21 | F27d | pgTAP + unit + e2e | ⏳ F27 |
+| O5 | Employees by office: headcount today (onboarded, not offboarded; leaving still counted, marked), sub-location breakdown, CSV / PDF | Raju 2026-10-21 | F27e | pgTAP + unit + e2e | ⏳ F27 |
 | G17 | Custom reports (base report + columns + filters + grouping) exported as **Excel**, PDF or CSV, audited | §6.6 | F17 | unit + e2e | ⏳ F17 |
 | G18 | Import is admin only: xlsx, csv, text PDF (no scans yet) → preview → Confirm; audited `import.*` | §6.6 | F24 | unit + pgTAP + e2e | ⏳ F24 |
 

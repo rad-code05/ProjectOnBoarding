@@ -596,6 +596,41 @@
       "w": 390,
       "h": 1640,
       "title": "Phone · Open requests by status — F14 proposal"
+    },
+    "AdminOfficesMobile.dc.html": {
+      "x": 24420,
+      "y": 13560,
+      "w": 390,
+      "h": 1180,
+      "title": "Phone · Admin · Offices — F27 proposal"
+    },
+    "AdminOfficeSheetMobile.dc.html": {
+      "x": 24890,
+      "y": 13560,
+      "w": 390,
+      "h": 1000,
+      "title": "Phone · Add / edit office (sheet, US sub-locations) — F27 proposal"
+    },
+    "OfficeFieldsMobile.dc.html": {
+      "x": 25360,
+      "y": 13560,
+      "w": 390,
+      "h": 1240,
+      "title": "Phone · Section 2 with Office, Location, Nationality — F27 proposal"
+    },
+    "ReportFiltersOfficeMobile.dc.html": {
+      "x": 25830,
+      "y": 13560,
+      "w": 390,
+      "h": 1080,
+      "title": "Phone · Report filters with Office & Nationality (sheet) — F27 proposal"
+    },
+    "ReportEmployeesOfficeMobile.dc.html": {
+      "x": 26300,
+      "y": 13560,
+      "w": 390,
+      "h": 1640,
+      "title": "Phone · Employees by office (headcount) — F27 proposal"
     }
   },
   "createdOnFiles": {
@@ -617,7 +652,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 24340,
+      "maxW": 26690,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -739,7 +774,12 @@
     "ReportSlaMobile.dc.html",
     "ReportAccessMobile.dc.html",
     "ReportAccessAppMobile.dc.html",
-    "ReportOpenMobile.dc.html"
+    "ReportOpenMobile.dc.html",
+    "AdminOfficesMobile.dc.html",
+    "AdminOfficeSheetMobile.dc.html",
+    "OfficeFieldsMobile.dc.html",
+    "ReportFiltersOfficeMobile.dc.html",
+    "ReportEmployeesOfficeMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
