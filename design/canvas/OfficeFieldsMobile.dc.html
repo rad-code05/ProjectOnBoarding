@@ -55,14 +55,25 @@ input::placeholder{color:#7e7e7e}
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
 <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
 <label for="f-state" style="font-size: 12px; font-weight: 600">State <span style="font-weight: 500; color: #535353">— optional</span></label>
-<select id="f-state" style="height: 48px; box-sizing: border-box; padding: 0 10px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; color: #000000; min-width: 0"><option>Not set</option><option>Alabama</option><option>…</option><option selected>Texas</option><option>…</option><option>Wyoming</option></select>
+<div style="height: 48px; box-sizing: border-box; padding: 0 10px 0 12px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px; display: flex; align-items: center; gap: 6px">
+<input id="f-state" role="combobox" aria-expanded="false" aria-autocomplete="list" value="Florida" style="flex-grow: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: Raleway, sans-serif; font-size: 16px; color: #000000">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
 </div>
-<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; position: relative">
 <label for="f-city" style="font-size: 12px; font-weight: 600">City <span style="font-weight: 500; color: #535353">— optional</span></label>
-<select id="f-city" style="height: 48px; box-sizing: border-box; padding: 0 10px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; color: #000000; min-width: 0"><option>Not set</option><option selected>Austin</option><option>Dallas</option></select>
+<div style="height: 48px; box-sizing: border-box; padding: 0 10px 0 12px; background: #FFFFFF; border: 2px solid #000000; border-radius: 10px; display: flex; align-items: center; gap: 6px">
+<input id="f-city" role="combobox" aria-expanded="true" aria-controls="city-list" aria-autocomplete="list" value="Mi" style="flex-grow: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: Raleway, sans-serif; font-size: 16px; color: #000000">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"></path></svg>
+</div>
+<ul id="city-list" role="listbox" aria-label="Cities in Florida" style="position: absolute; top: 74px; left: -120px; right: 0; z-index: 2; margin: 0; padding: 6px; list-style: none; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: flex; flex-direction: column; gap: 2px">
+<li role="option" aria-selected="false" style="min-height: 44px; padding: 0 10px; border-radius: 8px; display: flex; align-items: center; font-size: 14px; color: #535353">No city in Florida matches “Mi”</li>
+<li role="option" aria-selected="true" style="min-height: 44px; padding: 0 10px; border-radius: 8px; background: #F4F0EA; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add “Miami” to Florida</li>
+<li style="padding: 4px 10px 2px; font-size: 11px; color: #535353">Admins only · saved to Admin → Offices, audited</li>
+</ul>
 </div>
 </div>
-<span style="margin-top: -6px; font-size: 12px; color: #535353">Shown only for the US. All 50 states + DC; the cities are the ones added for that state in Admin → Offices.</span>
+<span style="margin-top: -6px; font-size: 12px; color: #535353">Type to search — e.g. “tex” finds Texas. Shown only for the US: all 50 states + DC; the cities are the ones added for that state.</span>
 <div style="display: flex; flex-direction: column; gap: 6px">
 <label for="f-country" style="font-size: 12px; font-weight: 600">Country (works in)</label>
 <select id="f-country" style="height: 48px; box-sizing: border-box; padding: 0 10px; background: #FFFFFF; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; color: #000000"><option selected>United States</option></select>
