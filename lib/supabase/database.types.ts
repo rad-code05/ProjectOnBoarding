@@ -237,6 +237,28 @@ export type Database = {
         };
         Relationships: [];
       };
+      country_regions: {
+        Row: {
+          code: string;
+          country: string;
+          id: number;
+          name: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          code: string;
+          country: string;
+          id?: never;
+          name: string;
+        };
+        Update: {
+          code?: string;
+          country?: string;
+          id?: never;
+          name?: string;
+        };
+        Relationships: [];
+      };
       departments: {
         Row: {
           active: boolean;
@@ -569,6 +591,83 @@ export type Database = {
           is_current?: boolean;
           published_at?: string;
           version?: string;
+        };
+        Relationships: [];
+      };
+      office_cities: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          id: number;
+          name: string;
+          office_id: number;
+          region_id: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          id?: never;
+          name: string;
+          office_id: number;
+          region_id: number;
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          id?: never;
+          name?: string;
+          office_id?: number;
+          region_id?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "office_cities_office_id_fkey";
+            columns: ["office_id"];
+            isOneToOne: false;
+            referencedRelation: "offices";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "office_cities_region_id_fkey";
+            columns: ["region_id"];
+            isOneToOne: false;
+            referencedRelation: "country_regions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      offices: {
+        Row: {
+          active: boolean;
+          city: string | null;
+          country: string;
+          created_at: string;
+          id: number;
+          name: string;
+          sort_order: number;
+          uses_regions: boolean;
+        };
+        ComputedFields: never;
+        Insert: {
+          active?: boolean;
+          city?: string | null;
+          country: string;
+          created_at?: string;
+          id?: never;
+          name: string;
+          sort_order?: number;
+          uses_regions?: boolean;
+        };
+        Update: {
+          active?: boolean;
+          city?: string | null;
+          country?: string;
+          created_at?: string;
+          id?: never;
+          name?: string;
+          sort_order?: number;
+          uses_regions?: boolean;
         };
         Relationships: [];
       };
@@ -975,7 +1074,11 @@ export type Database = {
           mailbox_recorded_at: string | null;
           mailbox_recorded_by: string | null;
           manager_name: string | null;
+          nationalities: string[] | null;
+          office_city_id: number | null;
+          office_id: number | null;
           priority: Database["public"]["Enums"]["request_priority"];
+          region_id: number | null;
           requestor_name: string | null;
           return_reason: string | null;
           sla_due_at: string | null;
@@ -1018,7 +1121,11 @@ export type Database = {
           mailbox_recorded_at?: string | null;
           mailbox_recorded_by?: string | null;
           manager_name?: string | null;
+          nationalities?: string[] | null;
+          office_city_id?: number | null;
+          office_id?: number | null;
           priority?: Database["public"]["Enums"]["request_priority"];
+          region_id?: number | null;
           requestor_name?: string | null;
           return_reason?: string | null;
           sla_due_at?: string | null;
@@ -1060,7 +1167,11 @@ export type Database = {
           mailbox_recorded_at?: string | null;
           mailbox_recorded_by?: string | null;
           manager_name?: string | null;
+          nationalities?: string[] | null;
+          office_city_id?: number | null;
+          office_id?: number | null;
           priority?: Database["public"]["Enums"]["request_priority"];
+          region_id?: number | null;
           requestor_name?: string | null;
           return_reason?: string | null;
           sla_due_at?: string | null;
@@ -1125,6 +1236,27 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "app_users";
             referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "requests_office_city_id_fkey";
+            columns: ["office_city_id"];
+            isOneToOne: false;
+            referencedRelation: "office_cities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "requests_office_id_fkey";
+            columns: ["office_id"];
+            isOneToOne: false;
+            referencedRelation: "offices";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "requests_region_id_fkey";
+            columns: ["region_id"];
+            isOneToOne: false;
+            referencedRelation: "country_regions";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -1342,6 +1474,25 @@ export type Database = {
         };
         Returns: number;
       };
+      admin_save_office: {
+        Args: {
+          p_city: string;
+          p_country: string;
+          p_id: number;
+          p_name: string;
+          p_uses_regions: boolean;
+        };
+        Returns: number;
+      };
+      admin_save_office_city: {
+        Args: {
+          p_id: number;
+          p_name: string;
+          p_office_id: number;
+          p_region_id: number;
+        };
+        Returns: number;
+      };
       admin_set_access_type_active: {
         Args: { p_active: boolean; p_id: number };
         Returns: undefined;
@@ -1355,6 +1506,14 @@ export type Database = {
         Returns: undefined;
       };
       admin_set_equipment_type_active: {
+        Args: { p_active: boolean; p_id: number };
+        Returns: undefined;
+      };
+      admin_set_office_active: {
+        Args: { p_active: boolean; p_id: number };
+        Returns: undefined;
+      };
+      admin_set_office_city_active: {
         Args: { p_active: boolean; p_id: number };
         Returns: undefined;
       };
