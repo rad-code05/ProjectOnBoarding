@@ -47,26 +47,33 @@ input::placeholder{color:#7e7e7e}
 <span style="margin-top: -8px; font-size: 12px; color: #535353">Choosing this office fills the person's work country — still editable on the request.</span>
 
 <fieldset style="margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: 10px">
-<legend style="padding: 0 0 6px; font-size: 13px; font-weight: 600">Sub-locations (state / city)</legend>
+<legend style="padding: 0 0 6px; font-size: 13px; font-weight: 600">State &amp; city</legend>
 <label style="display: flex; align-items: center; gap: 10px; font-size: 14px">
 <span style="width: 44px; height: 26px; border-radius: 100px; background: #000000; position: relative; flex-shrink: 0"><span style="position: absolute; top: 3px; left: 21px; width: 20px; height: 20px; border-radius: 100px; background: #FFFFFF"></span></span>
 <input type="checkbox" checked style="position: absolute; opacity: 0; width: 1px; height: 1px">
-Ask for a location on requests for this office
+Ask for a state, then a city, on requests
 </label>
-<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px">
-<sc-for list="{{subs}}" as="s" hint-placeholder-count="3">
-<li style="min-height: 44px; padding: 0 6px 0 12px; border-radius: 10px; background: #F4F0EA; display: flex; align-items: center; gap: 8px">
-<span style="flex-grow: 1; font-size: 14px; font-weight: 600">{{s.name}}</span>
-<span style="font-size: 12px; color: #535353">{{s.people}}</span>
+<span style="font-size: 12px; color: #535353">States: all 50 + DC (fixed list). Cities: yours, per state.</span>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{states}}" as="g" hint-placeholder-count="3">
+<li style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #535353">{{g.state}}</span>
+<sc-for list="{{g.cities}}" as="c" hint-placeholder-count="2">
+<div style="min-height: 44px; padding: 0 6px 0 12px; border-radius: 10px; background: #F4F0EA; display: flex; align-items: center; gap: 8px">
+<span style="flex-grow: 1; font-size: 14px; font-weight: 600">{{c.name}}</span>
+<span style="font-size: 12px; color: #535353">{{c.people}}</span>
 <button type="button" style="height: 36px; padding: 0 12px; border: none; background: transparent; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600; text-decoration: underline">Retire</button>
+</div>
+</sc-for>
 </li>
 </sc-for>
 </ul>
-<div style="display: grid; grid-template-columns: 1fr auto; gap: 8px">
-<input aria-label="New sub-location" placeholder="e.g. Miami, FL" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; min-width: 0">
-<button type="button" style="height: 44px; padding: 0 16px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">Add</button>
+<div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px">
+<select aria-label="State of the new city" style="height: 44px; box-sizing: border-box; padding: 0 8px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px; min-width: 0"><option>Florida</option></select>
+<input aria-label="New city" placeholder="e.g. Miami" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; min-width: 0">
+<button type="button" style="height: 44px; padding: 0 14px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">Add</button>
 </div>
-<span style="font-size: 12px; color: #535353">Optional on the request. Reports break the office down by these.</span>
+<span style="font-size: 12px; color: #535353">Both optional on the request. Reports break the US down by state and city.</span>
 </fieldset>
 
 <div style="padding: 14px; border: 1px solid #cf2e2e; border-radius: 12px; display: flex; flex-direction: column; gap: 8px">
@@ -87,10 +94,10 @@ Ask for a location on requests for this office
 class Component extends DCLogic {
 renderVals() {
 return {
-  subs: [
-    { name: 'New York, NY', people: '5 people' },
-    { name: 'Austin, TX', people: '3 people' },
-    { name: 'San Francisco, CA', people: '1 person' }
+  states: [
+    { state: 'New York', cities: [{ name: 'New York City', people: '5 people' }] },
+    { state: 'Texas', cities: [{ name: 'Austin', people: '2 people' }, { name: 'Dallas', people: '1 person' }] },
+    { state: 'California', cities: [{ name: 'San Francisco', people: '1 person' }] }
   ]
 };
 }

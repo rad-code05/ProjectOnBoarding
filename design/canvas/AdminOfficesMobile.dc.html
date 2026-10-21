@@ -56,15 +56,18 @@ a{color:#000000}a:hover{color:#cf2e2e}
 
 <section aria-labelledby="sub-h" style="padding: 14px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; display: flex; flex-direction: column; gap: 10px">
 <div style="display: flex; align-items: baseline; justify-content: space-between">
-<h2 id="sub-h" style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 20px">US · locations</h2>
+<h2 id="sub-h" style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 20px">US · states &amp; cities</h2>
 <a href="#" style="font-size: 13px; font-weight: 600">Edit</a>
 </div>
-<div style="display: flex; flex-wrap: wrap; gap: 6px">
-<sc-for list="{{subs}}" as="s" hint-placeholder-count="4">
-<span style="height: 34px; padding: 0 12px; border-radius: 100px; background: #F4F0EA; display: flex; align-items: center; font-size: 13px; font-weight: 600">{{s}}</span>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{subs}}" as="s" hint-placeholder-count="3">
+<li style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700">{{s.state}}</span>
+<span style="font-size: 13px; color: #535353">{{s.cities}}</span>
+</li>
 </sc-for>
-</div>
-<span style="font-size: 12px; line-height: 1.5; color: #535353">Optional on requests for the US office. Add a state or city when someone starts somewhere new.</span>
+</ul>
+<span style="font-size: 12px; line-height: 1.5; color: #535353">All 50 states and DC are listed on requests. Cities are yours: add one when someone starts somewhere new.</span>
 </section>
 
 <div style="padding: 12px 14px; border: 1px dashed #8a8378; border-radius: 12px; display: flex; gap: 10px; align-items: flex-start">
@@ -84,9 +87,13 @@ return {
     { name: 'Dubai', where: 'Dubai · United Arab Emirates', extra: 'No sub-locations', people: '18 people' },
     { name: 'Abu Dhabi', where: 'Abu Dhabi · United Arab Emirates', extra: 'No sub-locations', people: '6 people' },
     { name: 'Geneva', where: 'Geneva · Switzerland', extra: 'No sub-locations', people: '11 people' },
-    { name: 'US', where: 'United States', extra: '3 locations (state / city)', people: '9 people' }
+    { name: 'US', where: 'United States', extra: 'State, then city · 4 cities', people: '9 people' }
   ],
-  subs: ['New York, NY', 'Austin, TX', 'San Francisco, CA']
+  subs: [
+    { state: 'New York', cities: 'New York City' },
+    { state: 'Texas', cities: 'Austin · Dallas' },
+    { state: 'California', cities: 'San Francisco' }
+  ]
 };
 }
 }
