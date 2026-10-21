@@ -32,7 +32,7 @@ select is((select array_agg(name order by name) from public.offices where uses_r
 select is((select count(*)::int from public.country_regions where country = 'US'), 51, '50 states + DC');
 select is((select row(f.is_current, (select is_current from public.form_versions where version = '4.1'))::text
            from public.form_versions f where f.version = '4.2'),
-  row(false, true)::text, 'form v4.2 is ready but 4.1 stays current until F27c');
+  row(true, false)::text, 'form v4.2 is current (published in F27c); 4.1 stays for older requests');
 select is((select array_agg(key || ':' || required order by sort_order) from public.form_fields
            where form_version_id = (select v42 from v) and key in ('office', 'region', 'office_city', 'nationalities')),
   array['office:true', 'region:false', 'office_city:false', 'nationalities:false'],

@@ -23,8 +23,8 @@ select results_eq(
   array['Engineering', 'Tech', 'Sales', 'Operations', 'Marketing', 'Compliance', 'Admin'],
   'the seven departments are seeded in order');
 select is(
-  (select version from public.form_versions where is_current), '4.1',
-  'form v4.1 is the current version');
+  (select version from public.form_versions where is_current), '4.2',
+  'form v4.2 is the current version (F27: Office, State, City, Nationality)');
 select ok(
   (select count(*) = 17 from public.form_fields f join public.form_versions v on v.id = f.form_version_id where v.version = '4.1'),
   'form v4.1 defines the 17 fields of sections 1–2');

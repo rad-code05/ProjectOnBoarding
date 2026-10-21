@@ -28,7 +28,12 @@ export default async function RequestPage({
   );
   return (
     <div className="flex flex-col gap-6">
-      <RequestForm key={form.state} form={form} canSign={canSign} />
+      <RequestForm
+        key={form.state}
+        form={form}
+        canSign={canSign}
+        canAddCities={roles.includes("admin")}
+      />
       {activity && (
         <RequestActivity
           entries={activity}

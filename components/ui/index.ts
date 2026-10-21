@@ -1,5 +1,11 @@
 export { Avatar, initials } from "./Avatar";
 export { Button, buttonStyles } from "./Button";
+export {
+  Combobox,
+  filterOptions,
+  foldText,
+  type ComboboxOption,
+} from "./Combobox";
 export { IconButton } from "./IconButton";
 export {
   AlertIcon,

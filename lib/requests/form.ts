@@ -46,6 +46,25 @@ import type { SignedSection } from "./signing";
 import type { HeldItem, HeldKind, PreviousDetails } from "./access-change";
 import { loadAccessChange } from "./access-change-load";
 
+/** Offices, states and cities the form chooses from (F27). */
+export type FormPlaces = {
+  offices: {
+    id: number;
+    name: string;
+    country: string;
+    usesRegions: boolean;
+    active: boolean;
+  }[];
+  regions: { id: number; country: string; name: string }[];
+  cities: {
+    id: number;
+    officeId: number;
+    regionId: number;
+    name: string;
+    active: boolean;
+  }[];
+};
+
 export type RequestFormData = {
   id: string;
   ticketId: string;
@@ -83,6 +102,8 @@ export type RequestFormData = {
   returned: ReturnInfo | null;
   /** The signed-in person's screen timezone (F05e). */
   timezone: string;
+  /** F27: offices, states and cities for Office → State → City. */
+  places: FormPlaces;
   /** Access change only (F10c): what they hold (+ this request's change), section 2 as it was. */
   accessChange: { held: HeldItem[]; previous: PreviousDetails | null } | null;
   /** Offboarding only (F09c-2): SLA in the company timezone, what to remove. */
@@ -122,7 +143,7 @@ export async function loadRequestForm(
   const { data: request, error } = await supabase
     .from("requests")
     .select(
-      "id, ticket_id, type, state, employee_id, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, sla_missed_reason, mailbox_handling, mailbox_recorded_at, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
+      "id, ticket_id, type, state, employee_id, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, office_id, region_id, office_city_id, nationalities, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, sla_missed_reason, mailbox_handling, mailbox_recorded_at, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -143,6 +164,9 @@ export async function loadRequestForm(
     execution,
     signatures,
     lastReturn,
+    offices,
+    regions,
+    cities,
   ] = await Promise.all([
     supabase
       .from("form_fields")
@@ -234,6 +258,15 @@ export async function loadRequestForm(
       .order("decided_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from("offices")
+      .select("id, name, country, uses_regions, active")
+      .order("sort_order"),
+    supabase.from("country_regions").select("id, country, name").order("name"),
+    supabase
+      .from("office_cities")
+      .select("id, office_id, region_id, name, active")
+      .order("name"),
   ]);
   const tz = await tzPromise;
   const slaRow =
@@ -264,6 +297,9 @@ export async function loadRequestForm(
     execution,
     signatures,
     lastReturn,
+    offices,
+    regions,
+    cities,
   ]) {
     if (result.error) {
       throw new Error(`Could not load the form: ${result.error.message}`);
@@ -317,7 +353,15 @@ export async function loadRequestForm(
       label: d.name,
     })),
     country: countryOptions(),
+    nationalities: countryOptions(),
     assignee: assignees,
+    // Active offices, plus the request's own one if it was retired since.
+    office: (offices.data ?? [])
+      .filter((o) => o.active || o.id === request.office_id)
+      .map((o) => ({
+        value: String(o.id),
+        label: o.active ? o.name : `${o.name} (retired)`,
+      })),
   };
   for (const field of fields.data ?? []) {
     if (field.field_type === "select" && Array.isArray(field.options)) {
@@ -364,6 +408,10 @@ export async function loadRequestForm(
       job_title: request.job_title ?? "",
       department: request.department_id ? String(request.department_id) : "",
       country: request.country ?? "",
+      office: request.office_id ? String(request.office_id) : "",
+      region: request.region_id ? String(request.region_id) : "",
+      office_city: request.office_city_id ? String(request.office_city_id) : "",
+      nationalities: (request.nationalities ?? []).join(","),
       manager_name: request.manager_name ?? "",
       requestor_name: request.requestor_name ?? "",
       effective_date: request.effective_date ?? "",
@@ -497,6 +545,25 @@ export async function loadRequestForm(
         ? returnInfo(lastReturn.data, request.return_reason, tz)
         : null,
     timezone: tz,
+    places: {
+      offices: (offices.data ?? []).map((o) => ({
+        id: o.id,
+        name: o.name,
+        country: o.country,
+        usesRegions: o.uses_regions,
+        active: o.active,
+      })),
+      regions: regions.data ?? [],
+      cities: (cities.data ?? [])
+        .filter((c) => c.active || c.id === request.office_city_id)
+        .map((c) => ({
+          id: c.id,
+          officeId: c.office_id,
+          regionId: c.region_id,
+          name: c.name,
+          active: c.active,
+        })),
+    },
     accessChange,
     offboarding:
       request.type === "offboarding"

@@ -43,6 +43,9 @@ insert into public.request_access_items (request_id, app_id, action, permission)
 select (select id from ids where first_name = 'Nina'), a.id, 'Grant', 'Regular Member'
 from public.catalog_apps a where a.name = 'Slack';
 
+-- Form v4.2 (F27): new requests need an Office before Review & sign.
+update public.requests set office_id = (select id from public.offices where name = 'Dubai')
+where office_id is null and state not in ('closed', 'cancelled');
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_al_admin","role":"authenticated"}', true);
 select public.transition_request(id, 'in_execution') from ids where first_name = 'Nina';

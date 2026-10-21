@@ -18,6 +18,10 @@ const empty: DraftFormValues = {
   job_title: "",
   department: "",
   country: "",
+  office: "",
+  region: "",
+  office_city: "",
+  nationalities: "",
   manager_name: "",
   requestor_name: "",
   effective_date: "",
@@ -133,6 +137,48 @@ describe("draftValuesSchema", () => {
     expect(
       draftValuesSchema.safeParse({ ...empty, priority: "urgent" }).success,
     ).toBe(false);
+  });
+});
+
+describe("office, state, city, nationalities (F27)", () => {
+  test("ids and up to two nationalities map to their columns", () => {
+    const values = draftValuesSchema.parse({
+      ...empty,
+      office: "4",
+      region: "44",
+      office_city: "7",
+      nationalities: "CH,IT",
+    });
+    expect(toColumns(values, "Asia/Dubai")).toMatchObject({
+      office_id: 4,
+      region_id: 44,
+      office_city_id: 7,
+      nationalities: ["CH", "IT"],
+    });
+  });
+
+  test("no office = no state or city; no nationality = empty", () => {
+    const columns = toColumns(
+      draftValuesSchema.parse({ ...empty, region: "44", office_city: "7" }),
+      "Asia/Dubai",
+    );
+    expect(columns).toMatchObject({
+      office_id: null,
+      region_id: null,
+      office_city_id: null,
+      nationalities: null,
+    });
+  });
+
+  test("at most two, each once, from the country list", () => {
+    const errors = (nationalities: string) => {
+      const result = draftValuesSchema.safeParse({ ...empty, nationalities });
+      return result.success ? null : fieldErrorsOf(result.error).nationalities;
+    };
+    expect(errors("CH,IT,FR")).toBe("Choose up to two nationalities.");
+    expect(errors("CH,CH")).toBe("Choose each nationality once.");
+    expect(errors("XX")).toBe("Choose a nationality from the list.");
+    expect(errors("CH")).toBeNull();
   });
 });
 

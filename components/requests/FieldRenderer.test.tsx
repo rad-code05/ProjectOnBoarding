@@ -57,17 +57,91 @@ describe("FieldRenderer", () => {
     render(
       <FieldRenderer
         field={field({
+          key: "department",
+          label: "Department / team",
+          field_type: "department",
+        })}
+        value="3"
+        choices={[{ value: "3", label: "Sales" }]}
+      />,
+    );
+    const select = screen.getByLabelText("Department / team");
+    expect(select).toHaveValue("3");
+    expect(screen.getByRole("option", { name: "Choose…" })).toBeInTheDocument();
+  });
+
+  test("country, office, state and city are searchable drop-downs (F27)", async () => {
+    const u = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <FieldRenderer
+        field={field({
           key: "country",
           label: "Country",
           field_type: "country",
         })}
         value="CH"
-        choices={[{ value: "CH", label: "Switzerland" }]}
+        onChange={onChange}
+        choices={[
+          { value: "CH", label: "Switzerland" },
+          { value: "SE", label: "Sweden" },
+          { value: "AE", label: "United Arab Emirates" },
+        ]}
       />,
     );
-    const select = screen.getByLabelText("Country");
-    expect(select).toHaveValue("CH");
-    expect(screen.getByRole("option", { name: "Choose…" })).toBeInTheDocument();
+    const box = screen.getByRole("combobox", { name: "Country" });
+    expect(box).toHaveValue("Switzerland");
+    await u.click(box);
+    await u.type(box, "emir");
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual([
+      "United Arab Emirates",
+    ]);
+    await u.keyboard("{Enter}");
+    expect(onChange).toHaveBeenCalledWith("AE");
+  });
+
+  test("nationality: up to two, each removable", async () => {
+    const u = userEvent.setup();
+    const onChange = vi.fn();
+    const choices = [
+      { value: "CH", label: "Switzerland" },
+      { value: "IT", label: "Italy" },
+      { value: "FR", label: "France" },
+    ];
+    const nat = field({
+      key: "nationalities",
+      label: "Nationality",
+      field_type: "nationality",
+    });
+    const { rerender } = render(
+      <FieldRenderer
+        field={nat}
+        value="CH"
+        onChange={onChange}
+        choices={choices}
+      />,
+    );
+    await u.click(screen.getByRole("combobox", { name: "Nationality" }));
+    expect(
+      screen.queryByRole("option", { name: "Switzerland" }),
+    ).not.toBeInTheDocument();
+    await u.click(screen.getByRole("option", { name: "Italy" }));
+    expect(onChange).toHaveBeenCalledWith("CH,IT");
+
+    rerender(
+      <FieldRenderer
+        field={nat}
+        value="CH,IT"
+        onChange={onChange}
+        choices={choices}
+      />,
+    );
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Two chosen — remove one to change."),
+    ).toBeInTheDocument();
+    await u.click(screen.getByRole("button", { name: "Remove Switzerland" }));
+    expect(onChange).toHaveBeenLastCalledWith("IT");
   });
 
   test("system fields are shown, not editable", () => {

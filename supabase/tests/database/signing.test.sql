@@ -57,6 +57,9 @@ select is(private.snapshot_sha256($v${"request":{"first_name":"José","last_name
 -- ---------------------------------------------------------------------------
 -- Getting Anna and Ben ready (IT side)
 -- ---------------------------------------------------------------------------
+-- Form v4.2 (F27): new requests need an Office before Review & sign.
+update public.requests set office_id = (select id from public.offices where name = 'Dubai')
+where office_id is null and state not in ('closed', 'cancelled');
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_sg_admin","role":"authenticated"}', true);
 select public.transition_request(id, 'in_execution') from ids;
@@ -111,7 +114,7 @@ select is(
 -- The snapshot shown in the sheet
 select ok(
   (select s -> 'request' ->> 'ticket_id' like 'UAM-%' and s -> 'request' ->> 'department' = 'Engineering'
-     and s -> 'request' ->> 'form_version' = '4.1' and s -> 'execution' ->> 'executed_by_name' = 'Ada Admin'
+     and s -> 'request' ->> 'form_version' = '4.2' and s -> 'execution' ->> 'executed_by_name' = 'Ada Admin'
      and s -> 'access' = '[]'::jsonb
    from public.request_snapshot_preview((select id from ids where first_name = 'Anna')) as s),
   'the preview holds the request, names and section 9');
@@ -158,7 +161,7 @@ select ok(
   (select s.signer_id = 'user_sg_admin' and s.signer_role = 'it_operator' and s.section = 'it_execution'
      and s.signed_at > now() - interval '1 minute' and s.cleared_at is null
      and s.signature_asset_id = (select id from public.signature_assets where user_id = 'user_sg_admin' and is_active)
-     and s.form_version_id = (select id from public.form_versions where version = '4.1')
+     and s.form_version_id = (select id from public.form_versions where version = '4.2')
    from public.signatures s where s.request_id = (select id from ids where first_name = 'Anna')),
   'the signature records signer, role, section, active asset, form version and server time');
 select ok(
