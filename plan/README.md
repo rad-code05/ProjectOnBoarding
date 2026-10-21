@@ -9,7 +9,7 @@ We build **feature by feature**: first a thin walking skeleton, then one vertica
 | --- | --- | --- | --- |
 | Phase 0 | [phase-0-discovery.md](phase-0-discovery.md) | Decisions D1–D19, design review | In progress (D1, D2, D12, D13 done) |
 | Phase 1 | [phase-1-skeleton.md](phase-1-skeleton.md) | **S1–S7** walking skeleton: app, CI, design foundation, hosting, sign-in, users & roles, app shell | Done (S1–S7) |
-| Features | [features.md](features.md) | **F01–F23**, in order. After F08 onboarding works end-to-end; after F11 the app can go live | In progress — F01–F14, F05e, F19 done (F14 Reports III 2026-10-20 — Reports complete); next **F27 Offices & nationality** (boards first), then F15 Assistant shell |
+| Features | [features.md](features.md) | **F01–F23**, in order. After F08 onboarding works end-to-end; after F11 the app can go live | In progress — F01–F14, F05e, F19 done (F14 Reports III 2026-10-20 — Reports complete); **F27 Offices & nationality in progress** (F27a, F27b, F27c, F27d-1, US cities done 2026-10-21) — next F27d-2, F27e, then F15 Assistant shell |
 | Release | [release.md](release.md) | **R1–R7** final review and go-live (after F11), then **Operate** (routine after go-live) | Not started |
 
 One skeleton step or feature = one branch = one pull request = roughly one session. A large item is split into parts (S6a, F06a, F06b) **before** building — see the PR size rules below.
@@ -36,10 +36,11 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 **Continue unfinished work**
 > Read CLAUDE.md, then continue F04 in plan/features.md. Check the session log and the open branch/PR to see where we stopped.
 
-**Next session (after F14 + AI / office decisions, 2026-10-21): F27 Offices & nationality, then F15**
-> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date and the cloud database matches local (32 migrations). The "docs: AI assistant decisions" PR (#116) should be merged — clean up its branch. If Docker is not running, start Docker Desktop first.
-> F14 is done — the Reports page is complete. First let me try the three new reports myself (Offboarding SLA, Access by application with one app's page, Open requests by status; CSV and PDF; my account and the test approver).
-> Then F27 (Offices & nationality) in plan/features.md — decisions and split are recorded; if its phone boards are approved, build F27a first; otherwise show me the boards. After F27: F15 (Assistant shell) — decisions in PROJECT_PLAN §6.6; propose the split and draw its boards first.
+**Next session (after F27a–F27d-1 + US cities, 2026-10-21): push 2 migrations, then F27d-2 → F27e → F15**
+> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date (the "docs: session handover (F27d-2 next)" PR should be merged — clean up its branch). If Docker is not running, start Docker Desktop first.
+> 1) The cloud database is 2 migrations behind (local 36, cloud 34): 20261021140000_report_place_filters.sql (F27d-1) and 20261021150000_us_big_cities.sql (333 US cities). Do the cloud db push dry run and wait for my "push", then confirm cloud = local (36).
+> 2) Let me try what is live: a new onboarding with Office (Dubai fills the country; US → State → City, type to search; two nationalities), Admin → Offices (US cities by state, Find a city), and a record with the office on it — my account and the test approver.
+> 3) Then continue F27 in plan/features.md: F27d-2 (report Filters sheet with Office, US state, City and Nationality on every report; office / location / nationality columns in the All users list and exports; the Onboarded by office page), then F27e (Employees by office — headcount today, US by state and city, CSV / PDF — plus browser tests and the F27 wrap-up). After F27: F15 Assistant shell (decisions in PROJECT_PLAN §6.6) — brief me, propose the split and draw its phone boards first.
 > Verify library APIs with Context7 before coding. Run the git commands for me (branch, commit, push, PR); watch CI to the end and only tell me to squash-merge when every check is green; I say "done". After every merged migration, do the cloud db push dry run and wait for my "push". Update my learning guide (Rajulearning/Learn.md) at the end of every PR — Part 10, glossary, data model, repo map and roadmap — and record every configuration change there. Browser tests from Claude's PC use the local Supabase only.
 
 **Check the state** (after a break or a disconnect)
