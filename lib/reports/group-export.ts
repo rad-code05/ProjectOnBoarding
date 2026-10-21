@@ -15,13 +15,13 @@ import {
   rangeLabel,
   reportDays,
 } from "./filters";
-import { groupTiles, type ReportGroup } from "./groups";
+import { GROUP_SLUGS, groupTiles, type ReportGroup } from "./groups";
 import { loadOnboardedBy } from "./onboarded-by";
 import { fileHeaders, madeBy, renderReportPdf } from "./pdf";
 
 /**
  * GET /reports/onboarded-by-<group>/export?<filters>[&format=pdf] — one row
- * per country / department as CSV (default) or PDF. Recorded in the audit
+ * per country / department / office as CSV (default) or PDF. Recorded in the audit
  * log first ("report.exported"); no audit entry, no file.
  */
 export async function exportOnboardedBy(
@@ -37,8 +37,7 @@ export async function exportOnboardedBy(
     q: "",
   };
   const timeZone = await companyTimezone();
-  const slug =
-    group === "country" ? "onboarded-by-country" : "onboarded-by-department";
+  const slug = GROUP_SLUGS[group];
   const info = reportInfo(slug);
   let report;
   try {

@@ -6,6 +6,7 @@ import {
   type RequestState,
   type RequestType,
 } from "@/lib/requests/labels";
+import { nationalityText } from "@/lib/requests/signing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { placeArgs, reportRange, type ReportFilters } from "./filters";
 
@@ -19,6 +20,10 @@ export type AllUsersRow = {
   email: string;
   department: string | null;
   country: string | null;
+  /** "US · Texas · Austin" — office, then the US state and city (F27). */
+  office: string | null;
+  /** "Switzerland, Italy" (F27); null = not set. */
+  nationality: string | null;
   /** "Effective 20 Oct 2026 · Closed 15 Oct 2026" (company timezone). */
   dates: string;
   /** Where the row opens for this reader; null = nothing to open. */
@@ -110,6 +115,14 @@ export async function loadReportOptions(): Promise<ReportOptions> {
   };
 }
 
+/** "US · Texas · Austin", "Dubai", null when no office is set. */
+export function officeText(
+  office: string | null,
+  location: string | null,
+): string | null {
+  return office ? [office, location].filter(Boolean).join(" · ") : null;
+}
+
 /** The report_all_users() arguments for these filters. */
 export function allUsersArgs(filters: ReportFilters, timeZone: string) {
   const range = reportRange(filters, timeZone);
@@ -156,6 +169,8 @@ export async function loadAllUsers(
       email: r.work_email ?? "—",
       department: r.department,
       country: r.country ? countryName(r.country) : null,
+      office: officeText(r.office, r.location),
+      nationality: nationalityText(r.nationalities) || null,
       dates: `${start} · ${end}`,
       href:
         r.state === "closed"

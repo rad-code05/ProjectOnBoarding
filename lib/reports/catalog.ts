@@ -8,6 +8,7 @@ export type ReportSlug =
   | "onboarded-by-month"
   | "onboarded-by-country"
   | "onboarded-by-department"
+  | "onboarded-by-office"
   | "signature-log"
   | "offboarding-sla"
   | "access-by-application"
@@ -64,6 +65,16 @@ export const REPORTS: ReportInfo[] = [
     desc: "Closed onboardings grouped by department / team",
     definition:
       "Onboarding requests the approver confirmed, signed and closed in the period (company timezone), grouped by the department on the request.",
+    ready: true,
+  },
+  {
+    slug: "onboarded-by-office",
+    key: "onboarded_by_office",
+    group: "People",
+    name: "Onboarded by office",
+    desc: "Closed onboardings grouped by office",
+    definition:
+      'Onboarding requests the approver confirmed, signed and closed in the period (company timezone), grouped by the office on the request. Requests from before the office field are counted as "Office not set".',
     ready: true,
   },
   {

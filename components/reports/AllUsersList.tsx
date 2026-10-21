@@ -5,8 +5,8 @@ import { TYPE_LABELS } from "@/lib/requests/labels";
 
 /**
  * The All users list (board: Phone · All users list): one card per request —
- * name, email, status, ticket · type · department · country, dates. Cards on
- * phones, two columns on desktop.
+ * name, email, status, ticket · type · department · country, office and
+ * nationality (F27), dates. Cards on phones, two columns on desktop.
  */
 export function AllUsersList({ rows }: { rows: AllUsersRow[] }) {
   return (
@@ -48,6 +48,16 @@ export function AllUsersList({ rows }: { rows: AllUsersRow[] }) {
                 .filter(Boolean)
                 .join(" · ")}
             </span>
+            {(row.office || row.nationality) && (
+              <span className="text-xs text-graphite">
+                {[
+                  row.office && `Office: ${row.office}`,
+                  row.nationality && `Nationality: ${row.nationality}`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            )}
             <span className="text-xs">{row.dates}</span>
           </li>
         );

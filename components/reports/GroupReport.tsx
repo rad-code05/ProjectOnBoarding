@@ -11,13 +11,17 @@ import {
   reportParams,
   type ReportFilters,
 } from "@/lib/reports/filters";
-import { groupTiles, type ReportGroup } from "@/lib/reports/groups";
+import {
+  GROUP_SLUGS,
+  groupTiles,
+  type ReportGroup,
+} from "@/lib/reports/groups";
 import { loadOnboardedBy } from "@/lib/reports/onboarded-by";
 
 /**
- * "Onboarded by country / department" (F13b; board: Phone · Onboarded by
- * country): definition, filters, two tiles, horizontal bars, every group
- * with its share, audited CSV / PDF. One page, two groupings.
+ * "Onboarded by country / department / office" (F13b, F27d; board: Phone ·
+ * Onboarded by country): definition, filters, two tiles, horizontal bars, every group
+ * with its share, audited CSV / PDF. One page, three groupings.
  */
 export async function GroupReport({
   group,
@@ -30,8 +34,7 @@ export async function GroupReport({
   timeZone: string;
   count: (search: string) => Promise<number | null>;
 }) {
-  const slug =
-    group === "country" ? "onboarded-by-country" : "onboarded-by-department";
+  const slug = GROUP_SLUGS[group];
   const [options, report] = await Promise.all([
     loadReportOptions(),
     loadOnboardedBy(group, filters, timeZone),

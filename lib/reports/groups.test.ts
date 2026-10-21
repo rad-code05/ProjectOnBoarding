@@ -26,6 +26,22 @@ describe("groupRows", () => {
     ).toBe("Sales");
     expect(groupRows([], "department")).toEqual({ rows: [], total: 0 });
   });
+
+  test('offices by name; requests without an office are "Office not set"', () => {
+    const { rows } = groupRows(
+      [
+        { key: "1", label: "Dubai", onboarded: 3 },
+        { key: null, label: null, onboarded: 1 },
+      ],
+      "office",
+    );
+    expect(rows.map((r) => r.label)).toEqual(["Dubai", "Office not set"]);
+    expect(groupTiles(rows, "office")).toMatchObject({
+      groups: 1,
+      top: { value: 3, note: "Dubai · 75%" },
+      words: { label: "Offices", column: "Office" },
+    });
+  });
 });
 
 describe("groupTiles", () => {
