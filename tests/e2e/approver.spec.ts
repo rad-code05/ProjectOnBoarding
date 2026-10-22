@@ -229,6 +229,51 @@ test("full loop: Raju signs, Moises returns it, Raju signs again, Moises confirm
       .update(await again.body())
       .digest("hex"),
   ).toBe(sha256);
+
+  // Employees by office (F27e): Lina now counts in Dubai; the row opens its people.
+  await openApp(page, "/reports/employees-by-office");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Employees by office" }),
+  ).toBeVisible();
+  await expect(page.getByText("As of today")).toBeVisible();
+  await expect(
+    page.getByRole("table", { name: "Every office" }).getByRole("row", {
+      name: /^Total \d+ \d+ 100%$/,
+    }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: /^Dubai\s*\d+$/ }).click();
+  await expect(page).toHaveURL(
+    /\/reports\/employees-by-office\/people\?office=\d+/,
+  );
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Dubai" }),
+  ).toBeVisible();
+  await page.getByRole("searchbox", { name: /Search/ }).fill(ticketId);
+  await expect(page.getByRole("status")).toHaveText(/^1 person · /);
+  const lina = page.getByRole("listitem").filter({ hasText: "Lina Loop" });
+  await expect(lina).toContainText("OfficeDubai");
+  await expect(lina.getByRole("link", { name: ticketId })).toHaveAttribute(
+    "href",
+    `/records/${requestId}`,
+  );
+
+  // Its CSV lists the people (audited, like every export).
+  const csv = await page.request.get(
+    `/reports/employees-by-office/export?q=${ticketId}`,
+  );
+  expect(csv.status()).toBe(200);
+  expect(csv.headers()["content-disposition"]).toMatch(
+    /^attachment; filename="employees-by-office_\d{4}-\d{2}-\d{2}\.csv"$/,
+  );
+  const lines = (await csv.text()).trim().split("\r\n");
+  expect(lines[0]).toContain("Office,State,City,First name,Last name");
+  expect(lines).toHaveLength(2);
+  expect(lines[1]).toMatch(/^Dubai,,,Lina,Loop,/);
+  const pdf = await page.request.get(
+    "/reports/employees-by-office/export?format=pdf",
+  );
+  expect(pdf.status()).toBe(200);
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });
 
 test("offboarding journey: onboard, close, Who is leaving?, remove, sign, Moises confirms, PDF", async ({
