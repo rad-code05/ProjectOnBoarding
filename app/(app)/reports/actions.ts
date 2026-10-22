@@ -11,6 +11,7 @@ import type { ReportGroup } from "@/lib/reports/groups";
 import { summarise } from "@/lib/reports/months";
 import { loadOnboardedBy } from "@/lib/reports/onboarded-by";
 import { onboardedMonths, onboardedSpan } from "@/lib/reports/onboarded";
+import { employeesArgs } from "@/lib/reports/employees-load";
 import { openArgs } from "@/lib/reports/open-load";
 import { slaArgs } from "@/lib/reports/offboarding-sla";
 import { signatureArgs } from "@/lib/reports/signature-log";
@@ -162,6 +163,24 @@ export async function countOpenRequests(
   const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc("report_open_requests", {
     ...openArgs(filters),
+    p_limit: 1,
+  });
+  if (error) return null;
+  return Number(data?.[0]?.total_count ?? 0);
+}
+
+/** "Show N employees" / "Show N people" for Employees by office (today). */
+export async function countEmployees(search: string): Promise<number | null> {
+  await requireRole(...PAGES.reports.roles);
+  const parsed = z.string().max(1000).safeParse(search);
+  if (!parsed.success) return null;
+  const filters = parseReportFilters(
+    Object.fromEntries(new URLSearchParams(parsed.data)),
+  );
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase.rpc("report_employees", {
+    ...employeesArgs(filters),
+    p_search: filters.q || undefined,
     p_limit: 1,
   });
   if (error) return null;

@@ -9,6 +9,7 @@ export type ReportSlug =
   | "onboarded-by-country"
   | "onboarded-by-department"
   | "onboarded-by-office"
+  | "employees-by-office"
   | "signature-log"
   | "offboarding-sla"
   | "access-by-application"
@@ -75,6 +76,16 @@ export const REPORTS: ReportInfo[] = [
     desc: "Closed onboardings grouped by office",
     definition:
       'Onboarding requests the approver confirmed, signed and closed in the period (company timezone), grouped by the office on the request. Requests from before the office field are counted as "Office not set".',
+    ready: true,
+  },
+  {
+    slug: "employees-by-office",
+    key: "employees_by_office",
+    group: "People",
+    name: "Employees by office",
+    desc: "Headcount today per office, the US by state and city",
+    definition:
+      "People employed today — an onboarding closed by the approver and no closed offboarding since — per office, from their latest closed request. People with an open offboarding still count, marked Leaving.",
     ready: true,
   },
   {

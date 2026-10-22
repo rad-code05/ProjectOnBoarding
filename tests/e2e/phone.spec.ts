@@ -302,7 +302,7 @@ test.describe("approver on a phone", () => {
     await expect(menu).toHaveCount(0);
   });
 
-  test("Reports (All users, by month, by country, Signature log, Offboarding SLA, Access by application, Open requests) fit the phone", async ({
+  test("Reports (All users, by month, by country, Signature log, Offboarding SLA, Access by application, Open requests, Employees by office) fit the phone", async ({
     page,
   }) => {
     test.slow(); // eight report pages
@@ -367,6 +367,16 @@ test.describe("approver on a phone", () => {
     await openApp(page, "/reports/open-requests");
     await expect(
       page.getByRole("heading", { level: 1, name: "Open requests by status" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+    await openApp(page, "/reports/employees-by-office");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Employees by office" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+    await openApp(page, "/reports/employees-by-office/people?office=0");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Office not set" }),
     ).toBeVisible();
     await expectNoSideScroll(page);
   });
