@@ -1711,6 +1711,57 @@ export type Database = {
           work_email: string;
         }[];
       };
+      report_employees: {
+        Args: {
+          p_city?: number;
+          p_country?: string;
+          p_department?: number;
+          p_limit?: number;
+          p_nationality?: string;
+          p_office?: number;
+          p_offset?: number;
+          p_region?: number;
+          p_search?: string;
+        };
+        Returns: {
+          city: string;
+          country: string;
+          department: string;
+          employee_id: string;
+          first_name: string;
+          last_name: string;
+          latest_request_id: string;
+          latest_ticket_id: string;
+          leaving_request_id: string;
+          leaving_ticket_id: string;
+          nationalities: string[];
+          office: string;
+          onboarded_at: string;
+          region: string;
+          total_count: number;
+          work_email: string;
+        }[];
+      };
+      report_employees_by_office: {
+        Args: {
+          p_city?: number;
+          p_country?: string;
+          p_department?: number;
+          p_nationality?: string;
+          p_office?: number;
+          p_region?: number;
+        };
+        Returns: {
+          city: string;
+          city_id: number;
+          employees: number;
+          leaving: number;
+          office: string;
+          office_id: number;
+          region: string;
+          region_id: number;
+        }[];
+      };
       report_offboarding_sla: {
         Args: {
           p_city?: number;
