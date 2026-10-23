@@ -85,6 +85,9 @@ export function Assistant({ name, roles }: { name: string; roles: Role[] }) {
 
   return (
     <>
+      {/* Room at the end of the page, so the robot never covers its last
+          buttons (Show more, Save …) once scrolled to the bottom. */}
+      <div aria-hidden="true" className="h-18" />
       {!open && (
         <button
           ref={launcher}

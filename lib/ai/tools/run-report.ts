@@ -256,7 +256,7 @@ export const runReport = defineTool({
     tool({
       description: [
         "Run one of the app's reports and get its numbers. Use it for every question about counts, people, onboardings, offboardings, approvals, access or what is waiting.",
-        "Answer only from what it returns, say the report, period and filters you used, and give the link as the source.",
+        "Answer only from what it returns, and name the report, period and filters you used as the source. Don't write the link: the app shows an Open the report link under your answer.",
         "If it returns an error about a name, ask the person which one they mean.",
       ].join(" "),
       inputSchema: reportInput,
