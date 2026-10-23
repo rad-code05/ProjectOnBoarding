@@ -38,11 +38,16 @@ test("Assistant (F15c): the robot opens the chat, answers, remembers it is open;
   ).toHaveJSProperty("tagName", "STRONG");
   await expect(panel.getByRole("list", { name: "Suggestions" })).toHaveCount(0);
 
-  // Typed question, sent with Enter.
+  // Typed question, sent with Enter — once the first answer is complete
+  // (while it is still being written the panel shows Stop, not Send).
+  await expect(panel.getByRole("button", { name: "Send" })).toBeVisible();
   const box = panel.getByRole("textbox", { name: "Message the assistant" });
   await box.fill("And what does Closed mean?");
   await box.press("Enter");
-  await expect(panel.getByText("And what does Closed mean?")).toBeVisible();
+  await expect(box).toHaveValue("");
+  await expect(
+    panel.getByRole("log").getByText("And what does Closed mean?"),
+  ).toBeVisible();
   await expect(panel.getByText("This is the test assistant.")).toHaveCount(2);
 
   // Open is remembered on this device.
