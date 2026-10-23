@@ -46,6 +46,8 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
       "getPersonAccess",
       "whoHasAccess",
       "getCatalog",
+      "listRequests",
+      "getRequest",
     ];
     expect(toolNamesFor(["requester", "it_operator"])).toEqual([
       "getAppHelp",
