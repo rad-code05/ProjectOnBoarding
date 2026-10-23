@@ -4,6 +4,7 @@ import type { UIMessage } from "ai";
 import type { Json } from "@/lib/supabase/database.types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { AiStatus, ChatDeps } from "./chat-run";
+import { fakeModel, fakeModelEnabled } from "./fake-model";
 
 /**
  * The real database and model behind runChat(): everything with the
@@ -15,7 +16,7 @@ export function chatStore(instructions: string): ChatDeps {
 
   return {
     instructions,
-    model: (modelId) => anthropic(modelId),
+    model: (modelId) => (fakeModelEnabled() ? fakeModel() : anthropic(modelId)),
 
     status: async (): Promise<AiStatus> => {
       const { data, error } = await supabase.rpc("ai_status").single();
@@ -57,8 +58,11 @@ export function chatStore(instructions: string): ChatDeps {
       const { error } = await supabase
         .from("ai_chats")
         .insert({ id: chatId, title });
-      // Someone else's chat id: RLS hides it, the insert then clashes.
-      if (error) throw new Error("Could not start the chat.");
+      // Already there (two quick questions): fine. Someone else's chat id
+      // clashes too — but saving a message into it is refused by RLS.
+      if (error && error.code !== "23505") {
+        throw new Error("Could not start the chat.");
+      }
     },
 
     saveMessages: async (chatId, messages, model) => {

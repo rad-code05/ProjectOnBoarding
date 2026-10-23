@@ -10,6 +10,7 @@ import {
 } from "ai";
 import * as z from "zod";
 import type { Role } from "@/lib/auth";
+import { MAX_QUESTION_LENGTH } from "./chat-ui";
 import { toolApprovalFor, toolsFor } from "./tools/registry";
 
 /** What ai_status() says (F15a): may this person ask now? */
@@ -45,7 +46,6 @@ export type ChatPerson = { userId: string; roles: Role[]; timeZone: string };
 /** Up to 5 steps (tool calls and the answer), and short answers. */
 const MAX_STEPS = 5;
 const MAX_OUTPUT_TOKENS = 4000;
-export const MAX_QUESTION_LENGTH = 4000;
 
 /**
  * The browser sends only the new question and the chat's id; the history
@@ -110,6 +110,10 @@ export async function runChat(
     messages: [...history, message as UIMessage],
     tools,
   });
+  // The question is saved before the answer streams, so a quick next
+  // question finds it (and the chat) already there.
+  await deps.saveMessages(id, [messages[messages.length - 1]], status.model);
+  const saved = messages.length;
 
   const result = streamText({
     model: deps.model(status.modelId),
@@ -127,7 +131,7 @@ export async function runChat(
       originalMessages: messages,
       onEnd: async ({ messages: all }) => {
         try {
-          await deps.saveMessages(id, all.slice(history.length), status.model);
+          await deps.saveMessages(id, all.slice(saved), status.model);
           const usage = await result.totalUsage;
           await deps.recordUsage(
             status.model,

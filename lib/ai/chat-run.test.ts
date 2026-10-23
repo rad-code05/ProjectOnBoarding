@@ -81,14 +81,18 @@ describe("runChat (POST /api/chat)", () => {
     await vi.waitFor(() =>
       expect(d.recordUsage).toHaveBeenCalledWith(1, 120, 30),
     );
-    const saved = vi.mocked(d.saveMessages).mock.calls[0] as unknown as [
+    // The question is saved before the answer streams, the answer after.
+    const calls = vi.mocked(d.saveMessages).mock.calls as unknown as [
       string,
       UIMessage[],
       number,
-    ];
-    expect(saved[0]).toBe(CHAT);
-    expect(saved[1].map((m) => m.role)).toEqual(["user", "assistant"]);
-    expect(saved[2]).toBe(1);
+    ][];
+    expect(calls.map((c) => c[0])).toEqual([CHAT, CHAT]);
+    expect(calls.map((c) => c[1].map((m) => m.role))).toEqual([
+      ["user"],
+      ["assistant"],
+    ]);
+    expect(calls[1][2]).toBe(1);
 
     // The model got the instructions and only the tools the roles allow.
     const call = model.doStreamCalls[0];
@@ -107,12 +111,16 @@ describe("runChat (POST /api/chat)", () => {
     await (await runChat(question("And Closed?"), person, d)).text();
     expect(d.createChat).not.toHaveBeenCalled();
     expect(JSON.stringify(model.doStreamCalls[0].prompt)).toContain("Hello.");
-    await vi.waitFor(() => expect(d.saveMessages).toHaveBeenCalled());
-    const saved = vi.mocked(d.saveMessages).mock.calls[0] as unknown as [
+    await vi.waitFor(() => expect(d.saveMessages).toHaveBeenCalledTimes(2));
+    const calls = vi.mocked(d.saveMessages).mock.calls as unknown as [
       string,
       UIMessage[],
-    ];
-    expect(saved[1]).toHaveLength(2);
+    ][];
+    // Only the new question and the new answer — not the history again.
+    expect(calls.map((c) => c[1].length)).toEqual([1, 1]);
+    expect(calls[0][1][0].parts).toEqual([
+      { type: "text", text: "And Closed?" },
+    ]);
   });
 
   test("off, budget used up, too many questions: no model call", async () => {

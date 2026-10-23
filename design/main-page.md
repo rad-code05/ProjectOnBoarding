@@ -1,6 +1,6 @@
 # Request form — Laine onboarding rights
 
-**Status:** revision 2 for review (2026-09-30) · Canvas board: *Request form + assistant*
+**Status:** revision 2 (2026-09-30); robot + chat panel **built 2026-10-23 (F15c-2)** · Canvas board: *Request form + assistant*
 
 Opened from **New request** (or a row) on the [requests list](request-list.md). This is where a request is filled in, manually or with the AI assistant, following the 11 sections of the access management form.
 
