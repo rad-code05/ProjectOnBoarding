@@ -1,9 +1,11 @@
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
+import { AssistantMemoryCard } from "@/components/profile/AssistantMemoryCard";
 import { SignaturePanel } from "@/components/profile/SignaturePanel";
 import { TimezoneCard } from "@/components/profile/TimezoneCard";
 import { Avatar, ChevronRightIcon, buttonStyles } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
+import { loadAssistantMemory } from "@/lib/profile/assistant-memory";
 import { ROLE_LABELS } from "@/lib/navigation";
 import { loadSignatures } from "@/lib/profile/signatures";
 import { loadTimezoneChoice } from "@/lib/profile/timezone";
@@ -14,12 +16,13 @@ export const metadata = { title: "My profile" };
 
 /** Every signed-in user has a profile, whatever their roles. */
 export default async function ProfilePage() {
-  const { roles } = await getCurrentUser();
-  const [user, signatures, choice, tz] = await Promise.all([
+  const { userId, roles } = await getCurrentUser();
+  const [user, signatures, choice, tz, memory] = await Promise.all([
     currentUser(),
     loadSignatures(),
     loadTimezoneChoice(),
     displayTimezone(),
+    loadAssistantMemory(userId),
   ]);
   const name =
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "—";
@@ -89,6 +92,8 @@ export default async function ProfilePage() {
       <TimezoneCard own={choice.own} company={choice.company} />
 
       <SignaturePanel state={signatures} />
+
+      {roles.length > 0 && <AssistantMemoryCard memory={memory} />}
     </div>
   );
 }

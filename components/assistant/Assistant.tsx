@@ -70,6 +70,29 @@ const subscribeOpen = (onChange: () => void) => {
   };
 };
 
+const GREETED_KEY = "laine.assistant.greeted";
+/** Today on this device's clock: "2026-10-23". */
+const today = () => new Date().toLocaleDateString("en-CA");
+/** When the browser won't store anything (private window): this page only. */
+let greetedInMemory = "";
+/** The day the greeting bubble was last answered here ("" = never). */
+const readGreeted = () => {
+  try {
+    return window.localStorage.getItem(GREETED_KEY) ?? "";
+  } catch {
+    return greetedInMemory;
+  }
+};
+const writeGreeted = () => {
+  greetedInMemory = today();
+  try {
+    window.localStorage.setItem(GREETED_KEY, greetedInMemory);
+  } catch {
+    // private window: this page only
+  }
+  window.dispatchEvent(new Event(OPEN_EVENT));
+};
+
 const CHAT_KEY = "laine.assistant.chat";
 /** After a reload mid-answer: look for the saved answer every 3 s, 90 s long. */
 const POLL_MS = 3_000;
@@ -96,13 +119,32 @@ const writeChatId = (id: string) => {
  * full screen on a phone, a side panel on desktop. Open / closed is
  * remembered on this device.
  */
-export function Assistant({ name, roles }: { name: string; roles: Role[] }) {
+export function Assistant({
+  name,
+  roles,
+  favourite = null,
+}: {
+  name: string;
+  roles: Role[];
+  /** Their latest report (memory) — the closed robot offers to open it. */
+  favourite?: { name: string; href: string } | null;
+}) {
   // Open / closed from this device's storage; closed on the server.
   const open = useSyncExternalStore(subscribeOpen, readOpen, () => false);
   const launcher = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   // Above the request form's sticky Save / Review & sign bar.
   const lifted = /^\/requests\/[^/]+$/.test(pathname);
+
+  // The greeting bubble (board: Robot closed): once a day on this device,
+  // never on that report itself; hidden while the server draws the page.
+  const greeted = useSyncExternalStore(subscribeOpen, readGreeted, () => null);
+  const greet =
+    favourite !== null &&
+    !open &&
+    greeted !== null &&
+    greeted !== today() &&
+    !pathname.startsWith(favourite.href);
 
   const show = (next: boolean) => {
     writeOpen(next);
@@ -114,6 +156,36 @@ export function Assistant({ name, roles }: { name: string; roles: Role[] }) {
       {/* Room at the end of the page, so the robot never covers its last
           buttons (Show more, Save …) once scrolled to the bottom. */}
       <div aria-hidden="true" className="h-18" />
+      {greet && (
+        <div
+          role="status"
+          className={cn(
+            "fixed right-4 z-30 flex max-w-62.5 flex-col gap-2 rounded-[14px_14px_4px_14px] border border-line bg-paper px-3.5 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.12)] md:right-7",
+            lifted ? "bottom-[174px]" : "bottom-[98px]",
+          )}
+        >
+          <span className="text-sm leading-snug">
+            {greeting(name, new Date().getHours())} Shall I open the{" "}
+            <strong>{favourite.name}</strong> again?
+          </span>
+          <span className="flex gap-2">
+            <Link
+              href={favourite.href}
+              onClick={writeGreeted}
+              className="inline-flex h-9 items-center rounded-pill bg-ink px-3.5 text-[13px] font-semibold text-paper"
+            >
+              Yes, open it
+            </Link>
+            <button
+              type="button"
+              onClick={writeGreeted}
+              className="h-9 cursor-pointer rounded-pill border border-field-border px-3 text-[13px] font-semibold"
+            >
+              Not now
+            </button>
+          </span>
+        </div>
+      )}
       {!open && (
         <button
           ref={launcher}

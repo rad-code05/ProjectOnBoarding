@@ -135,3 +135,32 @@ export async function setMyTimezone(input: {
   revalidatePath("/", "layout");
   return { ok: true };
 }
+
+/**
+ * My profile → What the assistant remembers → Clear my memory (F15d-2d):
+ * the person's own memory row only; audited without the content.
+ */
+export async function forgetMyAssistantMemory(): Promise<ProfileResult> {
+  await getCurrentUser();
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("forget_my_ai_memory");
+  if (error) return failed("Could not clear your memory. Try again.");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/**
+ * … → Delete my chats: every chat of the person's own (the robot's panel
+ * starts empty); audited with the number only.
+ */
+export async function deleteMyAssistantChats(): Promise<
+  { ok: true; deleted: number } | { ok: false; message: string }
+> {
+  await getCurrentUser();
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase.rpc("delete_my_ai_chats");
+  if (error) {
+    return { ok: false, message: "Could not delete your chats. Try again." };
+  }
+  return { ok: true, deleted: data ?? 0 };
+}
