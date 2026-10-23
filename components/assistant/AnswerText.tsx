@@ -31,7 +31,10 @@ function inline(text: string): ReactNode[] {
 }
 
 export type AnswerBlock =
-  { kind: "p"; text: string } | { kind: "ul" | "ol"; items: string[] };
+  | { kind: "p"; text: string }
+  | { kind: "ul"; items: string[] }
+  | { kind: "ol"; items: string[] }
+  | { kind: "table"; header: string[]; rows: string[][] };
 
 const BULLET = /^\s*[-*•] +/;
 const NUMBER = /^\s*\d+[.)] +/;
@@ -48,38 +51,35 @@ function cells(line: string): string[] {
 }
 
 /**
- * A Markdown table is too wide for the panel: each row becomes one bullet,
- * "**first cell**: Header value · Header value", empty cells left out.
+ * A Markdown table → a real table (header + rows). Without the "---" line
+ * under the first row, every row is data. Empty / "None" cells show "—".
  */
-function tableItems(rows: string[][]): string[] {
+function tableBlock(rows: string[][]): AnswerBlock {
   const separator = (row: string[]) =>
     row.every((cell) => /^:?-{2,}:?$/.test(cell));
-  const body = rows.filter((row) => !separator(row));
   const hasHeader = rows.length > 1 && separator(rows[1]);
-  const header = hasHeader ? body[0] : [];
-  return (hasHeader ? body.slice(1) : body).map((row) => {
-    const [first, ...rest] = row;
-    const details = rest
-      .map((cell, i) => ({ cell, label: header[i + 1] }))
-      .filter(({ cell }) => !EMPTY_CELL.test(cell))
-      .map(({ cell, label }) => (label ? `${label}: ${cell}` : cell));
-    const name = first && !EMPTY_CELL.test(first) ? `**${first}**` : "";
-    return [name, details.join(" · ")].filter(Boolean).join(": ");
-  });
+  const body = rows.filter((row) => !separator(row));
+  const tidy = (row: string[]) =>
+    row.map((cell) => (EMPTY_CELL.test(cell) ? "—" : cell));
+  return {
+    kind: "table",
+    header: hasHeader ? body[0] : [],
+    rows: (hasHeader ? body.slice(1) : body).map(tidy),
+  };
 }
 
 /**
  * Splits an answer into paragraphs and lists. A list may follow a sentence
  * without a blank line ("You can: \n- Go to …"), and a long item may wrap
- * onto the next line — both are common in the model's answers. Tables turn
- * into lists and headings into bold lines, so every answer reads the same.
+ * onto the next line — both are common in the model's answers. Tables stay
+ * tables (asked for "columns and rows"); headings become bold lines.
  */
 export function answerBlocks(text: string): AnswerBlock[] {
   const blocks: AnswerBlock[] = [];
   let last: AnswerBlock | null = null;
   let table: string[][] = [];
   const endTable = () => {
-    if (table.length) blocks.push({ kind: "ul", items: tableItems(table) });
+    if (table.length) blocks.push(tableBlock(table));
     table = [];
   };
   for (const raw of text.trim().split("\n")) {
@@ -104,11 +104,11 @@ export function answerBlocks(text: string): AnswerBlock[] {
     const prev = last as AnswerBlock | null;
     if (kind !== "p") {
       const item = line.replace(kind === "ul" ? BULLET : NUMBER, "");
-      if (prev && prev.kind === kind) prev.items.push(item);
+      if (prev && prev.kind === kind && "items" in prev) prev.items.push(item);
       else blocks.push((last = { kind, items: [item] }));
     } else if (prev && prev.kind === "p") {
       prev.text += `\n${line.trim()}`;
-    } else if (prev && /^\s{2,}/.test(raw)) {
+    } else if (prev && "items" in prev && /^\s{2,}/.test(raw)) {
       // An indented line continues the list item above.
       prev.items[prev.items.length - 1] += ` ${line.trim()}`;
     } else {
@@ -121,7 +121,8 @@ export function answerBlocks(text: string): AnswerBlock[] {
 
 /**
  * The assistant's answer: paragraphs, "- " bullet lists and "1. " numbered
- * lists, **bold** — the little Markdown it writes. No HTML is ever rendered.
+ * lists, small tables, **bold** — the little Markdown it writes. No HTML is
+ * ever rendered.
  */
 export function AnswerText({ text }: { text: string }) {
   return (
@@ -137,12 +138,50 @@ export function AnswerText({ text }: { text: string }) {
               <li key={i}>{inline(item)}</li>
             ))}
           </ul>
-        ) : (
+        ) : block.kind === "ol" ? (
           <ol key={b} className="list-decimal space-y-1 pl-5">
             {block.items.map((item, i) => (
               <li key={i}>{inline(item)}</li>
             ))}
           </ol>
+        ) : (
+          // Wider than the bubble on a phone: the box scrolls sideways.
+          <div
+            key={b}
+            role="region"
+            aria-label="Table"
+            tabIndex={0}
+            className="max-w-full overflow-x-auto rounded-lg border border-line"
+          >
+            <table className="w-full border-collapse text-[13px] leading-snug wrap-normal">
+              {block.header.length > 0 && (
+                <thead className="bg-sand">
+                  <tr>
+                    {block.header.map((cell, i) => (
+                      <th
+                        key={i}
+                        scope="col"
+                        className="border-b border-line px-2.5 py-1.5 text-left font-semibold whitespace-nowrap"
+                      >
+                        {inline(cell)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+              )}
+              <tbody>
+                {block.rows.map((row, r) => (
+                  <tr key={r} className="border-t border-line first:border-t-0">
+                    {row.map((cell, i) => (
+                      <td key={i} className="min-w-24 px-2.5 py-1.5 align-top">
+                        {inline(cell)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ),
       )}
     </div>

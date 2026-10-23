@@ -34,7 +34,7 @@ describe("AnswerText", () => {
     ]);
   });
 
-  test("a table becomes one bullet per row (as in the live Slack answer)", () => {
+  test("a table stays a table: header, rows, empty cells as a dash", () => {
     expect(
       answerBlocks(
         "Raju, two people hold Slack access today:\n\n| Name | Access detail | Since | Note |\n|---|---|---|---|\n| Test Ordinary user | Member | 12 Oct 2026 | Offboarding UAM-2026-000318 is open. |\n| marv tezt | Regular Member | 14 Oct 2026 | None |\n\nSource: Access by application, Slack.",
@@ -42,14 +42,42 @@ describe("AnswerText", () => {
     ).toEqual([
       { kind: "p", text: "Raju, two people hold Slack access today:" },
       {
-        kind: "ul",
-        items: [
-          "**Test Ordinary user**: Access detail: Member · Since: 12 Oct 2026 · Note: Offboarding UAM-2026-000318 is open.",
-          "**marv tezt**: Access detail: Regular Member · Since: 14 Oct 2026",
+        kind: "table",
+        header: ["Name", "Access detail", "Since", "Note"],
+        rows: [
+          [
+            "Test Ordinary user",
+            "Member",
+            "12 Oct 2026",
+            "Offboarding UAM-2026-000318 is open.",
+          ],
+          ["marv tezt", "Regular Member", "14 Oct 2026", "—"],
         ],
       },
       { kind: "p", text: "Source: Access by application, Slack." },
     ]);
+  });
+
+  test("a table renders as a real, scrollable table", () => {
+    const { container } = render(
+      <AnswerText
+        text={[
+          "| Name | Ticket |",
+          "|---|---|",
+          "| **manuel amigo test** | UAM-2026-000365 |",
+        ].join("\n")}
+      />,
+    );
+    expect(screen.getByRole("region", { name: "Table" })).toHaveAttribute(
+      "tabindex",
+      "0",
+    );
+    expect(
+      screen.getByRole("columnheader", { name: "Ticket" }),
+    ).toBeInTheDocument();
+    expect(container.querySelector("td strong")?.textContent).toBe(
+      "manuel amigo test",
+    );
   });
 
   test("headings, links, code and half-written bold read as plain text", () => {

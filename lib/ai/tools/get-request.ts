@@ -15,7 +15,11 @@ import {
   requestLink,
   sectionNames,
 } from "./request-shared";
-import { defineTool } from "./types";
+import { defineTool, hasAnyRole } from "./types";
+import { PAGES } from "@/lib/navigation";
+
+const canOpenRecords = (roles: Parameters<typeof hasAnyRole>[0]) =>
+  hasAnyRole(roles, PAGES.records.roles);
 
 /**
  * "Where is UAM-2026-000375?", "What's missing on 374?" — one request: who
@@ -32,6 +36,7 @@ export const getRequest = defineTool({
       description: [
         "One request by its ticket (UAM-2026-000375, or just 375): the person, status, dates, office, how many applications / equipment / access items it has, the offboarding deadline, the approver's comment and flagged sections if it was returned, and (for IT) what is still missing before Review & sign.",
         "If a number matches tickets of several years, the result lists them: ask which one is meant.",
+        "A closed request has a PDF record: when pdfLink is in the result, a Download the PDF link shows under your answer — say so; you can't attach files yourself.",
       ].join(" "),
       inputSchema: z.object({
         ticket: z
@@ -160,6 +165,10 @@ export const getRequest = defineTool({
                 }
               : {}),
             link: requestLink(r.id, r.state),
+            // The record PDF — for the people Records is for (admin, auditor).
+            ...(r.state === "closed" && canOpenRecords(ctx.roles)
+              ? { pdfLink: `/records/${r.id}/pdf` }
+              : {}),
             source: `Request ${r.ticket_id}`,
           };
         } catch {
