@@ -75,6 +75,19 @@ export function chatTitle(question: string): string {
   return text.length > 60 ? `${text.slice(0, 59)}…` : text;
 }
 
+/**
+ * The model's thinking is never kept: Anthropic seals it to the exact
+ * conversation it was written in, and our instructions change every minute
+ * (they hold the time), so sending it back fails the next question
+ * ("Invalid 'signature' in 'thinking' block"). The model doesn't need it.
+ */
+export function withoutThinking(messages: UIMessage[]): UIMessage[] {
+  return messages.map((m) => ({
+    ...m,
+    parts: m.parts.filter((p) => p.type !== "reasoning"),
+  }));
+}
+
 const json = (status: number, body: Record<string, unknown>) =>
   Response.json(body, { status });
 
@@ -108,7 +121,8 @@ export async function runChat(
 
   const tools = toolsFor(person);
   const messages = await validateUIMessages({
-    messages: [...history, message as UIMessage],
+    // Chats saved before this rule may still hold thinking: dropped here.
+    messages: withoutThinking([...history, message as UIMessage]),
     tools,
   });
   // The question is saved before the answer streams, so a quick next
@@ -132,7 +146,11 @@ export async function runChat(
       originalMessages: messages,
       onEnd: async ({ messages: all }) => {
         try {
-          await deps.saveMessages(id, all.slice(saved), status.model);
+          await deps.saveMessages(
+            id,
+            withoutThinking(all.slice(saved)),
+            status.model,
+          );
           const usage = await result.totalUsage;
           await deps.recordUsage(
             status.model,
