@@ -13,6 +13,8 @@ import {
 } from "@/lib/requests/filters";
 import { listLeavers } from "@/lib/requests/leavers";
 import { listRequests, requestSummary } from "@/lib/requests/list";
+import { companyTimezone } from "@/lib/time/display";
+import { monthStart } from "@/lib/time/zoned";
 
 export const metadata = { title: "Requests" };
 
@@ -21,9 +23,10 @@ export default async function RequestsPage({
 }: PageProps<"/requests">) {
   await requireRole(...PAGES.requests.roles);
   const filters = parseFilters(await searchParams);
+  const since = monthStart(await companyTimezone());
   const [{ rows, total }, counts, leavers] = await Promise.all([
     listRequests(filters),
-    requestSummary(),
+    requestSummary(since),
     listLeavers(),
   ]);
 
@@ -82,8 +85,8 @@ export default async function RequestsPage({
         />
         <SummaryTile
           label="Onboarded this month"
-          value="—"
-          note="Counted once requests can be signed"
+          value={counts.onboardedThisMonth}
+          note="Closed by the approver"
         />
       </section>
 

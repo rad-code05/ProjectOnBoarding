@@ -54,13 +54,15 @@ export async function listRequests(filters: RequestFilters) {
 /**
  * Numbers for the summary tiles, the total (for the empty state) and the
  * countries in use (the country filter) — from ONE query, because every
- * round trip to the database adds up on a slow connection.
+ * round trip to the database adds up on a slow connection. "Onboarded this
+ * month" = onboardings the approver closed since the month began in the
+ * company timezone — the same rule as the reports (D16).
  */
-export async function requestSummary() {
+export async function requestSummary(monthStartIso: string) {
   const supabase = createServerSupabaseClient();
   const { data, error } = await supabase
     .from("requests")
-    .select("state, country");
+    .select("state, country, type, closed_at");
   if (error) throw new Error(`Could not load the summary: ${error.message}`);
   const count = (state: RequestState) =>
     data.filter((row) => row.state === state).length;
@@ -69,6 +71,13 @@ export async function requestSummary() {
     draft: count("draft"),
     inExecution: count("in_execution"),
     awaitingConfirmation: count("pending_confirmation"),
+    onboardedThisMonth: data.filter(
+      (row) =>
+        row.type === "onboarding" &&
+        row.state === "closed" &&
+        row.closed_at !== null &&
+        Date.parse(row.closed_at) >= Date.parse(monthStartIso),
+    ).length,
     countries: [
       ...new Set(data.flatMap((row) => (row.country ? [row.country] : []))),
     ].sort(),
