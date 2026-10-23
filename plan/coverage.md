@@ -115,7 +115,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
 | G1 | Robot launcher, closed by default, panel, open/closed remembered per device | `main-page.md` | F15 | e2e | ⏳ ❓ D7 |
-| G2 | `/api/chat` rate limit + monthly spend cap | §6.4 | F15 | F15 tests | ⏳ F15 |
+| G2 | `/api/chat` rate limit + monthly spend cap | §6.4 | F15 | F15 tests | 🟡 F15a database: `ai_status()` off / budget / rate, `record_ai_usage()` (`ai_assistant.test.sql`); route F15c |
 | G3 | `proposeFieldValues` → suggestions accepted per field; audit `source = ai` | §6.1, §6.3 | F16 | F16 tests | ⏳ F16 |
 | G4 | Read-only `getRequestSummary` / `getCatalog` ("what's still missing?") | §6.1, §6.3 | **F16** (assigned 2026-10-07) | F16 tests | ⏳ F16 |
 | G5 | Batch onboarding: CSV/XLSX/paste → batch grid with checks (missing, duplicate, past date) → `createDraftRequests` (`needsApproval`) | §6.1, `request-variants.md` | F17 | F17 tests | ⏳ ❓ D8 |
@@ -126,7 +126,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | G10 | LangFuse tracing (optional, with redaction) | §2 | — | — | ➖ optional, not planned |
 | G11 | Tools one file each in `lib/ai/tools/`; the registry sends only the tools the person's roles allow; each tool re-checks the role + runs with the person's session (RLS) | §6.6 (2026-10-20) | F15 | unit (registry per role) + pgTAP / RLS | ⏳ F15 |
 | G12 | Approvers: report questions only — answers from report data, which report + filters named, no web search | §6.6, ROLES | F15 | unit + e2e (approver asks "how many in Dubai") | ⏳ F15 |
-| G13 | Chat history kept 60 days, deleted daily by the database | §6.6 | F15 | pgTAP | ⏳ F15 |
+| G13 | Chat history kept 60 days, deleted daily by the database | §6.6 | F15 | pgTAP | 🟡 F15a — `ai_chats` purged after 60 days by the pg_cron job `purge-old-ai-chats` (`ai_assistant.test.sql`) |
 | G14 | Per-person memory (name, favourite reports / questions / request types), greeting by name (friendly, formal); the person can see + clear it | §6.6 | F15 | unit + pgTAP | ⏳ F15 |
 | G15 | System instructions never sent to the browser or revealed; no secrets in them | §6.6 | F15 | unit + attack tests | ⏳ F15 |
 | G16 | Attack tests in CI: hidden instructions in files, "ignore your rules", reaching other-role / forbidden tools | §6.6 | F15 (framework), F16–F17, F24 (per tool) | test suite | ⏳ F15 |

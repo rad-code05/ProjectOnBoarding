@@ -9,6 +9,250 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_chats: {
+        Row: {
+          created_at: string;
+          id: string;
+          title: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          title?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          title?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_chats_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
+      };
+      ai_memory: {
+        Row: {
+          call_me: string | null;
+          favourite_reports: string[];
+          frequent_questions: string[];
+          request_types: Database["public"]["Enums"]["request_type"][];
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          call_me?: string | null;
+          favourite_reports?: string[];
+          frequent_questions?: string[];
+          request_types?: Database["public"]["Enums"]["request_type"][];
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          call_me?: string | null;
+          favourite_reports?: string[];
+          frequent_questions?: string[];
+          request_types?: Database["public"]["Enums"]["request_type"][];
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_memory_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
+      };
+      ai_messages: {
+        Row: {
+          chat_id: string;
+          created_at: string;
+          id: string;
+          model: number | null;
+          parts: NonNullable<Json>;
+          role: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          chat_id: string;
+          created_at?: string;
+          id?: string;
+          model?: number | null;
+          parts: NonNullable<Json>;
+          role: string;
+        };
+        Update: {
+          chat_id?: string;
+          created_at?: string;
+          id?: string;
+          model?: number | null;
+          parts?: NonNullable<Json>;
+          role?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_chat_id_fkey";
+            columns: ["chat_id"];
+            isOneToOne: false;
+            referencedRelation: "ai_chats";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_messages_model_fkey";
+            columns: ["model"];
+            isOneToOne: false;
+            referencedRelation: "ai_models";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_models: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          id: number;
+          model_id: string;
+          name: string;
+          note: string | null;
+          price_in: number;
+          price_out: number;
+          sort_order: number;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          id?: never;
+          model_id: string;
+          name: string;
+          note?: string | null;
+          price_in: number;
+          price_out: number;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          id?: never;
+          model_id?: string;
+          name?: string;
+          note?: string | null;
+          price_in?: number;
+          price_out?: number;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      ai_settings: {
+        Row: {
+          enabled: boolean;
+          hourly_limit: number;
+          id: boolean;
+          model: number;
+          monthly_budget_usd: number;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          enabled?: boolean;
+          hourly_limit?: number;
+          id?: boolean;
+          model: number;
+          monthly_budget_usd?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: {
+          enabled?: boolean;
+          hourly_limit?: number;
+          id?: boolean;
+          model?: number;
+          monthly_budget_usd?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_settings_model_fkey";
+            columns: ["model"];
+            isOneToOne: false;
+            referencedRelation: "ai_models";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_settings_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
+      };
+      ai_usage: {
+        Row: {
+          cost_usd: number;
+          created_at: string;
+          id: number;
+          input_tokens: number;
+          model: number;
+          output_tokens: number;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          cost_usd: number;
+          created_at?: string;
+          id?: never;
+          input_tokens: number;
+          model: number;
+          output_tokens: number;
+          user_id: string;
+        };
+        Update: {
+          cost_usd?: number;
+          created_at?: string;
+          id?: never;
+          input_tokens?: number;
+          model?: number;
+          output_tokens?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_model_fkey";
+            columns: ["model"];
+            isOneToOne: false;
+            referencedRelation: "ai_models";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_usage_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
+      };
       app_settings: {
         Row: {
           company_timezone: string;
@@ -1450,6 +1694,26 @@ export type Database = {
         };
         Returns: number;
       };
+      admin_save_ai_model: {
+        Args: {
+          p_id: number;
+          p_model_id: string;
+          p_name: string;
+          p_note: string;
+          p_price_in: number;
+          p_price_out: number;
+        };
+        Returns: number;
+      };
+      admin_save_ai_settings: {
+        Args: {
+          p_enabled: boolean;
+          p_hourly_limit: number;
+          p_model: number;
+          p_monthly_budget_usd: number;
+        };
+        Returns: undefined;
+      };
       admin_save_app: {
         Args: {
           p_actions: string[];
@@ -1497,6 +1761,10 @@ export type Database = {
         Args: { p_active: boolean; p_id: number };
         Returns: undefined;
       };
+      admin_set_ai_model_active: {
+        Args: { p_active: boolean; p_id: number };
+        Returns: undefined;
+      };
       admin_set_app_active: {
         Args: { p_active: boolean; p_id: number };
         Returns: undefined;
@@ -1516,6 +1784,28 @@ export type Database = {
       admin_set_office_city_active: {
         Args: { p_active: boolean; p_id: number };
         Returns: undefined;
+      };
+      ai_status: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          asked_last_hour: number;
+          enabled: boolean;
+          hourly_limit: number;
+          model: number;
+          model_id: string;
+          monthly_budget_usd: number;
+          reason: string;
+          resets_at: string;
+          spent_this_month_usd: number;
+        }[];
+      };
+      ai_usage_this_month: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          answers: number;
+          people: number;
+          spent_usd: number;
+        }[];
       };
       approval_preview: { Args: { p_request_id: string }; Returns: Json };
       audit_log: {
@@ -1561,6 +1851,7 @@ export type Database = {
         Returns: string;
       };
       create_offboarding: { Args: { p_employee_id?: string }; Returns: string };
+      delete_my_ai_chats: { Args: Record<PropertyKey, never>; Returns: number };
       export_audit_log: {
         Args: {
           p_actor?: string;
@@ -1591,6 +1882,10 @@ export type Database = {
           ticket_id: string;
         }[];
       };
+      forget_my_ai_memory: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
       log_record_download: {
         Args: { p_request_id: string };
         Returns: undefined;
@@ -1605,6 +1900,14 @@ export type Database = {
         Returns: undefined;
       };
       my_timezone: { Args: Record<PropertyKey, never>; Returns: string };
+      record_ai_usage: {
+        Args: {
+          p_input_tokens: number;
+          p_model: number;
+          p_output_tokens: number;
+        };
+        Returns: number;
+      };
       record_pdf: {
         Args: {
           p_byte_size: number;
