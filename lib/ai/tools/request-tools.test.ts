@@ -132,6 +132,32 @@ describe("getRequest", () => {
     });
   });
 
+  test("a closed request: the PDF link, for the people Records is for", async () => {
+    const closed = {
+      ...draft,
+      state: "closed",
+      closed_at: "2026-10-21T10:00:00Z",
+    };
+    const admin = await run(
+      getRequest,
+      { ticket: "374" },
+      fakeDb({ requests: [closed] }).db,
+    );
+    expect(admin).toMatchObject({
+      status: "Closed",
+      link: `/records/${ID}`,
+      pdfLink: `/records/${ID}/pdf`,
+    });
+    expect(admin.stillMissing).toBeUndefined();
+    const it = await run(
+      getRequest,
+      { ticket: "374" },
+      fakeDb({ requests: [closed] }).db,
+      ["requester", "it_operator"],
+    );
+    expect(it.pdfLink).toBeUndefined();
+  });
+
   test("the same number in two years: ask", async () => {
     const { db } = fakeDb({
       requests: [draft, { ...draft, ticket_id: "UAM-2025-000374" }],

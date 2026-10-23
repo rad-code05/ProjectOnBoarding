@@ -10,6 +10,7 @@ import {
   starterQuestions,
   stepLink,
   stepLinkLabel,
+  stepPdfLink,
   toolStep,
 } from "./chat-ui";
 
@@ -89,6 +90,13 @@ describe("toolStep", () => {
     expect(stepLink({ link: "/admin/settings" })).toBeNull();
     expect(stepLinkLabel(`/records/${id}`)).toBe("Open the request");
     expect(stepLinkLabel("/reports/open-requests")).toBe("Open the report");
+    // The record PDF: only "/records/<id>/pdf".
+    expect(stepPdfLink({ pdfLink: `/records/${id}/pdf` })).toBe(
+      `/records/${id}/pdf`,
+    );
+    expect(stepPdfLink({ pdfLink: `/records/${id}/pdf?x=1` })).toBeNull();
+    expect(stepPdfLink({ pdfLink: "https://evil.example/x.pdf" })).toBeNull();
+    expect(stepPdfLink({ link: `/records/${id}` })).toBeNull();
     expect(stepLink({ link: "https://evil.example" })).toBeNull();
     expect(stepLink({ link: "javascript:alert(1)" })).toBeNull();
     expect(stepLink(null)).toBeNull();

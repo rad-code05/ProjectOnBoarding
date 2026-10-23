@@ -173,6 +173,21 @@ export function stepLink(output: unknown): string | null {
     : null;
 }
 
+/**
+ * A closed request's PDF record ("/records/<id>/pdf"), offered under the
+ * answer as "Download the PDF" — the same audited download as the record page.
+ */
+export function stepPdfLink(output: unknown): string | null {
+  if (!output || typeof output !== "object" || !("pdfLink" in output)) {
+    return null;
+  }
+  const link = (output as { pdfLink: unknown }).pdfLink;
+  return typeof link === "string" &&
+    /^\/records\/[0-9a-f-]{36}\/pdf$/.test(link)
+    ? link
+    : null;
+}
+
 /** The words on a step's link. */
 export function stepLinkLabel(href: string): string {
   return href.startsWith("/reports/") ? "Open the report" : "Open the request";
