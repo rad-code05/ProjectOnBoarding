@@ -631,6 +631,55 @@
       "w": 390,
       "h": 1640,
       "title": "Phone · Employees by office (headcount) — F27 proposal"
+    },
+    "AssistantClosedMobile.dc.html": {
+      "x": 26770,
+      "y": 13560,
+      "w": 390,
+      "h": 844,
+      "title": "Phone · Robot closed, greeting by name — F15 proposal"
+    },
+    "AssistantChatMobile.dc.html": {
+      "x": 27240,
+      "y": 13560,
+      "w": 390,
+      "h": 1100,
+      "title": "Phone · Assistant chat (Raju): answers with their source — F15 proposal"
+    },
+    "AssistantApproverMobile.dc.html": {
+      "x": 27710,
+      "y": 13560,
+      "w": 390,
+      "h": 1040,
+      "title": "Phone · Assistant chat (approver): report questions only — F15 proposal"
+    },
+    "AssistantHelpMobile.dc.html": {
+      "x": 28180,
+      "y": 13560,
+      "w": 390,
+      "h": 1120,
+      "title": "Phone · Assistant: app help, off-topic, limits — F15 proposal"
+    },
+    "AssistantMemoryMobile.dc.html": {
+      "x": 28650,
+      "y": 13560,
+      "w": 390,
+      "h": 1000,
+      "title": "Phone · My profile · what the assistant remembers — F15 proposal"
+    },
+    "AdminAiSettingsMobile.dc.html": {
+      "x": 29120,
+      "y": 13560,
+      "w": 390,
+      "h": 1500,
+      "title": "Phone · Admin · AI settings (models, budget, limits) — F15 proposal"
+    },
+    "AdminAiModelSheetMobile.dc.html": {
+      "x": 29590,
+      "y": 13560,
+      "w": 390,
+      "h": 900,
+      "title": "Phone · Admin · Add / edit a model (sheet) — F15 proposal"
     }
   },
   "createdOnFiles": {
@@ -652,7 +701,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 26690,
+      "maxW": 29980,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -779,7 +828,14 @@
     "AdminOfficeSheetMobile.dc.html",
     "OfficeFieldsMobile.dc.html",
     "ReportFiltersOfficeMobile.dc.html",
-    "ReportEmployeesOfficeMobile.dc.html"
+    "ReportEmployeesOfficeMobile.dc.html",
+    "AssistantClosedMobile.dc.html",
+    "AssistantChatMobile.dc.html",
+    "AssistantApproverMobile.dc.html",
+    "AssistantHelpMobile.dc.html",
+    "AssistantMemoryMobile.dc.html",
+    "AdminAiSettingsMobile.dc.html",
+    "AdminAiModelSheetMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
