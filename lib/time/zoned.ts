@@ -64,3 +64,13 @@ export function zonedParts(
     time: `${get("hour")}:${get("minute")}`,
   };
 }
+
+/**
+ * The instant this month began in the zone: "1 Oct 00:00 in Dubai" →
+ * "2026-09-30T20:00:00.000Z". For "this month" counts (Requests tile,
+ * Approvals), the same rule as the reports (company timezone).
+ */
+export function monthStart(timeZone: string, now = new Date()): string {
+  const { date } = zonedParts(now.toISOString(), timeZone);
+  return zonedToIso(`${date.slice(0, 7)}-01`, "00:00", timeZone);
+}

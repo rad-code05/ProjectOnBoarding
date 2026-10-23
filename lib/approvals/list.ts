@@ -2,8 +2,9 @@ import "server-only";
 import { formatDate, formatDay, formatTime } from "@/lib/requests/format";
 import { TYPE_LABELS, countryName, personName } from "@/lib/requests/labels";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { displayTimezone } from "@/lib/time/display";
-import { accessSummary, monthStart } from "./summary";
+import { companyTimezone, displayTimezone } from "@/lib/time/display";
+import { monthStart } from "@/lib/time/zoned";
+import { accessSummary } from "./summary";
 
 /** One request waiting for the approver (a card on Approvals). */
 export type WaitingRequest = {
@@ -53,6 +54,8 @@ export async function loadApprovals(): Promise<ApprovalsOverview> {
   const supabase = createServerSupabaseClient();
   // Asked in parallel with the queries below (one round trip less).
   const tzPromise = displayTimezone();
+  // "This month" = the company's month (like the reports), not the reader's.
+  const since = monthStart(await companyTimezone());
   const [waiting, returned, closedMonth, closed] = await Promise.all([
     supabase
       .from("requests")
@@ -69,7 +72,7 @@ export async function loadApprovals(): Promise<ApprovalsOverview> {
       .from("requests")
       .select("id", { count: "exact", head: true })
       .eq("state", "closed")
-      .gte("closed_at", monthStart()),
+      .gte("closed_at", since),
     supabase
       .from("requests")
       .select("id, ticket_id, first_name, last_name, closed_at")
