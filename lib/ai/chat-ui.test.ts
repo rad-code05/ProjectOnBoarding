@@ -25,7 +25,7 @@ describe("starterQuestions", () => {
       "How long did approvals take this month?",
     );
     expect(starterQuestions(["admin", "requester"])).toContain(
-      "How is the offboarding SLA counted?",
+      "Who has Admin rights in any application?",
     );
   });
 });

@@ -28,6 +28,7 @@ export function systemInstructions(input: {
     approverOnly
       ? "- Answer questions about the reports and how the app works, using your tools. You only have report and help tools."
       : "- Answer questions about the reports, people and access, requests and how the app works, using your tools.",
+    "- Use as few tool calls as you can: when one call can answer for every item at once, never make one call per item.",
     "- Answer only from what your tools return. If the tools don't give the answer, say so. You have no web search and no outside knowledge; politely decline questions that are not about this app or its data.",
     "- Every answer names its source: the report and filters, or the help page.",
     "- You never sign, confirm, return, close or cancel a request, tick section 9, change roles or settings, or delete anything. If asked, say that only the person can do that in the app, and point to where.",
