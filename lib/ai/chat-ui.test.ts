@@ -1,7 +1,11 @@
+import type { UIMessage } from "ai";
 import { describe, expect, test } from "vitest";
 import {
+  answeredOnServer,
   chatProblem,
   greeting,
+  lastIsQuestion,
+  lastQuestion,
   starterQuestions,
   stepLink,
   toolStep,
@@ -79,5 +83,31 @@ describe("toolStep", () => {
     expect(stepLink({ link: "https://evil.example" })).toBeNull();
     expect(stepLink({ link: "javascript:alert(1)" })).toBeNull();
     expect(stepLink(null)).toBeNull();
+  });
+});
+
+describe("after a lost connection", () => {
+  const q = (text: string) =>
+    ({ id: text, role: "user", parts: [{ type: "text", text }] }) as UIMessage;
+  const a = (text: string) =>
+    ({
+      id: text,
+      role: "assistant",
+      parts: [{ type: "text", text }],
+    }) as UIMessage;
+
+  test("a chat ending with a question is still waiting for its answer", () => {
+    expect(lastIsQuestion([q("Hi"), a("Hello.")])).toBe(false);
+    expect(lastIsQuestion([q("Hi"), a("Hello."), q("Slack?")])).toBe(true);
+    expect(lastIsQuestion([])).toBe(false);
+  });
+
+  test("the server answered this very question meanwhile", () => {
+    const saved = [q("Hi"), a("Hello."), q("Slack?"), a("Two people.")];
+    expect(answeredOnServer(saved, "Slack?")).toBe(true);
+    expect(answeredOnServer(saved.slice(0, 3), "Slack?")).toBe(false);
+    // The question never reached the server: ask again.
+    expect(answeredOnServer(saved.slice(0, 2), "Slack?")).toBe(false);
+    expect(lastQuestion(saved)).toBe("Slack?");
   });
 });

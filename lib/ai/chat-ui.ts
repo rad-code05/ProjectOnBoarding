@@ -1,3 +1,4 @@
+import type { UIMessage } from "ai";
 import type { Role } from "@/lib/auth";
 
 /** The longest question the assistant accepts (characters). */
@@ -131,4 +132,37 @@ export function stepLink(output: unknown): string | null {
   if (!output || typeof output !== "object" || !("link" in output)) return null;
   const link = (output as { link: unknown }).link;
   return typeof link === "string" && link.startsWith("/reports/") ? link : null;
+}
+
+const textOf = (m: UIMessage) =>
+  m.parts
+    .map((p) => (p.type === "text" ? p.text : ""))
+    .join("")
+    .trim();
+
+/** The chat ends with a question that has no answer yet. */
+export function lastIsQuestion(messages: readonly UIMessage[]): boolean {
+  return messages[messages.length - 1]?.role === "user";
+}
+
+/**
+ * The server finished the answer to this question after the browser lost
+ * the connection: the saved chat has the question, then an answer.
+ */
+export function answeredOnServer(
+  saved: readonly UIMessage[],
+  question: string,
+): boolean {
+  const last = saved.findLastIndex((m) => m.role === "user");
+  return (
+    last >= 0 &&
+    textOf(saved[last]) === question.trim() &&
+    saved.slice(last + 1).some((m) => m.role === "assistant")
+  );
+}
+
+/** The newest question in the chat, as typed. */
+export function lastQuestion(messages: readonly UIMessage[]): string {
+  const last = messages.findLast((m) => m.role === "user");
+  return last ? textOf(last) : "";
 }

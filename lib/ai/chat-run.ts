@@ -39,6 +39,11 @@ export type ChatDeps = {
   ) => Promise<void>;
   model: (modelId: string) => LanguageModel;
   instructions: string;
+  /**
+   * Keeps the server working after the response has ended (Next's after()),
+   * so an answer is finished and saved even when the browser disconnects.
+   */
+  keepRunning?: (work: () => Promise<unknown>) => void;
 };
 
 /** Who asks — with their own database client for the tools (RLS). */
@@ -88,6 +93,17 @@ export function withoutThinking(messages: UIMessage[]): UIMessage[] {
   }));
 }
 
+/** The chat ends with this very question and no answer yet. */
+export function isUnanswered(history: UIMessage[], question: string): boolean {
+  const last = history[history.length - 1];
+  if (last?.role !== "user") return false;
+  const text = last.parts
+    .map((p) => (p.type === "text" ? p.text : ""))
+    .join("")
+    .trim();
+  return text === question.trim();
+}
+
 const json = (status: number, body: Record<string, unknown>) =>
   Response.json(body, { status });
 
@@ -119,15 +135,22 @@ export async function runChat(
     history = [];
   }
 
+  // "Try again" after a lost answer sends the same question again: it is
+  // already saved (last, unanswered), so it isn't saved twice.
+  const retry = isUnanswered(history, message.parts[0].text);
   const tools = toolsFor(person);
   const messages = await validateUIMessages({
     // Chats saved before this rule may still hold thinking: dropped here.
-    messages: withoutThinking([...history, message as UIMessage]),
+    messages: withoutThinking(
+      retry ? history : [...history, message as UIMessage],
+    ),
     tools,
   });
   // The question is saved before the answer streams, so a quick next
   // question finds it (and the chat) already there.
-  await deps.saveMessages(id, [messages[messages.length - 1]], status.model);
+  if (!retry) {
+    await deps.saveMessages(id, [messages[messages.length - 1]], status.model);
+  }
   const saved = messages.length;
 
   const result = streamText({
@@ -140,27 +163,45 @@ export async function runChat(
     maxOutputTokens: MAX_OUTPUT_TOKENS,
   });
 
-  return createUIMessageStreamResponse({
-    stream: toUIMessageStream({
-      stream: result.stream,
-      originalMessages: messages,
-      onEnd: async ({ messages: all }) => {
-        try {
-          await deps.saveMessages(
-            id,
-            withoutThinking(all.slice(saved)),
-            status.model,
-          );
-          const usage = await result.totalUsage;
-          await deps.recordUsage(
-            status.model,
-            usage.inputTokens ?? 0,
-            usage.outputTokens ?? 0,
-          );
-        } catch (error) {
-          console.error("Could not save the assistant chat", error);
-        }
-      },
-    }),
+  let answerSaved = () => {};
+  const saving = new Promise<void>((resolve) => (answerSaved = resolve));
+  const answer = toUIMessageStream({
+    stream: result.stream,
+    originalMessages: messages,
+    onEnd: async ({ messages: all }) => {
+      try {
+        await deps.saveMessages(
+          id,
+          withoutThinking(all.slice(saved)),
+          status.model,
+        );
+        const usage = await result.totalUsage;
+        await deps.recordUsage(
+          status.model,
+          usage.inputTokens ?? 0,
+          usage.outputTokens ?? 0,
+        );
+      } catch (error) {
+        console.error("Could not save the assistant chat", error);
+      } finally {
+        answerSaved();
+      }
+    },
   });
+
+  // Two copies of the answer: one for the browser, one the server reads to
+  // the end itself. If the browser goes away (tab closed, connection lost),
+  // the server's copy still finishes, so the answer is saved and shows after
+  // a reload. after() keeps the server running for it.
+  if (!deps.keepRunning)
+    return createUIMessageStreamResponse({ stream: answer });
+  const [toBrowser, toServer] = answer.tee();
+  deps.keepRunning(async () => {
+    const reader = toServer.getReader();
+    while (!(await reader.read()).done) {
+      // only reading, so the answer runs to the end
+    }
+    await saving;
+  });
+  return createUIMessageStreamResponse({ stream: toBrowser });
 }
