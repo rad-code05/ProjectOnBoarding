@@ -106,7 +106,10 @@ export function chatProblem(
   }
 }
 
-/** A tool call in plain words: "Read the help page Statuses & who acts". */
+/**
+ * A tool call in plain words: "Read the help page Statuses & who acts".
+ * Empty = not shown (saving a question to memory is housekeeping).
+ */
 export function toolStep(name: string, done: boolean, output: unknown): string {
   const field = (key: string) =>
     output && typeof output === "object" && key in output
@@ -137,6 +140,10 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
         : "Looking up who holds it…";
     case "getCatalog":
       return done ? "Read the catalog" : "Reading the catalog…";
+    case "rememberPreference":
+      return done && field("saved") ? "Saved to your memory" : "";
+    case "rememberQuestion":
+      return "";
     case "listRequests":
       return done
         ? "Looked through the requests"

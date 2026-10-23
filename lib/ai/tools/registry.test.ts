@@ -23,7 +23,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
   test("every tool says who may use it and what kind it is; writes need a Confirm", () => {
     for (const t of TOOLS) {
       expect(t.roles.length).toBeGreaterThan(0);
-      expect(["read", "propose", "write"]).toContain(t.kind);
+      expect(["read", "propose", "write", "memory"]).toContain(t.kind);
       if (t.kind === "write") expect(t.needsApproval).toBe(true);
     }
     expect(() =>
@@ -38,7 +38,13 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
   });
 
   test("tools are filtered by role — nobody gets a tool their roles don't allow", () => {
-    expect(toolNamesFor(["approver"])).toEqual(["getAppHelp", "runReport"]);
+    // Everyone has their own memory (call me, favourite reports, questions).
+    const memory = ["rememberPreference", "rememberQuestion"];
+    expect(toolNamesFor(["approver"])).toEqual([
+      "getAppHelp",
+      "runReport",
+      ...memory,
+    ]);
     // Requester / IT operator alone: no report reader — no report tool,
     // but people & access questions.
     const peopleTools = [
@@ -48,6 +54,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
       "getCatalog",
       "listRequests",
       "getRequest",
+      ...memory,
     ];
     expect(toolNamesFor(["requester", "it_operator"])).toEqual([
       "getAppHelp",
@@ -67,6 +74,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
     expect(Object.keys(toolsFor(ctx(["approver"])))).toEqual([
       "getAppHelp",
       "runReport",
+      ...memory,
     ]);
   });
 

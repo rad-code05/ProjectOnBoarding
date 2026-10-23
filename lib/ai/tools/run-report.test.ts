@@ -2,6 +2,7 @@
 import { describe, expect, test, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
+vi.mock("@/lib/ai/memory-store", () => ({ remember: vi.fn(async () => true) }));
 vi.mock("@/lib/reports/all-users", () => ({
   loadReportOptions: vi.fn(async () => ({
     departments: [],
@@ -25,6 +26,7 @@ vi.mock("@/lib/reports/onboarded-by", () => ({
 
 const { runReport } = await import("./run-report");
 const { loadOnboardedBy } = await import("@/lib/reports/onboarded-by");
+const { remember } = await import("@/lib/ai/memory-store");
 
 const ctx = {
   userId: "user_1",
@@ -59,6 +61,10 @@ describe("runReport", () => {
       total: 3,
       groups: [{ office: "Dubai", onboarded: 3, share: "100%" }],
       link: "/reports/onboarded-by-office?period=all&office=1",
+    });
+    // Favourite reports (memory): the report it ran, for this person.
+    expect(remember).toHaveBeenCalledWith(ctx.db, "user_1", {
+      report: "onboarded-by-office",
     });
   });
 

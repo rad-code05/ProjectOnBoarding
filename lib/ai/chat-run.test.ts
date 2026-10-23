@@ -102,7 +102,12 @@ describe("runChat (POST /api/chat)", () => {
     expect(JSON.stringify(call.prompt)).toContain(
       "You are the Laine assistant.",
     );
-    expect(call.tools?.map((t) => t.name)).toEqual(["getAppHelp", "runReport"]);
+    expect(call.tools?.map((t) => t.name)).toEqual([
+      "getAppHelp",
+      "runReport",
+      "rememberPreference",
+      "rememberQuestion",
+    ]);
   });
 
   test("an existing chat continues from the saved history; only new messages are saved", async () => {

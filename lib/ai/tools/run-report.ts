@@ -1,4 +1,6 @@
 import { tool } from "ai";
+import { reportFromLink } from "@/lib/ai/memory";
+import { remember } from "@/lib/ai/memory-store";
 import { parseItemKey } from "@/lib/reports/access";
 import { loadAccessByItem, loadAccessHolders } from "@/lib/reports/access-load";
 import { loadAllUsers, loadReportOptions } from "@/lib/reports/all-users";
@@ -262,7 +264,11 @@ export const runReport = defineTool({
       inputSchema: reportInput,
       execute: async (input) => {
         try {
-          return await run(input, ctx);
+          const out = await run(input, ctx);
+          // Favourite reports (memory): the last 5 the robot ran for them.
+          const report = "link" in out ? reportFromLink(out.link) : null;
+          if (report) await remember(ctx.db, ctx.userId, { report });
+          return out;
         } catch {
           return {
             error: "The report could not be loaded. Say so; don't guess.",

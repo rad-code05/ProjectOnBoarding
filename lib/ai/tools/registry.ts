@@ -5,6 +5,8 @@ import { getCatalog } from "./get-catalog";
 import { getPersonAccess } from "./get-person-access";
 import { getRequest } from "./get-request";
 import { listRequests } from "./list-requests";
+import { rememberPreference } from "./remember-preference";
+import { rememberQuestion } from "./remember-question";
 import { runReport } from "./run-report";
 import { searchPeople } from "./search-people";
 import { whoHasAccess } from "./who-has-access";
@@ -27,6 +29,9 @@ export const TOOLS: readonly AiTool[] = [
   // Requests — the IT side only (F15d-2b).
   listRequests,
   getRequest,
+  // Memory — the asker's own row only (F15d-2c).
+  rememberPreference,
+  rememberQuestion,
 ];
 
 const allowedFor = (roles: readonly Role[]) =>
