@@ -10,8 +10,8 @@ export function greeting(name: string, hour: number): string {
 }
 
 /**
- * Questions to start with (board: Assistant chat). F15 answers from the
- * help library; report questions join with F15d.
+ * Questions to start with (board: Assistant chat): one report question, one
+ * about the app, one about their own work.
  */
 export function starterQuestions(roles: readonly Role[]): string[] {
   const it = roles.some(
@@ -19,14 +19,14 @@ export function starterQuestions(roles: readonly Role[]): string[] {
   );
   return it
     ? [
+        "How many people did we onboard this year, per office?",
         "What does Returned mean?",
         "How is the offboarding SLA counted?",
-        "How do I change someone's access?",
       ]
     : [
+        "How long did approvals take this month?",
+        "How many people did we onboard this year?",
         "What does Returned mean?",
-        "How do I confirm and sign a request?",
-        "What do the reports count?",
       ];
 }
 
@@ -107,16 +107,28 @@ export function chatProblem(
 
 /** A tool call in plain words: "Read the help page Statuses & who acts". */
 export function toolStep(name: string, done: boolean, output: unknown): string {
-  const title =
-    output && typeof output === "object" && "title" in output
-      ? String((output as { title: unknown }).title)
+  const field = (key: string) =>
+    output && typeof output === "object" && key in output
+      ? String((output as Record<string, unknown>)[key])
       : null;
   switch (name) {
     case "getAppHelp":
-      return done && title
-        ? `Read the help page ${title}`
+      return done && field("title")
+        ? `Read the help page ${field("title")}`
         : "Reading the help…";
+    case "runReport":
+      if (!done) return "Running the report…";
+      return field("report")
+        ? `Ran the report ${field("report")}`
+        : "Couldn't run the report";
     default:
       return done ? "Looked it up" : "Looking it up…";
   }
+}
+
+/** The report a step used, to open it with the same filters ("/reports/…"). */
+export function stepLink(output: unknown): string | null {
+  if (!output || typeof output !== "object" || !("link" in output)) return null;
+  const link = (output as { link: unknown }).link;
+  return typeof link === "string" && link.startsWith("/reports/") ? link : null;
 }

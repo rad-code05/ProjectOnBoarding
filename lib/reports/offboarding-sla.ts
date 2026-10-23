@@ -1,5 +1,8 @@
 import "server-only";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  type ServerSupabase,
+} from "@/lib/supabase/server";
 import { placeArgs, type ReportFilters } from "./filters";
 import {
   slaRange,
@@ -39,8 +42,8 @@ export type SlaReport = {
 export async function loadSlaReport(
   filters: ReportFilters,
   options: { timeZone: string; canOpenRequests: boolean; isApprover: boolean },
+  supabase: ServerSupabase = createServerSupabaseClient(),
 ): Promise<SlaReport> {
-  const supabase = createServerSupabaseClient();
   const args = slaArgs(filters, options.timeZone);
   const [list, summary] = await Promise.all([
     supabase.rpc("report_offboarding_sla", { ...args, p_limit: filters.limit }),

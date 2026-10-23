@@ -1,13 +1,16 @@
 // @vitest-environment node
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import type { Role } from "@/lib/auth";
 import { TOOLS, toolApprovalFor, toolNamesFor, toolsFor } from "./registry";
 import { defineTool } from "./types";
+
+vi.mock("server-only", () => ({}));
 
 const ctx = (roles: Role[]) => ({
   userId: "user_1",
   roles,
   timeZone: "Asia/Dubai",
+  db: {} as never,
 });
 
 describe("the tool registry (PROJECT_PLAN §6.6)", () => {
@@ -35,9 +38,14 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
   });
 
   test("tools are filtered by role — nobody gets a tool their roles don't allow", () => {
-    expect(toolNamesFor(["approver"])).toEqual(["getAppHelp"]);
+    expect(toolNamesFor(["approver"])).toEqual(["getAppHelp", "runReport"]);
+    // Requester / IT operator alone: no report reader — no report tool.
+    expect(toolNamesFor(["requester", "it_operator"])).toEqual(["getAppHelp"]);
     expect(toolNamesFor([])).toEqual([]);
-    expect(Object.keys(toolsFor(ctx(["approver"])))).toEqual(["getAppHelp"]);
+    expect(Object.keys(toolsFor(ctx(["approver"])))).toEqual([
+      "getAppHelp",
+      "runReport",
+    ]);
   });
 
   test("approvals: only write tools wait for a Confirm (none yet in F15)", () => {

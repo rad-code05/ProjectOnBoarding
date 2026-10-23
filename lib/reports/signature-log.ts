@@ -1,5 +1,8 @@
 import "server-only";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  type ServerSupabase,
+} from "@/lib/supabase/server";
 import { placeArgs, reportRange, type ReportFilters } from "./filters";
 import { signatureRow, type SignatureRow } from "./signatures";
 
@@ -34,8 +37,8 @@ export type SignatureLog = {
 export async function loadSignatureLog(
   filters: ReportFilters,
   options: { timeZone: string; canOpenRequests: boolean; isApprover: boolean },
+  supabase: ServerSupabase = createServerSupabaseClient(),
 ): Promise<SignatureLog> {
-  const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc("report_signature_log", {
     ...signatureArgs(filters, options.timeZone),
     p_limit: filters.limit,

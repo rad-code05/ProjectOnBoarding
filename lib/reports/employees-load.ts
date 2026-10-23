@@ -1,5 +1,8 @@
 import "server-only";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  type ServerSupabase,
+} from "@/lib/supabase/server";
 import { employeeCard, officeLines } from "./employees";
 import { placeArgs, type ReportFilters } from "./filters";
 
@@ -17,8 +20,10 @@ export function employeesArgs(filters: ReportFilters) {
  * state and city. The database checks the reader; RLS decides which
  * requests count for them.
  */
-export async function loadEmployeesByOffice(filters: ReportFilters) {
-  const supabase = createServerSupabaseClient();
+export async function loadEmployeesByOffice(
+  filters: ReportFilters,
+  supabase: ServerSupabase = createServerSupabaseClient(),
+) {
   const { data, error } = await supabase.rpc(
     "report_employees_by_office",
     employeesArgs(filters),
@@ -31,8 +36,8 @@ export async function loadEmployeesByOffice(filters: ReportFilters) {
 export async function loadEmployees(
   filters: ReportFilters,
   options: { timeZone: string; canOpenRequests: boolean; isApprover: boolean },
+  supabase: ServerSupabase = createServerSupabaseClient(),
 ) {
-  const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc("report_employees", {
     ...employeesArgs(filters),
     p_search: filters.q || undefined,

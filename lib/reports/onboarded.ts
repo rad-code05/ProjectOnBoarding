@@ -1,16 +1,22 @@
 import "server-only";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  type ServerSupabase,
+} from "@/lib/supabase/server";
 import { zonedParts } from "@/lib/time/zoned";
 import { placeArgs, type PlaceKey, type ReportFilters } from "./filters";
 import { monthOf, monthSpan, type MonthCount } from "./months";
 
 /** The months a report covers for these filters (company timezone). */
-export async function onboardedSpan(filters: ReportFilters, timeZone: string) {
+export async function onboardedSpan(
+  filters: ReportFilters,
+  timeZone: string,
+  supabase: ServerSupabase = createServerSupabaseClient(),
+) {
   const today = zonedParts(new Date().toISOString(), timeZone).date;
   let earliest: string | null = null;
   if (!filters.from && filters.period === "all") {
     // "All time": from the first closed onboarding this reader may see.
-    const supabase = createServerSupabaseClient();
     const { data } = await supabase
       .from("requests")
       .select("closed_at")
@@ -29,8 +35,8 @@ export async function onboardedSpan(filters: ReportFilters, timeZone: string) {
 export async function onboardedMonths(
   span: { first: string; last: string },
   filters: Pick<ReportFilters, "country" | "department" | PlaceKey>,
+  supabase: ServerSupabase = createServerSupabaseClient(),
 ): Promise<MonthCount[]> {
-  const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc("report_onboarded_by_month", {
     p_from_month: span.first,
     p_to_month: span.last,

@@ -8,6 +8,7 @@ import {
   isToolUIPart,
   type UIMessage,
 } from "ai";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   useEffect,
@@ -26,6 +27,7 @@ import {
   chatProblem,
   greeting,
   starterQuestions,
+  stepLink,
   toolStep,
 } from "@/lib/ai/chat-ui";
 import { cn } from "@/lib/cn";
@@ -392,13 +394,26 @@ function Message({ message }: { message: UIMessage }) {
         }
         if (isToolUIPart(part)) {
           const done = part.state === "output-available";
+          const output = done ? part.output : null;
+          const href = stepLink(output);
           return (
             <span
               key={i}
-              className="flex items-center gap-1.5 self-start text-xs text-graphite"
+              className="flex flex-wrap items-center gap-x-1.5 self-start text-xs text-graphite"
             >
               {done && <CheckIcon size={14} />}
-              {toolStep(getToolName(part), done, done ? part.output : null)}
+              {toolStep(getToolName(part), done, output)}
+              {href && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <Link
+                    href={href}
+                    className="inline-flex min-h-8 items-center font-semibold text-ink underline"
+                  >
+                    Open the report
+                  </Link>
+                </>
+              )}
             </span>
           );
         }

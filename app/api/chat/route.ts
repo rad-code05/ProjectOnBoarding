@@ -1,9 +1,10 @@
+import { auth } from "@clerk/nextjs/server";
 import { getCurrentUser } from "@/lib/auth";
 import { runChat } from "@/lib/ai/chat-run";
 import { chatStore } from "@/lib/ai/chat-store";
 import { fakeModelEnabled } from "@/lib/ai/fake-model";
 import { systemInstructions } from "@/lib/ai/system";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createTokenSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
 
 /** A long answer with a few tool calls can take a while. */
@@ -23,7 +24,9 @@ export async function POST(request: Request) {
     return Response.json({ error: "not_configured" }, { status: 503 });
   }
 
-  const supabase = createServerSupabaseClient();
+  // The tools run while the answer streams, after this handler has
+  // returned: they use this token, fetched now (RLS still applies).
+  const supabase = createTokenSupabaseClient(await (await auth()).getToken());
   const [timeZone, me, memory] = await Promise.all([
     companyTimezone(),
     supabase
@@ -47,7 +50,7 @@ export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
   return runChat(
     body,
-    { userId, roles, timeZone },
-    chatStore(systemInstructions({ name, roles, now, timeZone })),
+    { userId, roles, timeZone, db: supabase },
+    chatStore(systemInstructions({ name, roles, now, timeZone }), supabase),
   );
 }

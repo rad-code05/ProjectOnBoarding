@@ -1,5 +1,8 @@
 import "server-only";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  type ServerSupabase,
+} from "@/lib/supabase/server";
 import {
   placeArgs,
   reportRange,
@@ -20,8 +23,8 @@ export async function loadOnboardedBy(
     "period" | "from" | "to" | "country" | "department" | PlaceKey
   >,
   timeZone: string,
+  supabase: ServerSupabase = createServerSupabaseClient(),
 ) {
-  const supabase = createServerSupabaseClient();
   const range = reportRange(
     { ...filters, q: "", type: null, limit: 0 },
     timeZone,

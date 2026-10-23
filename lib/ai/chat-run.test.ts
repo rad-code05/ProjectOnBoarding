@@ -4,6 +4,8 @@ import { MockLanguageModelV4 } from "ai/test";
 import { describe, expect, test, vi } from "vitest";
 import { chatTitle, runChat, type AiStatus, type ChatDeps } from "./chat-run";
 
+vi.mock("server-only", () => ({}));
+
 const CHAT = "6f9619ff-8b86-4011-b42d-00c04fc964ff";
 
 const question = (text = "What does Returned mean?") => ({
@@ -65,6 +67,7 @@ const person = {
   userId: "user_1",
   roles: ["approver" as const],
   timeZone: "Asia/Dubai",
+  db: {} as never,
 };
 
 describe("runChat (POST /api/chat)", () => {
@@ -99,7 +102,7 @@ describe("runChat (POST /api/chat)", () => {
     expect(JSON.stringify(call.prompt)).toContain(
       "You are the Laine assistant.",
     );
-    expect(call.tools?.map((t) => t.name)).toEqual(["getAppHelp"]);
+    expect(call.tools?.map((t) => t.name)).toEqual(["getAppHelp", "runReport"]);
   });
 
   test("an existing chat continues from the saved history; only new messages are saved", async () => {
