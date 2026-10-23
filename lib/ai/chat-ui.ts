@@ -12,7 +12,7 @@ export function greeting(name: string, hour: number): string {
 
 /**
  * Questions to start with (board: Assistant chat): one report question, one
- * about the app, one about their own work.
+ * about people & access (IT) or approving (approvers), one about the app.
  */
 export function starterQuestions(roles: readonly Role[]): string[] {
   const it = roles.some(
@@ -21,8 +21,8 @@ export function starterQuestions(roles: readonly Role[]): string[] {
   return it
     ? [
         "How many people did we onboard this year, per office?",
+        "Who has Admin rights in any application?",
         "What does Returned mean?",
-        "How is the offboarding SLA counted?",
       ]
     : [
         "How long did approvals take this month?",
@@ -122,6 +122,21 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
       return field("report")
         ? `Ran the report ${field("report")}`
         : "Couldn't run the report";
+    case "searchPeople":
+      return done
+        ? `Searched people for “${field("query")}”`
+        : "Searching people…";
+    case "getPersonAccess":
+      if (!done) return "Looking up what they hold…";
+      return field("email")
+        ? `Looked up what ${field("person")} holds`
+        : "Couldn't find that person";
+    case "whoHasAccess":
+      return done
+        ? `Looked up who holds ${field("asked")}`
+        : "Looking up who holds it…";
+    case "getCatalog":
+      return done ? "Read the catalog" : "Reading the catalog…";
     default:
       return done ? "Looked it up" : "Looking it up…";
   }

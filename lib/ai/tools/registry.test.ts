@@ -39,8 +39,28 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
 
   test("tools are filtered by role — nobody gets a tool their roles don't allow", () => {
     expect(toolNamesFor(["approver"])).toEqual(["getAppHelp", "runReport"]);
-    // Requester / IT operator alone: no report reader — no report tool.
-    expect(toolNamesFor(["requester", "it_operator"])).toEqual(["getAppHelp"]);
+    // Requester / IT operator alone: no report reader — no report tool,
+    // but people & access questions.
+    const peopleTools = [
+      "searchPeople",
+      "getPersonAccess",
+      "whoHasAccess",
+      "getCatalog",
+    ];
+    expect(toolNamesFor(["requester", "it_operator"])).toEqual([
+      "getAppHelp",
+      ...peopleTools,
+    ]);
+    expect(toolNamesFor(["admin"])).toEqual([
+      "getAppHelp",
+      "runReport",
+      ...peopleTools,
+    ]);
+    expect(toolNamesFor(["auditor"])).toEqual([
+      "getAppHelp",
+      "runReport",
+      ...peopleTools,
+    ]);
     expect(toolNamesFor([])).toEqual([]);
     expect(Object.keys(toolsFor(ctx(["approver"])))).toEqual([
       "getAppHelp",

@@ -1,7 +1,11 @@
 import type { ToolSet } from "ai";
 import type { Role } from "@/lib/auth";
 import { getAppHelp } from "./get-app-help";
+import { getCatalog } from "./get-catalog";
+import { getPersonAccess } from "./get-person-access";
 import { runReport } from "./run-report";
+import { searchPeople } from "./search-people";
+import { whoHasAccess } from "./who-has-access";
 import { hasAnyRole, type AiTool, type ToolContext } from "./types";
 
 /**
@@ -10,7 +14,15 @@ import { hasAnyRole, type AiTool, type ToolContext } from "./types";
  * close, cancel, tick section 9, change roles or settings, delete, raw SQL,
  * web search — the tests check the names.
  */
-export const TOOLS: readonly AiTool[] = [getAppHelp, runReport];
+export const TOOLS: readonly AiTool[] = [
+  getAppHelp,
+  runReport,
+  // People & access — the IT side only, never approvers (F15d-2a).
+  searchPeople,
+  getPersonAccess,
+  whoHasAccess,
+  getCatalog,
+];
 
 const allowedFor = (roles: readonly Role[]) =>
   TOOLS.filter((t) => hasAnyRole(roles, t.roles));
