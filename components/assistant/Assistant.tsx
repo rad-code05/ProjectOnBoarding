@@ -24,8 +24,11 @@ import { CheckIcon, CloseIcon, IconButton } from "@/components/ui";
 import type { Role } from "@/lib/auth";
 import {
   MAX_QUESTION_LENGTH,
+  answeredOnServer,
   chatProblem,
   greeting,
+  lastIsQuestion,
+  lastQuestion,
   starterQuestions,
   stepLink,
   toolStep,
@@ -66,6 +69,9 @@ const subscribeOpen = (onChange: () => void) => {
 };
 
 const CHAT_KEY = "laine.assistant.chat";
+/** After a reload mid-answer: look for the saved answer every 3 s, 90 s long. */
+const POLL_MS = 3_000;
+const POLL_TRIES = 30;
 /** The chat shown on this device, kept across reloads and pages. */
 const readChatId = (): string | null => {
   try {
@@ -188,7 +194,11 @@ function ChatPanel({
     id: chatId,
     transport,
   });
-  const busy = status === "submitted" || status === "streaming";
+  // A reload while the answer was still being written: "waiting" until the
+  // server has saved it, "lost" if it never comes.
+  const [pending, setPending] = useState<"waiting" | "lost" | null>(null);
+  const busy =
+    status === "submitted" || status === "streaming" || pending === "waiting";
   const problem = error ? chatProblem(error.message, timeZone) : null;
 
   useEffect(() => {
@@ -198,14 +208,22 @@ function ChatPanel({
     // Only the chat from last time; New chat (or leaving) drops a late answer.
     if (!restored || chatId !== restored) return;
     let current = true;
-    void loadAssistantChat(restored).then((saved) => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const load = async (tries: number) => {
+      const saved = await loadAssistantChat(restored);
+      if (!current) return;
       // Unless a question was already asked meanwhile.
-      if (current && saved.length) {
-        setMessages((now) => (now.length ? now : saved));
-      }
-    });
+      if (saved.length)
+        setMessages((now) => (now.length > saved.length ? now : saved));
+      if (!lastIsQuestion(saved)) return setPending(null);
+      if (tries === 0) return setPending("lost");
+      setPending("waiting");
+      timer = setTimeout(() => void load(tries - 1), POLL_MS);
+    };
+    void load(POLL_TRIES);
     return () => {
       current = false;
+      clearTimeout(timer);
     };
   }, [restored, chatId, setMessages]);
   useEffect(() => {
@@ -229,8 +247,18 @@ function ChatPanel({
       ask(input);
     }
   };
+  // The server may have finished the answer after the connection dropped:
+  // show it rather than asking again (and paying twice).
+  const tryAgain = async () => {
+    clearError();
+    setPending(null);
+    const saved = await loadAssistantChat(chatId);
+    if (answeredOnServer(saved, lastQuestion(messages))) setMessages(saved);
+    else void regenerate();
+  };
   const newChat = () => {
     stop();
+    setPending(null);
     const id = crypto.randomUUID();
     writeChatId(id);
     setChatId(id);
@@ -303,7 +331,7 @@ function ChatPanel({
           <Message key={m.id} message={m} />
         ))}
 
-        {status === "submitted" && (
+        {(status === "submitted" || pending === "waiting") && (
           <div
             aria-label="The assistant is writing"
             className="flex gap-1.5 self-start rounded-[4px_14px_14px_14px] border border-line bg-paper px-4 py-3"
@@ -311,6 +339,31 @@ function ChatPanel({
             <span className="size-2 rounded-pill bg-ink motion-safe:animate-pulse" />
             <span className="size-2 rounded-pill bg-stone motion-safe:animate-pulse" />
             <span className="size-2 rounded-pill bg-ink motion-safe:animate-pulse" />
+          </div>
+        )}
+        {pending === "waiting" && (
+          <span className="self-start text-xs text-graphite">
+            Still writing the answer…
+          </span>
+        )}
+        {pending === "lost" && (
+          <div
+            role="status"
+            className="flex flex-col gap-1 rounded-card border border-line bg-paper px-3.5 py-3"
+          >
+            <span className="text-sm font-bold">
+              The answer didn&apos;t arrive
+            </span>
+            <span className="text-[13px] leading-normal text-graphite">
+              The connection was lost before the answer was ready.
+            </span>
+            <button
+              type="button"
+              onClick={() => void tryAgain()}
+              className="mt-1.5 h-10 cursor-pointer self-start rounded-pill border border-ink px-4 text-[13px] font-semibold"
+            >
+              Try again
+            </button>
           </div>
         )}
 
@@ -331,10 +384,7 @@ function ChatPanel({
             {problem.retry && (
               <button
                 type="button"
-                onClick={() => {
-                  clearError();
-                  void regenerate();
-                }}
+                onClick={() => void tryAgain()}
                 className="mt-1.5 h-10 cursor-pointer self-start rounded-pill border border-ink px-4 text-[13px] font-semibold"
               >
                 Try again

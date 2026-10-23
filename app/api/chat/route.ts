@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { after } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { runChat } from "@/lib/ai/chat-run";
 import { chatStore } from "@/lib/ai/chat-store";
@@ -51,6 +52,12 @@ export async function POST(request: Request) {
   return runChat(
     body,
     { userId, roles, timeZone, db: supabase },
-    chatStore(systemInstructions({ name, roles, now, timeZone }), supabase),
+    {
+      ...chatStore(
+        systemInstructions({ name, roles, now, timeZone }),
+        supabase,
+      ),
+      keepRunning: (work) => after(work),
+    },
   );
 }

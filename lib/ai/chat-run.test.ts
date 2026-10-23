@@ -157,6 +157,44 @@ describe("runChat (POST /api/chat)", () => {
     ).toBe(false);
   });
 
+  test("the answer is finished and saved even after the browser disconnects", async () => {
+    const work: (() => Promise<unknown>)[] = [];
+    const { d } = deps({ keepRunning: (w) => work.push(w) });
+    // The browser hangs up at once (tab closed): the server still finishes.
+    const res = await runChat(question(), person, d);
+    await res.body?.cancel();
+    expect(work).toHaveLength(1);
+    await work[0]();
+    const calls = vi.mocked(d.saveMessages).mock.calls as unknown as [
+      string,
+      UIMessage[],
+    ][];
+    expect(calls.map((c) => c[1][0].role)).toEqual(["user", "assistant"]);
+    expect(d.recordUsage).toHaveBeenCalledWith(1, 120, 30);
+  });
+
+  test("Try again after a lost answer doesn't save the question twice", async () => {
+    const history: UIMessage[] = [
+      { id: "a", role: "user", parts: [{ type: "text", text: "Hi" }] },
+      { id: "b", role: "assistant", parts: [{ type: "text", text: "Hello." }] },
+      {
+        id: "c",
+        role: "user",
+        parts: [{ type: "text", text: "What does Returned mean?" }],
+      },
+    ];
+    const { d, model } = deps({ loadMessages: vi.fn(async () => history) });
+    await (await runChat(question(), person, d)).text();
+    await vi.waitFor(() => expect(d.saveMessages).toHaveBeenCalledTimes(1));
+    const calls = vi.mocked(d.saveMessages).mock.calls as unknown as [
+      string,
+      UIMessage[],
+    ][];
+    expect(calls[0][1].map((m) => m.role)).toEqual(["assistant"]);
+    const prompt = JSON.stringify(model.doStreamCalls[0].prompt);
+    expect(prompt.split("What does Returned mean?")).toHaveLength(2);
+  });
+
   test("off, budget used up, too many questions: no model call", async () => {
     for (const [reason, code] of [
       ["off", 503],
