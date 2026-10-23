@@ -680,6 +680,13 @@
       "w": 390,
       "h": 900,
       "title": "Phone · Admin · Add / edit a model (sheet) — F15 proposal"
+    },
+    "AssistantChatsMobile.dc.html": {
+      "x": 30060,
+      "y": 13560,
+      "w": 390,
+      "h": 1180,
+      "title": "Phone · Assistant · Previous chats — F15d-2 proposal"
     }
   },
   "createdOnFiles": {
@@ -835,7 +842,8 @@
     "AssistantHelpMobile.dc.html",
     "AssistantMemoryMobile.dc.html",
     "AdminAiSettingsMobile.dc.html",
-    "AdminAiModelSheetMobile.dc.html"
+    "AdminAiModelSheetMobile.dc.html",
+    "AssistantChatsMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
