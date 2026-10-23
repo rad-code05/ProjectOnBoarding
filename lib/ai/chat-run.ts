@@ -10,6 +10,7 @@ import {
 } from "ai";
 import * as z from "zod";
 import type { Role } from "@/lib/auth";
+import { MAX_QUESTION_LENGTH } from "./chat-ui";
 import { toolApprovalFor, toolsFor } from "./tools/registry";
 
 /** What ai_status() says (F15a): may this person ask now? */
@@ -45,7 +46,6 @@ export type ChatPerson = { userId: string; roles: Role[]; timeZone: string };
 /** Up to 5 steps (tool calls and the answer), and short answers. */
 const MAX_STEPS = 5;
 const MAX_OUTPUT_TOKENS = 4000;
-export const MAX_QUESTION_LENGTH = 4000;
 
 /**
  * The browser sends only the new question and the chat's id; the history

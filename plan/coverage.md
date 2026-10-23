@@ -114,7 +114,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 
 | # | Requirement | Source | Built in | Proven by | Status |
 | --- | --- | --- | --- | --- | --- |
-| G1 | Robot launcher, closed by default, panel, open/closed remembered per device | `main-page.md` | F15 | e2e | ⏳ ❓ D7 |
+| G1 | Robot launcher, closed by default, panel, open/closed remembered per device | `main-page.md` | F15 | e2e | ✅ F15c-2 — robot on every page, panel (phone full screen, desktop side panel), open / closed per device (e2e approver + phone) |
 | G2 | `/api/chat` rate limit + monthly spend cap | §6.4 | F15 | F15 tests | 🟡 F15a database: `ai_status()` off / budget / rate, `record_ai_usage()` (`ai_assistant.test.sql`) + F15c-1 route refuses before calling the model and records every answer's tokens (`chat-run.test.ts`); e2e with the panel F15c-2 |
 | G3 | `proposeFieldValues` → suggestions accepted per field; audit `source = ai` | §6.1, §6.3 | F16 | F16 tests | ⏳ F16 |
 | G4 | Read-only `getRequestSummary` / `getCatalog` ("what's still missing?") | §6.1, §6.3 | **F16** (assigned 2026-10-07) | F16 tests | ⏳ F16 |

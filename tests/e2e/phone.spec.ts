@@ -288,6 +288,26 @@ test.describe("admin on a phone", () => {
 test.describe("approver on a phone", () => {
   test.use({ storageState: authFile("approver") });
 
+  test("the assistant opens full screen and fits the phone", async ({
+    page,
+  }) => {
+    await openApp(page, "/approvals");
+    await page
+      .getByRole("button", { name: "Open the Laine assistant" })
+      .click();
+    const panel = page.getByRole("dialog", { name: "Laine assistant" });
+    await expect(panel).toBeVisible();
+    const box = await panel.boundingBox();
+    const viewport = page.viewportSize()!;
+    expect(box?.width).toBe(viewport.width);
+    await expect(
+      panel.getByRole("textbox", { name: "Message the assistant" }),
+    ).toHaveCSS("font-size", "16px");
+    await expectNoSideScroll(page);
+    await panel.getByRole("button", { name: "Close the assistant" }).click();
+    await expect(panel).toHaveCount(0);
+  });
+
   test("lands on Approvals; menu shows the approver pages", async ({
     page,
   }) => {

@@ -1,8 +1,10 @@
 import { currentUser } from "@clerk/nextjs/server";
+import { Assistant } from "@/components/assistant/Assistant";
 import { AppShell } from "@/components/shell";
 import { getCurrentUser } from "@/lib/auth";
 import { countWaiting } from "@/lib/approvals/list";
 import { PAGES, navFor, roleSummary } from "@/lib/navigation";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 /**
  * Shell for all signed-in pages. It only loads what the top bar shows —
@@ -11,9 +13,12 @@ import { PAGES, navFor, roleSummary } from "@/lib/navigation";
  */
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const { roles } = await getCurrentUser();
-  const [user, waiting] = await Promise.all([
+  const supabase = createServerSupabaseClient();
+  const [user, waiting, ai, memory] = await Promise.all([
     currentUser(),
     roles.includes("approver") ? countWaiting() : Promise.resolve(0),
+    supabase.from("ai_settings").select("enabled").maybeSingle(),
+    supabase.from("ai_memory").select("call_me").maybeSingle(),
   ]);
   // Approvers see how many requests wait for them (design: menu badge).
   const items = navFor(roles).map((item) =>
@@ -26,9 +31,18 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     user?.primaryEmailAddress?.emailAddress ||
     "Signed in";
 
+  // The Laine robot (F15c): for everyone with a role, while it is on.
+  const assistant = roles.length > 0 && ai.data?.enabled === true;
+
   return (
     <AppShell items={items} userName={userName} userRole={roleSummary(roles)}>
       {children}
+      {assistant && (
+        <Assistant
+          name={memory.data?.call_me || user?.firstName || "there"}
+          roles={roles}
+        />
+      )}
     </AppShell>
   );
 }

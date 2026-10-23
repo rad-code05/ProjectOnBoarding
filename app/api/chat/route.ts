@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth";
 import { runChat } from "@/lib/ai/chat-run";
 import { chatStore } from "@/lib/ai/chat-store";
+import { fakeModelEnabled } from "@/lib/ai/fake-model";
 import { systemInstructions } from "@/lib/ai/system";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
   if (!roles.length) {
     return Response.json({ error: "forbidden" }, { status: 403 });
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.ANTHROPIC_API_KEY && !fakeModelEnabled()) {
     return Response.json({ error: "not_configured" }, { status: 503 });
   }
 

@@ -17,6 +17,54 @@ test("approver lands on Approvals with the approver menu", async ({ page }) => {
   ).toHaveText([/^Approvals/, "Records", "Reports"]);
 });
 
+test("Assistant (F15c): the robot opens the chat, answers, remembers it is open; Esc and Close close it", async ({
+  page,
+}) => {
+  await openApp(page, "/approvals");
+  await page.getByRole("button", { name: "Open the Laine assistant" }).click();
+  const panel = page.getByRole("dialog", { name: "Laine assistant" });
+  await expect(panel).toBeVisible();
+  await expect(panel.getByText("Report and app questions")).toBeVisible();
+  await expect(panel.getByRole("log")).toContainText(
+    /Good (morning|afternoon|evening), .+\. What would you like to know today\?/,
+  );
+  // CI answers with the fake test model (AI_FAKE_MODEL=1) — no key, no cost.
+  await panel.getByRole("button", { name: "What does Returned mean?" }).click();
+  await expect(panel.getByRole("log")).toContainText(
+    "This is the test assistant.",
+  );
+  await expect(
+    panel.getByRole("log").getByText("Returned", { exact: true }),
+  ).toHaveJSProperty("tagName", "STRONG");
+  await expect(panel.getByRole("list", { name: "Suggestions" })).toHaveCount(0);
+
+  // Typed question, sent with Enter.
+  const box = panel.getByRole("textbox", { name: "Message the assistant" });
+  await box.fill("And what does Closed mean?");
+  await box.press("Enter");
+  await expect(panel.getByText("And what does Closed mean?")).toBeVisible();
+  await expect(panel.getByText("This is the test assistant.")).toHaveCount(2);
+
+  // Open is remembered on this device.
+  await page.reload();
+  await expect(
+    page.getByRole("dialog", { name: "Laine assistant" }),
+  ).toBeVisible();
+
+  // New chat starts over; Esc closes and the robot is back.
+  await panel.getByRole("button", { name: "New chat" }).click();
+  await expect(panel.getByRole("list", { name: "Suggestions" })).toBeVisible();
+  await box.press("Escape");
+  await expect(panel).toHaveCount(0);
+  const robot = page.getByRole("button", { name: "Open the Laine assistant" });
+  await expect(robot).toBeFocused();
+  await page.reload();
+  await expect(robot).toBeVisible();
+  await expect(
+    page.getByRole("dialog", { name: "Laine assistant" }),
+  ).toHaveCount(0);
+});
+
 test("Approvals shows the tiles, what waits and what closed", async ({
   page,
 }) => {

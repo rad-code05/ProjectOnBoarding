@@ -4,6 +4,7 @@ import type { UIMessage } from "ai";
 import type { Json } from "@/lib/supabase/database.types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { AiStatus, ChatDeps } from "./chat-run";
+import { fakeModel, fakeModelEnabled } from "./fake-model";
 
 /**
  * The real database and model behind runChat(): everything with the
@@ -15,7 +16,7 @@ export function chatStore(instructions: string): ChatDeps {
 
   return {
     instructions,
-    model: (modelId) => anthropic(modelId),
+    model: (modelId) => (fakeModelEnabled() ? fakeModel() : anthropic(modelId)),
 
     status: async (): Promise<AiStatus> => {
       const { data, error } = await supabase.rpc("ai_status").single();

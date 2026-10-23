@@ -64,6 +64,9 @@ jobs:
       # Authenticator keys of the test users (MFA is required for everyone).
       E2E_ADMIN_TOTP_SECRET: ${{ secrets.E2E_ADMIN_TOTP_SECRET }}
       E2E_APPROVER_TOTP_SECRET: ${{ secrets.E2E_APPROVER_TOTP_SECRET }}
+      # The assistant answers with a fixed test text — no Anthropic key, no
+      # cost (lib/ai/fake-model.ts; ignored on Vercel).
+      AI_FAKE_MODEL: "1"
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
