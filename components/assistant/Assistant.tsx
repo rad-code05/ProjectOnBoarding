@@ -31,6 +31,7 @@ import {
   lastQuestion,
   starterQuestions,
   stepLink,
+  stepLinkLabel,
   toolStep,
 } from "@/lib/ai/chat-ui";
 import { cn } from "@/lib/cn";
@@ -513,7 +514,7 @@ function Message({ message }: { message: UIMessage }) {
                     href={href}
                     className="inline-flex min-h-8 items-center font-semibold text-ink underline"
                   >
-                    Open the report
+                    {stepLinkLabel(href)}
                   </Link>
                 </>
               )}

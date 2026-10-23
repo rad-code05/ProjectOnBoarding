@@ -137,16 +137,38 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
         : "Looking up who holds it…";
     case "getCatalog":
       return done ? "Read the catalog" : "Reading the catalog…";
+    case "listRequests":
+      return done
+        ? "Looked through the requests"
+        : "Looking through the requests…";
+    case "getRequest":
+      if (!done) return "Opening the request…";
+      return field("status")
+        ? `Read the request ${field("ticket")}`
+        : "Couldn't find that request";
     default:
       return done ? "Looked it up" : "Looking it up…";
   }
 }
 
-/** The report a step used, to open it with the same filters ("/reports/…"). */
+/**
+ * Where a step's result opens in the app: the report with the same filters
+ * ("/reports/…") or the request ("/requests/<id>", "/records/<id>").
+ * Only our own pages — never a link the model could make up.
+ */
 export function stepLink(output: unknown): string | null {
   if (!output || typeof output !== "object" || !("link" in output)) return null;
   const link = (output as { link: unknown }).link;
-  return typeof link === "string" && link.startsWith("/reports/") ? link : null;
+  if (typeof link !== "string") return null;
+  return link.startsWith("/reports/") ||
+    /^\/(requests|records)\/[0-9a-f-]{36}$/.test(link)
+    ? link
+    : null;
+}
+
+/** The words on a step's link. */
+export function stepLinkLabel(href: string): string {
+  return href.startsWith("/reports/") ? "Open the report" : "Open the request";
 }
 
 const textOf = (m: UIMessage) =>

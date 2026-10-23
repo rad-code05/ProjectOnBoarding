@@ -1,3 +1,4 @@
+// @vitest-environment node
 import type { UIMessage } from "ai";
 import { describe, expect, test } from "vitest";
 import {
@@ -8,6 +9,7 @@ import {
   lastQuestion,
   starterQuestions,
   stepLink,
+  stepLinkLabel,
   toolStep,
 } from "./chat-ui";
 
@@ -80,6 +82,13 @@ describe("toolStep", () => {
     expect(stepLink({ link: "/reports/onboarded-by-office?office=1" })).toBe(
       "/reports/onboarded-by-office?office=1",
     );
+    const id = "6f9619ff-8b86-4011-b42d-00c04fc964ff";
+    expect(stepLink({ link: `/requests/${id}` })).toBe(`/requests/${id}`);
+    expect(stepLink({ link: `/records/${id}` })).toBe(`/records/${id}`);
+    expect(stepLink({ link: "/requests/new?x=1" })).toBeNull();
+    expect(stepLink({ link: "/admin/settings" })).toBeNull();
+    expect(stepLinkLabel(`/records/${id}`)).toBe("Open the request");
+    expect(stepLinkLabel("/reports/open-requests")).toBe("Open the report");
     expect(stepLink({ link: "https://evil.example" })).toBeNull();
     expect(stepLink({ link: "javascript:alert(1)" })).toBeNull();
     expect(stepLink(null)).toBeNull();

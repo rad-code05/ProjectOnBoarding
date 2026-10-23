@@ -3,6 +3,8 @@ import type { Role } from "@/lib/auth";
 import { getAppHelp } from "./get-app-help";
 import { getCatalog } from "./get-catalog";
 import { getPersonAccess } from "./get-person-access";
+import { getRequest } from "./get-request";
+import { listRequests } from "./list-requests";
 import { runReport } from "./run-report";
 import { searchPeople } from "./search-people";
 import { whoHasAccess } from "./who-has-access";
@@ -22,6 +24,9 @@ export const TOOLS: readonly AiTool[] = [
   getPersonAccess,
   whoHasAccess,
   getCatalog,
+  // Requests — the IT side only (F15d-2b).
+  listRequests,
+  getRequest,
 ];
 
 const allowedFor = (roles: readonly Role[]) =>
