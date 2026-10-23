@@ -17,8 +17,8 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | Validation | Zod (forms, Server Actions, AI tool inputs) | `zod` | 4.6.5 | S1 |
 | PDF | React-PDF, server-side `renderToBuffer`; fonts embedded from TTF files in `lib/records/fonts/` (Raleway 400/600/700, Newsreader 400, Instrument Serif italic — SIL OFL, licences next to them) | `@react-pdf/renderer` **4.9.0** (pinned) | 4.9.0 | F08b ✅ |
 | Image processing | Re-encode uploaded PNGs, strip metadata | `sharp` | 0.35.5 | F05 |
-| AI chat | Vercel AI SDK (`streamText`, `tool` + `needsApproval`, `useChat`) | `ai`, `@ai-sdk/react` | 7.0.123 · 4.0.126 | F15 |
-| AI model | **Anthropic (D7, 2026-10-09).** Chosen in Admin → AI settings from a list kept as data (default `claude-sonnet-5-5`; also `claude-opus-5-5`, `claude-haiku-4-5-20251001`); env var until Admin exists | `@ai-sdk/anthropic` | 4.0.69 | F15 |
+| AI chat | Vercel AI SDK 7 (`streamText` + `toolApproval`, `tool`, `isStepCount`, `useChat`) | `ai`, `@ai-sdk/react` | **7.0.142** (installed F15b, 2026-10-23) · 4.0.146 (F15c) | F15 |
+| AI model | **Anthropic (D7, 2026-10-09).** Chosen in Admin → AI settings from a list kept as data (seeded in `ai_models`, F15a: `claude-sonnet-5-5` default, `claude-opus-5-5`, `claude-haiku-4-5`; the admin adds more in Admin → AI settings) | `@ai-sdk/anthropic` | 4.0.81 (F15c) | F15 |
 | Batch files | CSV / XLSX parsing (server-side) — **pending D8** | `papaparse`, `exceljs` | 5.7.0 · 4.4.0 | F17 |
 | Charts | Plain SVG/HTML bars (single series) — no chart library needed | — | — | F12 |
 | Email (phase 7) | Resend | `resend` | 6.31.0 | F23 |
