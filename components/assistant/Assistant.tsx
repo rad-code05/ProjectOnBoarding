@@ -499,6 +499,8 @@ function Message({ message }: { message: UIMessage }) {
         if (isToolUIPart(part)) {
           const done = part.state === "output-available";
           const output = done ? part.output : null;
+          const label = toolStep(getToolName(part), done, output);
+          if (!label) return null;
           const href = stepLink(output);
           return (
             <span
@@ -506,7 +508,7 @@ function Message({ message }: { message: UIMessage }) {
               className="flex max-w-full flex-wrap items-center gap-x-1.5 self-start text-xs wrap-anywhere text-graphite"
             >
               {done && <CheckIcon size={14} />}
-              {toolStep(getToolName(part), done, output)}
+              {label}
               {href && (
                 <>
                   <span aria-hidden="true">·</span>

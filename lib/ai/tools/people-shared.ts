@@ -26,7 +26,7 @@ export const OPEN_STATES = [
 export function normalize(text: string): string {
   return text
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/\p{M}/gu, "")
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();

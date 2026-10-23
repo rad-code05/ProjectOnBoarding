@@ -83,7 +83,7 @@ export type FilterLists = {
 };
 
 const fold = (s: string) =>
-  s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 const NOT_SET = new Set(["not set", "none", "no office", "unknown", "empty"]);
 const COUNTRY_ALIASES: Record<string, string> = {
   us: "US",
