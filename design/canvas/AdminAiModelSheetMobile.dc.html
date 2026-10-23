@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin · Add a model (sheet) · Phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}
+a{color:#000000}a:hover{color:#cf2e2e}
+input::placeholder,textarea::placeholder{color:#7e7e7e}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 900px; overflow: hidden; font-family: Raleway, sans-serif; background: rgba(0,0,0,0.45); color: #000000">
+
+<div role="dialog" aria-labelledby="mdl-title" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 820px; box-sizing: border-box; background: #F4F0EA; border-radius: 20px 20px 0 0; display: flex; flex-direction: column">
+<div style="padding: 10px 0 0; display: flex; justify-content: center"><span aria-hidden="true" style="width: 40px; height: 4px; border-radius: 100px; background: #cfc7ba"></span></div>
+<header style="padding: 8px 8px 12px 16px; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px solid #dcd4c7">
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #535353">AI settings</span>
+<h2 id="mdl-title" style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 24px">Add a model</h2>
+</div>
+<button type="button" aria-label="Close" style="width: 44px; height: 44px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</header>
+
+<div style="padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mdl-name" style="font-size: 13px; font-weight: 600">Name shown to people</label>
+<input id="mdl-name" value="Claude Opus 6" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mdl-id" style="font-size: 13px; font-weight: 600">Model ID (from Anthropic)</label>
+<input id="mdl-id" value="claude-opus-6" aria-describedby="mdl-id-help" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: ui-monospace, Menlo, monospace; font-size: 16px">
+<span id="mdl-id-help" style="font-size: 12px; line-height: 1.5; color: #535353">Exactly as in Anthropic's model list — lower case, letters, digits, dashes and dots.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mdl-note" style="font-size: 13px; font-weight: 600">Note (optional)</label>
+<textarea id="mdl-note" rows="2" style="box-sizing: border-box; padding: 10px 12px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px; line-height: 1.4; resize: none">For long analysis; costs more per question.</textarea>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mdl-in" style="font-size: 13px; font-weight: 600">Price in · USD / 1M tokens</label>
+<input id="mdl-in" inputmode="decimal" value="[PRICE IN]" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px; min-width: 0">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mdl-out" style="font-size: 13px; font-weight: 600">Price out · USD / 1M tokens</label>
+<input id="mdl-out" inputmode="decimal" value="[PRICE OUT]" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px; min-width: 0">
+</div>
+</div>
+<span style="font-size: 12px; line-height: 1.5; color: #535353">The prices count the monthly budget — copy them from Anthropic's price list.</span>
+
+<div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 12px">
+<button type="button" style="height: 40px; padding: 0 14px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600; white-space: nowrap">Test the model</button>
+<span role="status" style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Anthropic answered — the ID works</span>
+</div>
+</div>
+
+<footer style="margin-top: auto; padding: 12px 16px 24px; border-top: 1px solid #dcd4c7; display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px">
+<button type="button" style="height: 48px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Cancel</button>
+<button type="button" style="height: 48px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Add model</button>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

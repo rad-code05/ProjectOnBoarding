@@ -115,6 +115,8 @@ Clicking a section in the left rail opens it and scrolls to it. Locked rows show
 
 ## Laine robot (assistant launcher)
 
+**F15 phone boards approved 2026-10-23:** robot closed with a greeting by name, chat (Raju; approver = report questions only), app help / off-topic / limits, My profile · what the assistant remembers, Admin · AI settings (models added by the admin, budget $50 / month, 30 questions per person per hour) + Add / edit a model sheet. Answers always show their source (report + filters) with a link; the assistant never signs, approves or changes anything.
+
 Canvas board: *Laine assistant robot*. Black rounded head, sand face screen, black eyes with highlights, pale-yellow cheeks, signal-red antenna tip. Inline SVG (one component, `RobotAvatar`, with an `expression` prop).
 
 | State | Look |

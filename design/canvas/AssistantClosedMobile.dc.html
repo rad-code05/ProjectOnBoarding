@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Assistant closed · greeting · Phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}
+a{color:#000000}a:hover{color:#cf2e2e}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+
+<header style="height: 56px; flex-shrink: 0; box-sizing: border-box; padding: 0 8px 0 16px; background: #000000; display: flex; align-items: center; gap: 12px; color: #FFFFFF">
+<img src="/_blob/17b23c9ce6dc5f048942c7b514470f03" alt="Laine" style="width: 60px; height: 22px; display: block; flex-shrink: 0">
+<div style="width: 1px; height: 18px; background: #333333; flex-shrink: 0"></div>
+<span style="flex-grow: 1; min-width: 0; font-family: Newsreader, serif; font-size: 16px">Onboarding rights</span>
+<a href="#" aria-label="My profile: Raju Bholani" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; text-decoration: none"><span style="width: 30px; height: 30px; border-radius: 100px; background: #F4F0EA; color: #000000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">RB</span></a>
+<button type="button" aria-label="Open menu" style="width: 44px; height: 44px; box-sizing: border-box; border: 1px solid #333333; border-radius: 100px; background: #000000; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg></button>
+</header>
+
+<main style="flex-grow: 1; box-sizing: border-box; padding: 20px 16px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+<h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 34px; line-height: 1.05">Requests</h1>
+<button type="button" style="height: 44px; padding: 0 18px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 14px; font-weight: 600">New request</button>
+</div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+<li style="padding: 12px 14px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; display: flex; flex-direction: column; gap: 4px">
+<span style="display: flex; justify-content: space-between; gap: 8px"><span style="font-size: 15px; font-weight: 700">{{r.name}}</span><span style="font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; background: #F4F0EA">{{r.state}}</span></span>
+<span style="font-size: 12px; color: #535353">{{r.meta}}</span>
+</li>
+</sc-for>
+</ul>
+</main>
+
+<div style="position: absolute; right: 16px; bottom: 24px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px">
+<div role="status" style="position: relative; max-width: 250px; padding: 12px 14px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px 14px 4px 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 14px; line-height: 1.45">Good morning, Raju. Shall I open the <strong>Signature log</strong> again?</span>
+<span style="display: flex; gap: 8px">
+<button type="button" style="height: 36px; padding: 0 14px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">Yes, open it</button>
+<button type="button" style="height: 36px; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">Not now</button>
+</span>
+</div>
+<button type="button" aria-label="Open the Laine assistant" aria-haspopup="dialog" style="width: 68px; height: 68px; border-radius: 100px; border: 1px solid #dcd4c7; background: #FFFFFF; box-shadow: 0 8px 24px rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: center; padding: 0">
+<svg width="50" height="50" viewBox="0 0 64 64" aria-hidden="true"><line x1="32" y1="7" x2="32" y2="15" stroke="#000000" stroke-width="3" stroke-linecap="round"></line><circle cx="32" cy="6" r="4.5" fill="#cf2e2e"></circle><rect x="5" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="52" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="10" y="14" width="44" height="40" rx="17" fill="#000000"></rect><rect x="16" y="21" width="32" height="24" rx="11" fill="#F4F0EA"></rect><ellipse cx="25.5" cy="32" rx="3" ry="4" fill="#000000"></ellipse><ellipse cx="38.5" cy="32" rx="3" ry="4" fill="#000000"></ellipse><circle cx="26.5" cy="30.5" r="1" fill="#FFFFFF"></circle><circle cx="39.5" cy="30.5" r="1" fill="#FFFFFF"></circle><circle cx="20.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><circle cx="43.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><path d="M28 38.5 Q32 42 36 38.5" stroke="#000000" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const r = (name, state, meta) => ({ name: name, state: state, meta: meta });
+return {
+rows: [
+r('Lina Loop', 'Draft', 'UAM-2026-000152 · Onboarding · Dubai'),
+r('Ben Ortiz', 'In execution', 'UAM-2026-000151 · Offboarding · US · Texas · Austin'),
+r('Anna Keller', 'Awaiting confirmation', 'UAM-2026-000149 · Access change · Geneva'),
+r('Omar Haddad', 'Closed', 'UAM-2026-000147 · Onboarding · Abu Dhabi')
+]
+};
+}
+}
+</script>
+</body>
+</html>
