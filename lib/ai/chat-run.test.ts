@@ -126,6 +126,37 @@ describe("runChat (POST /api/chat)", () => {
     ]);
   });
 
+  test("old thinking is never sent back or saved (Anthropic refuses its sealed signature)", async () => {
+    const history: UIMessage[] = [
+      { id: "a", role: "user", parts: [{ type: "text", text: "Slack?" }] },
+      {
+        id: "b",
+        role: "assistant",
+        parts: [
+          {
+            type: "reasoning",
+            text: "Run the access report.",
+            providerMetadata: { anthropic: { signature: "sealed" } },
+          },
+          { type: "text", text: "Two people." },
+        ],
+      },
+    ];
+    const { d, model } = deps({ loadMessages: vi.fn(async () => history) });
+    await (await runChat(question("And Bangladesh?"), person, d)).text();
+    const prompt = JSON.stringify(model.doStreamCalls[0].prompt);
+    expect(prompt).toContain("Two people.");
+    expect(prompt).not.toContain("Run the access report.");
+    expect(prompt).not.toContain("sealed");
+    await vi.waitFor(() => expect(d.saveMessages).toHaveBeenCalledTimes(2));
+    const saved = vi
+      .mocked(d.saveMessages)
+      .mock.calls.flatMap((c) => c[1] as UIMessage[]);
+    expect(
+      saved.flatMap((m) => m.parts).some((p) => p.type === "reasoning"),
+    ).toBe(false);
+  });
+
   test("off, budget used up, too many questions: no model call", async () => {
     for (const [reason, code] of [
       ["off", 503],
