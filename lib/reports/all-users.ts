@@ -7,7 +7,10 @@ import {
   type RequestType,
 } from "@/lib/requests/labels";
 import { nationalityText } from "@/lib/requests/signing";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  type ServerSupabase,
+} from "@/lib/supabase/server";
 import { placeArgs, reportRange, type ReportFilters } from "./filters";
 
 /** One request in the All users list (board: Phone · All users list). */
@@ -54,8 +57,9 @@ const byCountryName = (a: string, b: string) =>
   countryName(a).localeCompare(countryName(b));
 
 /** Departments, countries, offices, states, cities and nationalities for the filters sheet. */
-export async function loadReportOptions(): Promise<ReportOptions> {
-  const supabase = createServerSupabaseClient();
+export async function loadReportOptions(
+  supabase: ServerSupabase = createServerSupabaseClient(),
+): Promise<ReportOptions> {
   const [departments, countries, offices, regions, cities, nationalities] =
     await Promise.all([
       supabase.from("departments").select("id, name").order("sort_order"),
@@ -145,8 +149,8 @@ export function allUsersArgs(filters: ReportFilters, timeZone: string) {
 export async function loadAllUsers(
   filters: ReportFilters,
   options: { timeZone: string; canOpenRequests: boolean; isApprover: boolean },
+  supabase: ServerSupabase = createServerSupabaseClient(),
 ) {
-  const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc("report_all_users", {
     ...allUsersArgs(filters, options.timeZone),
     p_limit: filters.limit,

@@ -1,5 +1,11 @@
 import { describe, expect, test } from "vitest";
-import { chatProblem, greeting, starterQuestions, toolStep } from "./chat-ui";
+import {
+  chatProblem,
+  greeting,
+  starterQuestions,
+  stepLink,
+  toolStep,
+} from "./chat-ui";
 
 describe("greeting", () => {
   test("morning, afternoon, evening by the hour", () => {
@@ -12,7 +18,7 @@ describe("greeting", () => {
 describe("starterQuestions", () => {
   test("approvers get questions about approving; IT about requests", () => {
     expect(starterQuestions(["approver"])).toContain(
-      "How do I confirm and sign a request?",
+      "How long did approvals take this month?",
     );
     expect(starterQuestions(["admin", "requester"])).toContain(
       "How is the offboarding SLA counted?",
@@ -58,5 +64,20 @@ describe("toolStep", () => {
       "Read the help page Statuses & who acts",
     );
     expect(toolStep("someTool", true, null)).toBe("Looked it up");
+    expect(toolStep("runReport", true, { report: "Onboarded by office" })).toBe(
+      "Ran the report Onboarded by office",
+    );
+    expect(toolStep("runReport", true, { error: "x" })).toBe(
+      "Couldn't run the report",
+    );
+  });
+
+  test("the report link: only our own report pages", () => {
+    expect(stepLink({ link: "/reports/onboarded-by-office?office=1" })).toBe(
+      "/reports/onboarded-by-office?office=1",
+    );
+    expect(stepLink({ link: "https://evil.example" })).toBeNull();
+    expect(stepLink({ link: "javascript:alert(1)" })).toBeNull();
+    expect(stepLink(null)).toBeNull();
   });
 });

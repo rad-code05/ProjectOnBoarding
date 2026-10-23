@@ -1,5 +1,6 @@
 import type { Tool } from "ai";
 import type { Role } from "@/lib/auth";
+import type { ServerSupabase } from "@/lib/supabase/server";
 
 /** read = looks something up; propose = a suggestion the person accepts; write = changes data (always needs a Confirm). */
 export type ToolKind = "read" | "propose" | "write";
@@ -10,6 +11,8 @@ export type ToolContext = {
   roles: Role[];
   /** The company timezone (reports, dates in answers). */
   timeZone: string;
+  /** Supabase with this person's own token — RLS decides what tools see. */
+  db: ServerSupabase;
 };
 
 /**

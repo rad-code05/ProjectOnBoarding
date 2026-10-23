@@ -9,9 +9,9 @@ import {
   type UIMessage,
 } from "ai";
 import * as z from "zod";
-import type { Role } from "@/lib/auth";
 import { MAX_QUESTION_LENGTH } from "./chat-ui";
 import { toolApprovalFor, toolsFor } from "./tools/registry";
+import type { ToolContext } from "./tools/types";
 
 /** What ai_status() says (F15a): may this person ask now? */
 export type AiStatus = {
@@ -41,7 +41,8 @@ export type ChatDeps = {
   instructions: string;
 };
 
-export type ChatPerson = { userId: string; roles: Role[]; timeZone: string };
+/** Who asks — with their own database client for the tools (RLS). */
+export type ChatPerson = ToolContext;
 
 /** Up to 5 steps (tool calls and the answer), and short answers. */
 const MAX_STEPS = 5;

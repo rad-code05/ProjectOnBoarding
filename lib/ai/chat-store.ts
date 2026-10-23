@@ -2,7 +2,7 @@ import "server-only";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import type { UIMessage } from "ai";
 import type { Json } from "@/lib/supabase/database.types";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import type { ServerSupabase } from "@/lib/supabase/server";
 import type { AiStatus, ChatDeps } from "./chat-run";
 import { fakeModel, fakeModelEnabled } from "./fake-model";
 
@@ -10,8 +10,10 @@ import { fakeModel, fakeModelEnabled } from "./fake-model";
  * The real database and model behind runChat(): everything with the
  * person's own Supabase session, so RLS keeps chats private.
  */
-export function chatStore(instructions: string): ChatDeps {
-  const supabase = createServerSupabaseClient();
+export function chatStore(
+  instructions: string,
+  supabase: ServerSupabase,
+): ChatDeps {
   const anthropic = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   return {

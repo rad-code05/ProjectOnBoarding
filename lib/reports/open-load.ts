@@ -1,5 +1,8 @@
 import "server-only";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  type ServerSupabase,
+} from "@/lib/supabase/server";
 import type { ReportFilters } from "./filters";
 import {
   openRow,
@@ -24,8 +27,8 @@ export function openArgs(filters: ReportFilters) {
 export async function loadOpenRequests(
   filters: ReportFilters,
   options: { timeZone: string; canOpenRequests: boolean; isApprover: boolean },
+  supabase: ServerSupabase = createServerSupabaseClient(),
 ): Promise<{ raw: RawOpenRow[]; summary: OpenSummary }> {
-  const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc(
     "report_open_requests",
     openArgs(filters),

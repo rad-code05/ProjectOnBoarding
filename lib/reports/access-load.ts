@@ -1,5 +1,8 @@
 import "server-only";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import {
+  createServerSupabaseClient,
+  type ServerSupabase,
+} from "@/lib/supabase/server";
 import {
   accessHolder,
   accessItems,
@@ -28,8 +31,8 @@ export function accessArgs(kind: AccessKind, filters: ReportFilters) {
 export async function loadAccessByItem(
   kind: AccessKind,
   filters: ReportFilters,
+  supabase: ServerSupabase = createServerSupabaseClient(),
 ): Promise<{ items: AccessItem[]; totals: AccessTotals }> {
-  const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc(
     "report_access_by_item",
     accessArgs(kind, filters),
@@ -53,8 +56,8 @@ export async function loadAccessHolders(
   itemKey: string,
   filters: ReportFilters,
   options: { timeZone: string; canOpenRequests: boolean; isApprover: boolean },
+  supabase: ServerSupabase = createServerSupabaseClient(),
 ): Promise<AccessHolders> {
-  const supabase = createServerSupabaseClient();
   const { data, error } = await supabase.rpc("report_access_holders", {
     ...accessArgs(kind, filters),
     p_item_key: itemKey,

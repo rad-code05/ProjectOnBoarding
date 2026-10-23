@@ -21,3 +21,21 @@ export function createServerSupabaseClient() {
     },
   );
 }
+
+/** The Supabase client request code works with (RLS applies). */
+export type ServerSupabase = ReturnType<typeof createServerSupabaseClient>;
+
+/**
+ * The same client with a token fetched up front — for work that runs after
+ * a Route Handler has returned (the assistant's tools run while the answer
+ * streams). Clerk session tokens live about a minute: enough for one answer.
+ */
+export function createTokenSupabaseClient(
+  token: string | null,
+): ServerSupabase {
+  return createClient<Database>(
+    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requiredEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"),
+    { accessToken: async () => token },
+  );
+}
