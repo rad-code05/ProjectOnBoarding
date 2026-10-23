@@ -226,7 +226,7 @@ function ChatPanel({
         role="log"
         aria-label="Conversation"
         aria-live="polite"
-        className="flex flex-1 flex-col gap-3.5 overflow-y-auto p-4"
+        className="flex flex-1 flex-col gap-3.5 overflow-x-hidden overflow-y-auto p-4"
       >
         <Bubble from="assistant">
           {hello} What would you like to know today?
@@ -365,7 +365,8 @@ function Bubble({
   return (
     <div
       className={cn(
-        "max-w-[85%] px-3.5 py-3 text-sm leading-normal",
+        // Long links and ticket lists wrap inside the bubble instead of running past it.
+        "max-w-[85%] min-w-0 px-3.5 py-3 text-sm leading-normal wrap-anywhere",
         from === "user"
           ? "self-end rounded-[14px_4px_14px_14px] bg-ink text-paper"
           : "self-start rounded-[4px_14px_14px_14px] border border-line bg-paper",
@@ -399,7 +400,7 @@ function Message({ message }: { message: UIMessage }) {
           return (
             <span
               key={i}
-              className="flex flex-wrap items-center gap-x-1.5 self-start text-xs text-graphite"
+              className="flex max-w-full flex-wrap items-center gap-x-1.5 self-start text-xs wrap-anywhere text-graphite"
             >
               {done && <CheckIcon size={14} />}
               {toolStep(getToolName(part), done, output)}
