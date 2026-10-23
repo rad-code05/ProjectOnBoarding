@@ -7,6 +7,37 @@ import type { AiStatus, ChatDeps } from "./chat-run";
 import { fakeModel, fakeModelEnabled } from "./fake-model";
 
 /**
+ * A chat's saved messages, oldest first — or null when it doesn't exist or
+ * isn't the person's own (RLS hides other people's chats).
+ */
+export async function loadChatMessages(
+  supabase: ServerSupabase,
+  chatId: string,
+): Promise<UIMessage[] | null> {
+  const chat = await supabase
+    .from("ai_chats")
+    .select("id")
+    .eq("id", chatId)
+    .maybeSingle();
+  if (chat.error) throw new Error("Could not load the chat.");
+  if (!chat.data) return null;
+  const { data, error } = await supabase
+    .from("ai_messages")
+    .select("id, role, parts")
+    .eq("chat_id", chatId)
+    .order("created_at");
+  if (error) throw new Error("Could not load the chat.");
+  return data.map(
+    (m) =>
+      ({
+        id: m.id,
+        role: m.role,
+        parts: m.parts,
+      }) as UIMessage,
+  );
+}
+
+/**
  * The real database and model behind runChat(): everything with the
  * person's own Supabase session, so RLS keeps chats private.
  */
@@ -32,29 +63,7 @@ export function chatStore(
       };
     },
 
-    loadMessages: async (chatId) => {
-      const chat = await supabase
-        .from("ai_chats")
-        .select("id")
-        .eq("id", chatId)
-        .maybeSingle();
-      if (chat.error) throw new Error("Could not load the chat.");
-      if (!chat.data) return null;
-      const { data, error } = await supabase
-        .from("ai_messages")
-        .select("id, role, parts")
-        .eq("chat_id", chatId)
-        .order("created_at");
-      if (error) throw new Error("Could not load the chat.");
-      return data.map(
-        (m) =>
-          ({
-            id: m.id,
-            role: m.role,
-            parts: m.parts,
-          }) as UIMessage,
-      );
-    },
+    loadMessages: (chatId) => loadChatMessages(supabase, chatId),
 
     createChat: async (chatId, title) => {
       const { error } = await supabase

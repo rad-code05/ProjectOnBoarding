@@ -50,15 +50,30 @@ test("Assistant (F15c): the robot opens the chat, answers, remembers it is open;
   ).toBeVisible();
   await expect(panel.getByText("This is the test assistant.")).toHaveCount(2);
 
-  // Open is remembered on this device.
-  await page.reload();
+  // Open and the conversation are remembered on this device (the answer is
+  // saved just after it streams — reload again if it wasn't there yet).
+  await expect(async () => {
+    await page.reload();
+    await expect(
+      page.getByRole("dialog", { name: "Laine assistant" }),
+    ).toBeVisible();
+    await expect(panel.getByText("This is the test assistant.")).toHaveCount(
+      2,
+      { timeout: 3_000 },
+    );
+  }).toPass({ timeout: 20_000 });
   await expect(
-    page.getByRole("dialog", { name: "Laine assistant" }),
+    panel.getByRole("log").getByText("And what does Closed mean?"),
   ).toBeVisible();
 
-  // New chat starts over; Esc closes and the robot is back.
+  // New chat starts over — and stays new after a reload.
   await panel.getByRole("button", { name: "New chat" }).click();
   await expect(panel.getByRole("list", { name: "Suggestions" })).toBeVisible();
+  await page.reload();
+  await expect(panel.getByRole("list", { name: "Suggestions" })).toBeVisible();
+  await expect(panel.getByText("This is the test assistant.")).toHaveCount(0);
+
+  // Esc closes and the robot is back.
   await box.press("Escape");
   await expect(panel).toHaveCount(0);
   const robot = page.getByRole("button", { name: "Open the Laine assistant" });

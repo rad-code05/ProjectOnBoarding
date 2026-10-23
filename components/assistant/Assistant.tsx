@@ -31,6 +31,7 @@ import {
   toolStep,
 } from "@/lib/ai/chat-ui";
 import { cn } from "@/lib/cn";
+import { loadAssistantChat } from "./actions";
 import { AnswerText } from "./AnswerText";
 import { RobotAvatar } from "./RobotAvatar";
 
@@ -62,6 +63,23 @@ const subscribeOpen = (onChange: () => void) => {
     window.removeEventListener("storage", onChange);
     window.removeEventListener(OPEN_EVENT, onChange);
   };
+};
+
+const CHAT_KEY = "laine.assistant.chat";
+/** The chat shown on this device, kept across reloads and pages. */
+const readChatId = (): string | null => {
+  try {
+    return window.localStorage.getItem(CHAT_KEY);
+  } catch {
+    return null;
+  }
+};
+const writeChatId = (id: string) => {
+  try {
+    window.localStorage.setItem(CHAT_KEY, id);
+  } catch {
+    // private window: a reload starts a new chat
+  }
 };
 
 /**
@@ -126,7 +144,14 @@ function ChatPanel({
 }) {
   const titleId = useId();
   const inputId = useId();
-  const [chatId, setChatId] = useState(() => crypto.randomUUID());
+  // The chat from last time on this device (its messages load below), or a
+  // new one. The panel only renders in the browser, so storage is there.
+  const [restored] = useState(readChatId);
+  const [chatId, setChatId] = useState(() => {
+    const id = restored ?? crypto.randomUUID();
+    writeChatId(id);
+    return id;
+  });
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -150,17 +175,39 @@ function ChatPanel({
       }),
     [],
   );
-  const { messages, sendMessage, status, error, regenerate, stop, clearError } =
-    useChat({
-      id: chatId,
-      transport,
-    });
+  const {
+    messages,
+    setMessages,
+    sendMessage,
+    status,
+    error,
+    regenerate,
+    stop,
+    clearError,
+  } = useChat({
+    id: chatId,
+    transport,
+  });
   const busy = status === "submitted" || status === "streaming";
   const problem = error ? chatProblem(error.message, timeZone) : null;
 
   useEffect(() => {
     inputRef.current?.focus();
   }, [chatId]);
+  useEffect(() => {
+    // Only the chat from last time; New chat (or leaving) drops a late answer.
+    if (!restored || chatId !== restored) return;
+    let current = true;
+    void loadAssistantChat(restored).then((saved) => {
+      // Unless a question was already asked meanwhile.
+      if (current && saved.length) {
+        setMessages((now) => (now.length ? now : saved));
+      }
+    });
+    return () => {
+      current = false;
+    };
+  }, [restored, chatId, setMessages]);
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
   }, [messages, status]);
@@ -184,7 +231,9 @@ function ChatPanel({
   };
   const newChat = () => {
     stop();
-    setChatId(crypto.randomUUID());
+    const id = crypto.randomUUID();
+    writeChatId(id);
+    setChatId(id);
     setInput("");
   };
 
