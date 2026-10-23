@@ -58,8 +58,11 @@ export function chatStore(instructions: string): ChatDeps {
       const { error } = await supabase
         .from("ai_chats")
         .insert({ id: chatId, title });
-      // Someone else's chat id: RLS hides it, the insert then clashes.
-      if (error) throw new Error("Could not start the chat.");
+      // Already there (two quick questions): fine. Someone else's chat id
+      // clashes too — but saving a message into it is refused by RLS.
+      if (error && error.code !== "23505") {
+        throw new Error("Could not start the chat.");
+      }
     },
 
     saveMessages: async (chatId, messages, model) => {

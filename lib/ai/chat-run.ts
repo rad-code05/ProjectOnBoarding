@@ -110,6 +110,10 @@ export async function runChat(
     messages: [...history, message as UIMessage],
     tools,
   });
+  // The question is saved before the answer streams, so a quick next
+  // question finds it (and the chat) already there.
+  await deps.saveMessages(id, [messages[messages.length - 1]], status.model);
+  const saved = messages.length;
 
   const result = streamText({
     model: deps.model(status.modelId),
@@ -127,7 +131,7 @@ export async function runChat(
       originalMessages: messages,
       onEnd: async ({ messages: all }) => {
         try {
-          await deps.saveMessages(id, all.slice(history.length), status.model);
+          await deps.saveMessages(id, all.slice(saved), status.model);
           const usage = await result.totalUsage;
           await deps.recordUsage(
             status.model,
