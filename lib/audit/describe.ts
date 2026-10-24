@@ -479,6 +479,8 @@ export function describeEvent(
       return say("set up a new authenticator app", "My profile → Security");
     case "account.backup_codes_regenerated":
       return say("made new backup codes", "My profile → Security");
+    case "ai.settings_changed":
+      return say("changed the AI settings", "Admin → AI settings");
     case "ai.memory_cleared":
       return say("cleared what the assistant remembers", "My profile");
     case "ai.chats_deleted": {

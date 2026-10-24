@@ -14,6 +14,8 @@ export type AdminOverview = {
   offices: number;
   officeCities: number;
   companyTimezone: string;
+  /** "On · Claude Sonnet 5.5" (Admin → AI settings). */
+  assistant: string;
 };
 
 export async function loadAdminOverview(): Promise<AdminOverview> {
@@ -43,6 +45,10 @@ export async function loadAdminOverview(): Promise<AdminOverview> {
         .eq("active", true),
       supabase.from("app_settings").select("company_timezone").maybeSingle(),
     ]);
+  const ai = await supabase
+    .from("ai_settings")
+    .select("enabled, model:ai_models(name)")
+    .maybeSingle();
   const rows = apps.data ?? [];
   return {
     appsActive: rows.filter((a) => a.active).length,
@@ -53,6 +59,9 @@ export async function loadAdminOverview(): Promise<AdminOverview> {
     offices: offices.count ?? 0,
     officeCities: cities.count ?? 0,
     companyTimezone: settings.data?.company_timezone ?? "Asia/Dubai",
+    assistant: ai.data
+      ? `${ai.data.enabled ? "On" : "Off"} · ${ai.data.model?.name ?? "—"}`
+      : "Not set up",
   };
 }
 

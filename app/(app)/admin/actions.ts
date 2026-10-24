@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import * as z from "zod";
+import { aiSettingsInput, type AiSettingsInput } from "@/lib/admin/ai-shared";
 import { catalogErrorMessage } from "@/lib/admin/catalog-shared";
 import { requireRole } from "@/lib/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -377,4 +378,46 @@ export async function addOfficeCity(input: {
   }
   revalidatePath("/admin", "layout");
   return { ok: true, id: data };
+}
+
+// ---------------------------------------------------------------------------
+// Admin · AI settings (F15e-1) — the database checks and audits the change.
+// ---------------------------------------------------------------------------
+
+/** On / off, the model in use, the monthly budget, questions per hour. */
+export async function saveAiSettings(
+  input: AiSettingsInput,
+): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = aiSettingsInput.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message:
+        "Check the limits: a budget of 0–100,000 USD and 1–1000 questions per hour.",
+    };
+  }
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("admin_save_ai_settings", {
+    p_enabled: parsed.data.enabled,
+    p_model: parsed.data.model,
+    p_monthly_budget_usd: parsed.data.budget,
+    p_hourly_limit: parsed.data.hourly,
+  });
+  if (error) {
+    return {
+      ok: false,
+      message:
+        error.code === "42501"
+          ? "Only an admin changes the AI settings."
+          : error.code === "23514"
+            ? (error.message ?? "Check the values.").replace(/^./, (c) =>
+                c.toUpperCase(),
+              ) + "."
+            : "Could not save. Reload and try again.",
+    };
+  }
+  // The robot shows or hides on every page.
+  revalidatePath("/", "layout");
+  return { ok: true };
 }
