@@ -3,6 +3,7 @@ import { simulateReadableStream, type UIMessage } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 import { describe, expect, test, vi } from "vitest";
 import { chatTitle, runChat, type AiStatus, type ChatDeps } from "./chat-run";
+import { REFUSED_ANSWER } from "./chat-ui";
 
 vi.mock("server-only", () => ({}));
 
@@ -109,6 +110,48 @@ describe("runChat (POST /api/chat)", () => {
       "rememberPreference",
       "rememberQuestion",
     ]);
+  });
+
+  test("a refused answer (safety filter, no words) is saved with the fixed refusal", async () => {
+    const refused = new MockLanguageModelV4({
+      doStream: async () => ({
+        stream: simulateReadableStream({
+          chunks: [
+            {
+              type: "finish",
+              finishReason: { unified: "content-filter", raw: "refusal" },
+              usage: {
+                inputTokens: {
+                  total: 5818,
+                  noCache: 5818,
+                  cacheRead: undefined,
+                  cacheWrite: undefined,
+                },
+                outputTokens: { total: 0, text: 0, reasoning: undefined },
+              },
+            },
+          ],
+        }),
+      }),
+    });
+    const { d } = deps({ model: vi.fn(() => refused) });
+    const text = await (await runChat(question(), person, d)).text();
+    expect(text).toContain("content-filter");
+    await vi.waitFor(() => expect(d.saveMessages).toHaveBeenCalledTimes(2));
+    const answer = (
+      vi.mocked(d.saveMessages).mock.calls[1] as unknown as [
+        string,
+        UIMessage[],
+      ]
+    )[1][0];
+    expect(answer.role).toBe("assistant");
+    expect(answer.parts).toContainEqual({
+      type: "text",
+      text: REFUSED_ANSWER,
+    });
+    await vi.waitFor(() =>
+      expect(d.recordUsage).toHaveBeenCalledWith(1, 5818, 0),
+    );
   });
 
   test("an existing chat continues from the saved history; only new messages are saved", async () => {

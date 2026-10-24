@@ -2,6 +2,7 @@
 import type { UIMessage } from "ai";
 import { describe, expect, test } from "vitest";
 import {
+  REFUSED_ANSWER,
   answeredOnServer,
   chatGroups,
   chatProblem,
@@ -14,6 +15,7 @@ import {
   stepLinkLabel,
   stepPdfLink,
   toolStep,
+  withRefusedText,
 } from "./chat-ui";
 
 describe("greeting", () => {
@@ -128,6 +130,28 @@ describe("after a lost connection", () => {
     // The question never reached the server: ask again.
     expect(answeredOnServer(saved.slice(0, 2), "Slack?")).toBe(false);
     expect(lastQuestion(saved)).toBe("Slack?");
+  });
+});
+
+describe("withRefusedText (the safety filter stopped the answer)", () => {
+  test("an empty answer gets the fixed refusal; a real answer is left alone", () => {
+    const empty = {
+      id: "r",
+      role: "assistant",
+      parts: [{ type: "step-start" }],
+    } as UIMessage;
+    expect(withRefusedText(empty).parts).toEqual([
+      { type: "step-start" },
+      { type: "text", text: REFUSED_ANSWER },
+    ]);
+    const real = {
+      id: "s",
+      role: "assistant",
+      parts: [{ type: "text", text: "Two people." }],
+    } as UIMessage;
+    expect(withRefusedText(real)).toBe(real);
+    const user = { id: "u", role: "user", parts: [] } as unknown as UIMessage;
+    expect(withRefusedText(user)).toBe(user);
   });
 });
 
