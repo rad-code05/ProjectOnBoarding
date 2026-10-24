@@ -113,7 +113,7 @@ select is((select row(entity, entity_id, diff ->> 'format', diff ->> 'rows', dif
   'an approver''s export is recorded with format, rows and filters, under Records & PDFs');
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"user_rp_abe","role":"authenticated"}', true);
-select throws_ok($$select public.log_report_export('all_users', 'xlsx')$$, '23514', null, 'only CSV or PDF');
+select throws_ok($$select public.log_report_export('all_users', 'docx')$$, '23514', null, 'only CSV, PDF or Excel');
 select throws_ok($$select public.log_report_export('Robert''); drop table x;--', 'csv')$$, '23514', null,
   'report names are plain words');
 
