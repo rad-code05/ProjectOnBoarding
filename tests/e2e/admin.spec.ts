@@ -753,6 +753,40 @@ test("My profile: a signature drawn on the pad becomes the active one", async ({
   ).toContainText("Active");
 });
 
+test("Admin → AI settings: limits saved and audited, then put back", async ({
+  page,
+}) => {
+  await openApp(page, "/admin");
+  await expect(page.getByRole("link", { name: /^AI settings/ })).toContainText(
+    "Laine assistant: On",
+  );
+  await page.getByRole("link", { name: /^AI settings/ }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "AI settings" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("switch", { name: "On for everyone" }),
+  ).toBeChecked();
+  await expect(
+    page.getByRole("group", { name: "Used this month" }),
+  ).toContainText("of $");
+
+  // Change the hourly limit (never switch the assistant off: other tests use it).
+  const hourly = page.getByLabel("Questions per person / hour");
+  const before = await hourly.inputValue();
+  await hourly.fill("37");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByText("AI settings saved.")).toBeVisible();
+  await page.reload();
+  await expect(hourly).toHaveValue("37");
+  await expect(page.getByText(/^Last changed by /)).toBeVisible();
+
+  // Put it back.
+  await hourly.fill(before);
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByText("AI settings saved.")).toBeVisible();
+});
+
 test("My profile: what the assistant remembers; both buttons ask first", async ({
   page,
 }) => {

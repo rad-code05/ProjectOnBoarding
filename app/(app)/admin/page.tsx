@@ -36,6 +36,11 @@ export default async function AdminPage() {
       note: `${o.offices} offices · ${o.officeCities} cities`,
     },
     {
+      href: "/admin/ai",
+      title: "AI settings",
+      note: `Laine assistant: ${o.assistant}`,
+    },
+    {
       href: "/admin/settings",
       title: "Settings",
       note: `Company timezone: ${o.companyTimezone}`,
