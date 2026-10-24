@@ -7,7 +7,7 @@ export type ComboboxOption = { value: string; label: string };
 
 /** Lower case, accents dropped ("Zürich" → "zurich"), for matching. */
 export function foldText(text: string): string {
-  return text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  return text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 }
 
 /** Options whose label contains the typed letters anywhere ("york" → New York). */
