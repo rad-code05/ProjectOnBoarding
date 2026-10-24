@@ -144,12 +144,15 @@ describe("listRequests", () => {
 
 describe("getRequest", () => {
   test("one request with what is missing and where it opens", async () => {
-    const { db } = fakeDb({ requests: [draft] });
+    const { db } = fakeDb({
+      requests: [{ ...draft, nationalities: ["CH", "IT"] }],
+    });
     const out = await run(getRequest, { ticket: "374" }, db);
     expect(out).toMatchObject({
       ticket: "UAM-2026-000374",
       status: "Draft",
       stillMissing: ["First name", "Office"],
+      nationality: "Switzerland, Italy",
       link: `/requests/${ID}`,
     });
   });

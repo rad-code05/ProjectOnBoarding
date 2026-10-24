@@ -125,6 +125,12 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
       return field("report")
         ? `Ran the report ${field("report")}`
         : "Couldn't run the report";
+    case "nationalityBreakdown":
+      return done && field("people") !== null
+        ? `Counted nationalities (${field("who")})`
+        : done
+          ? "Couldn't count the nationalities"
+          : "Counting nationalities…";
     case "searchPeople":
       return done
         ? `Searched people for “${field("query")}”`
