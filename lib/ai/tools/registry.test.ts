@@ -43,6 +43,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
     expect(toolNamesFor(["approver"])).toEqual([
       "getAppHelp",
       "runReport",
+      "nationalityBreakdown",
       ...memory,
     ]);
     // Requester / IT operator alone: no report reader — no report tool,
@@ -63,17 +64,20 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
     expect(toolNamesFor(["admin"])).toEqual([
       "getAppHelp",
       "runReport",
+      "nationalityBreakdown",
       ...peopleTools,
     ]);
     expect(toolNamesFor(["auditor"])).toEqual([
       "getAppHelp",
       "runReport",
+      "nationalityBreakdown",
       ...peopleTools,
     ]);
     expect(toolNamesFor([])).toEqual([]);
     expect(Object.keys(toolsFor(ctx(["approver"])))).toEqual([
       "getAppHelp",
       "runReport",
+      "nationalityBreakdown",
       ...memory,
     ]);
   });

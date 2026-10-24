@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import * as z from "zod";
 import { formatDate, formatDay, formatDayTime } from "@/lib/requests/format";
-import { pdfFileName } from "@/lib/requests/signing";
+import { nationalityText, pdfFileName } from "@/lib/requests/signing";
 import {
   STATE_LABELS,
   TYPE_LABELS,
@@ -61,7 +61,7 @@ export const getRequest = defineTool({
           let query = ctx.db
             .from("requests")
             .select(
-              "id, ticket_id, type, state, first_name, last_name, work_email, job_title, country, effective_date, sla_due_at, created_at, updated_at, closed_at, office:offices(name), department:departments(name), assignee:app_users!requests_assignee_id_fkey(first_name, last_name)",
+              "id, ticket_id, type, state, first_name, last_name, work_email, job_title, country, nationalities, effective_date, sla_due_at, created_at, updated_at, closed_at, office:offices(name), department:departments(name), assignee:app_users!requests_assignee_id_fkey(first_name, last_name)",
             )
             .eq("ticket_number", wanted.number)
             .order("ticket_year", { ascending: false });
@@ -133,6 +133,7 @@ export const getRequest = defineTool({
             department: r.department?.name ?? null,
             office: r.office?.name ?? null,
             country: r.country ? countryName(r.country) : null,
+            nationality: nationalityText(r.nationalities) || null,
             effectiveDate: r.effective_date
               ? formatDate(r.effective_date)
               : null,

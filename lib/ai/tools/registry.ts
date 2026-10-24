@@ -5,6 +5,7 @@ import { getCatalog } from "./get-catalog";
 import { getPersonAccess } from "./get-person-access";
 import { getRequest } from "./get-request";
 import { listRequests } from "./list-requests";
+import { nationalityBreakdown } from "./nationality-breakdown";
 import { rememberPreference } from "./remember-preference";
 import { rememberQuestion } from "./remember-question";
 import { runReport } from "./run-report";
@@ -21,6 +22,7 @@ import { hasAnyRole, type AiTool, type ToolContext } from "./types";
 export const TOOLS: readonly AiTool[] = [
   getAppHelp,
   runReport,
+  nationalityBreakdown,
   // People & access — the IT side only, never approvers (F15d-2a).
   searchPeople,
   getPersonAccess,

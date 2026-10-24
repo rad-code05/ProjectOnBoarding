@@ -105,6 +105,7 @@ describe("runChat (POST /api/chat)", () => {
     expect(call.tools?.map((t) => t.name)).toEqual([
       "getAppHelp",
       "runReport",
+      "nationalityBreakdown",
       "rememberPreference",
       "rememberQuestion",
     ]);

@@ -2,6 +2,7 @@ import { tool } from "ai";
 import * as z from "zod";
 import { formatDay } from "@/lib/requests/format";
 import { STATE_LABELS, TYPE_LABELS, countryName } from "@/lib/requests/labels";
+import { nationalityText } from "@/lib/requests/signing";
 import { loadHeld, loadOpenRequests, loadPeople } from "./people-load";
 import { IT_SIDE, displayName, findPeople } from "./people-shared";
 import { defineTool } from "./types";
@@ -51,7 +52,7 @@ export const searchPeople = defineTool({
             ctx.db
               .from("requests")
               .select(
-                "employee_id, job_title, country, office:offices(name), department:departments(name)",
+                "employee_id, job_title, country, nationalities, office:offices(name), department:departments(name)",
               )
               .in("employee_id", ids)
               .neq("state", "cancelled")
@@ -72,6 +73,7 @@ export const searchPeople = defineTool({
                 department: last?.department?.name ?? null,
                 office: last?.office?.name ?? null,
                 country: last?.country ? countryName(last.country) : null,
+                nationality: nationalityText(last?.nationalities) || null,
                 itemsHeld: items.length,
                 holdsSince: items[0]
                   ? formatDay(items[0].since, ctx.timeZone)
