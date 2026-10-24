@@ -753,6 +753,28 @@ test("My profile: a signature drawn on the pad becomes the active one", async ({
   ).toContainText("Active");
 });
 
+test("My profile: what the assistant remembers; both buttons ask first", async ({
+  page,
+}) => {
+  await openApp(page, "/profile");
+  const card = page.getByRole("region", {
+    name: "What the assistant remembers",
+  });
+  await expect(card).toContainText("never the text of your chats");
+
+  // Clear my memory asks first; Keep changes nothing.
+  await card.getByRole("button", { name: "Clear my memory" }).click();
+  const clear = page.getByRole("dialog", { name: "Clear my memory?" });
+  await clear.getByRole("button", { name: "Keep" }).click();
+  await expect(clear).toHaveCount(0);
+
+  // Delete my chats (the test admin's own) says how many went.
+  await card.getByRole("button", { name: "Delete my chats" }).click();
+  const del = page.getByRole("dialog", { name: "Delete my chats?" });
+  await del.getByRole("button", { name: "Delete my chats" }).click();
+  await expect(page.getByText(/^\d+ chats? deleted\.$/)).toBeVisible();
+});
+
 test("Password & MFA opens from My profile; a mismatch is caught before Clerk; MFA sheets cancel safely", async ({
   page,
 }) => {
