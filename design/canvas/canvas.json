@@ -687,6 +687,41 @@
       "w": 390,
       "h": 1180,
       "title": "Phone · Assistant · Previous chats — F15d-2 proposal"
+    },
+    "CustomReportAskMobile.dc.html": {
+      "x": 30530,
+      "y": 13560,
+      "w": 390,
+      "h": 1180,
+      "title": "Phone · Custom report: the robot checks how it read the request — F17a proposal"
+    },
+    "CustomReportReadyMobile.dc.html": {
+      "x": 31000,
+      "y": 13560,
+      "w": 390,
+      "h": 1180,
+      "title": "Phone · Custom report ready in the chat (Open · CSV · PDF · Excel), then changed — F17a proposal"
+    },
+    "CustomReportMobile.dc.html": {
+      "x": 31470,
+      "y": 13560,
+      "w": 390,
+      "h": 1820,
+      "title": "Phone · Custom report page (parts, how it is built, exports) — F17a proposal"
+    },
+    "CustomReportListMobile.dc.html": {
+      "x": 31940,
+      "y": 13560,
+      "w": 390,
+      "h": 1240,
+      "title": "Phone · Reports with Your custom reports — F17a proposal"
+    },
+    "CustomReportGroupedMobile.dc.html": {
+      "x": 32410,
+      "y": 13560,
+      "w": 390,
+      "h": 1780,
+      "title": "Phone · Custom report grouped, with a chart (time to approve per approver and month) — F17a proposal"
     }
   },
   "createdOnFiles": {
@@ -708,7 +743,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 29980,
+      "maxW": 32800,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -843,7 +878,12 @@
     "AssistantMemoryMobile.dc.html",
     "AdminAiSettingsMobile.dc.html",
     "AdminAiModelSheetMobile.dc.html",
-    "AssistantChatsMobile.dc.html"
+    "AssistantChatsMobile.dc.html",
+    "CustomReportAskMobile.dc.html",
+    "CustomReportReadyMobile.dc.html",
+    "CustomReportMobile.dc.html",
+    "CustomReportListMobile.dc.html",
+    "CustomReportGroupedMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

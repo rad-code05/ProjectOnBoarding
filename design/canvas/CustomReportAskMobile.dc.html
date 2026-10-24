@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Custom report: follow-up questions · Phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}
+a{color:#000000}a:hover{color:#cf2e2e}
+textarea::placeholder{color:#7e7e7e}
+</style>
+</helmet>
+<div role="dialog" aria-labelledby="ca-title" style="width: 390px; height: 1180px; display: flex; flex-direction: column; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+
+<header style="flex-shrink: 0; box-sizing: border-box; padding: 12px 8px 12px 16px; background: #FFFFFF; border-bottom: 1px solid #dcd4c7; display: flex; align-items: center; gap: 10px">
+<svg width="36" height="36" viewBox="0 0 64 64" aria-hidden="true"><line x1="32" y1="7" x2="32" y2="15" stroke="#000000" stroke-width="3" stroke-linecap="round"></line><circle cx="32" cy="6" r="4.5" fill="#cf2e2e"></circle><rect x="5" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="52" y="29" width="7" height="14" rx="3.5" fill="#000000"></rect><rect x="10" y="14" width="44" height="40" rx="17" fill="#000000"></rect><rect x="16" y="21" width="32" height="24" rx="11" fill="#F4F0EA"></rect><ellipse cx="25.5" cy="32" rx="3" ry="4" fill="#000000"></ellipse><ellipse cx="38.5" cy="32" rx="3" ry="4" fill="#000000"></ellipse><circle cx="20.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><circle cx="43.5" cy="38.5" r="2.2" fill="#f9e4b4"></circle><path d="M28 38.5 Q32 42 36 38.5" stroke="#000000" stroke-width="2.2" fill="none" stroke-linecap="round"></path></svg>
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+<h2 id="ca-title" style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 20px; line-height: 1.1">Laine assistant</h2>
+<span style="font-size: 12px; color: #535353">Answers from Laine's data only</span>
+</div>
+<button type="button" style="height: 40px; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">New chat</button>
+<button type="button" aria-label="Close the assistant" style="width: 44px; height: 44px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</header>
+
+<div role="log" aria-label="Conversation" style="flex-grow: 1; box-sizing: border-box; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+<div style="align-self: flex-end; max-width: 300px; padding: 12px 14px; background: #000000; color: #FFFFFF; border-radius: 14px 4px 14px 14px; font-size: 14px; line-height: 1.5">I need a list of employees onboarded 2 weeks ago who have Slack and Monday.com and are in the Dubai office. In the same report, the users from Bangladesh onboarded only on even-numbered days last month. PDF and CSV.</div>
+
+<div style="align-self: flex-start; max-width: 330px; padding: 12px 14px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 4px 14px 14px 14px; display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 14px; line-height: 1.5">I can build that as one custom report with two parts. Before I do, please check how I read it:</p>
+<ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.5">
+<sc-for list="{{checks}}" as="c" hint-placeholder-count="4">
+<li><strong>{{c.what}}</strong> {{c.read}}</li>
+</sc-for>
+</ol>
+<p style="margin: 0; font-size: 14px; line-height: 1.5">Shall I build it like this?</p>
+</div>
+
+<ul aria-label="Quick answers" style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{replies}}" as="r" hint-placeholder-count="3">
+<li><button type="button" style="min-height: 40px; padding: 8px 14px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600; text-align: left">{{r}}</button></li>
+</sc-for>
+</ul>
+
+<div style="align-self: flex-end; max-width: 290px; padding: 12px 14px; background: #000000; color: #FFFFFF; border-radius: 14px 4px 14px 14px; font-size: 14px; line-height: 1.5">Yes, build it. Bangladesh = nationality.</div>
+
+<div aria-label="The assistant is writing" style="align-self: flex-start; padding: 12px 16px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 4px 14px 14px 14px; display: flex; gap: 6px">
+<span style="width: 8px; height: 8px; border-radius: 100px; background: #000000"></span><span style="width: 8px; height: 8px; border-radius: 100px; background: #7e7e7e"></span><span style="width: 8px; height: 8px; border-radius: 100px; background: #000000"></span>
+</div>
+
+<div style="margin-top: 6px; padding: 10px 12px; border: 1px dashed #cfc7ba; border-radius: 12px; font-size: 12px; line-height: 1.5; color: #535353"><strong style="color: #000000">Board note:</strong> the robot never guesses a vague word. Relative dates are turned into real dates (company time, Dubai) and shown back before anything is built. A clear request is built straight away, with the same reading shown on the report.</div>
+</div>
+
+<footer style="flex-shrink: 0; box-sizing: border-box; padding: 12px 16px 20px; background: #FFFFFF; border-top: 1px solid #dcd4c7; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: flex-end; gap: 8px">
+<label for="ca-input" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Message the assistant</label>
+<textarea id="ca-input" rows="2" placeholder="Ask about reports, people, access or the app" style="flex-grow: 1; min-width: 0; box-sizing: border-box; padding: 12px; border: 1px solid #cfc7ba; border-radius: 12px; background: #FFFFFF; font-family: Raleway, sans-serif; font-size: 16px; line-height: 1.4; resize: none"></textarea>
+<button type="button" aria-label="Send" style="width: 48px; height: 48px; flex-shrink: 0; border: none; border-radius: 100px; background: #000000; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+</div>
+<span style="font-size: 11px; line-height: 1.5; color: #535353">The assistant only reads and suggests — it never signs, approves or changes anything. It can be wrong: open the source to check. Chats are kept 60 days.</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+  checks: [
+    { what: '"2 weeks ago"', read: '= onboarded Mon 5 – Sun 11 Oct 2026 (closed by the approver).' },
+    { what: 'Slack and Monday.com', read: '= people who hold both, any role.' },
+    { what: '"From Bangladesh"', read: '= nationality Bangladeshi, or working in a Bangladesh office? We have no office there.' },
+    { what: 'Even-numbered days last month', read: '= onboarded on 2, 4, 6 … 30 September 2026.' }
+  ],
+  replies: ['Yes, build it', 'Bangladesh = nationality', 'Change the dates']
+};
+}
+}
+</script>
+</body>
+</html>
