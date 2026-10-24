@@ -9,6 +9,7 @@ import {
   lastIsQuestion,
   lastQuestion,
   starterQuestions,
+  stepDownloads,
   stepLink,
   stepLinkLabel,
   stepPdfLink,
@@ -165,5 +166,43 @@ describe("chatGroups (board: Previous chats)", () => {
       now,
     );
     expect(groups[0].label).toBe("Today");
+  });
+});
+
+describe("stepDownloads (the report's own CSV / PDF export)", () => {
+  test("same filters, the export route next to the report", () => {
+    expect(
+      stepDownloads({
+        link: "/reports/onboarded-by-office?period=12m&office=1",
+      }),
+    ).toEqual([
+      {
+        label: "Download CSV",
+        href: "/reports/onboarded-by-office/export?period=12m&office=1",
+      },
+      {
+        label: "PDF",
+        href: "/reports/onboarded-by-office/export?period=12m&office=1&format=pdf",
+      },
+    ]);
+  });
+
+  test("one application's holders export through Access by application", () => {
+    expect(
+      stepDownloads({
+        link: "/reports/access-by-application/holders?kind=app&item=app%3A3",
+      })[0].href,
+    ).toBe("/reports/access-by-application/export?kind=app&item=app%3A3");
+  });
+
+  test("no filters; and nothing for requests or other pages", () => {
+    expect(stepDownloads({ link: "/reports/open-requests" })[1].href).toBe(
+      "/reports/open-requests/export?format=pdf",
+    );
+    expect(
+      stepDownloads({ link: "/records/6f9619ff-8b86-4011-b42d-00c04fc964ff" }),
+    ).toEqual([]);
+    expect(stepDownloads({ link: "/reports/x/y/z" })).toEqual([]);
+    expect(stepDownloads(null)).toEqual([]);
   });
 });

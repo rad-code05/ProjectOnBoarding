@@ -33,6 +33,7 @@ import {
   stepLink,
   stepLinkLabel,
   stepPdfLink,
+  stepDownloads,
   toolStep,
 } from "@/lib/ai/chat-ui";
 import { cn } from "@/lib/cn";
@@ -620,6 +621,7 @@ function Message({ message }: { message: UIMessage }) {
           if (!label) return null;
           const href = stepLink(output);
           const pdf = stepPdfLink(output);
+          const downloads = stepDownloads(output);
           return (
             <span
               key={i}
@@ -638,6 +640,18 @@ function Message({ message }: { message: UIMessage }) {
                   </Link>
                 </>
               )}
+              {downloads.map((d) => (
+                <span key={d.href} className="contents">
+                  <span aria-hidden="true">·</span>
+                  {/* Plain links: <Link> would prefetch — and log — a download. */}
+                  <a
+                    href={d.href}
+                    className="inline-flex min-h-8 items-center font-semibold text-ink underline"
+                  >
+                    {d.label}
+                  </a>
+                </span>
+              ))}
               {pdf && (
                 <>
                   <span aria-hidden="true">·</span>
