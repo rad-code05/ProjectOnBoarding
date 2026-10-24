@@ -195,6 +195,27 @@ export function stepPdfLink(output: unknown): string | null {
     : null;
 }
 
+/**
+ * A report step's downloads (Raju, 2026-10-24: "okay then csv"): the
+ * report's own export route with the same filters — the audited download
+ * of the report page. "/reports/x?a=1" → "/reports/x/export?a=1" (+ PDF);
+ * one application's holders export through Access by application.
+ */
+export function stepDownloads(
+  output: unknown,
+): { label: string; href: string }[] {
+  const link = stepLink(output);
+  if (!link?.startsWith("/reports/")) return [];
+  const [path, query = ""] = link.split("?");
+  const base = path.replace(/\/holders$/, "");
+  if (!/^\/reports\/[a-z-]+$/.test(base)) return [];
+  const csv = `${base}/export${query ? `?${query}` : ""}`;
+  return [
+    { label: "Download CSV", href: csv },
+    { label: "PDF", href: `${csv}${query ? "&" : "?"}format=pdf` },
+  ];
+}
+
 /** The words on a step's link. */
 export function stepLinkLabel(href: string): string {
   return href.startsWith("/reports/") ? "Open the report" : "Open the request";
