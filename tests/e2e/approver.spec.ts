@@ -134,7 +134,13 @@ test("Approvals shows the tiles, what waits and what closed", async ({
 // Any request page — the role check runs before the request is looked up.
 const REQUEST_PAGE = "/requests/00000000-0000-4000-8000-000000000000";
 
-for (const path of ["/admin", "/requests", REQUEST_PAGE, "/audit"]) {
+for (const path of [
+  "/admin",
+  "/admin/ai",
+  "/requests",
+  REQUEST_PAGE,
+  "/audit",
+]) {
   test(`approver opening ${path} gets 403`, async ({ page }) => {
     await openApp(page, path);
     await expect(page).toHaveURL(/\/no-access$/);

@@ -12,6 +12,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:ai-attacks": "vitest run --config vitest.attacks.config.mts",
     "test:watch": "vitest",
     "db:start": "supabase db start",
     "db:stop": "supabase stop",

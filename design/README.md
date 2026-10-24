@@ -50,7 +50,7 @@ All planned screens now have a first design. Nothing is built yet.
 | Phone (D22): sections 6–7 equipment & physical access (+ add-equipment sheet) | Approved (2026-10-08) |
 | Phone (D22): in execution / section 9, Start execution, Cancel request | Approved (2026-10-08) |
 | Phone (D22): My profile, Replace signature, Password & MFA, Draw signature, Review & sign, Approvals, Confirm & sign, Return to Raju, Returned request | Approved (2026-10-09) |
-| Phone: Laine assistant — robot closed, chat (Raju / approver), help & limits, My profile memory, Admin · AI settings + model sheet, **Previous chats** | Approved (2026-10-23); robot + chat built (F15c–F15d-1) |
+| Phone: Laine assistant — robot closed, chat (Raju / approver), help & limits, My profile memory, Admin · AI settings + model sheet, **Previous chats** | Approved (2026-10-23); **all built** (F15c–F15e, 2026-10-24) |
 
 ## Canvas sources
 `canvas/` holds a copy of every artboard (`*.dc.html`) and the layout index (`canvas.json`) from the live canvas, so the design survives outside claude.ai. Keep it in sync after canvas edits. `assets/laine-logo-white.png` is the logo the artboards use (uploaded to the canvas as `/_blob/17b23c9ce6dc5f048942c7b514470f03`).
