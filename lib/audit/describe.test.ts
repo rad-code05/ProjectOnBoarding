@@ -441,3 +441,28 @@ describe("assistant data the person deleted (no content)", () => {
     );
   });
 });
+
+describe("AI models (Admin → AI settings)", () => {
+  test("added, changed, retired, restored", () => {
+    const say = (action: string, diff: object) =>
+      describeEvent(ev({ ...moises, action, diff: diff as never })).what;
+    expect(
+      say("ai.model_added", {
+        after: { name: "Claude Opus 6", model_id: "x" },
+      }),
+    ).toBe("added the AI model “Claude Opus 6”");
+    expect(
+      say("ai.model_changed", {
+        before: { name: "Old" },
+        after: { name: "New" },
+      }),
+    ).toBe("changed the AI model “New”");
+    expect(say("ai.model_retired", { name: "Claude Sonnet 4.5" })).toBe(
+      "retired the AI model “Claude Sonnet 4.5”",
+    );
+    expect(say("ai.model_restored", { name: "Claude Sonnet 4.5" })).toBe(
+      "restored the AI model “Claude Sonnet 4.5”",
+    );
+    expect(say("ai.settings_changed", {})).toBe("changed the AI settings");
+  });
+});

@@ -16,6 +16,21 @@ export const FAKE_ANSWER =
 
 export function fakeModel(): LanguageModel {
   return new MockLanguageModelV4({
+    // Admin → AI settings → Test the model (one answer, not streamed).
+    doGenerate: async () => ({
+      content: [{ type: "text", text: "OK" }],
+      finishReason: { unified: "stop", raw: undefined },
+      usage: {
+        inputTokens: {
+          total: 12,
+          noCache: 12,
+          cacheRead: undefined,
+          cacheWrite: undefined,
+        },
+        outputTokens: { total: 1, text: 1, reasoning: undefined },
+      },
+      warnings: [],
+    }),
     doStream: async () => ({
       stream: simulateReadableStream({
         chunkDelayInMs: 20,

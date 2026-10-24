@@ -10,12 +10,14 @@ import {
   type AiSettingsView,
 } from "@/lib/admin/ai-shared";
 import { cn } from "@/lib/cn";
+import { AiModels } from "./AiModels";
 
 /**
  * Admin → AI settings (F15e-1, board Phone · Admin · AI settings): the
  * assistant on / off for everyone, the model that answers, the monthly
  * budget and questions per person per hour, and what was used this month.
- * Adding, editing and retiring models comes with F15e-2.
+ * The models themselves (add, edit, retire, restore) are listed under the
+ * choice — AiModels (F15e-2).
  */
 export function AiSettingsForm({ view }: { view: AiSettingsView }) {
   const router = useRouter();
@@ -132,6 +134,7 @@ export function AiSettingsForm({ view }: { view: AiSettingsView }) {
             </label>
           ))}
         </fieldset>
+        <AiModels models={view.models} inUse={view.model} />
       </section>
 
       <section

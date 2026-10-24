@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
  * never show on real requests (2026-10-15: an "E2E Door" was left active).
  */
 type TestEntry = {
-  kind: "app" | "equipment" | "access" | "office" | "city";
+  kind: "app" | "equipment" | "access" | "office" | "city" | "model";
   name: string;
 };
 let created: TestEntry[] = [];
@@ -41,6 +41,12 @@ test.afterEach(async ({ page }, testInfo) => {
 
 async function retireLeftover(page: Page, { kind, name }: TestEntry) {
   const row = page.getByRole("button", { name: new RegExp(name) });
+  if (kind === "model") {
+    await openApp(page, "/admin/ai");
+    const retire = page.getByRole("button", { name: `Retire ${name}` });
+    if ((await retire.count()) > 0) await retire.click();
+    return;
+  }
   if (kind === "office" || kind === "city") {
     await openApp(page, "/admin/offices");
     if (kind === "office") {
@@ -785,6 +791,40 @@ test("Admin → AI settings: limits saved and audited, then put back", async ({
   await hourly.fill(before);
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByText("AI settings saved.")).toBeVisible();
+});
+
+test("Admin → AI settings: add a model, test it, then retire it", async ({
+  page,
+}) => {
+  const n = Date.now() % 100000;
+  const name = `E2E Model ${n}`;
+  await openApp(page, "/admin/ai");
+  await page.getByRole("button", { name: "Add a model" }).click();
+  const sheet = page.getByRole("dialog", { name: "Add a model" });
+  await sheet.getByLabel("Name shown to people").fill(name);
+  await sheet.getByLabel(/Model ID/).fill(`e2e-model-${n}`);
+  await sheet.getByLabel(/Price in/).fill("1");
+  await sheet.getByLabel(/Price out/).fill("5");
+  // CI answers with the fake model — no key, no cost.
+  await sheet.getByRole("button", { name: "Test the model" }).click();
+  await expect(
+    sheet.getByText("Anthropic answered — the ID works"),
+  ).toBeVisible();
+  await sheet.getByRole("button", { name: "Add model" }).click();
+  created.push({ kind: "model", name });
+  await expect(sheet).toHaveCount(0);
+
+  // Listed, and a choice for the assistant; then retired (never chosen).
+  await expect(
+    page.getByRole("radio", { name: new RegExp(name) }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: `Retire ${name}` }).click();
+  await expect(
+    page.getByRole("button", { name: `Restore ${name}` }),
+  ).toBeVisible();
+  await expect(page.getByRole("radio", { name: new RegExp(name) })).toHaveCount(
+    0,
+  );
 });
 
 test("My profile: what the assistant remembers; both buttons ask first", async ({

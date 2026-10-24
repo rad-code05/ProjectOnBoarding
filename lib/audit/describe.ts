@@ -479,6 +479,25 @@ export function describeEvent(
       return say("set up a new authenticator app", "My profile → Security");
     case "account.backup_codes_regenerated":
       return say("made new backup codes", "My profile → Security");
+    case "ai.model_added":
+    case "ai.model_changed":
+    case "ai.model_retired":
+    case "ai.model_restored": {
+      const name =
+        str(obj(d, "after"), "name") ??
+        str(d, "name") ??
+        str(obj(d, "before"), "name");
+      const verb = {
+        "ai.model_added": "added",
+        "ai.model_changed": "changed",
+        "ai.model_retired": "retired",
+        "ai.model_restored": "restored",
+      }[ev.action];
+      return say(
+        `${verb} the AI model${name ? ` “${name}”` : ""}`,
+        "Admin → AI settings",
+      );
+    }
     case "ai.settings_changed":
       return say("changed the AI settings", "Admin → AI settings");
     case "ai.memory_cleared":

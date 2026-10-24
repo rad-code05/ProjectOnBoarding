@@ -1,6 +1,11 @@
 // @vitest-environment node
 import { describe, expect, test } from "vitest";
-import { aiSettingsInput, usageCount, usageLine } from "./ai-shared";
+import {
+  aiModelInput,
+  aiSettingsInput,
+  usageCount,
+  usageLine,
+} from "./ai-shared";
 
 describe("Admin → AI settings helpers", () => {
   test("usage line as on the board", () => {
@@ -24,6 +29,33 @@ describe("Admin → AI settings helpers", () => {
     );
     expect(aiSettingsInput.safeParse({ ...ok, hourly: 0 }).success).toBe(false);
     expect(aiSettingsInput.safeParse({ ...ok, hourly: 2.5 }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe("aiModelInput (board: Add / edit a model)", () => {
+  const ok = {
+    name: "Claude Opus 6",
+    modelId: "claude-opus-6",
+    priceIn: 4,
+    priceOut: 20,
+  };
+  test("the model ID as in Anthropic's list (lower-cased)", () => {
+    expect(
+      aiModelInput.parse({ ...ok, modelId: " Claude-Opus-6 " }).modelId,
+    ).toBe("claude-opus-6");
+    expect(
+      aiModelInput.safeParse({ ...ok, modelId: "claude opus" }).success,
+    ).toBe(false);
+  });
+  test("both prices, 0–1000", () => {
+    const r = aiModelInput.safeParse({ ...ok, priceIn: Number.NaN });
+    expect(r.success).toBe(false);
+    expect(r.error?.issues[0]?.message).toBe(
+      "Give both prices (USD per 1M tokens).",
+    );
+    expect(aiModelInput.safeParse({ ...ok, priceOut: 1001 }).success).toBe(
       false,
     );
   });

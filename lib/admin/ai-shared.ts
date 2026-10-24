@@ -33,6 +33,37 @@ export const aiSettingsInput = z.object({
 });
 export type AiSettingsInput = z.infer<typeof aiSettingsInput>;
 
+const price = z
+  .number({ error: "Give both prices (USD per 1M tokens)." })
+  .min(0, "Prices are USD per 1M tokens, 0–1000.")
+  .max(1000, "Prices are USD per 1M tokens, 0–1000.");
+
+/** Add / edit a model (board: Admin · Add / edit a model). */
+export const aiModelInput = z.object({
+  id: z.number().int().positive().max(32767).nullish(),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Give the model a name people will see.")
+    .max(80, "A name has up to 80 characters."),
+  modelId: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(
+      /^[a-z0-9][a-z0-9.-]{1,79}$/,
+      "Copy the model ID exactly as in Anthropic's model list: lower case, letters, digits, dashes and dots.",
+    ),
+  note: z
+    .string()
+    .trim()
+    .max(200, "A note has up to 200 characters.")
+    .nullish(),
+  priceIn: price,
+  priceOut: price,
+});
+export type AiModelInput = z.input<typeof aiModelInput>;
+
 const usd = (n: number) =>
   `$${n.toLocaleString("en-US", {
     minimumFractionDigits: Number.isInteger(n) ? 0 : 2,
