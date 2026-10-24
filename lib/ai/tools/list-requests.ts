@@ -8,6 +8,7 @@ import {
   TYPE_LABELS,
   personName,
 } from "@/lib/requests/labels";
+import { dayStart, monthStart, weekStart } from "@/lib/time/zoned";
 import { IT_SIDE, OPEN_STATES } from "./people-shared";
 import { canCheckSigning, isOpen } from "./request-shared";
 import { defineTool } from "./types";
@@ -30,6 +31,7 @@ export const listRequests = defineTool({
         "List requests, newest change first: ticket, type, status, the person, office, effective date, offboarding deadline.",
         "Filter by type, status ('open' = draft, in execution, awaiting confirmation or returned), only the ones the asking person created (mine), or a person's name / email / ticket (search).",
         "For IT, each open request also lists what is still missing before Review & sign — so 'what is missing on my drafts' is ONE call with mine and status open.",
+        "closedSince keeps requests the approver closed since the start of today, this week (Monday) or this month, company time: 'who was onboarded today' = type onboarding, status closed, closedSince today.",
       ].join(" "),
       inputSchema: z.object({
         type: z.enum(REQUEST_TYPES).optional(),
@@ -41,6 +43,10 @@ export const listRequests = defineTool({
           .boolean()
           .default(false)
           .describe("Only requests the asking person created."),
+        closedSince: z
+          .enum(["today", "this_week", "this_month"])
+          .optional()
+          .describe("Only requests closed since then (company time)."),
         search: z
           .string()
           .trim()
@@ -49,12 +55,12 @@ export const listRequests = defineTool({
           .optional()
           .describe("Part of the person's name, work email or the ticket ID."),
       }),
-      execute: async ({ type, status, mine, search }) => {
+      execute: async ({ type, status, mine, closedSince, search }) => {
         try {
           let query = ctx.db
             .from("requests")
             .select(
-              "id, ticket_id, type, state, first_name, last_name, work_email, effective_date, sla_due_at, updated_at, office:offices(name)",
+              "id, ticket_id, type, state, first_name, last_name, work_email, effective_date, sla_due_at, updated_at, closed_at, office:offices(name)",
               { count: "exact" },
             )
             .order("updated_at", { ascending: false })
@@ -63,6 +69,14 @@ export const listRequests = defineTool({
           if (status === "open") query = query.in("state", OPEN_STATES);
           else if (status) query = query.eq("state", status);
           if (mine) query = query.eq("created_by", ctx.userId);
+          if (closedSince) {
+            const since = {
+              today: dayStart,
+              this_week: weekStart,
+              this_month: monthStart,
+            }[closedSince](ctx.timeZone);
+            query = query.eq("state", "closed").gte("closed_at", since);
+          }
           for (const word of (search ?? "").split(/\s+/).filter(Boolean)) {
             const term = word.replace(/[%*,()]/g, "");
             if (!term) continue;
@@ -110,6 +124,9 @@ export const listRequests = defineTool({
                 ? formatDay(r.sla_due_at, ctx.timeZone)
                 : null,
               lastChange: formatDay(r.updated_at, ctx.timeZone),
+              ...(r.closed_at
+                ? { closed: formatDay(r.closed_at, ctx.timeZone) }
+                : {}),
               ...(missing.has(r.id) ? { stillMissing: missing.get(r.id) } : {}),
             })),
             note: checks

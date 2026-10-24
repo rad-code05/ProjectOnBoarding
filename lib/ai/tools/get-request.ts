@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import * as z from "zod";
 import { formatDate, formatDay, formatDayTime } from "@/lib/requests/format";
+import { pdfFileName } from "@/lib/requests/signing";
 import {
   STATE_LABELS,
   TYPE_LABELS,
@@ -36,7 +37,8 @@ export const getRequest = defineTool({
       description: [
         "One request by its ticket (UAM-2026-000375, or just 375): the person, status, dates, office, how many applications / equipment / access items it has, the offboarding deadline, the approver's comment and flagged sections if it was returned, and (for IT) what is still missing before Review & sign.",
         "If a number matches tickets of several years, the result lists them: ask which one is meant.",
-        "A closed request has a PDF record: when pdfLink is in the result, a Download the PDF link shows under your answer — say so; you can't attach files yourself.",
+        "ALWAYS call getRequest when the person asks for a request's PDF, document or record, even if you listed it before: only this result has the PDF link.",
+        "When pdfLink is in the result, a Download the PDF link shows ABOVE your answer, next to Open the request: say it is above; you can't attach files yourself. The file is called pdfFileName: never guess the name.",
       ].join(" "),
       inputSchema: z.object({
         ticket: z
@@ -167,7 +169,11 @@ export const getRequest = defineTool({
             link: requestLink(r.id, r.state),
             // The record PDF — for the people Records is for (admin, auditor).
             ...(r.state === "closed" && canOpenRecords(ctx.roles)
-              ? { pdfLink: `/records/${r.id}/pdf` }
+              ? {
+                  pdfLink: `/records/${r.id}/pdf`,
+                  // The name the PDF route gives the file (same function).
+                  pdfFileName: pdfFileName(r.first_name, r.last_name, r.type),
+                }
               : {}),
             source: `Request ${r.ticket_id}`,
           };

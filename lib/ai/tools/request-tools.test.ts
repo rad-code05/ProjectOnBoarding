@@ -39,7 +39,7 @@ function fakeDb(tables: Record<string, unknown[]>) {
       then: (resolve: (r: typeof result) => unknown) => resolve(result),
       maybeSingle: async () => ({ data: rows[0] ?? null, error: null }),
     };
-    for (const m of ["select", "eq", "in", "or", "order", "limit"]) {
+    for (const m of ["select", "eq", "in", "or", "order", "limit", "gte"]) {
       builder[m] = (...args: unknown[]) => {
         calls.push({ table, method: m, args });
         return builder;
@@ -110,6 +110,28 @@ describe("listRequests", () => {
     });
   });
 
+  test("'who was onboarded today' — one call: closed, since midnight company time", async () => {
+    const { db, calls } = fakeDb({
+      requests: [
+        { ...draft, state: "closed", closed_at: "2026-10-24T06:00:00Z" },
+      ],
+    });
+    const out = await run(
+      listRequests,
+      { type: "onboarding", closedSince: "today" },
+      db,
+    );
+    expect(calls).toContainEqual({
+      table: "requests",
+      method: "eq",
+      args: ["state", "closed"],
+    });
+    const gte = calls.find((c) => c.method === "gte");
+    expect(gte?.args[0]).toBe("closed_at");
+    expect(String(gte?.args[1])).toMatch(/T20:00:00\.000Z$/);
+    expect(out).toMatchObject({ requests: [{ closed: "24 Oct 2026" }] });
+  });
+
   test("not IT: no Review & sign checks", async () => {
     const { db, rpc } = fakeDb({ requests: [draft] });
     const out = await run(listRequests, {}, db, ["auditor"]);
@@ -147,6 +169,8 @@ describe("getRequest", () => {
       status: "Closed",
       link: `/records/${ID}`,
       pdfLink: `/records/${ID}/pdf`,
+      // The PDF route's own name — never a guess.
+      pdfFileName: "request-onboarding.pdf",
     });
     expect(admin.stillMissing).toBeUndefined();
     const it = await run(
