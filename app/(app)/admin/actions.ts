@@ -2,7 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import * as z from "zod";
-import { aiSettingsInput, type AiSettingsInput } from "@/lib/admin/ai-shared";
+import {
+  aiModelInput,
+  aiSettingsInput,
+  type AiModelInput,
+  type AiSettingsInput,
+} from "@/lib/admin/ai-shared";
+import { testModel } from "@/lib/ai/test-model";
 import { catalogErrorMessage } from "@/lib/admin/catalog-shared";
 import { requireRole } from "@/lib/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -419,5 +425,105 @@ export async function saveAiSettings(
   }
   // The robot shows or hides on every page.
   revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/** "a model called X already exists" → "A model called X already exists." */
+const dbSentence = (message: string | undefined, fallback: string) =>
+  message
+    ? `${message.charAt(0).toUpperCase()}${message.slice(1).replace(/\.?$/, ".")}`
+    : fallback;
+
+/** Add (no id) or edit a model — the database checks and audits it. */
+export async function saveAiModel(
+  input: AiModelInput,
+): Promise<{ ok: true; id: number } | { ok: false; message: string }> {
+  await requireRole("admin");
+  const parsed = aiModelInput.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      message:
+        parsed.error.issues[0]?.message ?? "Check the fields and try again.",
+    };
+  }
+  const m = parsed.data;
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase.rpc("admin_save_ai_model", {
+    // null = a new model (the generated types miss that the function takes null).
+    p_id: (m.id ?? null) as number,
+    p_name: m.name,
+    p_model_id: m.modelId,
+    p_note: m.note ?? "",
+    p_price_in: m.priceIn,
+    p_price_out: m.priceOut,
+  });
+  if (error || data === null) {
+    return {
+      ok: false,
+      message:
+        error?.code === "23505" || error?.code === "23514"
+          ? dbSentence(error.message, "Check the fields.")
+          : error?.code === "42501"
+            ? "Only an admin changes the models."
+            : "Could not save. Reload and try again.",
+    };
+  }
+  revalidatePath("/admin/ai");
+  return { ok: true, id: data };
+}
+
+/** Retire (or restore) a model; the one in use can't be retired. */
+export async function setAiModelActive(
+  modelId: number,
+  active: boolean,
+): Promise<AdminResult> {
+  await requireRole("admin");
+  if (!id.safeParse(modelId).success) {
+    return { ok: false, message: "This model is unknown." };
+  }
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("admin_set_ai_model_active", {
+    p_id: modelId,
+    p_active: active,
+  });
+  if (error) {
+    return {
+      ok: false,
+      message:
+        error.code === "23514"
+          ? "The model in use can't be retired — choose another model first and save."
+          : "Could not save. Reload and try again.",
+    };
+  }
+  revalidatePath("/admin/ai");
+  return { ok: true };
+}
+
+/**
+ * Test the model: one tiny question with this model ID. A saved model's
+ * test is counted in the monthly budget like any answer.
+ */
+export async function testAiModel(input: {
+  modelId: string;
+  id?: number | null;
+}): Promise<AdminResult> {
+  await requireRole("admin");
+  const modelId = aiModelInput.shape.modelId.safeParse(input.modelId);
+  if (!modelId.success) {
+    return {
+      ok: false,
+      message: modelId.error.issues[0]?.message ?? "Check the model ID.",
+    };
+  }
+  const result = await testModel(modelId.data);
+  if (!result.ok) return result;
+  if (input.id && id.safeParse(input.id).success) {
+    await createServerSupabaseClient().rpc("record_ai_usage", {
+      p_model: input.id,
+      p_input_tokens: result.inputTokens,
+      p_output_tokens: result.outputTokens,
+    });
+  }
   return { ok: true };
 }
