@@ -231,8 +231,22 @@ const textOf = (m: UIMessage) =>
  * What the robot says when the model's safety filter stopped the answer
  * before a word was written (finish reason "content-filter").
  */
-export const REFUSED_ANSWER =
+const REFUSED_LEAD =
   "I can't help with that request. I only answer questions about this app and its data: reports, people and access, requests, and how the app works.";
+export const REFUSED_ANSWER = `${REFUSED_LEAD} If this was a normal question, please ask it again in other words.`;
+
+/**
+ * A refused answer: our fixed words, or empty (refusals saved before they
+ * had words). Its question is never sent to the model again — the safety
+ * filter reads the whole chat, so an old attack would get the next,
+ * harmless question refused too.
+ */
+export function isRefused(message: UIMessage): boolean {
+  if (message.role !== "assistant") return false;
+  const text = textOf(message);
+  if (text) return text.startsWith(REFUSED_LEAD);
+  return !message.parts.some((p) => p.type.startsWith("tool-"));
+}
 
 /**
  * A refused answer arrives empty: give it the fixed words, so the chat shows

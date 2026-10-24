@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { PreviousChats } from "./PreviousChats";
 
 const list = vi.fn();
@@ -14,7 +14,10 @@ vi.mock("@/app/(app)/profile/actions", () => ({
   deleteMyAssistantChats: () => removeAll(),
 }));
 
-const recent = new Date(Date.now() - 60_000).toISOString();
+// A fixed clock (noon in Dubai): "a minute ago" just after midnight would
+// be yesterday, and the chat would land under Yesterday instead of Today.
+const NOW = new Date("2026-10-24T08:00:00Z");
+const recent = new Date(NOW.getTime() - 60_000).toISOString();
 const chats = [
   { id: "a", title: "Who holds Slack today?", updatedAt: recent, messages: 6 },
   {
@@ -36,10 +39,16 @@ const props = () => ({
 
 describe("PreviousChats (board: Phone · Assistant · Previous chats)", () => {
   beforeEach(() => {
+    // Only the clock is fake; timers stay real for user events.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(NOW);
     vi.clearAllMocks();
     list.mockResolvedValue(chats);
     removeOne.mockResolvedValue(true);
     removeAll.mockResolvedValue({ ok: true, deleted: 2 });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   test("own chats grouped, the open one marked; tap to continue", async () => {

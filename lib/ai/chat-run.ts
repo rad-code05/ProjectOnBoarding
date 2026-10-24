@@ -9,7 +9,7 @@ import {
   type UIMessage,
 } from "ai";
 import * as z from "zod";
-import { MAX_QUESTION_LENGTH, withRefusedText } from "./chat-ui";
+import { MAX_QUESTION_LENGTH, isRefused, withRefusedText } from "./chat-ui";
 import { toolApprovalFor, toolsFor } from "./tools/registry";
 import type { ToolContext } from "./tools/types";
 
@@ -93,6 +93,24 @@ export function withoutThinking(messages: UIMessage[]): UIMessage[] {
   }));
 }
 
+/**
+ * What the model gets: the chat without refused questions and their
+ * refusals (they stay visible in the chat). The safety filter reads the
+ * whole conversation, so an earlier attack could get the next, harmless
+ * question refused as well.
+ */
+export function withoutRefused(messages: UIMessage[]): UIMessage[] {
+  const kept: UIMessage[] = [];
+  for (const m of messages) {
+    if (isRefused(m)) {
+      if (kept[kept.length - 1]?.role === "user") kept.pop();
+      continue;
+    }
+    kept.push(m);
+  }
+  return kept;
+}
+
 /** The chat ends with this very question and no answer yet. */
 export function isUnanswered(history: UIMessage[], question: string): boolean {
   const last = history[history.length - 1];
@@ -156,7 +174,7 @@ export async function runChat(
   const result = streamText({
     model: deps.model(status.modelId),
     instructions: deps.instructions,
-    messages: await convertToModelMessages(messages),
+    messages: await convertToModelMessages(withoutRefused(messages)),
     tools,
     toolApproval: toolApprovalFor(person.roles),
     stopWhen: isStepCount(MAX_STEPS),
