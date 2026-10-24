@@ -503,6 +503,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      custom_reports: {
+        Row: {
+          created_at: string;
+          definition: NonNullable<Json>;
+          id: string;
+          title: string;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          definition: NonNullable<Json>;
+          id?: string;
+          title: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          created_at?: string;
+          definition?: NonNullable<Json>;
+          id?: string;
+          title?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "custom_reports_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
+      };
       departments: {
         Row: {
           active: boolean;
@@ -1939,6 +1975,22 @@ export type Database = {
           name: string;
           total_people: number;
           total_rights: number;
+        }[];
+      };
+      report_access_held: {
+        Args: { p_limit?: number };
+        Returns: {
+          asset_tag: string;
+          category_name: string;
+          employee_id: string;
+          granted_at: string;
+          granted_ticket_id: string;
+          inventory_id: string;
+          item_key: string;
+          kind: Database["public"]["Enums"]["inventory_kind"];
+          name: string;
+          permission: string;
+          total_count: number;
         }[];
       };
       report_access_holders: {
