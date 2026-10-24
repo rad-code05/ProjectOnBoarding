@@ -1,5 +1,6 @@
 import type { UIMessage } from "ai";
 import type { Role } from "@/lib/auth";
+import { zonedParts } from "@/lib/time/zoned";
 
 /** The longest question the assistant accepts (characters). */
 export const MAX_QUESTION_LENGTH = 4000;
@@ -230,4 +231,71 @@ export function answeredOnServer(
 export function lastQuestion(messages: readonly UIMessage[]): string {
   const last = messages.findLast((m) => m.role === "user");
   return last ? textOf(last) : "";
+}
+
+/** One of the person's own chats in Previous chats. */
+export type ChatSummary = {
+  id: string;
+  /** The first question (chatTitle). */
+  title: string;
+  /** The last message's server time. */
+  updatedAt: string;
+  messages: number;
+};
+
+export type ChatGroup = {
+  label: "Today" | "This week" | "Older";
+  chats: (ChatSummary & { when: string })[];
+};
+
+/**
+ * Previous chats grouped like the board: Today ("14:42"), This week
+ * (Monday on; "Tue 21 Oct"), Older ("2 Oct 2026") — on the person's clock.
+ */
+export function chatGroups(
+  chats: readonly ChatSummary[],
+  timeZone: string,
+  now = new Date(),
+): ChatGroup[] {
+  const today = zonedParts(now.toISOString(), timeZone).date;
+  const monday = new Date(`${today}T00:00:00Z`);
+  monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
+  const weekStart = monday.toISOString().slice(0, 10);
+  const fmt = (iso: string, opts: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat("en-GB", { ...opts, timeZone }).format(
+      new Date(iso),
+    );
+  const groups: ChatGroup[] = [
+    { label: "Today", chats: [] },
+    { label: "This week", chats: [] },
+    { label: "Older", chats: [] },
+  ];
+  for (const chat of chats) {
+    const day = zonedParts(chat.updatedAt, timeZone).date;
+    if (day === today) {
+      groups[0].chats.push({
+        ...chat,
+        when: fmt(chat.updatedAt, { hour: "2-digit", minute: "2-digit" }),
+      });
+    } else if (day >= weekStart) {
+      groups[1].chats.push({
+        ...chat,
+        when: fmt(chat.updatedAt, {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+        }),
+      });
+    } else {
+      groups[2].chats.push({
+        ...chat,
+        when: fmt(chat.updatedAt, {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        }),
+      });
+    }
+  }
+  return groups.filter((g) => g.chats.length > 0);
 }

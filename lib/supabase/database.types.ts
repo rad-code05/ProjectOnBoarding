@@ -1851,6 +1851,7 @@ export type Database = {
         Returns: string;
       };
       create_offboarding: { Args: { p_employee_id?: string }; Returns: string };
+      delete_my_ai_chat: { Args: { p_chat_id: string }; Returns: boolean };
       delete_my_ai_chats: { Args: Record<PropertyKey, never>; Returns: number };
       export_audit_log: {
         Args: {

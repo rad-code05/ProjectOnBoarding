@@ -12,6 +12,8 @@ export {
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  HistoryIcon,
+  TrashIcon,
   CloseIcon,
   DownloadIcon,
   EyeIcon,

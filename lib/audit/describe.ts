@@ -479,6 +479,17 @@ export function describeEvent(
       return say("set up a new authenticator app", "My profile → Security");
     case "account.backup_codes_regenerated":
       return say("made new backup codes", "My profile → Security");
+    case "ai.memory_cleared":
+      return say("cleared what the assistant remembers", "My profile");
+    case "ai.chats_deleted": {
+      const n = num(d, "chats");
+      return say(
+        `deleted ${n === 1 ? "1 assistant chat" : `${n} assistant chats`}`,
+        "My profile",
+      );
+    }
+    case "ai.chat_deleted":
+      return say("deleted an assistant chat", "Previous chats");
     case "account.timezone_changed": {
       const after = str(d, "after");
       return say(

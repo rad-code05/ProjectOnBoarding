@@ -73,6 +73,27 @@ test("Assistant (F15c): the robot opens the chat, answers, remembers it is open;
   await expect(panel.getByRole("list", { name: "Suggestions" })).toBeVisible();
   await expect(panel.getByText("This is the test assistant.")).toHaveCount(0);
 
+  // Previous chats (F15d-2e): the earlier chat is there — continue it…
+  await panel.getByRole("button", { name: "Previous chats" }).click();
+  const chats = panel.getByRole("region", { name: "Previous chats" });
+  await chats
+    .getByRole("button", { name: /^What does Returned mean\?/ })
+    .first()
+    .click();
+  await expect(panel.getByText("This is the test assistant.")).toHaveCount(2);
+  // …then delete it (asks in the row first).
+  await panel.getByRole("button", { name: "Previous chats" }).click();
+  await chats
+    .getByRole("button", { name: "Delete “What does Returned mean?”" })
+    .first()
+    .click();
+  await chats
+    .getByRole("alert")
+    .getByRole("button", { name: "Delete", exact: true })
+    .click();
+  await expect(chats.getByRole("alert")).toHaveCount(0);
+  await chats.getByRole("button", { name: "Back to the chat" }).click();
+
   // Esc closes and the robot is back.
   await box.press("Escape");
   await expect(panel).toHaveCount(0);
