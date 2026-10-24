@@ -20,7 +20,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
-import { CheckIcon, CloseIcon, IconButton } from "@/components/ui";
+import { CheckIcon, CloseIcon, HistoryIcon, IconButton } from "@/components/ui";
 import type { Role } from "@/lib/auth";
 import {
   MAX_QUESTION_LENGTH,
@@ -38,6 +38,7 @@ import {
 import { cn } from "@/lib/cn";
 import { loadAssistantChat } from "./actions";
 import { AnswerText } from "./AnswerText";
+import { PreviousChats } from "./PreviousChats";
 import { RobotAvatar } from "./RobotAvatar";
 
 const OPEN_KEY = "laine.assistant.open";
@@ -226,7 +227,10 @@ function ChatPanel({
   const inputId = useId();
   // The chat from last time on this device (its messages load below), or a
   // new one. The panel only renders in the browser, so storage is there.
-  const [restored] = useState(readChatId);
+  // The chat to load from the server: last time's, or one picked in
+  // Previous chats (F15d-2e).
+  const [restored, setRestored] = useState(readChatId);
+  const [view, setView] = useState<"chat" | "chats">("chat");
   const [chatId, setChatId] = useState(() => {
     const id = restored ?? crypto.randomUUID();
     writeChatId(id);
@@ -330,7 +334,7 @@ function ChatPanel({
     if (answeredOnServer(saved, lastQuestion(messages))) setMessages(saved);
     else void regenerate();
   };
-  const newChat = () => {
+  const freshChat = () => {
     stop();
     setPending(null);
     const id = crypto.randomUUID();
@@ -338,195 +342,235 @@ function ChatPanel({
     setChatId(id);
     setInput("");
   };
+  const newChat = () => {
+    freshChat();
+    setView("chat");
+  };
+  // Previous chats → continue one: its messages load like after a reload.
+  const openChat = (id: string) => {
+    if (id !== chatId) {
+      stop();
+      setPending(null);
+      writeChatId(id);
+      setRestored(id);
+      setChatId(id);
+      setInput("");
+    }
+    setView("chat");
+  };
 
   return (
     <section
       role="dialog"
-      aria-labelledby={titleId}
+      // The heading isn't there while Previous chats shows: same name.
+      aria-labelledby={view === "chat" ? titleId : undefined}
+      aria-label={view === "chats" ? "Laine assistant" : undefined}
       onKeyDown={(e) => {
         if (e.key === "Escape") onClose();
       }}
       className="fixed inset-0 z-60 flex flex-col bg-sand md:inset-y-0 md:right-0 md:left-auto md:w-95 md:border-l md:border-line md:shadow-[-8px_0_24px_rgba(0,0,0,0.08)]"
     >
-      <header className="flex shrink-0 items-center gap-2.5 border-b border-line bg-paper py-3 pr-2 pl-4">
-        <RobotAvatar size={36} expression={busy ? "thinking" : "idle"} />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <h2 id={titleId} className="font-serif text-xl leading-tight">
-            Laine assistant
-          </h2>
-          <span className="text-xs text-graphite">
-            {approverOnly
-              ? "Report and app questions"
-              : "Answers from Laine's data only"}
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={newChat}
-          className="h-10 cursor-pointer rounded-pill border border-field-border px-3 text-[13px] font-semibold"
-        >
-          New chat
-        </button>
-        <IconButton
-          label="Close the assistant"
-          icon={<CloseIcon />}
-          variant="ghost"
-          onClick={onClose}
+      {view === "chats" ? (
+        <PreviousChats
+          currentId={chatId}
+          timeZone={timeZone}
+          onOpen={openChat}
+          onNewChat={newChat}
+          onBack={() => setView("chat")}
+          onDeleted={(id) => {
+            // The chat on screen is gone: start a fresh one.
+            if (id === "all" || id === chatId) freshChat();
+          }}
         />
-      </header>
-
-      <div
-        ref={logRef}
-        role="log"
-        aria-label="Conversation"
-        aria-live="polite"
-        className="flex flex-1 flex-col gap-3.5 overflow-x-hidden overflow-y-auto p-4"
-      >
-        <Bubble from="assistant">
-          {hello} What would you like to know today?
-        </Bubble>
-        {messages.length === 0 && (
-          <ul aria-label="Suggestions" className="flex flex-wrap gap-2">
-            {starterQuestions(roles).map((q) => (
-              <li key={q}>
-                <button
-                  type="button"
-                  onClick={() => ask(q)}
-                  className="min-h-10 cursor-pointer rounded-pill border border-ink px-3.5 py-2 text-left text-[13px] font-semibold"
-                >
-                  {q}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {messages.map((m) => (
-          <Message key={m.id} message={m} />
-        ))}
-
-        {(status === "submitted" || pending === "waiting") && (
-          <div
-            aria-label="The assistant is writing"
-            className="flex gap-1.5 self-start rounded-[4px_14px_14px_14px] border border-line bg-paper px-4 py-3"
-          >
-            <span className="size-2 rounded-pill bg-ink motion-safe:animate-pulse" />
-            <span className="size-2 rounded-pill bg-stone motion-safe:animate-pulse" />
-            <span className="size-2 rounded-pill bg-ink motion-safe:animate-pulse" />
-          </div>
-        )}
-        {pending === "waiting" && (
-          <span className="self-start text-xs text-graphite">
-            Still writing the answer…
-          </span>
-        )}
-        {pending === "lost" && (
-          <div
-            role="status"
-            className="flex flex-col gap-1 rounded-card border border-line bg-paper px-3.5 py-3"
-          >
-            <span className="text-sm font-bold">
-              The answer didn&apos;t arrive
-            </span>
-            <span className="text-[13px] leading-normal text-graphite">
-              The connection was lost before the answer was ready.
-            </span>
+      ) : (
+        <>
+          <header className="flex shrink-0 items-center gap-2.5 border-b border-line bg-paper py-3 pr-2 pl-4">
+            <RobotAvatar size={36} expression={busy ? "thinking" : "idle"} />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <h2 id={titleId} className="font-serif text-xl leading-tight">
+                Laine assistant
+              </h2>
+              <span className="text-xs text-graphite">
+                {approverOnly
+                  ? "Report and app questions"
+                  : "Answers from Laine's data only"}
+              </span>
+            </div>
+            <IconButton
+              label="Previous chats"
+              icon={<HistoryIcon size={20} />}
+              variant="ghost"
+              onClick={() => setView("chats")}
+            />
             <button
               type="button"
-              onClick={() => void tryAgain()}
-              className="mt-1.5 h-10 cursor-pointer self-start rounded-pill border border-ink px-4 text-[13px] font-semibold"
+              onClick={newChat}
+              className="h-10 cursor-pointer rounded-pill border border-field-border px-3 text-[13px] font-semibold"
             >
-              Try again
+              New chat
             </button>
-          </div>
-        )}
-
-        {problem && (
-          <div
-            role="status"
-            className={cn(
-              "flex flex-col gap-1 rounded-card bg-paper px-3.5 py-3",
-              problem.kind === "budget"
-                ? "border-2 border-signal"
-                : "border border-line",
-            )}
-          >
-            <span className="text-sm font-bold">{problem.title}</span>
-            <span className="text-[13px] leading-normal text-graphite">
-              {problem.text}
-            </span>
-            {problem.retry && (
-              <button
-                type="button"
-                onClick={() => void tryAgain()}
-                className="mt-1.5 h-10 cursor-pointer self-start rounded-pill border border-ink px-4 text-[13px] font-semibold"
-              >
-                Try again
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      <form
-        onSubmit={submit}
-        className="flex shrink-0 flex-col gap-2 border-t border-line bg-paper px-4 pt-3 pb-5"
-      >
-        <div className="flex items-end gap-2">
-          <label htmlFor={inputId} className="sr-only">
-            Message the assistant
-          </label>
-          <textarea
-            id={inputId}
-            ref={inputRef}
-            rows={2}
-            value={input}
-            maxLength={MAX_QUESTION_LENGTH}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={onKeyDown}
-            placeholder={
-              approverOnly
-                ? "Ask a question about the reports or the app"
-                : "Ask about reports, people, access or the app"
-            }
-            className="min-w-0 flex-1 resize-none rounded-xl border border-field-border bg-paper p-3 text-base leading-snug placeholder:text-stone"
-          />
-          {busy ? (
             <IconButton
-              label="Stop"
-              variant="solid"
-              icon={<span className="block size-3 rounded-xs bg-paper" />}
-              onClick={() => stop()}
+              label="Close the assistant"
+              icon={<CloseIcon />}
+              variant="ghost"
+              onClick={onClose}
             />
-          ) : (
-            <button
-              type="submit"
-              aria-label="Send"
-              disabled={!input.trim()}
-              className="flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-pill bg-ink text-paper disabled:cursor-default disabled:bg-stone"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
+          </header>
+
+          <div
+            ref={logRef}
+            role="log"
+            aria-label="Conversation"
+            aria-live="polite"
+            className="flex flex-1 flex-col gap-3.5 overflow-x-hidden overflow-y-auto p-4"
+          >
+            <Bubble from="assistant">
+              {hello} What would you like to know today?
+            </Bubble>
+            {messages.length === 0 && (
+              <ul aria-label="Suggestions" className="flex flex-wrap gap-2">
+                {starterQuestions(roles).map((q) => (
+                  <li key={q}>
+                    <button
+                      type="button"
+                      onClick={() => ask(q)}
+                      className="min-h-10 cursor-pointer rounded-pill border border-ink px-3.5 py-2 text-left text-[13px] font-semibold"
+                    >
+                      {q}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {messages.map((m) => (
+              <Message key={m.id} message={m} />
+            ))}
+
+            {(status === "submitted" || pending === "waiting") && (
+              <div
+                aria-label="The assistant is writing"
+                className="flex gap-1.5 self-start rounded-[4px_14px_14px_14px] border border-line bg-paper px-4 py-3"
               >
-                <path d="M12 19V5M5 12l7-7 7 7" />
-              </svg>
-            </button>
-          )}
-        </div>
-        <span className="text-[11px] leading-normal text-graphite">
-          The assistant only reads and suggests — it never signs, approves or
-          changes anything. It can be wrong: open the source to check. Chats are
-          kept 60 days.
-        </span>
-      </form>
+                <span className="size-2 rounded-pill bg-ink motion-safe:animate-pulse" />
+                <span className="size-2 rounded-pill bg-stone motion-safe:animate-pulse" />
+                <span className="size-2 rounded-pill bg-ink motion-safe:animate-pulse" />
+              </div>
+            )}
+            {pending === "waiting" && (
+              <span className="self-start text-xs text-graphite">
+                Still writing the answer…
+              </span>
+            )}
+            {pending === "lost" && (
+              <div
+                role="status"
+                className="flex flex-col gap-1 rounded-card border border-line bg-paper px-3.5 py-3"
+              >
+                <span className="text-sm font-bold">
+                  The answer didn&apos;t arrive
+                </span>
+                <span className="text-[13px] leading-normal text-graphite">
+                  The connection was lost before the answer was ready.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void tryAgain()}
+                  className="mt-1.5 h-10 cursor-pointer self-start rounded-pill border border-ink px-4 text-[13px] font-semibold"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {problem && (
+              <div
+                role="status"
+                className={cn(
+                  "flex flex-col gap-1 rounded-card bg-paper px-3.5 py-3",
+                  problem.kind === "budget"
+                    ? "border-2 border-signal"
+                    : "border border-line",
+                )}
+              >
+                <span className="text-sm font-bold">{problem.title}</span>
+                <span className="text-[13px] leading-normal text-graphite">
+                  {problem.text}
+                </span>
+                {problem.retry && (
+                  <button
+                    type="button"
+                    onClick={() => void tryAgain()}
+                    className="mt-1.5 h-10 cursor-pointer self-start rounded-pill border border-ink px-4 text-[13px] font-semibold"
+                  >
+                    Try again
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <form
+            onSubmit={submit}
+            className="flex shrink-0 flex-col gap-2 border-t border-line bg-paper px-4 pt-3 pb-5"
+          >
+            <div className="flex items-end gap-2">
+              <label htmlFor={inputId} className="sr-only">
+                Message the assistant
+              </label>
+              <textarea
+                id={inputId}
+                ref={inputRef}
+                rows={2}
+                value={input}
+                maxLength={MAX_QUESTION_LENGTH}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={onKeyDown}
+                placeholder={
+                  approverOnly
+                    ? "Ask a question about the reports or the app"
+                    : "Ask about reports, people, access or the app"
+                }
+                className="min-w-0 flex-1 resize-none rounded-xl border border-field-border bg-paper p-3 text-base leading-snug placeholder:text-stone"
+              />
+              {busy ? (
+                <IconButton
+                  label="Stop"
+                  variant="solid"
+                  icon={<span className="block size-3 rounded-xs bg-paper" />}
+                  onClick={() => stop()}
+                />
+              ) : (
+                <button
+                  type="submit"
+                  aria-label="Send"
+                  disabled={!input.trim()}
+                  className="flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-pill bg-ink text-paper disabled:cursor-default disabled:bg-stone"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 19V5M5 12l7-7 7 7" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            <span className="text-[11px] leading-normal text-graphite">
+              The assistant only reads and suggests — it never signs, approves
+              or changes anything. It can be wrong: open the source to check.
+              Chats are kept 60 days.
+            </span>
+          </form>
+        </>
+      )}
     </section>
   );
 }

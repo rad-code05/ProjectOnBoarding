@@ -3,6 +3,7 @@ import type { UIMessage } from "ai";
 import { describe, expect, test } from "vitest";
 import {
   answeredOnServer,
+  chatGroups,
   chatProblem,
   greeting,
   lastIsQuestion,
@@ -126,5 +127,43 @@ describe("after a lost connection", () => {
     // The question never reached the server: ask again.
     expect(answeredOnServer(saved.slice(0, 2), "Slack?")).toBe(false);
     expect(lastQuestion(saved)).toBe("Slack?");
+  });
+});
+
+describe("chatGroups (board: Previous chats)", () => {
+  const chat = (id: string, updatedAt: string) => ({
+    id,
+    title: id,
+    updatedAt,
+    messages: 2,
+  });
+  // Saturday 24 Oct 2026, 15:00 in Dubai.
+  const now = new Date("2026-10-24T11:00:00Z");
+
+  test("Today, This week (from Monday), Older — on the person's clock", () => {
+    const groups = chatGroups(
+      [
+        chat("today", "2026-10-24T10:42:00Z"),
+        chat("tuesday", "2026-10-20T08:00:00Z"),
+        // Sunday 18 Oct: the week before.
+        chat("old", "2026-10-18T08:00:00Z"),
+      ],
+      "Asia/Dubai",
+      now,
+    );
+    expect(groups.map((g) => [g.label, g.chats.map((c) => c.when)])).toEqual([
+      ["Today", ["14:42"]],
+      ["This week", ["Tue 20 Oct"]],
+      ["Older", ["18 Oct 2026"]],
+    ]);
+  });
+
+  test("late evening UTC is already tomorrow in Dubai", () => {
+    const groups = chatGroups(
+      [chat("x", "2026-10-23T21:30:00Z")],
+      "Asia/Dubai",
+      now,
+    );
+    expect(groups[0].label).toBe("Today");
   });
 });

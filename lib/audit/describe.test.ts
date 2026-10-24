@@ -425,3 +425,19 @@ describe("eventChanges / eventFacts — the details sheet", () => {
     });
   });
 });
+
+describe("assistant data the person deleted (no content)", () => {
+  test("memory cleared, chats deleted, one chat deleted", () => {
+    const say = (action: string, diff: Record<string, number> = {}) =>
+      describeEvent(ev({ ...moises, action, diff })).what;
+    expect(say("ai.memory_cleared")).toBe(
+      "cleared what the assistant remembers",
+    );
+    expect(say("ai.chats_deleted", { chats: 3 })).toBe(
+      "deleted 3 assistant chats",
+    );
+    expect(say("ai.chat_deleted", { chats: 1 })).toBe(
+      "deleted an assistant chat",
+    );
+  });
+});
