@@ -227,6 +227,25 @@ const textOf = (m: UIMessage) =>
     .join("")
     .trim();
 
+/**
+ * What the robot says when the model's safety filter stopped the answer
+ * before a word was written (finish reason "content-filter").
+ */
+export const REFUSED_ANSWER =
+  "I can't help with that request. I only answer questions about this app and its data: reports, people and access, requests, and how the app works.";
+
+/**
+ * A refused answer arrives empty: give it the fixed words, so the chat shows
+ * them, they are saved, and the next question doesn't send an empty answer.
+ */
+export function withRefusedText(message: UIMessage): UIMessage {
+  if (message.role !== "assistant" || textOf(message)) return message;
+  return {
+    ...message,
+    parts: [...message.parts, { type: "text", text: REFUSED_ANSWER }],
+  };
+}
+
 /** The chat ends with a question that has no answer yet. */
 export function lastIsQuestion(messages: readonly UIMessage[]): boolean {
   return messages[messages.length - 1]?.role === "user";

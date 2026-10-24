@@ -35,6 +35,7 @@ import {
   stepPdfLink,
   stepDownloads,
   toolStep,
+  withRefusedText,
 } from "@/lib/ai/chat-ui";
 import { cn } from "@/lib/cn";
 import { loadAssistantChat } from "./actions";
@@ -272,6 +273,14 @@ function ChatPanel({
   } = useChat({
     id: chatId,
     transport,
+    // The safety filter stopped the answer before a word: say so instead
+    // of showing nothing (the server saves the same words).
+    onFinish: ({ message, finishReason }) => {
+      if (finishReason !== "content-filter") return;
+      setMessages((now) =>
+        now.map((m) => (m.id === message.id ? withRefusedText(m) : m)),
+      );
+    },
   });
   // A reload while the answer was still being written: "waiting" until the
   // server has saved it, "lost" if it never comes.

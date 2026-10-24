@@ -9,7 +9,7 @@ import {
   type UIMessage,
 } from "ai";
 import * as z from "zod";
-import { MAX_QUESTION_LENGTH } from "./chat-ui";
+import { MAX_QUESTION_LENGTH, withRefusedText } from "./chat-ui";
 import { toolApprovalFor, toolsFor } from "./tools/registry";
 import type { ToolContext } from "./tools/types";
 
@@ -170,11 +170,11 @@ export async function runChat(
     originalMessages: messages,
     onEnd: async ({ messages: all }) => {
       try {
-        await deps.saveMessages(
-          id,
-          withoutThinking(all.slice(saved)),
-          status.model,
-        );
+        let answer = withoutThinking(all.slice(saved));
+        if ((await result.finishReason) === "content-filter") {
+          answer = answer.map(withRefusedText);
+        }
+        await deps.saveMessages(id, answer, status.model);
         const usage = await result.totalUsage;
         await deps.recordUsage(
           status.model,
