@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CustomReportParts } from "@/components/reports/CustomReport";
 import { DeleteCustomReport } from "@/components/reports/DeleteCustomReport";
+import { ExportBox } from "@/components/reports/ExportBox";
 import { ChevronLeftIcon } from "@/components/ui";
 import { requireRole } from "@/lib/auth";
 import { PAGES } from "@/lib/navigation";
@@ -57,7 +58,13 @@ export default async function CustomReportPage({
       </div>
 
       {report.definition ? (
-        <CustomReportParts outcomes={outcomes} timeZone={timeZone} />
+        <>
+          <CustomReportParts outcomes={outcomes} timeZone={timeZone} />
+          <ExportBox
+            href={`/reports/custom/${report.id}/export`}
+            note="Exports every part as it is now. CSV: one file with a Part column; PDF: a section per part. Each export is recorded in the audit log."
+          />
+        </>
       ) : (
         <div className="flex flex-col gap-1.5 rounded-card border border-line bg-paper p-5">
           <h2 className="font-serif text-xl">This report can&apos;t be run</h2>

@@ -37,13 +37,32 @@ export type ReportPdfInput = {
   landscape?: boolean;
   tiles?: { label: string; value: string; note: string }[];
   /** One bar per item (Onboarded by month). */
-  chart?: { title: string; bars: { label: string; value: number }[] };
-  table: {
-    columns: ReportPdfColumn[];
-    rows: string[][];
-    total?: string[];
-  };
+  chart?: ReportPdfChart;
+  table: ReportPdfTable;
   /** Shown when the table is empty. */
+  empty: string;
+  /**
+   * Several parts, each with its own heading, chart and table (custom
+   * reports, F17a); when given, they replace the single chart and table.
+   */
+  sections?: ReportPdfSection[];
+};
+
+export type ReportPdfChart = {
+  title: string;
+  bars: { label: string; value: number; text?: string }[];
+};
+export type ReportPdfTable = {
+  columns: ReportPdfColumn[];
+  rows: string[][];
+  total?: string[];
+};
+export type ReportPdfSection = {
+  title: string;
+  /** "From People today · …" — how the part is built. */
+  note: string;
+  chart?: ReportPdfChart;
+  table: ReportPdfTable;
   empty: string;
 };
 
@@ -138,6 +157,9 @@ const s = StyleSheet.create({
   totalRow: { flexDirection: "row", fontWeight: 700, backgroundColor: SAND },
   cell: { paddingVertical: 4, paddingHorizontal: 5 },
   empty: { marginTop: 14, padding: 10, backgroundColor: SAND },
+  section: { marginTop: 18 },
+  sectionTitle: { fontFamily: "Newsreader", fontSize: 15 },
+  sectionNote: { marginTop: 3, color: GRAPHITE, lineHeight: 1.4 },
   footer: {
     position: "absolute",
     bottom: 22,
@@ -167,6 +189,59 @@ function cells(values: string[], columns: ReportPdfColumn[]) {
   ));
 }
 
+/** Vertical bars, one per item, the value written above each. */
+function Chart({ chart }: { chart: ReportPdfChart }) {
+  if (chart.bars.length === 0) return null;
+  const max = Math.max(1, ...chart.bars.map((b) => b.value));
+  return (
+    <View style={s.chartBox} wrap={false}>
+      <Text style={s.chartTitle}>{chart.title}</Text>
+      <View style={s.plot}>
+        {chart.bars.map((b, i) => (
+          <View key={i} style={s.barCol}>
+            {b.value > 0 && (
+              <Text style={s.barValue}>{b.text ?? String(b.value)}</Text>
+            )}
+            <View style={[s.bar, { height: (b.value / max) * 90 || 0 }]} />
+          </View>
+        ))}
+      </View>
+      <View style={s.axis}>
+        {chart.bars.map((b, i) => (
+          <Text key={i} style={s.axisLabel}>
+            {b.label}
+          </Text>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+/** The table: a black header row, then the rows (and a total row). */
+function Table({ table, empty }: { table: ReportPdfTable; empty: string }) {
+  if (table.rows.length === 0) return <Text style={s.empty}>{empty}</Text>;
+  return (
+    <View style={s.table}>
+      <View style={s.head} wrap={false}>
+        {cells(
+          table.columns.map((c) => c.label),
+          table.columns,
+        )}
+      </View>
+      {table.rows.map((row, i) => (
+        <View key={i} style={s.row} wrap={false}>
+          {cells(row, table.columns)}
+        </View>
+      ))}
+      {table.total && (
+        <View style={s.totalRow} wrap={false}>
+          {cells(table.total, table.columns)}
+        </View>
+      )}
+    </View>
+  );
+}
+
 /**
  * A report as PDF: black Laine band, name, definition, period and filters,
  * who made it and when, optional tiles and bar chart, then the table. The
@@ -179,8 +254,6 @@ export function ReportPdf({
   input: ReportPdfInput;
   logo: Buffer;
 }) {
-  const { table } = input;
-  const max = Math.max(1, ...(input.chart?.bars.map((b) => b.value) ?? [1]));
   return (
     <Document
       title={`${input.title} — Laine onboarding rights`}
@@ -235,50 +308,22 @@ export function ReportPdf({
           </View>
         )}
 
-        {input.chart && input.chart.bars.length > 0 && (
-          <View style={s.chartBox} wrap={false}>
-            <Text style={s.chartTitle}>{input.chart.title}</Text>
-            <View style={s.plot}>
-              {input.chart.bars.map((b, i) => (
-                <View key={i} style={s.barCol}>
-                  {b.value > 0 && <Text style={s.barValue}>{b.value}</Text>}
-                  <View
-                    style={[s.bar, { height: (b.value / max) * 90 || 0 }]}
-                  />
-                </View>
-              ))}
+        {input.sections ? (
+          input.sections.map((section, i) => (
+            <View key={i} style={s.section}>
+              <View wrap={false}>
+                <Text style={s.sectionTitle}>{section.title}</Text>
+                <Text style={s.sectionNote}>{section.note}</Text>
+              </View>
+              {section.chart && <Chart chart={section.chart} />}
+              <Table table={section.table} empty={section.empty} />
             </View>
-            <View style={s.axis}>
-              {input.chart.bars.map((b, i) => (
-                <Text key={i} style={s.axisLabel}>
-                  {b.label}
-                </Text>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {table.rows.length === 0 ? (
-          <Text style={s.empty}>{input.empty}</Text>
+          ))
         ) : (
-          <View style={s.table}>
-            <View style={s.head} wrap={false}>
-              {cells(
-                table.columns.map((c) => c.label),
-                table.columns,
-              )}
-            </View>
-            {table.rows.map((row, i) => (
-              <View key={i} style={s.row} wrap={false}>
-                {cells(row, table.columns)}
-              </View>
-            ))}
-            {table.total && (
-              <View style={s.totalRow} wrap={false}>
-                {cells(table.total, table.columns)}
-              </View>
-            )}
-          </View>
+          <>
+            {input.chart && <Chart chart={input.chart} />}
+            <Table table={input.table} empty={input.empty} />
+          </>
         )}
 
         <View style={s.footer} fixed>

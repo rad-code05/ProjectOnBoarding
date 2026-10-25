@@ -448,11 +448,19 @@ export function describeEvent(
     }
     case "report.exported": {
       const rows = num(d, "rows");
+      const f = d.filters;
+      const custom =
+        ev.entity_id === "custom" &&
+        f &&
+        typeof f === "object" &&
+        !Array.isArray(f)
+          ? str(f as Obj, "title")
+          : null;
       const name =
         REPORTS.find((r) => r.key === ev.entity_id)?.name ?? "a report";
       const format = (str(d, "format") ?? "csv").toUpperCase();
       return say(
-        `exported ${name === "a report" ? name : `the ${name}`} (${format}, ${rows} row${rows === 1 ? "" : "s"})`,
+        `exported ${custom ? `the custom report "${custom}"` : name === "a report" ? name : `the ${name}`} (${format}, ${rows} row${rows === 1 ? "" : "s"})`,
         "Reports",
       );
     }
