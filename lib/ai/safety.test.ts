@@ -59,6 +59,15 @@ describe("system instructions", () => {
     ).toContain("You only have report and help tools.");
   });
 
+  test("report readers are told about custom reports; the IT side alone is not", () => {
+    const line = /build a custom report with saveCustomReport/;
+    expect(systemInstructions({ ...base, roles: ["approver"] })).toMatch(line);
+    expect(systemInstructions({ ...base, roles: ["auditor"] })).toMatch(line);
+    expect(
+      systemInstructions({ ...base, roles: ["requester", "it_operator"] }),
+    ).not.toMatch(line);
+  });
+
   test("hold no secrets", () => {
     const text = systemInstructions({ ...base, roles: ["admin"] });
     expect(text).not.toMatch(/sk-ant|api[_ ]?key|password|secret/i);

@@ -113,6 +113,7 @@ describe("runChat (POST /api/chat)", () => {
       "getAppHelp",
       "runReport",
       "nationalityBreakdown",
+      "saveCustomReport",
       "rememberPreference",
       "rememberQuestion",
     ]);

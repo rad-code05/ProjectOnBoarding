@@ -6,9 +6,10 @@ import type { ServerSupabase } from "@/lib/supabase/server";
  * read = looks something up; propose = a suggestion the person accepts;
  * write = changes data (always needs a Confirm); memory = changes only the
  * asker's own assistant memory (`ai_memory`, own row — never business data),
- * so no Confirm.
+ * so no Confirm; own = saves only the asker's own custom report
+ * (`custom_reports`, own rows — never business data; audited), no Confirm.
  */
-export type ToolKind = "read" | "propose" | "write" | "memory";
+export type ToolKind = "read" | "propose" | "write" | "memory" | "own";
 
 /** Who is asking — every tool runs with this person's own session (RLS). */
 export type ToolContext = {

@@ -126,6 +126,16 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
       return field("report")
         ? `Ran the report ${field("report")}`
         : "Couldn't run the report";
+    case "saveCustomReport": {
+      if (!done) return "Building the custom report…";
+      if (!field("link")) return "Couldn't build the custom report";
+      const parts = Array.isArray((output as { parts?: unknown }).parts)
+        ? (output as { parts: unknown[] }).parts.length
+        : 0;
+      return field("changed") === "true"
+        ? "Changed the custom report"
+        : `Built a custom report · ${parts} part${parts === 1 ? "" : "s"}`;
+    }
     case "nationalityBreakdown":
       return done && field("people") !== null
         ? `Counted nationalities (${field("who")})`
@@ -206,6 +216,15 @@ export function stepDownloads(
 ): { label: string; href: string }[] {
   const link = stepLink(output);
   if (!link?.startsWith("/reports/")) return [];
+  // A custom report (F17a): its own export, also as Excel.
+  if (/^\/reports\/custom\/[0-9a-f-]{36}$/.test(link)) {
+    const href = `${link}/export`;
+    return [
+      { label: "CSV", href },
+      { label: "PDF", href: `${href}?format=pdf` },
+      { label: "Excel", href: `${href}?format=xlsx` },
+    ];
+  }
   const [path, query = ""] = link.split("?");
   const base = path.replace(/\/holders$/, "");
   if (!/^\/reports\/[a-z-]+$/.test(base)) return [];

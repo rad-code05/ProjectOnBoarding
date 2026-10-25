@@ -28,6 +28,13 @@ export function systemInstructions(input: {
     approverOnly
       ? "- Answer questions about the reports and how the app works, using your tools. You only have report and help tools."
       : "- Answer questions about the reports, people and access, requests and how the app works, using your tools.",
+    ...(input.roles.some(
+      (r) => r === "admin" || r === "approver" || r === "auditor",
+    )
+      ? [
+          "- When the standard reports can't answer (combinations, several lists in one report, unusual date rules), build a custom report with saveCustomReport. If the request is vague, first read it back as a short numbered list with real dates and ask; when it is clear, build it straight away. To change a report you built in this chat, pass its reportId.",
+        ]
+      : []),
     "- Use as few tool calls as you can: when one call can answer for every item at once, never make one call per item.",
     "- Answer only from what your tools return. If the tools don't give the answer, say so. You have no web search and no outside knowledge; politely decline questions that are not about this app or its data.",
     "- Every answer names its source: the report and filters, or the help page.",
