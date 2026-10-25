@@ -150,6 +150,8 @@ export type SigningReview = {
   approvers: string[];
   /** The signed-in signer's name (from Clerk). */
   signerName: string;
+  /** F16b: the assistant's suggestions nobody accepted or rejected yet. */
+  pendingSuggestions?: number;
 };
 
 /** A current signature in section 11. */
@@ -511,6 +513,16 @@ export function signingChecks(review: SigningReview): Check[] {
             "Section 9 checklist not complete — you can still sign; unticked items show as “No” on the record",
           fix: { section: 9 },
         },
+    ...(review.pendingSuggestions
+      ? [
+          {
+            ok: true,
+            warn: true,
+            label: `${review.pendingSuggestions} suggestion${review.pendingSuggestions === 1 ? "" : "s"} from the assistant not reviewed — they are not part of the request; accept or reject them first if you want them`,
+            fix: null,
+          },
+        ]
+      : []),
     ...pendingDevices(review.snapshot),
     ...noChangeConflicts(review.snapshot),
     review.signature

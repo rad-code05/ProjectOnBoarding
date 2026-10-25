@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { DraftFormValues, SaveDraftResult } from "@/lib/requests/draft";
-import { AUTOSAVE_DELAY_MS, useAutosave } from "./useAutosave";
+import { AUTOSAVE_DELAY_MS, mergeFresh, useAutosave } from "./useAutosave";
 
 const saveDraft = vi.fn<(input: unknown) => Promise<SaveDraftResult>>();
 vi.mock("@/app/(app)/requests/actions", () => ({
@@ -180,5 +180,62 @@ describe("the Save button (saveNow)", () => {
       reason: "invalid",
       fields: ["work_email"],
     });
+  });
+});
+
+describe("suggestions accepted outside the form (F16b)", () => {
+  test("mergeFresh: what was typed since the last save stays, the rest is the server's", () => {
+    const lastSaved = { ...values, job_title: "Analyst" };
+    const current = { ...lastSaved, first_name: "Meera" };
+    const fresh = { ...lastSaved, office: "1", country: "AE" };
+    expect(mergeFresh(current, lastSaved, fresh)).toEqual({
+      ...fresh,
+      first_name: "Meera",
+    });
+  });
+
+  test("adopt: the accepted value and its version — the next save uses that version", async () => {
+    saveDraft.mockResolvedValue(ok(3));
+    const { result } = setup();
+    await act(async () => {
+      await result.current.exclusive(async () =>
+        result.current.adopt(2, { manager_name: "Omar Haddad" }),
+      );
+    });
+    expect(result.current.values.manager_name).toBe("Omar Haddad");
+    await pause();
+    expect(saveDraft).not.toHaveBeenCalled(); // nothing new to save
+    act(() => result.current.setValue("job_title", "Engineer"));
+    await pause();
+    expect(saveDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        version: 2,
+        values: expect.objectContaining({
+          manager_name: "Omar Haddad",
+          job_title: "Engineer",
+        }),
+      }),
+    );
+  });
+
+  test("exclusive: an autosave waits until the accept is done", async () => {
+    saveDraft.mockResolvedValue(ok(3));
+    const { result } = setup();
+    let release = () => {};
+    let running: Promise<void> = Promise.resolve();
+    act(() => {
+      running = result.current.exclusive(
+        () => new Promise<void>((resolve) => (release = resolve)),
+      );
+      result.current.setValue("job_title", "Engineer");
+    });
+    await pause();
+    expect(saveDraft).not.toHaveBeenCalled();
+    await act(async () => {
+      release();
+      await running;
+    });
+    await pause();
+    expect(saveDraft).toHaveBeenCalledTimes(1);
   });
 });

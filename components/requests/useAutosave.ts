@@ -29,6 +29,26 @@ const same = (a: DraftFormValues, b: DraftFormValues) =>
   JSON.stringify(a) === JSON.stringify(b);
 
 /**
+ * Fresh values from the server (after a refresh) merged with the form: what
+ * the person changed since the last save stays theirs, everything else takes
+ * the server's value (e.g. the country an accepted office filled in).
+ */
+export function mergeFresh(
+  current: DraftFormValues,
+  lastSaved: DraftFormValues,
+  fresh: DraftFormValues,
+): DraftFormValues {
+  const out = { ...fresh };
+  for (const key of Object.keys(current) as (keyof DraftFormValues)[]) {
+    if (current[key] !== lastSaved[key])
+      Object.assign(out, { [key]: current[key] });
+  }
+  return out;
+}
+
+const pause = () => new Promise((resolve) => setTimeout(resolve, 100));
+
+/**
  * Keeps the form's values and saves them on its own: 1.5 s after the last
  * change, one save at a time (the next one waits and uses the new version),
  * never after a conflict. `saveNow` is the Save draft button.
@@ -61,6 +81,8 @@ export function useAutosave({
   // Read inside the async save; state would be stale there.
   const versionRef = useRef(version);
   const savedRef = useRef(initialValues);
+  const valuesRef = useRef(initialValues);
+  const propVersion = useRef(version);
   const busy = useRef(false);
   const waiting = useRef<DraftFormValues | null>(null);
   const stopped = useRef(false);
@@ -129,6 +151,23 @@ export function useAutosave({
   );
 
   useEffect(() => {
+    valuesRef.current = values;
+  }, [values]);
+
+  // A refresh brought newer server values (an accepted suggestion, a change
+  // the database made): take them, keeping what the person typed since.
+  useEffect(() => {
+    if (version === propVersion.current) return;
+    propVersion.current = version;
+    if (version < versionRef.current) return; // older than our own save
+    const lastSaved = savedRef.current;
+    versionRef.current = version;
+    savedRef.current = initialValues;
+    setSaved(initialValues);
+    setValues((current) => mergeFresh(current, lastSaved, initialValues));
+  }, [version, initialValues]);
+
+  useEffect(() => {
     if (!enabled) return;
     const timer = setTimeout(() => void run(values), AUTOSAVE_DELAY_MS);
     return () => clearTimeout(timer);
@@ -141,6 +180,39 @@ export function useAutosave({
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [values, saved, enabled]);
+
+  /**
+   * Runs `fn` while no autosave runs (an accepted suggestion saves the same
+   * row); a save that came up meanwhile runs right after, with the latest
+   * values.
+   */
+  const exclusive = useCallback(
+    async <T>(fn: () => Promise<T>): Promise<T> => {
+      while (busy.current) await pause();
+      busy.current = true;
+      try {
+        return await fn();
+      } finally {
+        busy.current = false;
+        const queued = waiting.current;
+        waiting.current = null;
+        if (queued) void run(valuesRef.current);
+      }
+    },
+    [run],
+  );
+
+  /** A value saved outside the form (an accepted suggestion) and its version. */
+  const adopt = useCallback(
+    (nextVersion: number | null, patch: Partial<DraftFormValues>) => {
+      if (nextVersion !== null) versionRef.current = nextVersion;
+      savedRef.current = { ...savedRef.current, ...patch };
+      valuesRef.current = { ...valuesRef.current, ...patch };
+      setSaved(savedRef.current);
+      setValues((current) => ({ ...current, ...patch }));
+    },
+    [],
+  );
 
   const setValue = useCallback(
     (key: string, value: string) =>
@@ -155,6 +227,8 @@ export function useAutosave({
     errors,
     status,
     setValue,
+    exclusive,
+    adopt,
     /**
      * The Save button: saves what's waiting, then always says so — even when
      * everything was already saved (it used to look as if nothing happened).

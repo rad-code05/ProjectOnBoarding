@@ -45,6 +45,12 @@ import type {
 import type { SignedSection } from "./signing";
 import type { HeldItem, HeldKind, PreviousDetails } from "./access-change";
 import { loadAccessChange } from "./access-change-load";
+import {
+  buildSuggestions,
+  NO_SUGGESTIONS,
+  type SuggestionRow,
+  type Suggestions,
+} from "./suggestions";
 
 /** Offices, states and cities the form chooses from (F27). */
 export type FormPlaces = {
@@ -104,6 +110,8 @@ export type RequestFormData = {
   timezone: string;
   /** F27: offices, states and cities for Office → State → City. */
   places: FormPlaces;
+  /** F16b: what the assistant suggests, waiting for Accept (open requests only). */
+  suggestions: Suggestions;
   /** Access change only (F10c): what they hold (+ this request's change), section 2 as it was. */
   accessChange: { held: HeldItem[]; previous: PreviousDetails | null } | null;
   /** Offboarding only (F09c-2): SLA in the company timezone, what to remove. */
@@ -167,6 +175,7 @@ export async function loadRequestForm(
     offices,
     regions,
     cities,
+    suggestionRows,
   ] = await Promise.all([
     supabase
       .from("form_fields")
@@ -267,6 +276,14 @@ export async function loadRequestForm(
       .from("office_cities")
       .select("id, office_id, region_id, name, active")
       .order("name"),
+    EDITABLE_STATES.includes(request.state)
+      ? supabase
+          .from("request_suggestions")
+          .select("id, kind, target, value, reason")
+          .eq("request_id", request.id)
+          .eq("status", "pending")
+          .order("created_at")
+      : Promise.resolve({ data: [] as SuggestionRow[], error: null }),
   ]);
   const tz = await tzPromise;
   const slaRow =
@@ -300,6 +317,7 @@ export async function loadRequestForm(
     offices,
     regions,
     cities,
+    suggestionRows,
   ]) {
     if (result.error) {
       throw new Error(`Could not load the form: ${result.error.message}`);
@@ -564,6 +582,30 @@ export async function loadRequestForm(
           active: c.active,
         })),
     },
+    suggestions: suggestionRows.data?.length
+      ? buildSuggestions(suggestionRows.data, {
+          choice: (key, value) =>
+            key === "office"
+              ? offices.data?.find((o) => String(o.id) === value)?.name
+              : key === "region"
+                ? regions.data?.find((r) => String(r.id) === value)?.name
+                : key === "office_city"
+                  ? cities.data?.find((c) => String(c.id) === value)?.name
+                  : choices[key]?.find((c) => c.value === value)?.label,
+          apps: new Map(
+            (catalog.data ?? []).flatMap((c) =>
+              c.catalog_apps.map((a) => [a.id, a.name] as const),
+            ),
+          ),
+          equipment: new Map(
+            (equipmentTypes.data ?? []).map((t) => [t.id, t.name] as const),
+          ),
+          physical: new Map(
+            (physicalTypes.data ?? []).map((t) => [t.id, t.name] as const),
+          ),
+          companyTimeZone: companyTz,
+        })
+      : NO_SUGGESTIONS,
     accessChange,
     offboarding:
       request.type === "offboarding"
