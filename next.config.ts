@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
     "/approvals/*": ["./lib/records/fonts/*.ttf", "./public/brand/*.png"],
     // Report PDFs (F12d) use the same fonts and logo.
     "/reports/*": ["./lib/records/fonts/*.ttf", "./public/brand/*.png"],
+    // Custom report PDFs (F17a) sit deeper: /reports/custom/[id]/export.
+    "/reports/**": ["./lib/records/fonts/*.ttf", "./public/brand/*.png"],
     // The assistant reads its help library from disk (F15b/c).
     "/api/chat": ["./lib/ai/knowledge/*.md"],
   },

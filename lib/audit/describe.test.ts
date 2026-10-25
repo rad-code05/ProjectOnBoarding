@@ -446,6 +446,20 @@ describe("eventChanges / eventFacts — the details sheet", () => {
     expect(custom("report.custom_deleted").what).toBe(
       'deleted the custom report "Dubai joiners" (2 parts)',
     );
+    expect(
+      describeEvent(
+        ev({
+          ...raju,
+          action: "report.exported",
+          entity_id: "custom",
+          diff: {
+            format: "pdf",
+            rows: 5,
+            filters: { id: "c002", title: "Dubai joiners", parts: 2 },
+          },
+        }),
+      ).what,
+    ).toBe('exported the custom report "Dubai joiners" (PDF, 5 rows)');
   });
 });
 
