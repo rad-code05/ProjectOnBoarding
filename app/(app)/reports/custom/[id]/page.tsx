@@ -62,7 +62,8 @@ export default async function CustomReportPage({
           <CustomReportParts outcomes={outcomes} timeZone={timeZone} />
           <ExportBox
             href={`/reports/custom/${report.id}/export`}
-            note="Exports every part as it is now. CSV: one file with a Part column; PDF: a section per part. Each export is recorded in the audit log."
+            excel
+            note="Exports every part as it is now. CSV: one file with a Part column; PDF: a section per part; Excel: a sheet per part. Each export is recorded in the audit log."
           />
         </>
       ) : (
