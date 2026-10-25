@@ -51,6 +51,7 @@ All planned screens now have a first design. Nothing is built yet.
 | Phone (D22): in execution / section 9, Start execution, Cancel request | Approved (2026-10-08) |
 | Phone (D22): My profile, Replace signature, Password & MFA, Draw signature, Review & sign, Approvals, Confirm & sign, Return to Raju, Returned request | Approved (2026-10-09) |
 | Phone: Laine assistant — robot closed, chat (Raju / approver), help & limits, My profile memory, Admin · AI settings + model sheet, **Previous chats** | Approved (2026-10-23); **all built** (F15c–F15e, 2026-10-24) |
+| Phone: **Filling requests by chat** — follow-up questions, Confirm creates the draft, draft with suggestions, suggested access, offboarding by chat (`request-by-chat.md`) | Approved (2026-10-25); building (F16) |
 | Phone: **Custom reports** — the robot checks how it read the request, ready in the chat, custom report page, Your custom reports, grouped with a chart (`custom-reports.md`) | Approved (2026-10-25); **all built** (F17a, 2026-10-25) |
 
 ## Canvas sources

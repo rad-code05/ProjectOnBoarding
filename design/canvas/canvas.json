@@ -722,6 +722,41 @@
       "w": 390,
       "h": 1780,
       "title": "Phone · Custom report grouped, with a chart (time to approve per approver and month) — F17a proposal"
+    },
+    "F16AskMobile.dc.html": {
+      "x": 32880,
+      "y": 13560,
+      "w": 390,
+      "h": 1180,
+      "title": "Phone · Filling by chat: follow-up questions — F16 proposal"
+    },
+    "F16ConfirmMobile.dc.html": {
+      "x": 33350,
+      "y": 13560,
+      "w": 390,
+      "h": 1240,
+      "title": "Phone · Filling by chat: Confirm creates the draft — F16 proposal"
+    },
+    "F16FormMobile.dc.html": {
+      "x": 33820,
+      "y": 13560,
+      "w": 390,
+      "h": 1440,
+      "title": "Phone · Draft with the assistant's suggestions (sections 1–2) — F16 proposal"
+    },
+    "F16AccessMobile.dc.html": {
+      "x": 34290,
+      "y": 13560,
+      "w": 390,
+      "h": 1480,
+      "title": "Phone · Suggested applications, equipment and access (sections 5–7) — F16 proposal"
+    },
+    "F16OffboardingMobile.dc.html": {
+      "x": 34760,
+      "y": 13560,
+      "w": 390,
+      "h": 1320,
+      "title": "Phone · Offboarding by chat (removals from what they hold) — F16 proposal"
     }
   },
   "createdOnFiles": {
@@ -743,7 +778,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 32800,
+      "maxW": 35230,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -883,7 +918,12 @@
     "CustomReportReadyMobile.dc.html",
     "CustomReportMobile.dc.html",
     "CustomReportListMobile.dc.html",
-    "CustomReportGroupedMobile.dc.html"
+    "CustomReportGroupedMobile.dc.html",
+    "F16AskMobile.dc.html",
+    "F16ConfirmMobile.dc.html",
+    "F16FormMobile.dc.html",
+    "F16AccessMobile.dc.html",
+    "F16OffboardingMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
