@@ -1,7 +1,8 @@
 import { formatDuration } from "@/lib/reports/signatures";
 import { formatDate, formatDayTime } from "@/lib/requests/format";
+import { countryName } from "@/lib/requests/labels";
 import { DATASETS, fieldOf, type Field, type Row } from "./datasets";
-import type { Column } from "./engine";
+import { countryText, type Column } from "./engine";
 import type { Condition, Part, Where } from "./definition";
 
 /**
@@ -50,6 +51,8 @@ export function formatCell(
   timeZone: string,
 ): string {
   if (value === null || value === undefined || value === "") return "—";
+  if (column.country && (Array.isArray(value) || typeof value === "string"))
+    return countryText(value) ?? "—";
   if (Array.isArray(value)) return value.length ? value.join(", ") : "—";
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (column.type === "duration" && typeof value === "number")
@@ -84,15 +87,18 @@ function conditionWords(c: Condition, field: Field | undefined): string {
       : `doesn't hold ${items[0]}`;
   }
   const name = (field?.label ?? c.field).toLowerCase();
+  // Country codes read as names: "work country is "United Arab Emirates"".
+  const shown = (v: unknown) =>
+    field?.country && typeof v === "string" ? countryName(v.toUpperCase()) : v;
   switch (c.op) {
     case "eq":
-      return `${name} is ${quote(c.value)}`;
+      return `${name} is ${quote(shown(c.value))}`;
     case "ne":
-      return `${name} is not ${quote(c.value)}`;
+      return `${name} is not ${quote(shown(c.value))}`;
     case "in":
-      return `${name} is ${orList(c.values)}`;
+      return `${name} is ${orList(c.values.map(shown))}`;
     case "not_in":
-      return `${name} is not ${orList(c.values)}`;
+      return `${name} is not ${orList(c.values.map(shown))}`;
     case "contains":
       return `${name} contains ${quote(c.value)}`;
     case "not_contains":

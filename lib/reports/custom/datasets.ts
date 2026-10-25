@@ -23,6 +23,8 @@ export type Field = {
   type: FieldType;
   /** One line for the robot (what the value means). */
   about?: string;
+  /** ISO country codes, shown to people as full country names. */
+  country?: boolean;
 };
 
 export type DatasetKey =
@@ -61,13 +63,16 @@ const PERSON: Field[] = [
     key: "country",
     label: "Work country",
     type: "text",
-    about: "ISO code, e.g. AE, CH",
+    about: "ISO code, e.g. AE, CH (people see the full name)",
+    country: true,
   },
   {
     key: "nationalities",
     label: "Nationality",
     type: "list",
-    about: "ISO codes, up to two per person (e.g. BD = Bangladeshi)",
+    about:
+      "ISO codes, up to two per person (e.g. BD = Bangladeshi; people see the full name)",
+    country: true,
   },
 ];
 

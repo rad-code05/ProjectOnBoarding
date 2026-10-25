@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { definitionSchema } from "./definition";
-import { formatCell, partWords } from "./words";
+import { formatCell, partWords, whereWords } from "./words";
 
 const TZ = "Asia/Dubai";
 const col = (type: Parameters<typeof formatCell>[1]["type"]) => ({
@@ -23,6 +23,35 @@ describe("formatCell", () => {
     expect(formatCell("2026-10-11T21:00:00Z", col("datetime"), TZ)).toBe(
       "12 Oct 2026, 01:00",
     );
+  });
+});
+
+describe("countries: codes in the data, full names for people", () => {
+  const country = { ...col("text"), country: true };
+  const nationality = { ...col("list"), country: true };
+  test("cells", () => {
+    expect(formatCell("AE", country, TZ)).toBe("United Arab Emirates");
+    expect(formatCell("ch", country, TZ)).toBe("Switzerland");
+    expect(formatCell(["BD", "GB"], nationality, TZ)).toBe(
+      "Bangladesh, United Kingdom",
+    );
+    // A group of "either nationality" rows keeps both names.
+    expect(formatCell("BD, GB", nationality, TZ)).toBe(
+      "Bangladesh, United Kingdom",
+    );
+    expect(formatCell([], nationality, TZ)).toBe("—");
+  });
+  test("conditions in How this report is built", () => {
+    const [part] = definitionSchema.parse({
+      title: "t",
+      parts: [{ title: "p", dataset: "people", columns: ["name"] }],
+    }).parts;
+    expect(
+      whereWords({ op: "in", field: "country", values: ["AE", "CH"] }, part),
+    ).toBe('work country is "United Arab Emirates" or "Switzerland"');
+    expect(
+      whereWords({ op: "eq", field: "nationalities", value: "bd" }, part),
+    ).toBe('nationality is "Bangladesh"');
   });
 });
 
