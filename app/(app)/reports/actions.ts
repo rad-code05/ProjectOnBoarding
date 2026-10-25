@@ -186,3 +186,19 @@ export async function countEmployees(search: string): Promise<number | null> {
   if (error) return null;
   return Number(data?.[0]?.total_count ?? 0);
 }
+
+/**
+ * Deletes one of your custom reports (F17a). RLS only lets you delete your
+ * own; the database records it (report.custom_deleted).
+ */
+export async function deleteCustomReport(id: string): Promise<boolean> {
+  await requireRole(...PAGES.reports.roles);
+  if (!z.uuid().safeParse(id).success) return false;
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("custom_reports")
+    .delete()
+    .eq("id", id)
+    .select("id");
+  return !error && (data?.length ?? 0) === 1;
+}

@@ -432,6 +432,20 @@ export function describeEvent(
       const rows = num(d, "rows");
       return say(`exported ${rows} audit event${rows === 1 ? "" : "s"} (CSV)`);
     }
+    case "report.custom_saved":
+    case "report.custom_changed":
+    case "report.custom_deleted": {
+      const verb = {
+        "report.custom_saved": "made",
+        "report.custom_changed": "changed",
+        "report.custom_deleted": "deleted",
+      }[ev.action];
+      const parts = num(d, "parts");
+      return say(
+        `${verb} the custom report "${str(d, "title") ?? "untitled"}" (${parts} part${parts === 1 ? "" : "s"})`,
+        "Reports",
+      );
+    }
     case "report.exported": {
       const rows = num(d, "rows");
       const name =
