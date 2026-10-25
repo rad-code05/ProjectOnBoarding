@@ -1327,6 +1327,71 @@ export type Database = {
           },
         ];
       };
+      request_suggestions: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          id: string;
+          kind: string;
+          reason: string | null;
+          request_id: string;
+          status: string;
+          target: string;
+          value: NonNullable<Json>;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          id?: string;
+          kind: string;
+          reason?: string | null;
+          request_id: string;
+          status?: string;
+          target: string;
+          value: NonNullable<Json>;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          id?: string;
+          kind?: string;
+          reason?: string | null;
+          request_id?: string;
+          status?: string;
+          target?: string;
+          value?: NonNullable<Json>;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "request_suggestions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "request_suggestions_decided_by_fkey";
+            columns: ["decided_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "request_suggestions_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       requests: {
         Row: {
           access_cutoff_at: string | null;
@@ -1721,6 +1786,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      accept_request_suggestion: { Args: { p_id: string }; Returns: Json };
       admin_save_access_type: {
         Args: {
           p_actions: string[];
@@ -1820,6 +1886,13 @@ export type Database = {
       admin_set_office_city_active: {
         Args: { p_active: boolean; p_id: number };
         Returns: undefined;
+      };
+      ai_start_request: {
+        Args: {
+          p_employee_id?: string;
+          p_type: Database["public"]["Enums"]["request_type"];
+        };
+        Returns: string;
       };
       ai_status: {
         Args: Record<PropertyKey, never>;
@@ -1954,6 +2027,7 @@ export type Database = {
         };
         Returns: string;
       };
+      reject_request_suggestion: { Args: { p_id: string }; Returns: undefined };
       report_access_by_item: {
         Args: {
           p_city?: number;
@@ -2331,6 +2405,10 @@ export type Database = {
         Returns: string;
       };
       signing_checks: { Args: { p_request_id: string }; Returns: Json };
+      suggest_request_values: {
+        Args: { p_request_id: string; p_suggestions: Json };
+        Returns: number;
+      };
       transition_request: {
         Args: {
           p_reason?: string;
