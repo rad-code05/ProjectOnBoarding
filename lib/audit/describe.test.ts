@@ -219,6 +219,21 @@ describe("describeEvent — the board's examples", () => {
       describeEvent(
         ev({
           ...raju,
+          action: "request.suggested",
+          source: "ai",
+          diff: { count: 4, targets: ["manager_name"] },
+        }),
+        opts,
+      ),
+    ).toMatchObject({
+      what: "suggested 4 values",
+      context: "with the assistant · waiting for Accept",
+      chip: "AI",
+    });
+    expect(
+      describeEvent(
+        ev({
+          ...raju,
           action: "request.state_changed",
           diff: { from: "draft", to: "in_execution" },
         }),

@@ -287,6 +287,13 @@ export function describeEvent(
         `${n} item${n === 1 ? "" : "s"} on record`,
       );
     }
+    case "request.suggested": {
+      const n = num(d, "count");
+      return say(
+        `suggested ${n} value${n === 1 ? "" : "s"}${on}`,
+        "with the assistant · waiting for Accept",
+      );
+    }
     case "request.updated": {
       const keys = Object.keys(obj(d, "changes"));
       const what =
