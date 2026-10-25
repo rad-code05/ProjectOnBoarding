@@ -78,7 +78,7 @@ describe("partWords: How this report is built", () => {
 
   test("conditions, columns and order in one line", () => {
     expect(partWords(parts[0])).toBe(
-      'From People today · onboarded 5 Oct 2026 – 11 Oct 2026 · office is "Dubai" · holds Slack and Monday.com · (onboarded on an even day of the month or not (holds GitHub)) · columns name and work email · sorted by name (A → Z / lowest first)',
+      'From People today · onboarded 5 Oct 2026 – 11 Oct 2026 · office is "Dubai" · holds Slack and Monday.com · (onboarded on an even day of the month or not (holds GitHub)) · columns name and work email · sorted by name (A to Z / lowest first)',
     );
   });
 

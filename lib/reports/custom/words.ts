@@ -177,7 +177,7 @@ export function partWords(part: Part): string {
   }
   if (part.sort.length)
     bits.push(
-      `sorted by ${andList(part.sort.map((s) => `${label(s.by).replace(/_/g, " ")} (${s.dir === "asc" ? "A → Z / lowest first" : "Z → A / highest first"})`))}`,
+      `sorted by ${andList(part.sort.map((s) => `${label(s.by).replace(/_/g, " ")} (${s.dir === "asc" ? "A to Z / lowest first" : "Z to A / highest first"})`))}`,
     );
   return bits.join(" · ");
 }
