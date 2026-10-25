@@ -14,6 +14,29 @@ export function fakeModelEnabled(): boolean {
 export const FAKE_ANSWER =
   "This is the test assistant. **Returned** means the approver sent the request back to IT.";
 
+/** What the fake robot builds when asked for a "custom report" (F17a). */
+export const FAKE_REPORT = {
+  title: "E2E custom report",
+  parts: [
+    {
+      title: "People today",
+      dataset: "people",
+      columns: ["name", "email", "office"],
+      sort: [{ by: "name", dir: "asc" }],
+    },
+    {
+      title: "Requests by type",
+      dataset: "requests",
+      groupBy: [{ field: "type" }],
+      measures: [{ fn: "count" }],
+      chart: true,
+    },
+  ],
+};
+
+export const FAKE_REPORT_ANSWER =
+  "This is the test assistant. Your custom report is ready: open it from the step line above.";
+
 export function fakeModel(): LanguageModel {
   return new MockLanguageModelV4({
     // Admin → AI settings → Test the model (one answer, not streamed).
@@ -31,32 +54,57 @@ export function fakeModel(): LanguageModel {
       },
       warnings: [],
     }),
-    doStream: async () => ({
-      stream: simulateReadableStream({
-        chunkDelayInMs: 20,
-        chunks: [
-          { type: "text-start", id: "t1" },
-          ...FAKE_ANSWER.split(/(?<= )/).map((delta) => ({
-            type: "text-delta" as const,
-            id: "t1",
-            delta,
-          })),
-          { type: "text-end", id: "t1" },
-          {
-            type: "finish",
-            finishReason: { unified: "stop", raw: undefined },
-            usage: {
-              inputTokens: {
-                total: 100,
-                noCache: 100,
-                cacheRead: undefined,
-                cacheWrite: undefined,
+    doStream: async ({ prompt }) => {
+      // A tool result came back: answer in words. Asked for a "custom
+      // report" (browser test, F17a): build one first.
+      const last = prompt.at(-1);
+      const asked =
+        last?.role === "user"
+          ? last.content.map((p) => (p.type === "text" ? p.text : "")).join("")
+          : "";
+      const toolCall = /custom report/i.test(asked);
+      const text = last?.role === "tool" ? FAKE_REPORT_ANSWER : FAKE_ANSWER;
+      return {
+        stream: simulateReadableStream({
+          chunkDelayInMs: 20,
+          chunks: [
+            ...(toolCall
+              ? [
+                  {
+                    type: "tool-call" as const,
+                    toolCallId: `fake-${Date.now()}`,
+                    toolName: "saveCustomReport",
+                    input: JSON.stringify({ definition: FAKE_REPORT }),
+                  },
+                ]
+              : [
+                  { type: "text-start" as const, id: "t1" },
+                  ...text.split(/(?<= )/).map((delta) => ({
+                    type: "text-delta" as const,
+                    id: "t1",
+                    delta,
+                  })),
+                  { type: "text-end" as const, id: "t1" },
+                ]),
+            {
+              type: "finish",
+              finishReason: {
+                unified: toolCall ? "tool-calls" : "stop",
+                raw: undefined,
               },
-              outputTokens: { total: 20, text: 20, reasoning: undefined },
+              usage: {
+                inputTokens: {
+                  total: 100,
+                  noCache: 100,
+                  cacheRead: undefined,
+                  cacheWrite: undefined,
+                },
+                outputTokens: { total: 20, text: 20, reasoning: undefined },
+              },
             },
-          },
-        ],
-      }),
-    }),
+          ],
+        }),
+      };
+    },
   });
 }

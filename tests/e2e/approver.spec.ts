@@ -106,6 +106,77 @@ test("Assistant (F15c): the robot opens the chat, answers, remembers it is open;
   ).toHaveCount(0);
 });
 
+test("Custom report (F17a): the robot builds one, it opens, exports CSV / PDF / Excel and can be deleted", async ({
+  page,
+}) => {
+  test.slow();
+  await openApp(page, "/reports");
+  await page.getByRole("button", { name: "Open the Laine assistant" }).click();
+  const panel = page.getByRole("dialog", { name: "Laine assistant" });
+  await panel.getByRole("button", { name: "New chat" }).click();
+  const box = panel.getByRole("textbox", { name: "Message the assistant" });
+  // The fake test model (AI_FAKE_MODEL=1) builds a fixed two-part report.
+  await box.fill("Build me a custom report of people and requests");
+  await box.press("Enter");
+  const log = panel.getByRole("log");
+  await expect(log.getByText("Built a custom report · 2 parts")).toBeVisible();
+  await expect(log.getByRole("link", { name: "Excel" })).toHaveAttribute(
+    "href",
+    /^\/reports\/custom\/[0-9a-f-]{36}\/export\?format=xlsx$/,
+  );
+  await expect(log).toContainText("Your custom report is ready");
+  await log.getByRole("link", { name: "Open the report" }).click();
+
+  await expect(page).toHaveURL(/\/reports\/custom\/[0-9a-f-]{36}$/);
+  const id = page.url().split("/").at(-1)!;
+  await box.press("Escape");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "E2E custom report" }),
+  ).toBeVisible();
+  await expect(page.getByText("How this report is built")).toBeVisible();
+  await expect(
+    page.getByText(/From People today · everyone in it · columns name/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "1 · People today" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "2 · Requests by type" }),
+  ).toBeVisible();
+
+  // Exports: audited, then the file.
+  for (const [format, type] of [
+    ["", "text/csv"],
+    ["?format=pdf", "application/pdf"],
+    ["?format=xlsx", "spreadsheetml"],
+  ]) {
+    const res = await page.request.get(`/reports/custom/${id}/export${format}`);
+    expect(res.status()).toBe(200);
+    expect(res.headers()["content-type"]).toContain(type);
+    expect(res.headers()["content-disposition"]).toContain(
+      "custom-report_e2e-custom-report.",
+    );
+  }
+
+  // Listed under Your custom reports (only mine), then deleted.
+  await openApp(page, "/reports");
+  await expect(
+    page
+      .getByRole("region", { name: "Your custom reports" })
+      .first()
+      .getByRole("link", { name: /E2E custom report/ })
+      .first(),
+  ).toBeVisible();
+  await openApp(page, `/reports/custom/${id}`);
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  await page.getByRole("button", { name: "Yes, delete" }).click();
+  await expect(page).toHaveURL(/\/reports$/);
+  await openApp(page, `/reports/custom/${id}`);
+  await expect(
+    page.getByRole("heading", { name: "Page not found" }),
+  ).toBeVisible();
+});
+
 test("Approvals shows the tiles, what waits and what closed", async ({
   page,
 }) => {

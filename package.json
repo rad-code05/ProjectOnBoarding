@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:ai-attacks": "vitest run --config vitest.attacks.config.mts",
+    "test:ai-reports": "vitest run --config vitest.evals.config.mts",
     "test:watch": "vitest",
     "db:start": "supabase db start",
     "db:stop": "supabase stop",
