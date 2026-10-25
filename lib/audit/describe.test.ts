@@ -424,6 +424,29 @@ describe("eventChanges / eventFacts — the details sheet", () => {
       context: "Reports",
     });
   });
+
+  test("a custom report made, changed, deleted: title and parts, never rows", () => {
+    const custom = (action: string) =>
+      describeEvent(
+        ev({
+          ...raju,
+          action,
+          entity: "custom_report",
+          entity_id: "00000000-0000-0000-0000-00000000c002",
+          diff: { title: "Dubai joiners", parts: 2 },
+        }),
+      );
+    expect(custom("report.custom_saved")).toMatchObject({
+      what: 'made the custom report "Dubai joiners" (2 parts)',
+      context: "Reports",
+    });
+    expect(custom("report.custom_changed").what).toBe(
+      'changed the custom report "Dubai joiners" (2 parts)',
+    );
+    expect(custom("report.custom_deleted").what).toBe(
+      'deleted the custom report "Dubai joiners" (2 parts)',
+    );
+  });
 });
 
 describe("assistant data the person deleted (no content)", () => {

@@ -1348,6 +1348,21 @@ test("Reports · Open requests by status: a new draft waits under Draft, with CS
   ).toBeVisible();
 });
 
+test("Reports · custom reports (F17a): an unknown or someone else's report is not found", async ({
+  page,
+}) => {
+  // Custom reports are made by the assistant (F17a-6); until one exists the
+  // Reports page shows only the standard reports.
+  await openApp(page, "/reports/custom/00000000-0000-0000-0000-000000000000");
+  await expect(
+    page.getByRole("heading", { name: "Page not found" }),
+  ).toBeVisible();
+  await openApp(page, "/reports/custom/not-a-uuid");
+  await expect(
+    page.getByRole("heading", { name: "Page not found" }),
+  ).toBeVisible();
+});
+
 test("Admin · Offices: add an office and a US city, then retire both", async ({
   page,
 }) => {
