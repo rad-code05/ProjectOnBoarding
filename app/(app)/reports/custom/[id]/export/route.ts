@@ -8,13 +8,15 @@ import {
   customPdfSections,
 } from "@/lib/reports/custom/export";
 import { loadCustomReport, runCustomReport } from "@/lib/reports/custom/store";
+import { customXlsx } from "@/lib/reports/custom/xlsx";
 import { fileHeaders, madeBy, renderReportPdf } from "@/lib/reports/pdf";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
 
 /**
- * GET /reports/custom/<id>/export[?format=pdf] — one of your custom reports
- * as CSV (one file, a Part column) or PDF (a section per part), read again
+ * GET /reports/custom/<id>/export[?format=pdf|xlsx] — one of your custom
+ * reports as CSV (one file, a Part column), PDF (a section per part) or Excel
+ * (a sheet per part), read again
  * now with your own access. Recorded in the audit log first; no audit
  * entry, no file.
  */
@@ -24,8 +26,8 @@ export async function GET(
 ) {
   const { userId } = await requireRole(...PAGES.reports.roles);
   const { id } = await ctx.params;
-  const format =
-    request.nextUrl.searchParams.get("format") === "pdf" ? "pdf" : "csv";
+  const asked = request.nextUrl.searchParams.get("format");
+  const format = asked === "pdf" || asked === "xlsx" ? asked : "csv";
   const report = await loadCustomReport(id);
   if (!report) return new Response("Not found.", { status: 404 });
   if (!report.definition)
@@ -49,6 +51,15 @@ export async function GET(
   }
 
   const fileName = customFileName(report.title, format);
+  if (format === "xlsx") {
+    const file = await customXlsx(outcomes, timeZone);
+    return new Response(new Uint8Array(file), {
+      headers: fileHeaders(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        fileName,
+      ),
+    });
+  }
   if (format === "pdf") {
     const made = await madeBy(userId, timeZone);
     const city = (timeZone.split("/").at(-1) ?? timeZone).replaceAll("_", " ");

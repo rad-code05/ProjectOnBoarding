@@ -16,6 +16,7 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | File storage | Supabase Storage, private buckets `signatures` (F05) and `records` (PDFs, F08a) | (same) | — | F05 ✅ · F08a ✅ |
 | Validation | Zod (forms, Server Actions, AI tool inputs) | `zod` | 4.6.5 | S1 |
 | PDF | React-PDF, server-side `renderToBuffer`; fonts embedded from TTF files in `lib/records/fonts/` (Raleway 400/600/700, Newsreader 400, Instrument Serif italic — SIL OFL, licences next to them) | `@react-pdf/renderer` **4.9.0** (pinned) | 4.9.0 | F08b ✅ |
+| Excel export | `.xlsx` files written on the server — one sheet per part of a custom report, bold sticky header, text values (never formulas). Write-only; one dependency (`fflate`). Chosen over `xlsx` (npm copy outdated, advisories) and `exceljs` (no release since 2023, 9 deps) | `write-excel-file` **4.1.1** (pinned) | 4.1.1 | F17a-5 ✅ |
 | Image processing | Re-encode uploaded PNGs, strip metadata | `sharp` | 0.35.5 | F05 |
 | AI chat | Vercel AI SDK 7 (`streamText` + `toolApproval`, `tool`, `isStepCount`, `useChat`) | `ai`, `@ai-sdk/react` | **7.0.142** (installed F15b, 2026-10-23) · 4.0.146 (F15c) | F15 |
 | AI model | **Anthropic (D7, 2026-10-09).** Chosen in Admin → AI settings from a list kept as data (seeded in `ai_models`, F15a: `claude-sonnet-5-5` default, `claude-opus-5-5`, `claude-haiku-4-5`; the admin adds more in Admin → AI settings) | `@ai-sdk/anthropic` | 4.0.81 (F15c) | F15 |
