@@ -12,8 +12,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
  */
 
 export type SuggestionResult =
-  | { ok: true; version: number | null }
-  | { ok: false; message: string };
+  { ok: true; version: number | null } | { ok: false; message: string };
 
 const idSchema = z.uuid();
 
