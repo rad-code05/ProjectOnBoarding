@@ -74,11 +74,11 @@ describe("custom report as Excel", () => {
     ]);
     // Text that looks like a formula stays text.
     expect(people.data.slice(1)).toEqual([
-      ["=1+1", "6 Oct 2026, 12:00", "BD, GB"],
+      ["=1+1", "6 Oct 2026, 12:00", "Bangladesh, United Kingdom"],
       ["No date", null, null],
     ]);
     expect(approvers.data.slice(1)).toEqual([["Moises Larez", 2, "15h"]]);
-    expect(people.columns?.map((c) => c.width)).toEqual([9, 19, 13]);
+    expect(people.columns?.map((c) => c.width)).toEqual([9, 19, 28]);
   });
 
   test("the file is a real .xlsx (a zip)", async () => {

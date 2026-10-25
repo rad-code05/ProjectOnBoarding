@@ -1,3 +1,4 @@
+import { countryName } from "@/lib/requests/labels";
 import { zonedParts } from "@/lib/time/zoned";
 import { fieldOf, type DatasetKey, type FieldType, type Row } from "./datasets";
 import {
@@ -14,7 +15,13 @@ import {
  * own times, shown and compared as company-time days.
  */
 
-export type Column = { key: string; label: string; type: FieldType };
+export type Column = {
+  key: string;
+  label: string;
+  type: FieldType;
+  /** ISO country codes: shown (and sorted) as full country names. */
+  country?: boolean;
+};
 export type PartResult = {
   columns: Column[];
   rows: Row[];
@@ -153,6 +160,14 @@ function bucket(
   return WEEKDAYS[(new Date(Date.UTC(y, m - 1, dd)).getUTCDay() + 6) % 7];
 }
 
+/** "AE" → "United Arab Emirates"; a list or a grouped "BD, GB" → each name. */
+export function countryText(v: Value): string | null {
+  if (v === null || v === undefined) return null;
+  const codes = Array.isArray(v) ? v : String(v).split(", ");
+  const names = codes.filter(Boolean).map((c) => countryName(c.toUpperCase()));
+  return names.length ? names.join(", ") : null;
+}
+
 function compare(a: Value, b: Value): number {
   if (a === b) return 0;
   if (a === null || a === undefined) return 1; // empty last
@@ -173,6 +188,7 @@ export function runPart(part: Part, rows: Row[], timeZone: string): PartResult {
   const ds = part.dataset;
   const label = (key: string) => fieldOf(ds, key)?.label ?? key;
   const typeOf = (key: string) => fieldOf(ds, key)?.type ?? "text";
+  const isCountry = (key: string) => fieldOf(ds, key)?.country === true;
   const kept = part.where
     ? rows.filter((r) => matches(part.where as Where, r, ds, timeZone))
     : rows;
@@ -184,6 +200,7 @@ export function runPart(part: Part, rows: Row[], timeZone: string): PartResult {
       key: k,
       label: label(k),
       type: typeOf(k),
+      ...(isCountry(k) && { country: true }),
     }));
     out = kept.map((r) =>
       Object.fromEntries(part.columns.map((k) => [k, r[k] ?? null])),
@@ -212,6 +229,7 @@ export function runPart(part: Part, rows: Row[], timeZone: string): PartResult {
         key: g.field,
         label: g.by ? `${label(g.field)} (${g.by})` : label(g.field),
         type: (g.by ? "text" : typeOf(g.field)) as FieldType,
+        ...(!g.by && isCountry(g.field) && { country: true }),
       })),
       ...measures.map((m) =>
         m.fn === "count"
@@ -270,7 +288,9 @@ export function runPart(part: Part, rows: Row[], timeZone: string): PartResult {
         const bv = b[s.by] ?? null;
         // Empty values last, whichever the direction.
         if ((av === null) !== (bv === null)) return av === null ? 1 : -1;
-        const d = compare(av, bv);
+        const d = isCountry(s.by)
+          ? compare(countryText(av), countryText(bv))
+          : compare(av, bv);
         if (d !== 0) return s.dir === "asc" ? d : -d;
       }
       return 0;

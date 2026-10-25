@@ -292,6 +292,46 @@ describe("grouping (board: time to approve per approver and month)", () => {
   });
 });
 
+describe("countries", () => {
+  test("a country column is marked and sorted by the full name", () => {
+    const rows = [
+      person({ name: "A", country: "AE" }),
+      person({ name: "B", country: "CH" }),
+      person({ name: "C", country: "BD" }),
+    ];
+    const [part] = definitionSchema.parse({
+      title: "t",
+      parts: [
+        {
+          title: "p",
+          dataset: "people",
+          columns: ["name", "country"],
+          sort: [{ by: "country", dir: "asc" }],
+        },
+      ],
+    }).parts;
+    const out = runPart(part, rows, TZ);
+    expect(out.columns[1]).toMatchObject({ key: "country", country: true });
+    // Bangladesh, Switzerland, United Arab Emirates — not AE, BD, CH.
+    expect(out.rows.map((r) => r.name)).toEqual(["C", "B", "A"]);
+  });
+  test("a group by nationality keeps the country mark", () => {
+    const [part] = definitionSchema.parse({
+      title: "t",
+      parts: [
+        {
+          title: "p",
+          dataset: "people",
+          groupBy: [{ field: "nationalities" }],
+        },
+      ],
+    }).parts;
+    expect(runPart(part, people, TZ).columns[0]).toMatchObject({
+      country: true,
+    });
+  });
+});
+
 describe("checkDefinition: plain-word problems for the robot", () => {
   const one = (part: Record<string, unknown>) =>
     checkDefinition(
