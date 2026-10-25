@@ -23,7 +23,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
   test("every tool says who may use it and what kind it is; writes need a Confirm", () => {
     for (const t of TOOLS) {
       expect(t.roles.length).toBeGreaterThan(0);
-      expect(["read", "propose", "write", "memory"]).toContain(t.kind);
+      expect(["read", "propose", "write", "memory", "own"]).toContain(t.kind);
       if (t.kind === "write") expect(t.needsApproval).toBe(true);
     }
     expect(() =>
@@ -44,6 +44,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
       "getAppHelp",
       "runReport",
       "nationalityBreakdown",
+      "saveCustomReport",
       ...memory,
     ]);
     // Requester / IT operator alone: no report reader — no report tool,
@@ -65,12 +66,14 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
       "getAppHelp",
       "runReport",
       "nationalityBreakdown",
+      "saveCustomReport",
       ...peopleTools,
     ]);
     expect(toolNamesFor(["auditor"])).toEqual([
       "getAppHelp",
       "runReport",
       "nationalityBreakdown",
+      "saveCustomReport",
       ...peopleTools,
     ]);
     expect(toolNamesFor([])).toEqual([]);
@@ -78,6 +81,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
       "getAppHelp",
       "runReport",
       "nationalityBreakdown",
+      "saveCustomReport",
       ...memory,
     ]);
   });

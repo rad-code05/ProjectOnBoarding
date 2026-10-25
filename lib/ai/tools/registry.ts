@@ -9,6 +9,7 @@ import { nationalityBreakdown } from "./nationality-breakdown";
 import { rememberPreference } from "./remember-preference";
 import { rememberQuestion } from "./remember-question";
 import { runReport } from "./run-report";
+import { saveCustomReport } from "./save-custom-report";
 import { searchPeople } from "./search-people";
 import { whoHasAccess } from "./who-has-access";
 import { hasAnyRole, type AiTool, type ToolContext } from "./types";
@@ -23,6 +24,8 @@ export const TOOLS: readonly AiTool[] = [
   getAppHelp,
   runReport,
   nationalityBreakdown,
+  // Custom reports — report readers, their own reports only (F17a).
+  saveCustomReport,
   // People & access — the IT side only, never approvers (F15d-2a).
   searchPeople,
   getPersonAccess,

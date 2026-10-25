@@ -193,6 +193,37 @@ describe("chatGroups (board: Previous chats)", () => {
   });
 });
 
+describe("a custom report in the step line (F17a)", () => {
+  const id = "6f9619ff-8b86-4011-b42d-00c04fc964ff";
+  const built = {
+    link: `/reports/custom/${id}`,
+    changed: false,
+    parts: [{}, {}],
+  };
+
+  test("built or changed, with Open the report and CSV · PDF · Excel", () => {
+    expect(toolStep("saveCustomReport", false, null)).toBe(
+      "Building the custom report…",
+    );
+    expect(toolStep("saveCustomReport", true, built)).toBe(
+      "Built a custom report · 2 parts",
+    );
+    expect(
+      toolStep("saveCustomReport", true, { ...built, changed: true }),
+    ).toBe("Changed the custom report");
+    expect(toolStep("saveCustomReport", true, { error: "Fix it." })).toBe(
+      "Couldn't build the custom report",
+    );
+    expect(stepLink(built)).toBe(`/reports/custom/${id}`);
+    expect(stepLinkLabel(`/reports/custom/${id}`)).toBe("Open the report");
+    expect(stepDownloads(built)).toEqual([
+      { label: "CSV", href: `/reports/custom/${id}/export` },
+      { label: "PDF", href: `/reports/custom/${id}/export?format=pdf` },
+      { label: "Excel", href: `/reports/custom/${id}/export?format=xlsx` },
+    ]);
+  });
+});
+
 describe("stepDownloads (the report's own CSV / PDF export)", () => {
   test("same filters, the export route next to the report", () => {
     expect(
