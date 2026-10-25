@@ -18,6 +18,10 @@ import {
   Toast,
 } from "@/components/ui";
 import { addOfficeCity } from "@/app/(app)/admin/actions";
+import {
+  acceptSuggestion,
+  rejectSuggestion,
+} from "@/app/(app)/requests/suggestion-actions";
 import { cn } from "@/lib/cn";
 import {
   cityChoices,
@@ -48,7 +52,7 @@ import { AccessSection } from "./AccessSection";
 import { HeldSection, InventoryNote } from "./AccessChangeSections";
 import { EquipmentSection } from "./EquipmentSection";
 import { ExecutionSection } from "./ExecutionSection";
-import { FieldRenderer } from "./FieldRenderer";
+import { FieldRenderer, phoneSpan } from "./FieldRenderer";
 import {
   HandoverSection,
   PrefillBanner,
@@ -64,6 +68,11 @@ import { ReturnedCard, SectionFlag, sectionFrame } from "./ReturnedCard";
 import { SectionNav, type SectionNavItem } from "./SectionNav";
 import { ReviewSignSheet } from "./ReviewSignSheet";
 import { SignaturesSection } from "./SignaturesSection";
+import {
+  SuggestedField,
+  SuggestedItems,
+  SuggestionsBanner,
+} from "./Suggestions";
 import { useAutosave, type SaveOutcome, type SaveStatus } from "./useAutosave";
 import { CancelRequestSheet, StartExecutionSheet } from "./WorkflowSheets";
 
@@ -129,20 +138,35 @@ export function RequestForm({
   canAddCities?: boolean;
 }) {
   const router = useRouter();
-  const { values, saved, errors, status, setValue, saveNow } = useAutosave({
-    id: form.id,
-    version: form.version,
-    values: form.values,
-    savedAt: form.savedLabel,
-    enabled: form.editable,
-    timeZone: form.timezone,
-  });
+  const { values, saved, errors, status, setValue, saveNow, exclusive, adopt } =
+    useAutosave({
+      id: form.id,
+      version: form.version,
+      values: form.values,
+      savedAt: form.savedLabel,
+      enabled: form.editable,
+      timeZone: form.timezone,
+    });
   const [openSections, setOpenSections] = useState<number[]>([]);
   const [access, setAccess] = useState<AccessChoices>(form.access);
   const [others, setOthers] = useState<OtherApp[]>(form.others);
   const [equipment, setEquipment] = useState<EquipmentItem[]>(form.equipment);
   const [physical, setPhysical] = useState<PhysicalChoices>(form.physical);
   const [checks, setChecks] = useState(form.execution.checks);
+  // Sections 5–7 keep their rows locally (each change saves at once); a
+  // refresh (e.g. an accepted suggestion added a row) brings the server's.
+  const [loaded, setLoaded] = useState(form);
+  if (loaded !== form) {
+    setLoaded(form);
+    setAccess(form.access);
+    setOthers(form.others);
+    setEquipment(form.equipment);
+    setPhysical(form.physical);
+  }
+  // F16b: the assistant's suggestions still waiting (decided ones hide at once).
+  const [decided, setDecided] = useState<string[]>([]);
+  const [suggestBusy, setSuggestBusy] = useState(false);
+  const [suggestMessage, setSuggestMessage] = useState<string | null>(null);
   // Access change (F10c): what they hold, each kept / changed / removed.
   const change = form.accessChange;
   const [held, setHeld] = useState<HeldItem[]>(change?.held ?? []);
@@ -163,6 +187,55 @@ export function RequestForm({
     catalog: form.catalog,
     equipmentTypes: form.equipmentTypes,
     physicalTypes: form.physicalTypes,
+  };
+
+  const fieldSuggestions = form.editable
+    ? form.suggestions.fields.filter((f) => !decided.includes(f.id))
+    : [];
+  const itemSuggestions = form.editable
+    ? form.suggestions.items.filter((i) => !decided.includes(i.id))
+    : [];
+  const waiting = fieldSuggestions.length + itemSuggestions.length;
+  const itemsOf = (kind: "access" | "equipment" | "physical") =>
+    itemSuggestions.filter((i) => i.kind === kind);
+
+  /** Accept or reject one suggestion; false (and a message) when refused. */
+  const decideOne = async (id: string, accept: boolean) => {
+    const field = form.suggestions.fields.find((f) => f.id === id);
+    const result = await exclusive(async () => {
+      const outcome = accept
+        ? await acceptSuggestion(id)
+        : await rejectSuggestion(id);
+      if (outcome.ok && accept && field) adopt(outcome.version, field.patch);
+      return outcome;
+    });
+    if (result.ok) setDecided((current) => [...current, id]);
+    else setSuggestMessage(result.message);
+    return result.ok;
+  };
+  const decide = async (ids: string[], accept: boolean) => {
+    setSuggestBusy(true);
+    setSuggestMessage(null);
+    for (const id of ids) {
+      if (!(await decideOne(id, accept))) break;
+    }
+    setSuggestBusy(false);
+    router.refresh();
+  };
+  const allWaiting = () => [
+    ...fieldSuggestions.map((f) => f.id),
+    ...itemSuggestions.map((i) => i.id),
+  ];
+  const showNext = () => {
+    const next = document.querySelector<HTMLElement>("[data-suggestion]");
+    if (!next) return;
+    const section = next.closest<HTMLElement>("section[id^=s]");
+    const number = Number(section?.id.slice(1));
+    if (number) toggle(number, true);
+    next.scrollIntoView({ behavior: "smooth", block: "center" });
+    next.querySelector<HTMLButtonElement>("button")?.focus({
+      preventScroll: true,
+    });
   };
 
   const toggle = (number: number, open?: boolean) =>
@@ -580,6 +653,16 @@ export function RequestForm({
         {form.returned && (
           <ReturnedCard info={form.returned} onGoTo={editSection} />
         )}
+        {waiting > 0 && !disabled && (
+          <SuggestionsBanner
+            total={waiting}
+            busy={suggestBusy}
+            message={suggestMessage}
+            onAcceptAll={() => void decide(allWaiting(), true)}
+            onRejectAll={() => void decide(allWaiting(), false)}
+            onNext={showNext}
+          />
+        )}
         {conflict && <ChangedElsewhere changes={unsaved} />}
         {status.kind === "error" && (
           <InlineError live className="md:col-span-2">
@@ -668,6 +751,14 @@ export function RequestForm({
           ) : number === 5 ? (
             <Fragment key={number}>
               {change && <HeldSection kind="application" {...heldProps} />}
+              {!disabled && (
+                <SuggestedItems
+                  items={itemsOf("access")}
+                  busy={suggestBusy}
+                  onAccept={(id) => void decide([id], true)}
+                  onReject={(id) => void decide([id], false)}
+                />
+              )}
               <AccessSection
                 requestId={form.id}
                 catalog={form.catalog}
@@ -683,6 +774,14 @@ export function RequestForm({
           ) : number === 6 ? (
             <Fragment key={number}>
               {change && <HeldSection kind="equipment" {...heldProps} />}
+              {!disabled && (
+                <SuggestedItems
+                  items={itemsOf("equipment")}
+                  busy={suggestBusy}
+                  onAccept={(id) => void decide([id], true)}
+                  onReject={(id) => void decide([id], false)}
+                />
+              )}
               <EquipmentSection
                 requestId={form.id}
                 types={form.equipmentTypes}
@@ -695,6 +794,14 @@ export function RequestForm({
           ) : number === 7 ? (
             <Fragment key={number}>
               {change && <HeldSection kind="access" {...heldProps} />}
+              {!disabled && (
+                <SuggestedItems
+                  items={itemsOf("physical")}
+                  busy={suggestBusy}
+                  onAccept={(id) => void decide([id], true)}
+                  onReject={(id) => void decide([id], false)}
+                />
+              )}
               <PhysicalSection
                 requestId={form.id}
                 types={form.physicalTypes}
@@ -763,24 +870,39 @@ export function RequestForm({
                   SECTION_GRIDS[number],
                 )}
               >
-                {fieldsOf(number).map((field) => (
-                  <FieldRenderer
-                    key={field.key}
-                    field={field}
-                    value={valueOf(field)}
-                    onChange={(value) => setField(field.key, value)}
-                    choices={choicesOf(field)}
-                    error={
-                      errors[field.key as DraftFieldKey] ??
-                      (field.key === "office_city"
-                        ? (cityError ?? undefined)
-                        : undefined)
-                    }
-                    disabled={disabled}
-                    was={wasOf(field)}
-                    {...searchProps(field)}
-                  />
-                ))}
+                {fieldsOf(number).map((field) => {
+                  const suggestion = disabled
+                    ? undefined
+                    : fieldSuggestions.find((f) => f.key === field.key);
+                  return suggestion ? (
+                    <SuggestedField
+                      key={field.key}
+                      label={field.label}
+                      suggestion={suggestion}
+                      busy={suggestBusy}
+                      onAccept={() => void decide([suggestion.id], true)}
+                      onReject={() => void decide([suggestion.id], false)}
+                      className={phoneSpan(field)}
+                    />
+                  ) : (
+                    <FieldRenderer
+                      key={field.key}
+                      field={field}
+                      value={valueOf(field)}
+                      onChange={(value) => setField(field.key, value)}
+                      choices={choicesOf(field)}
+                      error={
+                        errors[field.key as DraftFieldKey] ??
+                        (field.key === "office_city"
+                          ? (cityError ?? undefined)
+                          : undefined)
+                      }
+                      disabled={disabled}
+                      was={wasOf(field)}
+                      {...searchProps(field)}
+                    />
+                  );
+                })}
               </div>
             </section>
           ),

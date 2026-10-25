@@ -192,6 +192,24 @@ describe("blocking checks", () => {
     });
   });
 
+  test("the assistant's suggestions not reviewed are a warning, never a block (F16b)", () => {
+    expect(
+      signingChecks(review({ pendingSuggestions: 0 })).some((c) => c.warn),
+    ).toBe(false);
+    const warn = signingChecks(review({ pendingSuggestions: 3 })).filter(
+      (c) => c.warn,
+    );
+    expect(warn).toEqual([
+      {
+        ok: true,
+        warn: true,
+        label:
+          "3 suggestions from the assistant not reviewed — they are not part of the request; accept or reject them first if you want them",
+        fix: null,
+      },
+    ]);
+  });
+
   test("an offboarding device still Return pending is a warning (2026-10-13)", () => {
     const off = {
       ...snapshot,

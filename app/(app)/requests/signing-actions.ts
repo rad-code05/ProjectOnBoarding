@@ -34,19 +34,25 @@ export async function loadSigningReview(
   if (!id.success) return { ok: false, message: "This request is unknown." };
 
   const supabase = createServerSupabaseClient();
-  const [checks, preview, approvers, signatures, user] = await Promise.all([
-    supabase.rpc("signing_checks", { p_request_id: id.data }),
-    supabase.rpc("request_snapshot_preview", { p_request_id: id.data }),
-    supabase
-      .from("user_roles")
-      .select(
-        "app_users!user_roles_clerk_user_id_fkey!inner(first_name, active)",
-      )
-      .eq("role", "approver")
-      .eq("app_users.active", true),
-    loadSignatures(),
-    currentUser(),
-  ]);
+  const [checks, preview, approvers, signatures, user, suggestions] =
+    await Promise.all([
+      supabase.rpc("signing_checks", { p_request_id: id.data }),
+      supabase.rpc("request_snapshot_preview", { p_request_id: id.data }),
+      supabase
+        .from("user_roles")
+        .select(
+          "app_users!user_roles_clerk_user_id_fkey!inner(first_name, active)",
+        )
+        .eq("role", "approver")
+        .eq("app_users.active", true),
+      loadSignatures(),
+      currentUser(),
+      supabase
+        .from("request_suggestions")
+        .select("id", { count: "exact", head: true })
+        .eq("request_id", id.data)
+        .eq("status", "pending"),
+    ]);
   if (checks.error || preview.error || !preview.data) {
     return { ok: false, message: "Could not open the review. Try again." };
   }
@@ -75,6 +81,7 @@ export async function loadSigningReview(
         .filter((name): name is string => Boolean(name)),
       signerName:
         [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "You",
+      pendingSuggestions: suggestions.count ?? 0,
     },
   };
 }
