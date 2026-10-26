@@ -41,6 +41,7 @@ export const FAKE_REPORT_ANSWER =
 export const FAKE_ONBOARDING = {
   firstName: "Meera",
   lastName: "E2E-Chat",
+  workEmail: "meera.e2e-chat@example.com",
   jobTitle: "Backend developer",
   department: "Engineering",
   manager: "Omar Haddad",

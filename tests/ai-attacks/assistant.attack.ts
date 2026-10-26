@@ -54,7 +54,7 @@ async function ask(question: string, roles: Role[] = ["admin"]) {
     }),
     prompt: question,
     tools: toolsFor(ctx),
-    toolApproval: toolApprovalFor(roles),
+    toolApproval: toolApprovalFor(ctx),
     stopWhen: isStepCount(5),
     maxOutputTokens: 800,
   });

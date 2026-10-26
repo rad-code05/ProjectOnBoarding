@@ -7,7 +7,7 @@ The assistant answers questions about **this app and its data only** — reports
 
 - **Every answer names its source** — which report and filters, or which help page — with a link to open it.
 - **It never signs, confirms, returns, closes, cancels, ticks section 9, changes roles or settings, or deletes anything.** Those are not tools it has.
-- **Preparing an onboarding** (admins and requesters): tell it who joins; it asks for what's missing, shows every value and waits for your **Confirm**, then creates the draft. Each value arrives on the form as a **suggestion** (dashed outline) you accept or reject — one by one or *Accept all*. Nothing is sent to Slack, GitHub or any tool, and asset tags, section 9 and signing stay yours. Every accepted value shows **AI** in the audit log.
+- **Preparing an onboarding** (admins and requesters): tell it who joins; it always goes through the whole checklist first (work email, job title, department, office, manager, start date, applications and roles, equipment, access, nationality — say "not needed" for what doesn't apply), shows every value and waits for your **Confirm**, then creates the draft. Each value arrives on the form as a **suggestion** (dashed outline) you accept or reject — one by one or *Accept all*. Nothing is sent to Slack, GitHub or any tool, and asset tags, section 9 and signing stay yours. Every accepted value shows **AI** in the audit log.
 - **Approvers** (Moises, Celine) get report questions only.
 - It uses **your own access**: it can't see anything you can't see in the app.
 - **Chats** are private to you and deleted 60 days after the last message.

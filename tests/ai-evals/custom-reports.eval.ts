@@ -48,6 +48,12 @@ async function ask(
   question: string,
   roles: Role[] = ["admin"],
 ): Promise<Outcome> {
+  const ctx = {
+    userId: "user_eval",
+    roles,
+    timeZone: "Asia/Dubai",
+    db: emptyDb() as never,
+  };
   const result = await generateText({
     model: createAnthropic({ apiKey: KEY })(MODEL),
     instructions: systemInstructions({
@@ -57,13 +63,8 @@ async function ask(
       timeZone: "Asia/Dubai",
     }),
     prompt: question,
-    tools: toolsFor({
-      userId: "user_eval",
-      roles,
-      timeZone: "Asia/Dubai",
-      db: emptyDb() as never,
-    }),
-    toolApproval: toolApprovalFor(roles),
+    tools: toolsFor(ctx),
+    toolApproval: toolApprovalFor(ctx),
     stopWhen: isStepCount(5),
     maxOutputTokens: 2000,
   });

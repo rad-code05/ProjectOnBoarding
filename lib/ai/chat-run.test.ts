@@ -426,3 +426,54 @@ describe("Confirm / Not now on a write (F16c)", () => {
     expect(d.model).not.toHaveBeenCalled();
   });
 });
+
+describe("nothing missed: an incomplete draft never reaches the Confirm card", () => {
+  test("refused by the server with what to ask — no approval request", async () => {
+    const incomplete = new MockLanguageModelV4({
+      doStream: async () => ({
+        stream: simulateReadableStream({
+          chunks: [
+            {
+              type: "tool-call",
+              toolCallId: "call-9",
+              toolName: "createOnboardingDraft",
+              input: JSON.stringify({
+                firstName: "Meera",
+                lastName: "Test",
+                office: "Dubai",
+              }),
+            },
+            {
+              type: "finish",
+              finishReason: { unified: "tool-calls", raw: undefined },
+              usage: {
+                inputTokens: {
+                  total: 10,
+                  noCache: 10,
+                  cacheRead: undefined,
+                  cacheWrite: undefined,
+                },
+                outputTokens: { total: 5, text: 5, reasoning: undefined },
+              },
+            },
+          ],
+        }),
+      }),
+    });
+    const { d } = deps({ model: vi.fn(() => incomplete) });
+    const res = await runChat(
+      question("Create a draft for Meera Test, Dubai"),
+      { ...person, roles: ["admin" as const] },
+      d,
+    );
+    const text = await res.text();
+    // Refused automatically (isAutomatic) — the person is never asked.
+    const requests = text
+      .split("\n")
+      .filter((l) => l.includes('"type":"tool-approval-request"'));
+    expect(requests.length).toBeGreaterThan(0);
+    expect(requests.every((l) => l.includes('"isAutomatic":true'))).toBe(true);
+    expect(text).toContain('"approved":false');
+    expect(text).toContain("Ask about: work email");
+  });
+});

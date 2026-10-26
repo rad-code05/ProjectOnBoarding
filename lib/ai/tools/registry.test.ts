@@ -96,11 +96,13 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
     ]);
   });
 
-  test("approvals: only write tools wait for a Confirm", () => {
-    expect(toolApprovalFor(["admin", "requester", "it_operator"])).toEqual({
-      createOnboardingDraft: "user-approval",
-    });
-    expect(toolApprovalFor(["it_operator", "approver", "auditor"])).toEqual({});
+  test("approvals: only write tools wait for a Confirm — after their precheck", () => {
+    const rules = toolApprovalFor(ctx(["admin", "requester", "it_operator"]));
+    expect(Object.keys(rules)).toEqual(["createOnboardingDraft"]);
+    expect(typeof rules.createOnboardingDraft).toBe("function");
+    expect(
+      toolApprovalFor(ctx(["it_operator", "approver", "auditor"])),
+    ).toEqual({});
   });
 });
 

@@ -2,6 +2,7 @@ import type { UIMessage } from "ai";
 import type { Role } from "@/lib/auth";
 import { formatDate } from "@/lib/requests/format";
 import { zonedParts } from "@/lib/time/zoned";
+import { TOPICS, type Topic } from "./tools/onboarding-shared";
 
 /** The longest question the assistant accepts (characters). */
 export const MAX_QUESTION_LENGTH = 4000;
@@ -463,6 +464,15 @@ export function confirmCard(tool: string, input: unknown): ConfirmCard | null {
         i.access,
         (a) => [str(a.type), str(a.scope)].filter(Boolean).join(" · ") || null,
       ),
+    },
+    {
+      label: "Not needed",
+      value: Array.isArray(i.notNeeded)
+        ? i.notNeeded
+            .map((t) => TOPICS[t as Topic])
+            .filter(Boolean)
+            .join(", ")
+        : "",
     },
   ].filter((r) => r.value);
   return {

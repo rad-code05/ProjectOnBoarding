@@ -1,4 +1,4 @@
-import type { ToolSet } from "ai";
+import type { ToolApprovalStatus, ToolSet } from "ai";
 import type { Role } from "@/lib/auth";
 import { getAppHelp } from "./get-app-help";
 import { createOnboardingDraft } from "./create-onboarding-draft";
@@ -62,16 +62,32 @@ export function toolsFor(ctx: ToolContext): ToolSet {
   );
 }
 
+export type ApprovalRule =
+  "user-approval" | ((input: unknown) => Promise<ToolApprovalStatus>);
+
 /**
  * `streamText({ toolApproval })` (AI SDK 7 — tool-level `needsApproval` is
- * deprecated): every write tool waits for the person's Confirm.
+ * deprecated): every write tool waits for the person's Confirm. A tool with
+ * a precheck is refused at once (with the reason, for the model) while
+ * something is missing — the Confirm card only shows a complete request.
  */
 export function toolApprovalFor(
-  roles: readonly Role[],
-): Record<string, "user-approval"> {
+  ctx: ToolContext,
+): Record<string, ApprovalRule> {
   return Object.fromEntries(
-    allowedFor(roles)
+    allowedFor(ctx.roles)
       .filter((t) => t.needsApproval)
-      .map((t) => [t.name, "user-approval" as const]),
+      .map((t) => {
+        const check = t.precheck;
+        const rule: ApprovalRule = check
+          ? async (input) => {
+              const reason = await check(input, ctx);
+              return reason
+                ? { type: "denied" as const, reason }
+                : "user-approval";
+            }
+          : "user-approval";
+        return [t.name, rule];
+      }),
   );
 }

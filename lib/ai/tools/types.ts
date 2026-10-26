@@ -32,6 +32,12 @@ export type AiTool = {
   kind: ToolKind;
   /** Writes always wait for the person's Confirm (`toolApprovalFor` in the registry). */
   needsApproval: boolean;
+  /**
+   * Checked before the Confirm card is shown: a reason ("Ask about: work
+   * email, equipment") refuses the call at once — the model gets the reason,
+   * the person never sees an incomplete card. null = ask for the Confirm.
+   */
+  precheck?: (input: unknown, ctx: ToolContext) => Promise<string | null>;
   build: (ctx: ToolContext) => Tool;
 };
 
