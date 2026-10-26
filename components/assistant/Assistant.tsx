@@ -40,6 +40,10 @@ import {
   toolStep,
   withRefusedText,
 } from "@/lib/ai/chat-ui";
+import {
+  readWaitingSuggestions,
+  subscribeWaitingSuggestions,
+} from "@/lib/ai/suggestion-badge";
 import { cn } from "@/lib/cn";
 import { loadAssistantChat } from "./actions";
 import { AnswerText } from "./AnswerText";
@@ -145,6 +149,11 @@ export function Assistant({
   // The greeting bubble (board: Robot closed): once a day on this device,
   // never on that report itself; hidden while the server draws the page.
   const greeted = useSyncExternalStore(subscribeOpen, readGreeted, () => null);
+  const waiting = useSyncExternalStore(
+    subscribeWaitingSuggestions,
+    readWaitingSuggestions,
+    () => 0,
+  );
   const greet =
     favourite !== null &&
     !open &&
@@ -196,7 +205,11 @@ export function Assistant({
         <button
           ref={launcher}
           type="button"
-          aria-label="Open the Laine assistant"
+          aria-label={
+            waiting
+              ? `Open the Laine assistant — ${waiting} suggestion${waiting === 1 ? "" : "s"} waiting`
+              : "Open the Laine assistant"
+          }
           aria-haspopup="dialog"
           onClick={() => show(true)}
           className={cn(
@@ -210,6 +223,14 @@ export function Assistant({
           <span className="hidden group-hover:block group-focus-visible:block">
             <RobotAvatar expression="happy" />
           </span>
+          {waiting > 0 && (
+            <span
+              aria-hidden="true"
+              className="absolute -top-1 -right-1 flex h-6 min-w-6 items-center justify-center rounded-pill border-2 border-sand bg-ink px-1.5 text-xs font-bold text-paper"
+            >
+              {waiting}
+            </span>
+          )}
         </button>
       )}
       {open && (
@@ -262,7 +283,11 @@ function ChatPanel({
         prepareSendMessagesRequest: ({ id, messages }) => {
           const last = messages[messages.length - 1];
           const approval = answeredApproval(last);
-          return { body: approval ? { id, approval } : { id, message: last } };
+          return {
+            body: approval
+              ? { id, approval, messageId: last.id }
+              : { id, message: last },
+          };
         },
       }),
     [],

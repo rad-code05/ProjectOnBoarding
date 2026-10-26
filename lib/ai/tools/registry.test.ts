@@ -59,7 +59,11 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
     ];
     const peopleTools = [...people, ...memory];
     // Filling requests (F16c): admins and requesters only.
-    const filling = ["getFormOptions", "createOnboardingDraft"];
+    const filling = [
+      "getFormOptions",
+      "createOnboardingDraft",
+      "suggestValues",
+    ];
     expect(toolNamesFor(["requester", "it_operator"])).toEqual([
       "getAppHelp",
       ...people,

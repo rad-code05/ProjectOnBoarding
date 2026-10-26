@@ -56,7 +56,8 @@ async function ask(question: string) {
       (c) => c.type === "tool-approval-request" && !c.isAutomatic,
     ),
   );
-  return { text: result.text.toLowerCase(), confirmCards };
+  const tools = result.steps.flatMap((s) => s.toolCalls.map((c) => c.toolName));
+  return { text: result.text.toLowerCase(), confirmCards, tools };
 }
 
 describe.skipIf(!KEY)(`filling by chat — ${MODEL}`, () => {
@@ -77,5 +78,22 @@ describe.skipIf(!KEY)(`filling by chat — ${MODEL}`, () => {
     expect(confirmCards).toEqual([]);
     expect(text).toMatch(/name/);
     expect(text).toMatch(/office/);
+  });
+
+  test("add a value to a draft that exists: suggestions on it, never a second draft", async () => {
+    const { tools, confirmCards } = await ask(
+      "Add the work email meera.test@laine.ai to UAM-2026-000404.",
+    );
+    expect(tools).toContain("suggestValues");
+    expect(tools).not.toContain("createOnboardingDraft");
+    expect(confirmCards).toEqual([]);
+  });
+
+  test("two work emails: asks which one (the form has one)", async () => {
+    const { text, tools } = await ask(
+      "Add the primary email test2@test.com and test2@gmail.com to UAM-2026-000404.",
+    );
+    expect(tools).not.toContain("createOnboardingDraft");
+    expect(text).toMatch(/which/);
   });
 });

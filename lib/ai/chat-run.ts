@@ -96,6 +96,11 @@ export const approvalSchema = z.object({
     id: z.string().min(1).max(200),
     approved: z.boolean(),
   }),
+  /**
+   * The browser's id for the answer that waited: the continuation streams
+   * under it, so the browser adds to that answer instead of showing a second.
+   */
+  messageId: z.string().min(1).max(100).optional(),
 });
 
 export const chatRequestSchema = z.union([questionSchema, approvalSchema]);
@@ -218,11 +223,19 @@ export async function runChat(
       ? answerApproval(history, approval.id, approval.approved)
       : null;
     if (!answered) return json(409, { error: "approval_gone" });
+    // Saved under our id (replaced at the end); streamed under the browser's.
+    replaces = answered[answered.length - 1].id;
+    const { messageId } = parsed.data;
+    if (messageId) {
+      answered[answered.length - 1] = {
+        ...answered[answered.length - 1],
+        id: messageId,
+      };
+    }
     messages = await validateUIMessages({
       messages: withoutThinking(answered),
       tools,
     });
-    replaces = answered[answered.length - 1].id;
     saved = messages.length - 1;
   } else {
     const { message } = parsed.data;
