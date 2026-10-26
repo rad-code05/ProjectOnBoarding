@@ -2,6 +2,7 @@ import {
   convertToModelMessages,
   createUIMessageStreamResponse,
   isStepCount,
+  isToolUIPart,
   streamText,
   toUIMessageStream,
   validateUIMessages,
@@ -32,6 +33,16 @@ export type ChatDeps = {
     messages: UIMessage[],
     model: number,
   ) => Promise<void>;
+  /**
+   * The answer that waited for a Confirm, continued: saved in place of the
+   * stored one (messages are never edited — a new row, then the old one goes).
+   */
+  replaceMessage: (
+    chatId: string,
+    oldId: string,
+    message: UIMessage,
+    model: number,
+  ) => Promise<void>;
   recordUsage: (
     model: number,
     inputTokens: number,
@@ -58,7 +69,7 @@ const MAX_OUTPUT_TOKENS = 4000;
  * comes from our database (the person's own chats — RLS), so nobody can
  * slip a fake earlier answer or tool result into the conversation.
  */
-export const chatRequestSchema = z.object({
+export const questionSchema = z.object({
   id: z.uuid(),
   message: z.object({
     id: z.string().min(1).max(100),
@@ -73,6 +84,53 @@ export const chatRequestSchema = z.object({
       .length(1),
   }),
 });
+
+/**
+ * A Confirm / Not now on a write the assistant asked to do (F16c): only the
+ * approval's id and the answer travel; the request it answers must be the
+ * last answer in the person's own saved chat.
+ */
+export const approvalSchema = z.object({
+  id: z.uuid(),
+  approval: z.object({
+    id: z.string().min(1).max(200),
+    approved: z.boolean(),
+  }),
+});
+
+export const chatRequestSchema = z.union([questionSchema, approvalSchema]);
+
+/**
+ * The saved chat with this approval answered, or null when the last answer
+ * doesn't wait for it (already answered, another chat, a forged id).
+ */
+export function answerApproval(
+  history: UIMessage[],
+  approvalId: string,
+  approved: boolean,
+): UIMessage[] | null {
+  const last = history[history.length - 1];
+  if (last?.role !== "assistant") return null;
+  let found = false;
+  const parts = last.parts.map((part) => {
+    if (
+      isToolUIPart(part) &&
+      part.state === "approval-requested" &&
+      part.approval.id === approvalId
+    ) {
+      found = true;
+      return {
+        ...part,
+        state: "approval-responded" as const,
+        approval: { ...part.approval, approved },
+      };
+    }
+    return part;
+  });
+  return found
+    ? [...history.slice(0, -1), { ...last, parts } as UIMessage]
+    : null;
+}
 
 /** A new chat is named after its first question. */
 export function chatTitle(question: string): string {
@@ -137,7 +195,7 @@ export async function runChat(
 ): Promise<Response> {
   const parsed = chatRequestSchema.safeParse(body);
   if (!parsed.success) return json(400, { error: "bad_request" });
-  const { id, message } = parsed.data;
+  const { id } = parsed.data;
 
   const status = await deps.status();
   if (status.reason !== "ok") {
@@ -147,29 +205,52 @@ export async function runChat(
     });
   }
 
-  let history = await deps.loadMessages(id);
-  if (history === null) {
-    await deps.createChat(id, chatTitle(message.parts[0].text));
-    history = [];
-  }
-
-  // "Try again" after a lost answer sends the same question again: it is
-  // already saved (last, unanswered), so it isn't saved twice.
-  const retry = isUnanswered(history, message.parts[0].text);
   const tools = toolsFor(person);
-  const messages = await validateUIMessages({
-    // Chats saved before this rule may still hold thinking: dropped here.
-    messages: withoutThinking(
-      retry ? history : [...history, message as UIMessage],
-    ),
-    tools,
-  });
-  // The question is saved before the answer streams, so a quick next
-  // question finds it (and the chat) already there.
-  if (!retry) {
-    await deps.saveMessages(id, [messages[messages.length - 1]], status.model);
+  let history = await deps.loadMessages(id);
+  let messages: UIMessage[];
+  let saved: number;
+  // The stored answer a Confirm continues (replaced when it is complete).
+  let replaces: string | null = null;
+
+  if ("approval" in parsed.data) {
+    const { approval } = parsed.data;
+    const answered = history
+      ? answerApproval(history, approval.id, approval.approved)
+      : null;
+    if (!answered) return json(409, { error: "approval_gone" });
+    messages = await validateUIMessages({
+      messages: withoutThinking(answered),
+      tools,
+    });
+    replaces = answered[answered.length - 1].id;
+    saved = messages.length - 1;
+  } else {
+    const { message } = parsed.data;
+    if (history === null) {
+      await deps.createChat(id, chatTitle(message.parts[0].text));
+      history = [];
+    }
+    // "Try again" after a lost answer sends the same question again: it is
+    // already saved (last, unanswered), so it isn't saved twice.
+    const retry = isUnanswered(history, message.parts[0].text);
+    messages = await validateUIMessages({
+      // Chats saved before this rule may still hold thinking: dropped here.
+      messages: withoutThinking(
+        retry ? history : [...history, message as UIMessage],
+      ),
+      tools,
+    });
+    // The question is saved before the answer streams, so a quick next
+    // question finds it (and the chat) already there.
+    if (!retry) {
+      await deps.saveMessages(
+        id,
+        [messages[messages.length - 1]],
+        status.model,
+      );
+    }
+    saved = messages.length;
   }
-  const saved = messages.length;
 
   const result = streamText({
     model: deps.model(status.modelId),
@@ -191,6 +272,10 @@ export async function runChat(
         let answer = withoutThinking(all.slice(saved));
         if ((await result.finishReason) === "content-filter") {
           answer = answer.map(withRefusedText);
+        }
+        if (replaces && answer.length) {
+          await deps.replaceMessage(id, replaces, answer[0], status.model);
+          answer = answer.slice(1);
         }
         await deps.saveMessages(id, answer, status.model);
         const usage = await result.totalUsage;

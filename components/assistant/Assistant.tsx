@@ -6,6 +6,7 @@ import {
   getToolName,
   isTextUIPart,
   isToolUIPart,
+  lastAssistantMessageIsCompleteWithApprovalResponses,
   type UIMessage,
 } from "ai";
 import Link from "next/link";
@@ -24,8 +25,10 @@ import { CheckIcon, CloseIcon, HistoryIcon, IconButton } from "@/components/ui";
 import type { Role } from "@/lib/auth";
 import {
   MAX_QUESTION_LENGTH,
+  answeredApproval,
   answeredOnServer,
   chatProblem,
+  confirmCard,
   greeting,
   lastIsQuestion,
   lastQuestion,
@@ -254,10 +257,13 @@ function ChatPanel({
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        // Only the new question travels; the server loads the history.
-        prepareSendMessagesRequest: ({ id, messages }) => ({
-          body: { id, message: messages[messages.length - 1] },
-        }),
+        // Only the new question — or a Confirm / Not now — travels; the
+        // server loads the history.
+        prepareSendMessagesRequest: ({ id, messages }) => {
+          const last = messages[messages.length - 1];
+          const approval = answeredApproval(last);
+          return { body: approval ? { id, approval } : { id, message: last } };
+        },
       }),
     [],
   );
@@ -270,9 +276,12 @@ function ChatPanel({
     regenerate,
     stop,
     clearError,
+    addToolApprovalResponse,
   } = useChat({
     id: chatId,
     transport,
+    // A Confirm / Not now goes to the server at once (F16c).
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
     // The safety filter stopped the answer before a word: say so instead
     // of showing nothing (the server saves the same words).
     onFinish: ({ message, finishReason }) => {
@@ -454,7 +463,14 @@ function ChatPanel({
             )}
 
             {messages.map((m) => (
-              <Message key={m.id} message={m} />
+              <Message
+                key={m.id}
+                message={m}
+                busy={busy}
+                onDecide={(id, approved) =>
+                  void addToolApprovalResponse({ id, approved })
+                }
+              />
             ))}
 
             {(status === "submitted" || pending === "waiting") && (
@@ -607,7 +623,71 @@ function Bubble({
   );
 }
 
-function Message({ message }: { message: UIMessage }) {
+/** "Needs your Confirm" (board *Confirm creates the draft*). */
+function ConfirmCardView({
+  card,
+  busy,
+  onDecide,
+}: {
+  card: NonNullable<ReturnType<typeof confirmCard>>;
+  busy: boolean;
+  onDecide: (approved: boolean) => void;
+}) {
+  const titleId = useId();
+  return (
+    <section
+      aria-labelledby={titleId}
+      className="flex flex-col gap-2.5 self-stretch rounded-card border-2 border-ink bg-paper p-3.5"
+    >
+      <span className="text-[11px] font-semibold tracking-[0.14em] text-graphite uppercase">
+        Needs your Confirm
+      </span>
+      <h3 id={titleId} className="font-serif text-xl leading-tight">
+        {card.title}
+      </h3>
+      <dl className="flex flex-col text-[13px] leading-snug">
+        {card.rows.map((row) => (
+          <div
+            key={row.label}
+            className="flex gap-2.5 border-t border-line-subtle py-1.5"
+          >
+            <dt className="w-24 shrink-0 text-graphite">{row.label}</dt>
+            <dd className="min-w-0 wrap-anywhere">{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="text-xs leading-normal text-graphite">{card.note}</p>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onDecide(true)}
+          className="min-h-10 rounded-pill bg-ink px-4 text-[13px] font-semibold text-paper disabled:opacity-60"
+        >
+          {card.yes}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onDecide(false)}
+          className="min-h-10 rounded-pill border border-field-border px-3.5 text-[13px] font-semibold disabled:opacity-60"
+        >
+          Not now
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function Message({
+  message,
+  busy = false,
+  onDecide,
+}: {
+  message: UIMessage;
+  busy?: boolean;
+  onDecide?: (approvalId: string, approved: boolean) => void;
+}) {
   return (
     <>
       {message.parts.map((part, i) => {
@@ -621,6 +701,28 @@ function Message({ message }: { message: UIMessage }) {
             <Bubble key={i} from="assistant">
               <AnswerText text={part.text} />
             </Bubble>
+          );
+        }
+        if (isToolUIPart(part) && part.state === "approval-requested") {
+          const card = confirmCard(getToolName(part), part.input);
+          return card && onDecide ? (
+            <ConfirmCardView
+              key={i}
+              card={card}
+              busy={busy}
+              onDecide={(approved) => onDecide(part.approval.id, approved)}
+            />
+          ) : null;
+        }
+        if (
+          isToolUIPart(part) &&
+          (part.state === "output-denied" ||
+            (part.state === "approval-responded" && !part.approval.approved))
+        ) {
+          return (
+            <span key={i} className="self-start text-xs text-graphite">
+              Not now — nothing was created.
+            </span>
           );
         }
         if (isToolUIPart(part)) {

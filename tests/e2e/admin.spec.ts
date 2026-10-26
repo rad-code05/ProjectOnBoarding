@@ -1515,3 +1515,77 @@ test("Section 2 (F27): Office fills the country; US asks for a state, then a cit
     page.getByRole("button", { name: `Restore ${town}, Texas` }),
   ).toBeVisible();
 });
+
+test("Filling by chat (F16c): the robot prepares a draft after Confirm; Raju accepts its suggestions on the form", async ({
+  page,
+}) => {
+  test.slow();
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: /^Open the Laine assistant/ }).click();
+  const panel = page.getByRole("dialog", { name: "Laine assistant" });
+  await panel.getByRole("button", { name: "New chat" }).click();
+  const box = panel.getByRole("textbox", { name: "Message the assistant" });
+  const log = panel.getByRole("log");
+
+  // Not now: nothing is created.
+  await box.fill("Onboard someone for a test");
+  await box.press("Enter");
+  const card = log.getByRole("region", {
+    name: "Create a draft onboarding for Meera E2E-Chat?",
+  });
+  // The first answer on a fresh server can take a while.
+  await expect(card).toContainText("Slack · Regular Member", {
+    timeout: 30_000,
+  });
+  await card.getByRole("button", { name: "Not now" }).click();
+  await expect(log).toContainText("Fine, nothing was created.");
+
+  // Confirm: the draft, with every value as a suggestion.
+  await box.fill("Onboard Meera, Dubai office");
+  await box.press("Enter");
+  // The fake test model (AI_FAKE_MODEL=1) prepares the same fixed joiner.
+  await log
+    .getByRole("region", {
+      name: "Create a draft onboarding for Meera E2E-Chat?",
+    })
+    .last()
+    .getByRole("button", { name: "Confirm — create the draft" })
+    .click();
+  await expect(
+    log.getByText(/Created the draft UAM-\d{4}-\d{6} · 12 suggestions waiting/),
+  ).toBeVisible();
+  await expect(log).toContainText("The draft is ready with its suggestions");
+  await log.getByRole("link", { name: "Open the request" }).click();
+  await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
+  await box.press("Escape");
+
+  const banner = page.getByRole("region", {
+    name: "Suggestions from the assistant",
+  });
+  await expect(banner).toContainText("12 suggestions from the assistant");
+  await expect(page.getByRole("group", { name: "Manager" })).toContainText(
+    "Suggested · you said so",
+  );
+  // One by one…
+  await page
+    .getByRole("button", { name: "Accept Manager: Omar Haddad" })
+    .click();
+  await expect(
+    page.getByRole("textbox", { name: "Manager", exact: true }),
+  ).toHaveValue("Omar Haddad");
+  // …then the rest (more than 10 asks once more).
+  await banner.getByRole("button", { name: "Accept all 11" }).click();
+  await banner.getByRole("button", { name: "Yes, accept all 11" }).click();
+  await expect(banner).toBeHidden();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Meera E2E-Chat",
+  );
+  await expect(
+    page.getByRole("textbox", { name: "Job title / role", exact: true }),
+  ).toHaveValue("Backend developer");
+  await page.reload();
+  await expect(
+    page.getByRole("textbox", { name: "Manager", exact: true }),
+  ).toHaveValue("Omar Haddad");
+  await expect(page.getByText("Saved", { exact: false }).first()).toBeVisible();
+});

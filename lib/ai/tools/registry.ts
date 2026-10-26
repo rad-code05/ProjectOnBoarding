@@ -1,7 +1,9 @@
 import type { ToolSet } from "ai";
 import type { Role } from "@/lib/auth";
 import { getAppHelp } from "./get-app-help";
+import { createOnboardingDraft } from "./create-onboarding-draft";
 import { getCatalog } from "./get-catalog";
+import { getFormOptions } from "./get-form-options";
 import { getPersonAccess } from "./get-person-access";
 import { getRequest } from "./get-request";
 import { listRequests } from "./list-requests";
@@ -34,6 +36,9 @@ export const TOOLS: readonly AiTool[] = [
   // Requests — the IT side only (F15d-2b).
   listRequests,
   getRequest,
+  // Filling requests — admin / requester; creating a draft waits for Confirm (F16c).
+  getFormOptions,
+  createOnboardingDraft,
   // Memory — the asker's own row only (F15d-2c).
   rememberPreference,
   rememberQuestion,

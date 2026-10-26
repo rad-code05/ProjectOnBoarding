@@ -91,6 +91,25 @@ export function chatStore(
       if (error) throw new Error(`Could not save the chat: ${error.message}`);
     },
 
+    replaceMessage: async (chatId, oldId, message, model) => {
+      // Messages are never edited: the continued answer is a new row (it
+      // sorts last, where the old one was), then the old row goes.
+      const { error } = await supabase.from("ai_messages").insert({
+        chat_id: chatId,
+        role: "assistant",
+        parts: message.parts as unknown as Json[],
+        model,
+      });
+      if (error) throw new Error(`Could not save the chat: ${error.message}`);
+      const gone = await supabase
+        .from("ai_messages")
+        .delete()
+        .eq("id", oldId)
+        .eq("chat_id", chatId);
+      if (gone.error)
+        throw new Error(`Could not save the chat: ${gone.error.message}`);
+    },
+
     recordUsage: async (model, inputTokens, outputTokens) => {
       const { error } = await supabase.rpc("record_ai_usage", {
         p_model: model,

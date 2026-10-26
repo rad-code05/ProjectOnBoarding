@@ -16,6 +16,8 @@ import {
   stepPdfLink,
   toolStep,
   withRefusedText,
+  answeredApproval,
+  confirmCard,
 } from "./chat-ui";
 
 describe("greeting", () => {
@@ -259,5 +261,80 @@ describe("stepDownloads (the report's own CSV / PDF export)", () => {
     ).toEqual([]);
     expect(stepDownloads({ link: "/reports/x/y/z" })).toEqual([]);
     expect(stepDownloads(null)).toEqual([]);
+  });
+});
+
+describe("filling by chat (F16c)", () => {
+  test("the Confirm card lists every value in words", () => {
+    const card = confirmCard("createOnboardingDraft", {
+      firstName: "Meera",
+      lastName: "Nair",
+      workEmail: "meera.nair@laine.ai",
+      jobTitle: "Backend developer",
+      department: "Engineering",
+      manager: "Omar Haddad",
+      office: "Dubai",
+      startDate: "2026-10-26",
+      nationalities: ["India"],
+      applications: [
+        { name: "Slack", permission: "Regular Member" },
+        { name: "GitHub", permission: "Member" },
+      ],
+      equipment: [{ type: "Laptop · macOS" }],
+      access: [{ type: "Office access", scope: "Badge" }],
+    });
+    expect(card?.title).toBe("Create a draft onboarding for Meera Nair?");
+    expect(card?.yes).toBe("Confirm — create the draft");
+    expect(card?.rows).toEqual([
+      { label: "Employee", value: "Meera Nair · meera.nair@laine.ai" },
+      { label: "Job", value: "Backend developer · Engineering" },
+      { label: "Manager", value: "Omar Haddad" },
+      { label: "Office", value: "Dubai" },
+      { label: "Start date", value: "26 Oct 2026" },
+      { label: "Nationality", value: "India" },
+      {
+        label: "Applications",
+        value: "Slack · Regular Member, GitHub · Member",
+      },
+      { label: "Equipment", value: "Laptop · macOS" },
+      { label: "Access", value: "Office access · Badge" },
+    ]);
+    expect(confirmCard("deleteEverything", {})).toBeNull();
+  });
+
+  test("the step line says what happened", () => {
+    expect(toolStep("createOnboardingDraft", false, null)).toBe(
+      "Creating the draft…",
+    );
+    expect(
+      toolStep("createOnboardingDraft", true, {
+        created: true,
+        ticket: "UAM-2026-000027",
+        suggestions: 11,
+      }),
+    ).toBe("Created the draft UAM-2026-000027 · 11 suggestions waiting");
+    expect(
+      toolStep("createOnboardingDraft", true, { created: false, problems: [] }),
+    ).toBe("Didn't create the draft — a few things to check");
+  });
+
+  test("answeredApproval: what a Confirm / Not now sends", () => {
+    const message = {
+      id: "a1",
+      role: "assistant",
+      parts: [
+        {
+          type: "tool-createOnboardingDraft",
+          toolCallId: "c1",
+          state: "approval-responded",
+          input: {},
+          approval: { id: "ap1", approved: true },
+        },
+      ],
+    } as unknown as UIMessage;
+    expect(answeredApproval(message)).toEqual({ id: "ap1", approved: true });
+    expect(
+      answeredApproval({ id: "u", role: "user", parts: [] } as UIMessage),
+    ).toBeNull();
   });
 });

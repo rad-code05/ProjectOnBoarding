@@ -1,5 +1,6 @@
 import type { UIMessage } from "ai";
 import type { Role } from "@/lib/auth";
+import { formatDate } from "@/lib/requests/format";
 import { zonedParts } from "@/lib/time/zoned";
 
 /** The longest question the assistant accepts (characters). */
@@ -165,6 +166,15 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
       return done
         ? "Looked through the requests"
         : "Looking through the requests…";
+    case "getFormOptions":
+      return done ? "Checked the form's lists" : "Checking the form's lists…";
+    case "createOnboardingDraft": {
+      if (!done) return "Creating the draft…";
+      if (field("created") !== "true")
+        return "Didn't create the draft — a few things to check";
+      const n = Number(field("suggestions") ?? 0);
+      return `Created the draft ${field("ticket") ?? ""} · ${n} suggestion${n === 1 ? "" : "s"} waiting`;
+    }
     case "getRequest":
       if (!done) return "Opening the request…";
       return field("status")
@@ -371,4 +381,113 @@ export function chatGroups(
     }
   }
   return groups.filter((g) => g.chats.length > 0);
+}
+
+/** The Confirm card for a write the assistant asks to do (F16c). */
+export type ConfirmCard = {
+  title: string;
+  rows: { label: string; value: string }[];
+  note: string;
+  yes: string;
+};
+
+type Named = {
+  name?: unknown;
+  type?: unknown;
+  permission?: unknown;
+  description?: unknown;
+  scope?: unknown;
+};
+const str = (v: unknown) =>
+  typeof v === "string" && v.trim() ? v.trim() : null;
+const listOf = (v: unknown, show: (x: Named) => string | null) =>
+  Array.isArray(v)
+    ? v
+        .map((x) => (x && typeof x === "object" ? show(x as Named) : null))
+        .filter(Boolean)
+        .join(", ")
+    : "";
+
+/**
+ * What the person is asked to confirm, in words — from the tool's input
+ * (board *Confirm creates the draft*). null = not a write we know.
+ */
+export function confirmCard(tool: string, input: unknown): ConfirmCard | null {
+  if (tool !== "createOnboardingDraft" || !input || typeof input !== "object")
+    return null;
+  const i = input as Record<string, unknown>;
+  const name = [str(i.firstName), str(i.lastName)].filter(Boolean).join(" ");
+  const rows = [
+    {
+      label: "Employee",
+      value: [name, str(i.workEmail)].filter(Boolean).join(" · "),
+    },
+    {
+      label: "Job",
+      value: [str(i.jobTitle), str(i.department)].filter(Boolean).join(" · "),
+    },
+    { label: "Manager", value: str(i.manager) ?? "" },
+    {
+      label: "Office",
+      value: [str(i.office), str(i.city), str(i.state)]
+        .filter(Boolean)
+        .join(" · "),
+    },
+    {
+      label: "Start date",
+      value: str(i.startDate) ? formatDate(str(i.startDate)) : "",
+    },
+    {
+      label: "Nationality",
+      value: Array.isArray(i.nationalities) ? i.nationalities.join(", ") : "",
+    },
+    {
+      label: "Applications",
+      value: listOf(
+        i.applications,
+        (a) =>
+          [str(a.name), str(a.permission)].filter(Boolean).join(" · ") || null,
+      ),
+    },
+    {
+      label: "Equipment",
+      value: listOf(
+        i.equipment,
+        (e) =>
+          [str(e.type), str(e.description)].filter(Boolean).join(" · ") || null,
+      ),
+    },
+    {
+      label: "Access",
+      value: listOf(
+        i.access,
+        (a) => [str(a.type), str(a.scope)].filter(Boolean).join(" · ") || null,
+      ),
+    },
+  ].filter((r) => r.value);
+  return {
+    title: `Create a draft onboarding for ${name || "this person"}?`,
+    rows,
+    note: "Creates a draft only. Every value arrives on the form as a suggestion you accept. Nothing is sent to the tools; you still do the IT work, tick section 9 and Review & sign.",
+    yes: "Confirm — create the draft",
+  };
+}
+
+/** The approval the person just answered (what a Confirm sends), if any. */
+export function answeredApproval(
+  message: UIMessage | undefined,
+): { id: string; approved: boolean } | null {
+  if (message?.role !== "assistant") return null;
+  for (const part of [...message.parts].reverse()) {
+    if (
+      "state" in part &&
+      part.state === "approval-responded" &&
+      "approval" in part &&
+      part.approval
+    ) {
+      const a = part.approval as { id: string; approved: boolean };
+      return { id: a.id, approved: a.approved };
+    }
+  }
+  return null;
 }
