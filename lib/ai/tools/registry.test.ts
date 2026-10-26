@@ -49,16 +49,24 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
     ]);
     // Requester / IT operator alone: no report reader — no report tool,
     // but people & access questions.
-    const peopleTools = [
+    const people = [
       "searchPeople",
       "getPersonAccess",
       "whoHasAccess",
       "getCatalog",
       "listRequests",
       "getRequest",
-      ...memory,
     ];
+    const peopleTools = [...people, ...memory];
+    // Filling requests (F16c): admins and requesters only.
+    const filling = ["getFormOptions", "createOnboardingDraft"];
     expect(toolNamesFor(["requester", "it_operator"])).toEqual([
+      "getAppHelp",
+      ...people,
+      ...filling,
+      ...memory,
+    ]);
+    expect(toolNamesFor(["it_operator"])).toEqual([
       "getAppHelp",
       ...peopleTools,
     ]);
@@ -67,7 +75,9 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
       "runReport",
       "nationalityBreakdown",
       "saveCustomReport",
-      ...peopleTools,
+      ...people,
+      ...filling,
+      ...memory,
     ]);
     expect(toolNamesFor(["auditor"])).toEqual([
       "getAppHelp",
@@ -86,8 +96,11 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
     ]);
   });
 
-  test("approvals: only write tools wait for a Confirm (none yet in F15)", () => {
-    expect(toolApprovalFor(["admin", "requester", "it_operator"])).toEqual({});
+  test("approvals: only write tools wait for a Confirm", () => {
+    expect(toolApprovalFor(["admin", "requester", "it_operator"])).toEqual({
+      createOnboardingDraft: "user-approval",
+    });
+    expect(toolApprovalFor(["it_operator", "approver", "auditor"])).toEqual({});
   });
 });
 

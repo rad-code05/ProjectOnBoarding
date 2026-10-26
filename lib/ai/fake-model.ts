@@ -37,6 +37,27 @@ export const FAKE_REPORT = {
 export const FAKE_REPORT_ANSWER =
   "This is the test assistant. Your custom report is ready: open it from the step line above.";
 
+/** What the fake robot prepares when asked to "onboard" someone (F16c). */
+export const FAKE_ONBOARDING = {
+  firstName: "Meera",
+  lastName: "E2E-Chat",
+  jobTitle: "Backend developer",
+  department: "Engineering",
+  manager: "Omar Haddad",
+  office: "Dubai",
+  startDate: "2026-11-02",
+  nationalities: ["India"],
+  applications: [{ name: "Slack", permission: "Regular Member" }],
+  equipment: [{ type: "Laptop · macOS" }],
+  access: [{ type: "Office access", scope: "Badge" }],
+  reasons: { manager: "you said so" },
+};
+
+export const FAKE_ONBOARDING_ANSWER =
+  "This is the test assistant. The draft is ready with its suggestions: open it from the step line above.";
+export const FAKE_NOT_NOW_ANSWER =
+  "This is the test assistant. Fine, nothing was created.";
+
 export function fakeModel(): LanguageModel {
   return new MockLanguageModelV4({
     // Admin → AI settings → Test the model (one answer, not streamed).
@@ -62,8 +83,18 @@ export function fakeModel(): LanguageModel {
         last?.role === "user"
           ? last.content.map((p) => (p.type === "text" ? p.text : "")).join("")
           : "";
-      const toolCall = /custom report/i.test(asked);
-      const text = last?.role === "tool" ? FAKE_REPORT_ANSWER : FAKE_ANSWER;
+      const report = /custom report/i.test(asked);
+      // "Onboard …" (browser test, F16c): prepare a draft — it waits for Confirm.
+      const onboard = !report && /\bonboard\b/i.test(asked);
+      const toolCall = report || onboard;
+      const result = last?.role === "tool" ? JSON.stringify(last.content) : "";
+      const text = !result
+        ? FAKE_ANSWER
+        : result.includes("execution-denied")
+          ? FAKE_NOT_NOW_ANSWER
+          : result.includes("createOnboardingDraft")
+            ? FAKE_ONBOARDING_ANSWER
+            : FAKE_REPORT_ANSWER;
       return {
         stream: simulateReadableStream({
           chunkDelayInMs: 20,
@@ -73,8 +104,12 @@ export function fakeModel(): LanguageModel {
                   {
                     type: "tool-call" as const,
                     toolCallId: `fake-${Date.now()}`,
-                    toolName: "saveCustomReport",
-                    input: JSON.stringify({ definition: FAKE_REPORT }),
+                    toolName: report
+                      ? "saveCustomReport"
+                      : "createOnboardingDraft",
+                    input: JSON.stringify(
+                      report ? { definition: FAKE_REPORT } : FAKE_ONBOARDING,
+                    ),
                   },
                 ]
               : [

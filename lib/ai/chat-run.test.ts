@@ -3,6 +3,7 @@ import { simulateReadableStream, type UIMessage } from "ai";
 import { MockLanguageModelV4 } from "ai/test";
 import { describe, expect, test, vi } from "vitest";
 import {
+  answerApproval,
   chatTitle,
   runChat,
   withoutRefused,
@@ -64,6 +65,7 @@ function deps(over: Partial<ChatDeps> = {}, status: Partial<AiStatus> = {}) {
     loadMessages: vi.fn(async (): Promise<UIMessage[] | null> => null),
     createChat: vi.fn(async () => {}),
     saveMessages: vi.fn(async () => {}),
+    replaceMessage: vi.fn(async () => {}),
     recordUsage: vi.fn(async () => {}),
     ...over,
   };
@@ -357,5 +359,70 @@ describe("chatTitle", () => {
   test("the first question, shortened", () => {
     expect(chatTitle("  How many   people? ")).toBe("How many people?");
     expect(chatTitle("x".repeat(80))).toHaveLength(60);
+  });
+});
+
+describe("Confirm / Not now on a write (F16c)", () => {
+  const asked: UIMessage[] = [
+    {
+      id: "q1",
+      role: "user",
+      parts: [{ type: "text", text: "Onboard Meera Nair" }],
+    },
+    {
+      id: "a1",
+      role: "assistant",
+      parts: [
+        {
+          type: "tool-createOnboardingDraft",
+          toolCallId: "call-1",
+          state: "approval-requested",
+          input: { firstName: "Meera", lastName: "Nair" },
+          approval: { id: "approval-1" },
+        },
+      ],
+    },
+  ];
+  const admin = { ...person, roles: ["admin" as const] };
+
+  test("answerApproval: only the last answer's waiting request", () => {
+    const answered = answerApproval(asked, "approval-1", true);
+    expect(answered?.[1].parts[0]).toMatchObject({
+      state: "approval-responded",
+      approval: { id: "approval-1", approved: true },
+    });
+    expect(answerApproval(asked, "approval-2", true)).toBeNull();
+    expect(answerApproval(asked.slice(0, 1), "approval-1", true)).toBeNull();
+    expect(answerApproval(answered!, "approval-1", false)).toBeNull(); // answered once
+  });
+
+  test("Not now: the answer continues and replaces the waiting one; no question saved", async () => {
+    const { d, model } = deps({ loadMessages: vi.fn(async () => asked) });
+    const res = await runChat(
+      { id: CHAT, approval: { id: "approval-1", approved: false } },
+      admin,
+      d,
+    );
+    expect(res.status).toBe(200);
+    await res.text();
+    await vi.waitFor(() => expect(d.replaceMessage).toHaveBeenCalled());
+    const [chat, oldId, message] = vi.mocked(d.replaceMessage).mock
+      .calls[0] as unknown as [string, string, UIMessage];
+    expect([chat, oldId]).toEqual([CHAT, "a1"]);
+    expect(JSON.stringify(message.parts)).toContain("Hello, Raju.");
+    expect(d.createChat).not.toHaveBeenCalled();
+    // The model was told the person said no.
+    expect(JSON.stringify(model.doStreamCalls[0].prompt)).toContain("call-1");
+  });
+
+  test("an approval the chat isn't waiting for is refused", async () => {
+    const { d } = deps({ loadMessages: vi.fn(async () => asked) });
+    const res = await runChat(
+      { id: CHAT, approval: { id: "forged", approved: true } },
+      admin,
+      d,
+    );
+    expect(res.status).toBe(409);
+    expect(d.model).not.toHaveBeenCalled();
   });
 });

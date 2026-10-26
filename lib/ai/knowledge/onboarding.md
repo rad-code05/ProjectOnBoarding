@@ -17,3 +17,5 @@ summary: Creating an onboarding, the form's sections, office and nationality, ap
 10–11. Signatures (filled when people sign).
 
 **Execution:** *Start execution* moves the request to *In execution*; do the work, tick section 9, then *Review & sign*.
+
+**With the assistant:** say who joins ("Onboard Meera Nair, Dubai, Engineering, starts Monday, Slack and GitHub"); it asks follow-up questions, shows a *Needs your Confirm* card and creates the draft with every value as a suggestion. On the form: the black banner counts the suggestions (*Accept all*, *Next suggestion*, *Reject all*); each dashed field or row has its own Accept / Reject. Review & sign warns about suggestions not reviewed — they are not part of the request until accepted.
