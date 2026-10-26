@@ -2,7 +2,14 @@ import { tool } from "ai";
 import * as z from "zod";
 import type { Json } from "@/lib/supabase/database.types";
 import { loadFormOptions } from "./onboarding-load";
-import { resolveOnboarding } from "./onboarding-shared";
+import {
+  askAbout,
+  precheckOnboarding,
+  resolveOnboarding,
+  TOPICS,
+  type OnboardingInput,
+  type Topic,
+} from "./onboarding-shared";
 import { defineTool } from "./types";
 
 const name = (what: string) => z.string().trim().min(1).max(120).describe(what);
@@ -62,6 +69,12 @@ export const onboardingInputSchema = z.object({
     )
     .max(10)
     .optional(),
+  notNeeded: z
+    .array(z.enum(Object.keys(TOPICS) as [Topic, ...Topic[]]))
+    .optional()
+    .describe(
+      "Topics the person said aren't needed for this joiner (never the office). Only after asking.",
+    ),
   reasons: z
     .record(z.string(), z.string().max(80))
     .optional()
@@ -83,11 +96,28 @@ export const createOnboardingDraft = defineTool({
   roles: ["admin", "requester"],
   kind: "write",
   needsApproval: true,
+  // Nothing missed (Raju, 2026-10-26): every topic answered — or said not
+  // needed — and every name found, before the person sees the Confirm card.
+  precheck: async (input, ctx) => {
+    const parsed = onboardingInputSchema.safeParse(input);
+    if (!parsed.success) return "The input is not valid. Call again.";
+    // Open topics first — no database needed for that.
+    const ask = askAbout(parsed.data as OnboardingInput);
+    if (ask) return ask;
+    try {
+      return precheckOnboarding(
+        parsed.data as OnboardingInput,
+        await loadFormOptions(ctx.db),
+      );
+    } catch {
+      return "The form's lists could not be read just now. Say so and try again later.";
+    }
+  },
   build: (ctx) =>
     tool({
       description: [
         "Create an onboarding draft for a new joiner, with every value as a suggestion the person accepts on the form. The person sees all values and must Confirm first.",
-        "Before calling: ask for what's missing (first and last name at least; office, department, start date, manager and the applications with their roles are usually needed), with follow-up questions in one short numbered list. Turn relative dates into real dates (company time).",
+        `Before calling: every onboarding covers ${Object.values(TOPICS).join(", ")}. Ask about each one not given yet, in one short numbered list, even when the person only asked for a quick draft; a topic the person says isn't needed goes in notNeeded. Turn relative dates into real dates (company time). If the call is refused with "Ask about", ask exactly that.`,
         "Use names exactly as getFormOptions and getCatalog list them; never guess a person, office, department, application or role — ask. Equipment asset tags and section 9 are never yours to fill.",
         "If the result lists problems, nothing was created: ask about them, then call again.",
       ].join(" "),

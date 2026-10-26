@@ -140,3 +140,37 @@ describe("createOnboardingDraft (F16c)", () => {
     ).resolves.toMatchObject({ created: true, suggestions: 0 });
   });
 });
+
+describe("precheck: the Confirm card only shows a complete request", () => {
+  test("open topics are refused with what to ask; complete ones ask for the Confirm", async () => {
+    const ctx = {
+      userId: "u1",
+      roles: ["admin" as const],
+      timeZone: "Asia/Dubai",
+      db: {} as never,
+    };
+    await expect(
+      createOnboardingDraft.precheck!(
+        { firstName: "Meera", lastName: "Test", office: "Dubai" },
+        ctx,
+      ),
+    ).resolves.toContain("Ask about: work email");
+    await expect(
+      createOnboardingDraft.precheck!(
+        {
+          firstName: "Meera",
+          lastName: "Nair",
+          workEmail: "meera.nair@laine.ai",
+          jobTitle: "Backend developer",
+          department: "Engineering",
+          office: "Dubai",
+          manager: "Omar Haddad",
+          startDate: "2026-11-02",
+          applications: [{ name: "Slack" }],
+          notNeeded: ["equipment", "access", "nationalities"],
+        },
+        ctx,
+      ),
+    ).resolves.toBeNull();
+  });
+});

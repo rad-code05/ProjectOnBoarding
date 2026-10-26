@@ -714,6 +714,16 @@ function Message({
             />
           ) : null;
         }
+        // Refused by the server before any card (something still missing):
+        // the robot asks about it in words — nothing to show here.
+        if (
+          isToolUIPart(part) &&
+          (part.state === "output-denied" ||
+            part.state === "approval-responded") &&
+          part.approval?.isAutomatic
+        ) {
+          return null;
+        }
         if (
           isToolUIPart(part) &&
           (part.state === "output-denied" ||

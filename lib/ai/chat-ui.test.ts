@@ -300,6 +300,13 @@ describe("filling by chat (F16c)", () => {
       { label: "Access", value: "Office access · Badge" },
     ]);
     expect(confirmCard("deleteEverything", {})).toBeNull();
+    expect(
+      confirmCard("createOnboardingDraft", {
+        firstName: "Meera",
+        lastName: "Nair",
+        notNeeded: ["equipment", "nationalities"],
+      })?.rows.at(-1),
+    ).toEqual({ label: "Not needed", value: "equipment, nationality" });
   });
 
   test("the step line says what happened", () => {

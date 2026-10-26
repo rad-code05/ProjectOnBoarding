@@ -30,7 +30,59 @@ export type OnboardingInput = {
   access?: { type: string; scope?: string; reason?: string }[];
   /** Why a field has its value ("you said so", "“Monday”"), by field name. */
   reasons?: Partial<Record<FieldName, string>>;
+  /** Topics the person said aren't needed (asked, and answered "no"). */
+  notNeeded?: Topic[];
 };
+
+/** What every onboarding is asked about before the Confirm (Raju, 2026-10-26). */
+export const TOPICS = {
+  workEmail: "work email",
+  jobTitle: "job title",
+  department: "department",
+  office: "office",
+  manager: "manager",
+  startDate: "start date",
+  applications: "applications and their roles",
+  equipment: "equipment",
+  access: "physical / logical access (badge, VPN …)",
+  nationalities: "nationality",
+} as const;
+export type Topic = keyof typeof TOPICS;
+
+/**
+ * The topics nobody answered yet — neither a value nor the person saying it
+ * isn't needed. The office is never optional (the form requires it).
+ */
+export function missingTopics(input: OnboardingInput): Topic[] {
+  const skipped = new Set(input.notNeeded ?? []);
+  const given = (t: Topic) => {
+    const v = input[t];
+    return Array.isArray(v) ? v.length > 0 : Boolean(v?.toString().trim());
+  };
+  return (Object.keys(TOPICS) as Topic[]).filter(
+    (t) => !given(t) && (t === "office" || !skipped.has(t)),
+  );
+}
+
+/** Words for the model when something is missing or wrong (null = complete). */
+export function askAbout(input: OnboardingInput): string | null {
+  const missing = missingTopics(input);
+  return missing.length
+    ? `Not shown to the person yet. Ask about: ${missing.map((t) => TOPICS[t]).join(", ")} — in one short numbered list. Put a topic in notNeeded only when the person says it isn't needed. Then call again.`
+    : null;
+}
+
+export function precheckOnboarding(
+  input: OnboardingInput,
+  options: FormOptions,
+): string | null {
+  const ask = askAbout(input);
+  if (ask) return ask;
+  const resolved = resolveOnboarding(input, options);
+  return resolved.ok
+    ? null
+    : `Not shown to the person yet. Ask about these, then call again: ${resolved.problems.join(" ")}`;
+}
 
 export type FieldName =
   | "firstName"

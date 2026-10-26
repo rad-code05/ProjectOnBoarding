@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
   countryCode,
+  missingTopics,
+  precheckOnboarding,
   resolveOnboarding,
   type FormOptions,
 } from "./onboarding-shared";
@@ -174,5 +176,72 @@ describe("resolveOnboarding", () => {
       'There is no equipment type "Tablet". Types: Laptop · macOS.',
       'Office access has no scope "Fingerprint". Scopes: Badge, Key.',
     ]);
+  });
+});
+
+describe("nothing missed before the Confirm (Raju, 2026-10-26)", () => {
+  const complete = {
+    firstName: "Meera",
+    lastName: "Nair",
+    workEmail: "meera.nair@laine.ai",
+    jobTitle: "Backend developer",
+    department: "Engineering",
+    office: "Dubai",
+    manager: "Omar Haddad",
+    startDate: "2026-11-02",
+    applications: [{ name: "Slack", permission: "Regular Member" }],
+    equipment: [{ type: "Laptop · macOS" }],
+    access: [{ type: "Office access", scope: "Badge" }],
+    nationalities: ["India"],
+  };
+
+  test("a quick draft (name, office, one app) leaves topics open", () => {
+    expect(
+      missingTopics({
+        firstName: "Meera",
+        lastName: "Test",
+        office: "Dubai",
+        applications: [{ name: "Slack" }],
+      }),
+    ).toEqual([
+      "workEmail",
+      "jobTitle",
+      "department",
+      "manager",
+      "startDate",
+      "equipment",
+      "access",
+      "nationalities",
+    ]);
+  });
+
+  test("a topic the person said isn't needed is closed — never the office", () => {
+    const { equipment, access, nationalities, office, ...rest } = complete;
+    void equipment;
+    void access;
+    void nationalities;
+    void office;
+    expect(
+      missingTopics({
+        ...rest,
+        notNeeded: ["equipment", "access", "nationalities", "office"],
+      }),
+    ).toEqual(["office"]);
+    expect(missingTopics(complete)).toEqual([]);
+  });
+
+  test("precheck: what to ask, then unknown names, then nothing (shows the card)", () => {
+    expect(
+      precheckOnboarding(
+        { firstName: "Meera", lastName: "Test", office: "Dubai" },
+        options,
+      ),
+    ).toContain(
+      "Ask about: work email, job title, department, manager, start date, applications and their roles, equipment",
+    );
+    expect(
+      precheckOnboarding({ ...complete, office: "Mumbai" }, options),
+    ).toContain('There is no office "Mumbai"');
+    expect(precheckOnboarding(complete, options)).toBeNull();
   });
 });

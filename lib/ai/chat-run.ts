@@ -257,7 +257,7 @@ export async function runChat(
     instructions: deps.instructions,
     messages: await convertToModelMessages(withoutRefused(messages)),
     tools,
-    toolApproval: toolApprovalFor(person.roles),
+    toolApproval: toolApprovalFor(person),
     stopWhen: isStepCount(MAX_STEPS),
     maxOutputTokens: MAX_OUTPUT_TOKENS,
   });
