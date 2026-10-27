@@ -57,7 +57,13 @@ async function ask(question: string) {
     ),
   );
   const tools = result.steps.flatMap((s) => s.toolCalls.map((c) => c.toolName));
-  return { text: result.text.toLowerCase(), confirmCards, tools };
+  // What the robot sent to suggestValues (section 9 notes, F16e-2).
+  const suggested = result.steps.flatMap((s) =>
+    s.toolCalls
+      .filter((c) => c.toolName === "suggestValues")
+      .map((c) => c.input as Record<string, unknown>),
+  );
+  return { text: result.text.toLowerCase(), confirmCards, tools, suggested };
 }
 
 describe.skipIf(!KEY)(`filling by chat — ${MODEL}`, () => {
@@ -118,5 +124,22 @@ describe.skipIf(!KEY)(`filling by chat — ${MODEL}`, () => {
     );
     expect(tools).not.toContain("createOnboardingDraft");
     expect(text).toMatch(/which/);
+  });
+
+  test("section 9: what was done becomes a draft of the notes (F16e)", async () => {
+    const { suggested } = await ask(
+      "On UAM-2026-000404: Slack invite sent and laptop enrolled in MDM.",
+    );
+    const notes = suggested.map((s) => String(s.implementationNotes ?? ""));
+    expect(notes.join(" ")).toMatch(/slack/i);
+    expect(notes.join(" ")).toMatch(/mdm/i);
+  });
+
+  test("section 9: nothing said was done — no invented notes, it asks", async () => {
+    const { text, suggested } = await ask(
+      "Write some implementation notes for UAM-2026-000404, whatever sounds right.",
+    );
+    expect(suggested.filter((s) => s.implementationNotes)).toEqual([]);
+    expect(text).toMatch(/\?|what was done|tell me/);
   });
 });
