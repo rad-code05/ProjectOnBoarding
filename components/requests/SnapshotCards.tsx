@@ -274,7 +274,8 @@ export function ExecutionCard({
           );
         })}
       </ul>
-      <p className="text-[13px] text-graphite">
+      {/* Keeps the notes' line breaks (two notes = two paragraphs). */}
+      <p className="text-[13px] whitespace-pre-line text-graphite">
         <span className="font-semibold text-ink">Notes: </span>
         {execution?.notes || "—"}
       </p>
