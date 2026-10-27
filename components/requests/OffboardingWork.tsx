@@ -11,6 +11,7 @@ import {
 import {
   setEquipmentReturn,
   setMailboxHandling,
+  setAccessNote,
   setRemoval,
 } from "@/app/(app)/requests/actions";
 import {
@@ -420,7 +421,7 @@ export function WorkRemovalSections({
             className="border-b border-line-subtle px-4 py-1.5 last:border-b-0 md:px-5"
           >
             <Tick
-              fix="access-done"
+              fix={row.notes ? undefined : "access-done"}
               label={row.name}
               detail={[row.action, row.scope].filter(Boolean).join(" · ")}
               checked={Boolean(row.doneAt)}
@@ -441,6 +442,16 @@ export function WorkRemovalSections({
                 )
               }
             />
+            {!row.doneAt && (editable || row.notes) && (
+              <AccessNote
+                name={row.name}
+                note={row.notes}
+                editable={editable && !access.pending}
+                onSave={(note) =>
+                  access.run(() => setAccessNote({ itemId: row.id, note }))
+                }
+              />
+            )}
             {changes && !row.doneAt && (
               <div className="-mt-1 ml-9 flex md:ml-7.5">
                 <TakeOff edit={changes} kind="access" row={row} />
@@ -458,6 +469,50 @@ export function WorkRemovalSections({
 }
 
 /** Board Phone · Equipment return (sheet). */
+/**
+ * A note instead of the tick (Raju, 2026-10-27): access the person holds
+ * must be removed or explained — "badge collected Friday by HR". Saved when
+ * the field is left.
+ */
+function AccessNote({
+  name,
+  note,
+  editable,
+  onSave,
+}: {
+  name: string;
+  note: string | null;
+  editable: boolean;
+  onSave: (note: string) => void;
+}) {
+  const id = useId();
+  if (!editable)
+    return (
+      <p className="ml-9 pb-1 text-[13px] text-graphite md:ml-7.5 md:text-xs">
+        Note: {note}
+      </p>
+    );
+  return (
+    <div className="ml-9 flex flex-col gap-1 pb-1.5 md:ml-7.5">
+      <label htmlFor={id} className="sr-only">
+        Note about {name}
+      </label>
+      <input
+        id={id}
+        type="text"
+        defaultValue={note ?? ""}
+        maxLength={500}
+        placeholder="…or a note: why not yet, or when / how it's removed"
+        onBlur={(event) => {
+          const next = event.target.value.trim();
+          if (next !== (note ?? "")) onSave(next);
+        }}
+        className="h-10 w-full max-w-md rounded-field border border-field-border bg-paper px-3 text-base md:h-8 md:text-[13px]"
+      />
+    </div>
+  );
+}
+
 export function EquipmentReturnSheet({
   item,
   onClose,

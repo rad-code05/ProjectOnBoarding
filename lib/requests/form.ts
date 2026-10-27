@@ -643,6 +643,7 @@ export async function loadRequestForm(
                 action: row.action,
                 scope: row.scope,
                 doneAt: row.done_at,
+                notes: row.notes,
               })),
             },
             sla: {

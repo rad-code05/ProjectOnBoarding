@@ -93,6 +93,8 @@ export type Removals = {
     action: string;
     scope: string | null;
     doneAt: string | null;
+    /** Instead of the tick: why it's not removed yet / how it will be. */
+    notes: string | null;
   }[];
 };
 

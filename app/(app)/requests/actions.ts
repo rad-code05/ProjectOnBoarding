@@ -723,6 +723,31 @@ export async function setRemoval(input: {
   return error ? workError(error) : { ok: true };
 }
 
+/**
+ * Offboarding (Raju, 2026-10-27): a note on an access row instead of the
+ * tick ("badge collected Friday by HR") — counts for Review & sign; audited.
+ */
+export async function setAccessNote(input: {
+  itemId: string;
+  note: string;
+}): Promise<AccessResult> {
+  await requireRole("admin", "requester", "it_operator");
+  const parsed = z
+    .object({
+      itemId: z.uuid(),
+      note: z.string().max(500, "Keep it under 500 characters."),
+    })
+    .safeParse(input);
+  if (!parsed.success)
+    return { ok: false, message: "Keep the note under 500 characters." };
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("set_access_note", {
+    p_item_id: parsed.data.itemId,
+    p_note: parsed.data.note,
+  });
+  return error ? workError(error) : { ok: true };
+}
+
 const equipmentReturnSchema = z.object({
   itemId: z.uuid(),
   status: z.enum(["pending", "received", "not_returned"]),

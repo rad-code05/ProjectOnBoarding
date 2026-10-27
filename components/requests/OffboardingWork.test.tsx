@@ -68,6 +68,7 @@ const removals: Removals = {
       action: "Disable",
       scope: "Badge",
       doneAt: null,
+      notes: null,
     },
   ],
 };
