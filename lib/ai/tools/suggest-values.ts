@@ -3,6 +3,16 @@ import * as z from "zod";
 import type { Json } from "@/lib/supabase/database.types";
 import { onboardingInputSchema } from "./create-onboarding-draft";
 import { loadFormOptions } from "./onboarding-load";
+import {
+  heldSuggestions,
+  addedSuggestions,
+  type HeldChangeInput,
+} from "./access-change-shared";
+import {
+  addSchema,
+  heldChangeSchema,
+  loadHeld,
+} from "./create-access-change-draft";
 import { offboardingInputSchema } from "./create-offboarding-draft";
 import { offboardingFields } from "./offboarding-shared";
 import { resolveOnboarding, type OnboardingInput } from "./onboarding-shared";
@@ -43,6 +53,15 @@ export const suggestValues = defineTool({
           .partial()
           .optional()
           .describe("Onboarding only: the values to add or change."),
+        accessChange: z
+          .object({
+            changes: z.array(heldChangeSchema).max(40).optional(),
+            add: addSchema.optional(),
+          })
+          .optional()
+          .describe(
+            "Access change only: changes to what they hold, or something new.",
+          ),
         offboarding: offboardingInputSchema
           .omit({ person: true, notNeeded: true })
           .optional()
@@ -50,7 +69,7 @@ export const suggestValues = defineTool({
             "Offboarding only: the timing and handover to add or change.",
           ),
       }),
-      execute: async ({ ticket, values, offboarding }) => {
+      execute: async ({ ticket, values, offboarding, accessChange }) => {
         const save = async (
           r: { id: string; ticket_id: string },
           suggestions: unknown[],
@@ -80,7 +99,7 @@ export const suggestValues = defineTool({
           };
         let query = ctx.db
           .from("requests")
-          .select("id, ticket_id, type, state")
+          .select("id, ticket_id, type, state, employee_id")
           .eq("ticket_number", wanted.number)
           .order("ticket_year", { ascending: false });
         if (wanted.year) query = query.eq("ticket_year", wanted.year);
@@ -118,12 +137,50 @@ export const suggestValues = defineTool({
             };
           return save(r, fields.suggestions);
         }
-        if (r.type !== "onboarding")
-          return {
-            added: 0,
-            ticket: r.ticket_id,
-            error: "Access changes can't get suggestions by chat yet.",
-          };
+        if (r.type === "access_modification") {
+          if (!r.employee_id)
+            return {
+              added: 0,
+              ticket: r.ticket_id,
+              error: "This access change has no person.",
+            };
+          let held, opts;
+          try {
+            [held, opts] = await Promise.all([
+              loadHeld(ctx.db, r.employee_id),
+              loadFormOptions(ctx.db),
+            ]);
+          } catch {
+            return {
+              added: 0,
+              error: "What the person holds could not be read just now.",
+            };
+          }
+          const changes = heldSuggestions(
+            (accessChange?.changes ?? []) as HeldChangeInput[],
+            held,
+          );
+          const added = addedSuggestions(accessChange?.add, held, opts);
+          const extra = resolveOnboarding(
+            // The effective date ("startDate" in the shared values).
+            { startDate: values?.startDate },
+            opts,
+          );
+          const problems = [...changes.problems, ...added.problems];
+          const all = [
+            ...changes.suggestions,
+            ...added.suggestions,
+            ...(extra.ok ? extra.suggestions : []),
+          ];
+          if (problems.length || all.length === 0)
+            return {
+              added: 0,
+              ticket: r.ticket_id,
+              problems,
+              note: "On an access change pass accessChange (changes / add). Nothing was added.",
+            };
+          return save(r, all);
+        }
 
         let options;
         try {

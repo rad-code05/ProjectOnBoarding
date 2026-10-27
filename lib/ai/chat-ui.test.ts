@@ -335,6 +335,31 @@ describe("filling by chat (F16c)", () => {
         suggestions: 4,
       }),
     ).toBe("Started the offboarding UAM-2026-000410 · 4 suggestions waiting");
+    const changing = confirmCard("createAccessChangeDraft", {
+      person: "Omar Haddad",
+      effectiveDate: "2026-11-01",
+      changes: [
+        { item: "Slack", action: "change", to: "Workspace Owner" },
+        { item: "Figma", action: "remove" },
+      ],
+      add: { applications: [{ name: "HubSpot", permission: "Admin" }] },
+    });
+    expect(changing?.title).toBe("Start an access change for Omar Haddad?");
+    expect(changing?.rows).toEqual([
+      { label: "Person", value: "Omar Haddad" },
+      { label: "Effective date", value: "1 Nov 2026" },
+      { label: "Change", value: "Slack to Workspace Owner" },
+      { label: "Remove / return", value: "Figma" },
+      { label: "Add", value: "HubSpot · Admin" },
+      { label: "Everything else", value: "Kept as they hold it today" },
+    ]);
+    expect(
+      toolStep("createAccessChangeDraft", true, {
+        created: true,
+        ticket: "UAM-2026-000420",
+        suggestions: 4,
+      }),
+    ).toBe("Started the access change UAM-2026-000420 · 4 suggestions waiting");
   });
 
   test("the step line says what happened", () => {

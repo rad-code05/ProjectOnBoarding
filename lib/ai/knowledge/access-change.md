@@ -10,3 +10,5 @@ For each thing they hold choose **Keep**, **Change** (for example a new permissi
 Section 9 is pre-filled: *Yes* where something changed, *No changes made* elsewhere.
 
 When it closes, the record and the PDF show **What changed** — before and after — and the access inventory is updated.
+
+**With the assistant:** say what changes ("Omar: Slack Workspace Owner, remove Figma, add HubSpot Admin, from 1 November"). It checks every item against what the person holds (only the roles and scopes each one offers), asks about anything unclear and shows a *Needs your Confirm* card; then the access change draft exists with each change as a suggestion you accept. Everything else they hold stays as it is.

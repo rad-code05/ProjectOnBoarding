@@ -32,7 +32,8 @@ export type FieldSuggestion = {
 
 export type ItemSuggestion = {
   id: string;
-  kind: "access" | "equipment" | "physical";
+  /** held: a change to something the person holds (access change, F16d-2). */
+  kind: "access" | "equipment" | "physical" | "held";
   /** "Slack", "Laptop", "Office access". */
   name: string;
   /** "Grant · Regular Member", "Issue · Dell 14\"", "Grant · Badge". */
@@ -64,6 +65,8 @@ export type SuggestionNames = {
   apps: Map<number, string>;
   equipment: Map<number, string>;
   physical: Map<number, string>;
+  /** What the person holds (access change): inventory id → name. */
+  held?: Map<string, string>;
   /** Cut-off times are typed (and shown) in the company timezone. */
   companyTimeZone: string;
 };
@@ -126,6 +129,17 @@ function itemSuggestion(
   row: SuggestionRow,
   names: SuggestionNames,
 ): ItemSuggestion | null {
+  if (row.kind === "held") {
+    const v = (row.value ?? {}) as Record<string, unknown>;
+    return {
+      id: row.id,
+      kind: "held",
+      name:
+        names.held?.get(row.target.replace("held:", "")) ?? "An item they hold",
+      detail: [v.action, v.value].filter(Boolean).map(String).join(" · "),
+      reason: row.reason,
+    };
+  }
   if (!(row.kind in ITEM_KINDS)) return null;
   const kind = row.kind as keyof typeof ITEM_KINDS;
   const { prefix, names: list } = ITEM_KINDS[kind];

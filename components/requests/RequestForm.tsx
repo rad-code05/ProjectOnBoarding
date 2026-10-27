@@ -243,7 +243,7 @@ export function RequestForm({
     setWaitingSuggestions(waiting);
     return () => setWaitingSuggestions(0);
   }, [waiting]);
-  const itemsOf = (kind: "access" | "equipment" | "physical") =>
+  const itemsOf = (kind: "access" | "equipment" | "physical" | "held") =>
     itemSuggestions.filter((i) => i.kind === kind);
 
   /** Accept or reject one suggestion; false (and a message) when refused. */
@@ -806,6 +806,14 @@ export function RequestForm({
             <ProvisioningSection key={number} />
           ) : number === 5 ? (
             <Fragment key={number}>
+              {change && !disabled && (
+                <SuggestedItems
+                  items={itemsOf("held")}
+                  busy={suggestBusy}
+                  onAccept={(id) => void decide([id], true)}
+                  onReject={(id) => void decide([id], false)}
+                />
+              )}
               {change && <HeldSection kind="application" {...heldProps} />}
               {!disabled && (
                 <SuggestedItems
