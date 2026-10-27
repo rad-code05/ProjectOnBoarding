@@ -1,6 +1,7 @@
 import { formatDate, formatDayTime } from "@/lib/requests/format";
 import { countryName } from "@/lib/requests/labels";
 import { zonedParts } from "@/lib/time/zoned";
+import { MAILBOX_LABELS, type MailboxHandling } from "./offboarding";
 import type { DraftFieldKey, DraftFormValues } from "./draft";
 
 /**
@@ -33,7 +34,7 @@ export type FieldSuggestion = {
 export type ItemSuggestion = {
   id: string;
   /** held: a change to something the person holds (access change, F16d-2). */
-  kind: "access" | "equipment" | "physical" | "held";
+  kind: "access" | "equipment" | "physical" | "held" | "removal" | "mailbox";
   /** "Slack", "Laptop", "Office access". */
   name: string;
   /** "Grant · Regular Member", "Issue · Dell 14\"", "Grant · Badge". */
@@ -67,6 +68,8 @@ export type SuggestionNames = {
   physical: Map<number, string>;
   /** What the person holds (access change): inventory id → name. */
   held?: Map<string, string>;
+  /** Offboarding application rows: row id → app name (removal method). */
+  rows?: Map<string, string>;
   /** Cut-off times are typed (and shown) in the company timezone. */
   companyTimeZone: string;
 };
@@ -129,6 +132,27 @@ function itemSuggestion(
   row: SuggestionRow,
   names: SuggestionNames,
 ): ItemSuggestion | null {
+  if (row.kind === "removal") {
+    const v = (row.value ?? {}) as Record<string, unknown>;
+    return {
+      id: row.id,
+      kind: "removal",
+      name:
+        names.rows?.get(row.target.replace("removal:", "")) ?? "An application",
+      detail: `Removal method: ${String(v.method ?? "")}`,
+      reason: row.reason,
+    };
+  }
+  if (row.kind === "mailbox") {
+    const value = String(row.value ?? "") as MailboxHandling;
+    return {
+      id: row.id,
+      kind: "mailbox",
+      name: "Mailbox",
+      detail: MAILBOX_LABELS[value] ?? value,
+      reason: row.reason,
+    };
+  }
   if (row.kind === "held") {
     const v = (row.value ?? {}) as Record<string, unknown>;
     return {

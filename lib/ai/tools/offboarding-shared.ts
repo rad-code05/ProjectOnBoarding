@@ -16,8 +16,20 @@ export const OFFBOARDING_TOPICS = {
   lastWorkingDay: "last working day",
   slaTimeline: "SLA (same day, within 24 h or within 48 h)",
   cutoff: "access cut-off (date and time)",
-  handoverTo: "handover (who gets their data and mailbox)",
+  handoverTo:
+    "handover (who gets their data and mailbox — or what happens to it, e.g. deleted)",
+  removalMethod:
+    "how the applications are removed (Delete, Suspend or Disable — one for all, or per application)",
+  mailbox:
+    "the mailbox (convert to a shared mailbox, or no mailbox to convert)",
 } as const;
+
+export type RemovalMethod = "Delete" | "Suspend" | "Disable";
+export type MailboxChoice = "converted_shared" | "no_mailbox";
+export const MAILBOX_WORDS: Record<MailboxChoice, string> = {
+  converted_shared: "Convert to a shared mailbox",
+  no_mailbox: "No mailbox to convert",
+};
 export type OffboardingTopic = keyof typeof OFFBOARDING_TOPICS;
 
 export type OffboardingInput = {
@@ -28,9 +40,15 @@ export type OffboardingInput = {
   cutoffDate?: string;
   /** "18:00", company time. */
   cutoffTime?: string;
+  /** A person, an address or what happens ("Not needed — data deleted"). */
   handoverTo?: string;
-  /** Only the handover can be "not needed". */
-  notNeeded?: "handoverTo"[];
+  /** One method for every application … */
+  removalMethod?: RemovalMethod;
+  /** … or per application (overrides the one for all). */
+  removalMethods?: { app: string; method: RemovalMethod }[];
+  mailbox?: MailboxChoice;
+  /** Defaults to the last working day. */
+  effectiveDate?: string;
   reasons?: Partial<Record<OffboardingTopic, string>>;
 };
 
@@ -47,8 +65,10 @@ export function missingOffboardingTopics(
   if (!input.slaTimeline) missing.push("slaTimeline");
   if (!text(input.cutoffDate) || !text(input.cutoffTime))
     missing.push("cutoff");
-  if (!text(input.handoverTo) && !input.notNeeded?.includes("handoverTo"))
-    missing.push("handoverTo");
+  if (!text(input.handoverTo)) missing.push("handoverTo");
+  if (!input.removalMethod && !input.removalMethods?.length)
+    missing.push("removalMethod");
+  if (!input.mailbox) missing.push("mailbox");
   return missing;
 }
 
@@ -154,7 +174,60 @@ export function offboardingFields(
   }
   const handover = text(input.handoverTo);
   if (handover) add("handoverTo", "handover_to", handover);
+  // The effective date of an offboarding: the last working day, unless said.
+  // (A wrong last working day is already reported above.)
+  const effective =
+    text(input.effectiveDate) ?? (last && DAY.test(last) ? last : undefined);
+  if (effective && DAY.test(effective))
+    out.push({ kind: "field", target: "effective_date", value: effective });
+  else if (effective)
+    problems.push("The effective date must be a day like 2026-10-30.");
+  if (input.mailbox) {
+    const why = input.reasons?.mailbox?.trim().slice(0, 200);
+    out.push({
+      kind: "mailbox",
+      target: "mailbox",
+      value: input.mailbox,
+      ...(why && { reason: why }),
+    });
+  }
   return { suggestions: out, problems };
+}
+
+/**
+ * The removal method per application row of the offboarding (once it
+ * exists): the one for that app if said, else the one for all. Unknown app
+ * names are problems — the rows are what the person holds.
+ */
+export function removalSuggestions(
+  rows: { id: string; app_name: string }[],
+  input: Pick<OffboardingInput, "removalMethod" | "removalMethods" | "reasons">,
+): { suggestions: Suggestion[]; problems: string[] } {
+  const problems: string[] = [];
+  for (const r of input.removalMethods ?? []) {
+    if (!rows.some((row) => normalize(row.app_name) === normalize(r.app)))
+      problems.push(
+        `They don't hold "${r.app}" (applications: ${rows.map((x) => x.app_name).join(", ") || "none"}).`,
+      );
+  }
+  const why = input.reasons?.removalMethod?.trim().slice(0, 200);
+  const suggestions: Suggestion[] = rows.flatMap((row) => {
+    const method =
+      input.removalMethods?.find(
+        (r) => normalize(r.app) === normalize(row.app_name),
+      )?.method ?? input.removalMethod;
+    return method
+      ? [
+          {
+            kind: "removal" as const,
+            target: `removal:${row.id}`,
+            value: { method },
+            ...(why && { reason: why }),
+          },
+        ]
+      : [];
+  });
+  return { suggestions, problems };
 }
 
 export const timelineLabel = (t: unknown): string | null =>

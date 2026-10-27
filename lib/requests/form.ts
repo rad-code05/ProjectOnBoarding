@@ -604,6 +604,9 @@ export async function loadRequestForm(
             (physicalTypes.data ?? []).map((t) => [t.id, t.name] as const),
           ),
           companyTimeZone: companyTz,
+          rows: new Map(
+            (items.data ?? []).map((r) => [r.id, r.app_name] as const),
+          ),
           held: new Map(
             (accessChange?.held ?? []).map(
               (h) => [h.inventoryId, h.name] as const,

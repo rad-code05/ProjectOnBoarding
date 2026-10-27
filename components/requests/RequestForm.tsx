@@ -253,8 +253,13 @@ export function RequestForm({
     setWaitingSuggestions(waiting);
     return () => setWaitingSuggestions(0);
   }, [waiting]);
-  const itemsOf = (kind: "access" | "equipment" | "physical" | "held") =>
-    itemSuggestions.filter((i) => i.kind === kind);
+  // The removal method and the mailbox are recorded in execution only (the
+  // screen's own rule): in a draft they wait, and Accept all skips them.
+  const waitsForExecution = (kind: string) =>
+    (kind === "removal" || kind === "mailbox") && form.state === "draft";
+  const itemsOf = (
+    kind: "access" | "equipment" | "physical" | "held" | "removal" | "mailbox",
+  ) => itemSuggestions.filter((i) => i.kind === kind);
 
   /** Accept or reject one suggestion; false (and a message) when refused. */
   const decideOne = async (id: string, accept: boolean) => {
@@ -283,7 +288,9 @@ export function RequestForm({
   };
   const allWaiting = () => [
     ...fieldSuggestions.map((f) => f.id),
-    ...itemSuggestions.map((i) => i.id),
+    ...itemSuggestions
+      .filter((i) => !waitsForExecution(i.kind))
+      .map((i) => i.id),
   ];
   const showNext = () => {
     const next = document.querySelector<HTMLElement>("[data-suggestion]");
@@ -756,6 +763,20 @@ export function RequestForm({
             busy={suggestBusy}
             workingOn={workingOn}
             onDecide={(id, accept) => void decide([id], accept)}
+          />
+        )}
+        {off && !disabled && (
+          <SuggestedItems
+            items={[...itemsOf("removal"), ...itemsOf("mailbox")]}
+            busy={suggestBusy}
+            working={working}
+            waitHint={
+              form.state === "draft"
+                ? "You can accept these after Start execution (the removal method and mailbox are recorded during the work)."
+                : undefined
+            }
+            onAccept={(id) => void decide([id], true)}
+            onReject={(id) => void decide([id], false)}
           />
         )}
         {off && (

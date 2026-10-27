@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { Leaver } from "@/lib/requests/leavers-shared";
 import {
+  removalSuggestions,
   askAboutOffboarding,
   findLeaver,
   missingOffboardingTopics,
@@ -37,6 +38,8 @@ const complete = {
   cutoffDate: "2026-10-30",
   cutoffTime: "18:00",
   handoverTo: "Rafiq Ahmed",
+  removalMethod: "Suspend" as const,
+  mailbox: "converted_shared" as const,
 };
 
 describe("findLeaver", () => {
@@ -57,18 +60,22 @@ describe("findLeaver", () => {
 });
 
 describe("the offboarding checklist", () => {
-  test("open topics are asked about; the handover can be not needed", () => {
+  test("open topics are asked about — incl. the removal method and the mailbox (Raju, 2026-10-27)", () => {
     expect(missingOffboardingTopics({ person: "Arjun" })).toEqual([
       "lastWorkingDay",
       "slaTimeline",
       "cutoff",
       "handoverTo",
+      "removalMethod",
+      "mailbox",
     ]);
+    // "Data will be deleted" is written down as the handover.
     expect(
       missingOffboardingTopics({
         ...complete,
-        handoverTo: undefined,
-        notNeeded: ["handoverTo"],
+        handoverTo: "Not needed — data will be deleted",
+        removalMethod: undefined,
+        removalMethods: [{ app: "Slack", method: "Delete" }],
       }),
     ).toEqual([]);
     expect(
@@ -93,7 +100,34 @@ describe("the offboarding checklist", () => {
         value: "2026-10-30T14:00:00.000Z",
       },
       { kind: "field", target: "handover_to", value: "Rafiq Ahmed" },
+      // The effective date of an offboarding = the last working day.
+      { kind: "field", target: "effective_date", value: "2026-10-30" },
+      { kind: "mailbox", target: "mailbox", value: "converted_shared" },
     ]);
+  });
+
+  test("the removal method per application row: per app if said, else for all", () => {
+    const rows = [
+      { id: "r1", app_name: "Slack" },
+      { id: "r2", app_name: "GitHub" },
+    ];
+    expect(
+      removalSuggestions(rows, {
+        removalMethod: "Suspend",
+        removalMethods: [{ app: "github", method: "Delete" }],
+      }),
+    ).toEqual({
+      problems: [],
+      suggestions: [
+        { kind: "removal", target: "removal:r1", value: { method: "Suspend" } },
+        { kind: "removal", target: "removal:r2", value: { method: "Delete" } },
+      ],
+    });
+    expect(
+      removalSuggestions(rows, {
+        removalMethods: [{ app: "Zoom", method: "Delete" }],
+      }).problems,
+    ).toEqual(['They don\'t hold "Zoom" (applications: Slack, GitHub).']);
   });
 
   test("already leaving, bad dates: problems, nothing resolved", () => {
