@@ -14,3 +14,5 @@ summary: Who is leaving, the access-removal deadline (SLA), removal methods, equ
 **During execution:** each application is removed with a method (Delete, Suspend or Disable), equipment is marked Returned or Not returned (with a reason), and the mailbox is recorded as converted to shared or "no mailbox to convert". A device still *Return pending* is a warning, not a block.
 
 The *Offboarding SLA* report lists deadlines, met / missed and upcoming ones.
+
+**With the assistant:** say who is leaving ("Arjun Mehta leaves Friday, cut-off 18:00 same day, Rafiq takes over"). It asks for the last working day, SLA, access cut-off and handover, shows a *Needs your Confirm* card and starts the draft: the removals are pre-filled from what the person holds, the timing and handover arrive as suggestions you accept. The removal method per app and the mailbox stay your choice during execution.

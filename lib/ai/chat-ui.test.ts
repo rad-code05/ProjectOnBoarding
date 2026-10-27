@@ -307,6 +307,34 @@ describe("filling by chat (F16c)", () => {
         notNeeded: ["equipment", "nationalities"],
       })?.rows.at(-1),
     ).toEqual({ label: "Not needed", value: "equipment, nationality" });
+    const leaving = confirmCard("createOffboardingDraft", {
+      person: "Arjun Mehta",
+      lastWorkingDay: "2026-10-30",
+      slaTimeline: "same_day",
+      cutoffDate: "2026-10-30",
+      cutoffTime: "18:00",
+      handoverTo: "Rafiq Ahmed",
+    });
+    expect(leaving?.title).toBe("Start an offboarding for Arjun Mehta?");
+    expect(leaving?.yes).toBe("Confirm — start the offboarding");
+    expect(leaving?.rows).toEqual([
+      { label: "Leaving", value: "Arjun Mehta" },
+      { label: "Last working day", value: "30 Oct 2026" },
+      { label: "SLA", value: "Same day" },
+      { label: "Access cut-off", value: "30 Oct 2026, 18:00" },
+      { label: "Handover", value: "Rafiq Ahmed" },
+      {
+        label: "Removals",
+        value: "Pre-filled from everything they hold today",
+      },
+    ]);
+    expect(
+      toolStep("createOffboardingDraft", true, {
+        created: true,
+        ticket: "UAM-2026-000410",
+        suggestions: 4,
+      }),
+    ).toBe("Started the offboarding UAM-2026-000410 · 4 suggestions waiting");
   });
 
   test("the step line says what happened", () => {

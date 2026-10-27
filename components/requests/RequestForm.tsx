@@ -38,6 +38,7 @@ import type { DraftFieldKey } from "@/lib/requests/draft";
 import type { EquipmentItem, PhysicalChoices } from "@/lib/requests/equipment";
 import type { FormField } from "@/lib/requests/fields";
 import type { RequestFormData } from "@/lib/requests/form";
+import type { FieldSuggestion } from "@/lib/requests/suggestions";
 import {
   countryName,
   EMPLOYMENT_EVENTS,
@@ -94,6 +95,46 @@ const OFFBOARDING_LABELS: Record<string, string> = {
   handover_to: "Data & mailbox go to",
   sla_missed_reason: "Why was the SLA missed?",
 };
+
+/** Offboarding fields the assistant may suggest (section 8 and the handover). */
+const OFFBOARDING_SUGGESTED: string[] = [
+  "sla_timeline",
+  "last_working_day",
+  "cutoff_date",
+  "handover_to",
+];
+
+/** The assistant's timing / handover suggestions, above section 8. */
+function OffboardingSuggestions({
+  suggestions,
+  busy,
+  onDecide,
+}: {
+  suggestions: FieldSuggestion[];
+  busy: boolean;
+  onDecide: (id: string, accept: boolean) => void;
+}) {
+  if (suggestions.length === 0) return null;
+  return (
+    <div className="grid grid-cols-2 gap-x-2.5 gap-y-3.5 rounded-card bg-paper p-4 md:col-span-2">
+      {suggestions.map((s) => (
+        <SuggestedField
+          key={s.id}
+          label={
+            s.key === "cutoff_date"
+              ? "Access cut-off"
+              : (OFFBOARDING_LABELS[s.key] ?? s.key)
+          }
+          suggestion={s}
+          busy={busy}
+          onAccept={() => onDecide(s.id, true)}
+          onReject={() => onDecide(s.id, false)}
+          className="col-span-2 md:col-span-1"
+        />
+      ))}
+    </div>
+  );
+}
 
 function statusText(
   status: SaveStatus,
@@ -680,6 +721,15 @@ export function RequestForm({
           <InventoryNote firstName={values.first_name ?? ""} held={held} />
         )}
 
+        {off && !disabled && (
+          <OffboardingSuggestions
+            suggestions={fieldSuggestions.filter((f) =>
+              OFFBOARDING_SUGGESTED.includes(f.key),
+            )}
+            busy={suggestBusy}
+            onDecide={(id, accept) => void decide([id], accept)}
+          />
+        )}
         {off && (
           <>
             {started && off.dueAt ? (

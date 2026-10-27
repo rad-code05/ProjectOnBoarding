@@ -62,6 +62,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
     const filling = [
       "getFormOptions",
       "createOnboardingDraft",
+      "createOffboardingDraft",
       "suggestValues",
     ];
     expect(toolNamesFor(["requester", "it_operator"])).toEqual([
@@ -102,7 +103,10 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
 
   test("approvals: only write tools wait for a Confirm — after their precheck", () => {
     const rules = toolApprovalFor(ctx(["admin", "requester", "it_operator"]));
-    expect(Object.keys(rules)).toEqual(["createOnboardingDraft"]);
+    expect(Object.keys(rules)).toEqual([
+      "createOnboardingDraft",
+      "createOffboardingDraft",
+    ]);
     expect(typeof rules.createOnboardingDraft).toBe("function");
     expect(
       toolApprovalFor(ctx(["it_operator", "approver", "auditor"])),

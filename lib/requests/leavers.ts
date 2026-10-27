@@ -15,8 +15,12 @@ const OPEN_STATES = [
  * last known department and country, how many items they hold, and any
  * offboarding or access change already open.
  */
-export async function listLeavers(): Promise<Leaver[]> {
-  const supabase = createServerSupabaseClient();
+export async function listLeavers(
+  // The assistant's tools pass their own client (they run after the request).
+  supabase: ReturnType<
+    typeof createServerSupabaseClient
+  > = createServerSupabaseClient(),
+): Promise<Leaver[]> {
   const held = await supabase
     .from("employee_access_inventory")
     .select(
