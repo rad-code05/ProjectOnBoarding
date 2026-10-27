@@ -314,6 +314,8 @@ describe("filling by chat (F16c)", () => {
       cutoffDate: "2026-10-30",
       cutoffTime: "18:00",
       handoverTo: "Rafiq Ahmed",
+      removalMethod: "Suspend",
+      mailbox: "converted_shared",
     });
     expect(leaving?.title).toBe("Start an offboarding for Arjun Mehta?");
     expect(leaving?.yes).toBe("Confirm — start the offboarding");
@@ -327,6 +329,9 @@ describe("filling by chat (F16c)", () => {
         label: "Removals",
         value: "Pre-filled from everything they hold today",
       },
+      { label: "Removal method", value: "Suspend (all applications)" },
+      { label: "Mailbox", value: "Convert to a shared mailbox" },
+      { label: "Effective date", value: "30 Oct 2026" },
     ]);
     expect(
       toolStep("createOffboardingDraft", true, {

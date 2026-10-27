@@ -2,9 +2,11 @@ import { tool } from "ai";
 import * as z from "zod";
 import { listLeavers } from "@/lib/requests/leavers";
 import type { Json } from "@/lib/supabase/database.types";
+import { loadHeld } from "./create-access-change-draft";
 import {
   askAboutOffboarding,
   OFFBOARDING_TOPICS,
+  removalSuggestions,
   resolveOffboarding,
   type OffboardingInput,
 } from "./offboarding-shared";
@@ -27,11 +29,29 @@ export const offboardingInputSchema = z.object({
     .describe("When access must be removed after the cut-off."),
   cutoffDate: optional("Access cut-off day, YYYY-MM-DD (company time).", 10),
   cutoffTime: optional("Access cut-off time, HH:MM (company time).", 5),
-  handoverTo: optional("Who gets their data and mailbox (a name)."),
-  notNeeded: z
-    .array(z.enum(["handoverTo"]))
+  handoverTo: optional(
+    "Who gets their data and mailbox — a name, an address, or what happens, as said (e.g. 'Not needed — data deleted').",
+    200,
+  ),
+  removalMethod: z
+    .enum(["Delete", "Suspend", "Disable"])
     .optional()
-    .describe("Only when the person says no handover is needed."),
+    .describe("How every application is removed (unless given per app)."),
+  removalMethods: z
+    .array(
+      z.object({
+        app: z.string().trim().min(1).max(80),
+        method: z.enum(["Delete", "Suspend", "Disable"]),
+      }),
+    )
+    .max(40)
+    .optional()
+    .describe("Per application, when they differ."),
+  mailbox: z
+    .enum(["converted_shared", "no_mailbox"])
+    .optional()
+    .describe("Convert to a shared mailbox, or no mailbox to convert."),
+  effectiveDate: optional("Only if not the last working day: YYYY-MM-DD.", 10),
   reasons: z
     .record(z.string(), z.string().max(80))
     .optional()
@@ -62,9 +82,16 @@ export const createOffboardingDraft = defineTool({
         await listLeavers(ctx.db),
         ctx.timeZone,
       );
-      return resolved.ok
-        ? null
-        : `Not shown to the person yet. Ask about these, then call again: ${resolved.problems.join(" ")}`;
+      if (!resolved.ok)
+        return `Not shown to the person yet. Ask about these, then call again: ${resolved.problems.join(" ")}`;
+      // Per-app methods must name applications they hold.
+      const apps = (await loadHeld(ctx.db, resolved.leaver.id))
+        .filter((h) => h.kind === "application")
+        .map((h) => ({ id: h.inventoryId, app_name: h.name }));
+      const methods = removalSuggestions(apps, parsed.data as OffboardingInput);
+      return methods.problems.length
+        ? `Not shown to the person yet. Ask about these, then call again: ${methods.problems.join(" ")}`
+        : null;
     } catch {
       return "The people on record could not be read just now. Say so and try again later.";
     }
@@ -74,7 +101,7 @@ export const createOffboardingDraft = defineTool({
       description: [
         "Start an offboarding draft for someone who is leaving. The database pre-fills what to remove from everything they hold today; you only set the timing and the handover. The person sees every value and must Confirm first.",
         `Before calling: cover ${Object.values(OFFBOARDING_TOPICS).join(", ")} — ask about each one not given yet in one short numbered list. Turn relative dates into real dates (company time). If the call is refused with "Ask about", ask exactly that.`,
-        "The removal method per application and the mailbox are chosen by IT during execution — say so if asked. Never sign, approve or tick section 9.",
+        "The removal method and the mailbox arrive as suggestions the person accepts once execution has started. Never tick an application or access as removed — that is IT's work — and never sign, approve or tick section 9.",
       ].join(" "),
       inputSchema: offboardingInputSchema,
       execute: async (input) => {
@@ -108,10 +135,22 @@ export const createOffboardingDraft = defineTool({
               "The offboarding could not be started (one may already be open).",
           };
         const id = started.data;
+        // The method per application row the database pre-filled.
+        const rows = await ctx.db
+          .from("request_access_items")
+          .select("id, app_name")
+          .eq("request_id", id);
+        const methods = removalSuggestions(
+          rows.data ?? [],
+          input as OffboardingInput,
+        );
         const [saved, ticket] = await Promise.all([
           ctx.db.rpc("suggest_request_values", {
             p_request_id: id,
-            p_suggestions: resolved.suggestions as unknown as Json,
+            p_suggestions: [
+              ...resolved.suggestions,
+              ...methods.suggestions,
+            ] as unknown as Json,
           }),
           ctx.db.from("requests").select("ticket_id").eq("id", id).single(),
         ]);

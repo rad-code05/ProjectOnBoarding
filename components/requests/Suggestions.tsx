@@ -120,12 +120,15 @@ function Decide({
   what,
   busy,
   working,
+  acceptLater = false,
   onAccept,
   onReject,
 }: {
   what: string;
   busy: boolean;
   working: Working;
+  /** Accept waits (e.g. until execution starts); Reject still works. */
+  acceptLater?: boolean;
   onAccept: () => void;
   onReject: () => void;
 }) {
@@ -134,15 +137,17 @@ function Decide({
   };
   return (
     <span className="flex gap-1.5">
-      <Button
-        size="sm"
-        loading={working === "accept"}
-        aria-disabled={busy || undefined}
-        onClick={guard(onAccept)}
-        aria-label={`Accept ${what}`}
-      >
-        Accept
-      </Button>
+      {!acceptLater && (
+        <Button
+          size="sm"
+          loading={working === "accept"}
+          aria-disabled={busy || undefined}
+          onClick={guard(onAccept)}
+          aria-label={`Accept ${what}`}
+        >
+          Accept
+        </Button>
+      )}
       <Button
         size="sm"
         variant="secondary"
@@ -212,11 +217,14 @@ export function SuggestedItems({
   items,
   busy,
   working,
+  waitHint,
   onAccept,
   onReject,
 }: {
   items: ItemSuggestion[];
   busy: boolean;
+  /** Not yet: why these can't be accepted now (they keep Reject). */
+  waitHint?: string;
   /** The suggestion being decided and how (only its button shows it). */
   working?: { id: string; accept: boolean } | null;
   onAccept: (id: string) => void;
@@ -228,6 +236,11 @@ export function SuggestedItems({
       aria-label="Suggested by the assistant"
       className="flex flex-col gap-2 md:col-span-2"
     >
+      {waitHint && (
+        <li className="text-[13px] leading-snug text-graphite md:text-xs">
+          {waitHint}
+        </li>
+      )}
       {items.map((item) => (
         <li
           key={item.id}
@@ -246,6 +259,7 @@ export function SuggestedItems({
           <Decide
             what={`${item.name}${item.detail ? ` (${item.detail})` : ""}`}
             busy={busy}
+            acceptLater={Boolean(waitHint)}
             working={
               working?.id === item.id
                 ? working.accept

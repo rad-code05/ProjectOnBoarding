@@ -6,6 +6,13 @@ const leavers = vi.fn<() => Promise<Leaver[]>>();
 vi.mock("@/lib/requests/leavers", () => ({
   listLeavers: () => leavers(),
 }));
+// What Arjun holds: Slack (per-app methods are checked against it).
+vi.mock("@/lib/requests/access-change-load", () => ({
+  loadAccessChange: async () => ({
+    held: [{ inventoryId: "inv-1", kind: "application", name: "Slack" }],
+    previous: null,
+  }),
+}));
 
 const { createOffboardingDraft } = await import("./create-offboarding-draft");
 
@@ -27,6 +34,8 @@ const complete = {
   cutoffDate: "2026-10-30",
   cutoffTime: "18:00",
   handoverTo: "Rafiq Ahmed",
+  removalMethod: "Suspend",
+  mailbox: "converted_shared",
 };
 
 function fakeDb() {
@@ -39,14 +48,20 @@ function fakeDb() {
     rpc,
     db: {
       rpc,
-      from: () => ({
+      from: (table: string) => ({
         select: () => ({
-          eq: () => ({
-            single: async () => ({
-              data: { ticket_id: "UAM-2026-000410" },
-              error: null,
-            }),
-          }),
+          eq: () =>
+            table === "request_access_items"
+              ? Promise.resolve({
+                  data: [{ id: "row-slack", app_name: "Slack" }],
+                  error: null,
+                })
+              : {
+                  single: async () => ({
+                    data: { ticket_id: "UAM-2026-000410" },
+                    error: null,
+                  }),
+                },
         }),
       }),
     },
@@ -102,5 +117,9 @@ describe("createOffboardingDraft (F16d-1)", () => {
       p_employee_id: "emp-1",
     });
     expect(rpc.mock.calls[1][0]).toBe("suggest_request_values");
+    // The method for the Slack row the database pre-filled.
+    expect(JSON.stringify(rpc.mock.calls[1])).toContain(
+      '{"kind":"removal","target":"removal:row-slack","value":{"method":"Suspend"}}',
+    );
   });
 });

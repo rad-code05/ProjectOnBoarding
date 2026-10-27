@@ -14,7 +14,11 @@ import {
   loadHeld,
 } from "./create-access-change-draft";
 import { offboardingInputSchema } from "./create-offboarding-draft";
-import { offboardingFields } from "./offboarding-shared";
+import {
+  offboardingFields,
+  removalSuggestions,
+  type OffboardingInput,
+} from "./offboarding-shared";
 import { resolveOnboarding, type OnboardingInput } from "./onboarding-shared";
 import { parseTicket } from "./request-shared";
 import { defineTool } from "./types";
@@ -63,7 +67,7 @@ export const suggestValues = defineTool({
             "Access change only: changes to what they hold, or something new.",
           ),
         offboarding: offboardingInputSchema
-          .omit({ person: true, notNeeded: true })
+          .omit({ person: true })
           .optional()
           .describe(
             "Offboarding only: the timing and handover to add or change.",
@@ -127,7 +131,20 @@ export const suggestValues = defineTool({
             error: "This request can't be changed any more.",
           };
         if (r.type === "offboarding") {
-          const fields = offboardingFields(offboarding ?? {}, ctx.timeZone);
+          const fields = offboardingFields(
+            { ...offboarding, lastWorkingDay: offboarding?.lastWorkingDay },
+            ctx.timeZone,
+          );
+          const rows = await ctx.db
+            .from("request_access_items")
+            .select("id, app_name")
+            .eq("request_id", r.id);
+          const methods = removalSuggestions(
+            rows.data ?? [],
+            (offboarding ?? {}) as OffboardingInput,
+          );
+          fields.problems.push(...methods.problems);
+          fields.suggestions.push(...methods.suggestions);
           if (fields.problems.length || fields.suggestions.length === 0)
             return {
               added: 0,

@@ -122,7 +122,14 @@ export type FormOptions = {
 };
 
 export type Suggestion = {
-  kind: "field" | "access" | "equipment" | "physical" | "held";
+  kind:
+    | "field"
+    | "access"
+    | "equipment"
+    | "physical"
+    | "held"
+    | "removal"
+    | "mailbox";
   target: string;
   value: unknown;
   reason?: string;

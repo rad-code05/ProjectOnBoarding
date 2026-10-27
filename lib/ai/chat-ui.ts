@@ -2,7 +2,11 @@ import type { UIMessage } from "ai";
 import type { Role } from "@/lib/auth";
 import { formatDate } from "@/lib/requests/format";
 import { zonedParts } from "@/lib/time/zoned";
-import { timelineLabel } from "./tools/offboarding-shared";
+import {
+  MAILBOX_WORDS,
+  timelineLabel,
+  type MailboxChoice,
+} from "./tools/offboarding-shared";
 import { TOPICS, type Topic } from "./tools/onboarding-shared";
 
 /** The longest question the assistant accepts (characters). */
@@ -543,20 +547,40 @@ function offboardingCard(i: Record<string, unknown>): ConfirmCard {
     },
     { label: "SLA", value: timelineLabel(i.slaTimeline) ?? "" },
     { label: "Access cut-off", value: cutoff },
-    {
-      label: "Handover",
-      value:
-        str(i.handoverTo) ??
-        (Array.isArray(i.notNeeded) && i.notNeeded.includes("handoverTo")
-          ? "Not needed"
-          : ""),
-    },
+    { label: "Handover", value: str(i.handoverTo) ?? "" },
     { label: "Removals", value: "Pre-filled from everything they hold today" },
-  ].filter((r) => r.value);
+    {
+      label: "Removal method",
+      value: [
+        str(i.removalMethod)
+          ? `${str(i.removalMethod)} (all applications)`
+          : "",
+        listOf(i.removalMethods, (m) => {
+          const r = m as { app?: unknown; method?: unknown };
+          return str(r.app) && str(r.method)
+            ? `${str(r.app)}: ${str(r.method)}`
+            : null;
+        }),
+      ]
+        .filter(Boolean)
+        .join(", "),
+    },
+    {
+      label: "Mailbox",
+      value:
+        typeof i.mailbox === "string" && i.mailbox in MAILBOX_WORDS
+          ? MAILBOX_WORDS[i.mailbox as MailboxChoice]
+          : "",
+    },
+    {
+      label: "Effective date",
+      value: formatDate(str(i.effectiveDate) ?? str(i.lastWorkingDay)),
+    },
+  ].filter((r) => r.value && r.value !== "—");
   return {
     title: `Start an offboarding for ${who}?`,
     rows,
-    note: "Creates the offboarding draft with the timing and handover as suggestions. The SLA clock starts only when you press Start execution; removing the accounts in the tools, the removal method per app and the mailbox stay yours.",
+    note: "Creates the offboarding draft with these as suggestions. The removal method and the mailbox can be accepted once you press Start execution (the SLA clock starts then too). Removing the accounts in the tools and ticking them stays yours.",
     yes: "Confirm — start the offboarding",
   };
 }
