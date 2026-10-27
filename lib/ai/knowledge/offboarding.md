@@ -16,3 +16,5 @@ summary: Who is leaving, the access-removal deadline (SLA), removal methods, equ
 The *Offboarding SLA* report lists deadlines, met / missed and upcoming ones.
 
 **With the assistant:** say who is leaving ("Arjun Mehta leaves Friday, cut-off 18:00 same day, Rafiq takes over"). It asks for the last working day, SLA, access cut-off and handover, shows a *Needs your Confirm* card and starts the draft: the removals are pre-filled from what the person holds, the timing and handover arrive as suggestions you accept. The removal method per app and the mailbox stay your choice during execution.
+
+**Physical / logical access (decided 2026-10-27):** access the person **holds** (badge, VPN … granted on an earlier request) must be ticked removed **or** carry a note on its row ("badge collected Friday by HR"); access added by hand on the offboarding is optional. A noted or optional row never makes the SLA "missed".

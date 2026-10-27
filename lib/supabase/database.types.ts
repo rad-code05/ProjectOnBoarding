@@ -2377,6 +2377,10 @@ export type Database = {
         Args: { p_comment: string; p_flagged?: number[]; p_request_id: string };
         Returns: string;
       };
+      set_access_note: {
+        Args: { p_item_id: string; p_note: string };
+        Returns: undefined;
+      };
       set_active_signature: {
         Args: { p_asset_id: string };
         Returns: undefined;

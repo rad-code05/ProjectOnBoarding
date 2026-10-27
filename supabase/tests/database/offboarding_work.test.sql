@@ -140,7 +140,7 @@ select ok(exists (select 1 from public.audit_events where action = 'request.remo
 select ok(
   (select (public.signing_checks((select id from r where label = 'N')) -> 'missing_fields')
     @> '["Removal method (Delete, Suspend or Disable) for 1 application(s)", "Applications removed (0 of 2)",
-         "Access disabled or removed (0 of 1)",
+         "Access disabled or removed, or a note why not (0 of 1)",
          "Data & mailbox go to", "Mailbox: converted to a shared mailbox, or no mailbox to convert"]'::jsonb),
   'Review & sign lists everything still open');
 select ok(
