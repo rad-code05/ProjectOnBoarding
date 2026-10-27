@@ -399,12 +399,17 @@ describe("Confirm / Not now on a write (F16c)", () => {
   test("Not now: the answer continues and replaces the waiting one; no question saved", async () => {
     const { d, model } = deps({ loadMessages: vi.fn(async () => asked) });
     const res = await runChat(
-      { id: CHAT, approval: { id: "approval-1", approved: false } },
+      {
+        id: CHAT,
+        approval: { id: "approval-1", approved: false },
+        messageId: "browser-a1",
+      },
       admin,
       d,
     );
     expect(res.status).toBe(200);
-    await res.text();
+    // Streamed under the browser's id, so it continues the same answer there.
+    expect(await res.text()).toContain('"messageId":"browser-a1"');
     await vi.waitFor(() => expect(d.replaceMessage).toHaveBeenCalled());
     const [chat, oldId, message] = vi.mocked(d.replaceMessage).mock
       .calls[0] as unknown as [string, string, UIMessage];

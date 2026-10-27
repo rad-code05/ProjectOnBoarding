@@ -1539,6 +1539,10 @@ test("Filling by chat (F16c): the robot prepares a draft after Confirm; Raju acc
   });
   await card.getByRole("button", { name: "Not now" }).click();
   await expect(log).toContainText("Fine, nothing was created.");
+  // One answer, continued — not a second "Not now" line.
+  await expect(log.getByText("Not now — nothing was created.")).toHaveCount(1);
+  // Wait until the robot has finished before the next question.
+  await expect(panel.getByRole("button", { name: "Stop" })).toHaveCount(0);
 
   // Confirm: the draft, with every value as a suggestion.
   await box.fill("Onboard Meera, Dubai office");
@@ -1563,6 +1567,12 @@ test("Filling by chat (F16c): the robot prepares a draft after Confirm; Raju acc
     name: "Suggestions from the assistant",
   });
   await expect(banner).toContainText("13 suggestions from the assistant");
+  // The robot's badge counts them too (F16c-2).
+  await expect(
+    page.getByRole("button", {
+      name: "Open the Laine assistant — 13 suggestions waiting",
+    }),
+  ).toBeVisible();
   await expect(page.getByRole("group", { name: "Manager" })).toContainText(
     "Suggested · you said so",
   );
@@ -1577,6 +1587,9 @@ test("Filling by chat (F16c): the robot prepares a draft after Confirm; Raju acc
   await banner.getByRole("button", { name: "Accept all 12" }).click();
   await banner.getByRole("button", { name: "Yes, accept all 12" }).click();
   await expect(banner).toBeHidden();
+  await expect(
+    page.getByRole("button", { name: "Open the Laine assistant", exact: true }),
+  ).toBeVisible();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Meera E2E-Chat",
   );

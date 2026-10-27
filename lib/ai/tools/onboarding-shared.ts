@@ -13,8 +13,9 @@ import { normalize } from "./people-shared";
  */
 
 export type OnboardingInput = {
-  firstName: string;
-  lastName: string;
+  /** Required for a new draft (the schema says so); optional when adding. */
+  firstName?: string;
+  lastName?: string;
   workEmail?: string;
   jobTitle?: string;
   department?: string;

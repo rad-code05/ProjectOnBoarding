@@ -22,6 +22,7 @@ import {
   acceptSuggestion,
   rejectSuggestion,
 } from "@/app/(app)/requests/suggestion-actions";
+import { setWaitingSuggestions } from "@/lib/ai/suggestion-badge";
 import { cn } from "@/lib/cn";
 import {
   cityChoices,
@@ -196,6 +197,11 @@ export function RequestForm({
     ? form.suggestions.items.filter((i) => !decided.includes(i.id))
     : [];
   const waiting = fieldSuggestions.length + itemSuggestions.length;
+  // The robot's badge counts what still waits on this request.
+  useEffect(() => {
+    setWaitingSuggestions(waiting);
+    return () => setWaitingSuggestions(0);
+  }, [waiting]);
   const itemsOf = (kind: "access" | "equipment" | "physical") =>
     itemSuggestions.filter((i) => i.kind === kind);
 

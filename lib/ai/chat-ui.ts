@@ -176,6 +176,13 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
       const n = Number(field("suggestions") ?? 0);
       return `Created the draft ${field("ticket") ?? ""} · ${n} suggestion${n === 1 ? "" : "s"} waiting`;
     }
+    case "suggestValues": {
+      if (!done) return "Adding suggestions…";
+      const n = Number(field("added") ?? 0);
+      return n > 0
+        ? `Added ${n} suggestion${n === 1 ? "" : "s"} to ${field("ticket") ?? "the request"}`
+        : "Didn't add anything — a few things to check";
+    }
     case "getRequest":
       if (!done) return "Opening the request…";
       return field("status")

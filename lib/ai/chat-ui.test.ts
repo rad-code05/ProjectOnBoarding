@@ -323,6 +323,12 @@ describe("filling by chat (F16c)", () => {
     expect(
       toolStep("createOnboardingDraft", true, { created: false, problems: [] }),
     ).toBe("Didn't create the draft — a few things to check");
+    expect(
+      toolStep("suggestValues", true, { added: 2, ticket: "UAM-2026-000404" }),
+    ).toBe("Added 2 suggestions to UAM-2026-000404");
+    expect(toolStep("suggestValues", true, { added: 0 })).toBe(
+      "Didn't add anything — a few things to check",
+    );
   });
 
   test("answeredApproval: what a Confirm / Not now sends", () => {

@@ -13,6 +13,7 @@ import { rememberQuestion } from "./remember-question";
 import { runReport } from "./run-report";
 import { saveCustomReport } from "./save-custom-report";
 import { searchPeople } from "./search-people";
+import { suggestValues } from "./suggest-values";
 import { whoHasAccess } from "./who-has-access";
 import { hasAnyRole, type AiTool, type ToolContext } from "./types";
 
@@ -39,6 +40,7 @@ export const TOOLS: readonly AiTool[] = [
   // Filling requests — admin / requester; creating a draft waits for Confirm (F16c).
   getFormOptions,
   createOnboardingDraft,
+  suggestValues,
   // Memory — the asker's own row only (F15d-2c).
   rememberPreference,
   rememberQuestion,
