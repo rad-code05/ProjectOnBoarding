@@ -157,6 +157,26 @@ export function FieldRenderer({
         <label htmlFor={id} className="text-xs font-semibold md:text-[11px]">
           {field.label}
         </label>
+        {/* The search box first, so it lines up with the boxes beside it. */}
+        {chosen.length < MAX_NATIONALITIES ? (
+          <Combobox
+            id={id}
+            value=""
+            onChange={(code) => code && set([...chosen, code])}
+            options={choices.filter((c) => !chosen.includes(c.value))}
+            disabled={disabled}
+            invalid={Boolean(error)}
+            describedBy={describedBy}
+            allowEmpty={false}
+            placeholder={
+              chosen.length ? "Add a second one…" : "Type to search…"
+            }
+          />
+        ) : (
+          <p id={id} className="text-xs text-graphite md:text-[11px]">
+            Two chosen — remove one to change.
+          </p>
+        )}
         {chosen.length > 0 && (
           <ul
             className="flex flex-wrap gap-1.5"
@@ -192,25 +212,6 @@ export function FieldRenderer({
               </li>
             ))}
           </ul>
-        )}
-        {chosen.length < MAX_NATIONALITIES ? (
-          <Combobox
-            id={id}
-            value=""
-            onChange={(code) => code && set([...chosen, code])}
-            options={choices.filter((c) => !chosen.includes(c.value))}
-            disabled={disabled}
-            invalid={Boolean(error)}
-            describedBy={describedBy}
-            allowEmpty={false}
-            placeholder={
-              chosen.length ? "Add a second one…" : "Type to search…"
-            }
-          />
-        ) : (
-          <p id={id} className="text-xs text-graphite md:text-[11px]">
-            Two chosen — remove one to change.
-          </p>
         )}
         {notes}
       </div>
