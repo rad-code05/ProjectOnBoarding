@@ -43,7 +43,8 @@ export const suggestValues = defineTool({
       description: [
         "Add or change values on an onboarding that already exists, by its ticket: each value becomes a suggestion the person accepts on the form (nothing changes before that).",
         "Use it for 'add the email', 'also give her GitHub', 'the start date is the 9th'. Same names as createOnboardingDraft (getFormOptions, getCatalog); only the values to add or change.",
-        "The form has one work email: if two are given, ask which one. Never asset tags, section 9 or signing.",
+        "The form has one work email: if two are given, ask which one. Never asset tags or signing.",
+        "Section 9: you may draft the implementation notes (implementationNotes) — on any open request — from what the person tells you was done; never the checklist ticks. They are accepted once execution has started and are added after notes already written.",
       ].join(" "),
       inputSchema: z.object({
         ticket: z
@@ -72,8 +73,23 @@ export const suggestValues = defineTool({
           .describe(
             "Offboarding only: the timing and handover to add or change.",
           ),
+        implementationNotes: z
+          .string()
+          .trim()
+          .min(1)
+          .max(2000)
+          .optional()
+          .describe(
+            "Any request: a draft of section 9's implementation notes, in plain words (what was done, anything unusual).",
+          ),
       }),
-      execute: async ({ ticket, values, offboarding, accessChange }) => {
+      execute: async ({
+        ticket,
+        values,
+        offboarding,
+        accessChange,
+        implementationNotes,
+      }) => {
         const save = async (
           r: { id: string; ticket_id: string },
           suggestions: unknown[],
@@ -130,6 +146,18 @@ export const suggestValues = defineTool({
             ticket: r.ticket_id,
             error: "This request can't be changed any more.",
           };
+        // Section 9's notes (F16e-1) go with any request type.
+        const notes = implementationNotes
+          ? [
+              {
+                kind: "execution_notes",
+                target: "execution_notes",
+                value: implementationNotes,
+              },
+            ]
+          : [];
+        if (notes.length && !values && !offboarding && !accessChange)
+          return save(r, notes);
         if (r.type === "offboarding") {
           const fields = offboardingFields(
             { ...offboarding, lastWorkingDay: offboarding?.lastWorkingDay },
@@ -150,9 +178,9 @@ export const suggestValues = defineTool({
               added: 0,
               ticket: r.ticket_id,
               problems: fields.problems,
-              note: "On an offboarding only the timing and handover can be suggested (pass offboarding). Nothing was added.",
+              note: "On an offboarding pass offboarding (timing, handover, removal method, mailbox) or implementationNotes. Nothing was added.",
             };
-          return save(r, fields.suggestions);
+          return save(r, [...fields.suggestions, ...notes]);
         }
         if (r.type === "access_modification") {
           if (!r.employee_id)
@@ -196,7 +224,7 @@ export const suggestValues = defineTool({
               problems,
               note: "On an access change pass accessChange (changes / add). Nothing was added.",
             };
-          return save(r, all);
+          return save(r, [...all, ...notes]);
         }
 
         let options;
@@ -226,7 +254,7 @@ export const suggestValues = defineTool({
             note: "There was nothing to add.",
           };
 
-        return save(r, resolved.suggestions);
+        return save(r, [...resolved.suggestions, ...notes]);
       },
     }),
 });

@@ -139,4 +139,31 @@ describe("ExecutionSection", () => {
     ).toBeDisabled();
     expect(screen.getByLabelText(/Implementation notes/)).toBeDisabled();
   });
+  test("notes accepted from the robot show after the refresh (F16e-1)", () => {
+    const props = {
+      requestId: "0b8f6a3e-5d2c-4f1a-9e7b-2c3d4e5f6a7b",
+      items,
+      editable: true,
+      startedLabel: null,
+      checks: {},
+      onChecksChange: () => {},
+    };
+    const { rerender } = render(
+      <ExecutionSection
+        {...props}
+        record={{ checks: {}, notes: null, executedBy: null }}
+        suggested={<p>Suggested notes</p>}
+      />,
+    );
+    expect(screen.getByText("Suggested notes")).toBeInTheDocument();
+    rerender(
+      <ExecutionSection
+        {...props}
+        record={{ checks: {}, notes: "Invite sent.", executedBy: "You" }}
+      />,
+    );
+    expect(screen.getByLabelText(/Implementation notes/)).toHaveValue(
+      "Invite sent.",
+    );
+  });
 });

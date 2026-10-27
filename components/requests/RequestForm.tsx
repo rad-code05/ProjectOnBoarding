@@ -38,7 +38,10 @@ import type { DraftFieldKey } from "@/lib/requests/draft";
 import type { EquipmentItem, PhysicalChoices } from "@/lib/requests/equipment";
 import type { FormField } from "@/lib/requests/fields";
 import type { RequestFormData } from "@/lib/requests/form";
-import type { FieldSuggestion } from "@/lib/requests/suggestions";
+import type {
+  FieldSuggestion,
+  ItemSuggestion,
+} from "@/lib/requests/suggestions";
 import {
   countryName,
   EMPLOYMENT_EVENTS,
@@ -255,11 +258,12 @@ export function RequestForm({
   }, [waiting]);
   // The removal method and the mailbox are recorded in execution only (the
   // screen's own rule): in a draft they wait, and Accept all skips them.
+  // Section 9's notes too (F16e-1).
   const waitsForExecution = (kind: string) =>
-    (kind === "removal" || kind === "mailbox") && form.state === "draft";
-  const itemsOf = (
-    kind: "access" | "equipment" | "physical" | "held" | "removal" | "mailbox",
-  ) => itemSuggestions.filter((i) => i.kind === kind);
+    (kind === "removal" || kind === "mailbox" || kind === "execution_notes") &&
+    form.state === "draft";
+  const itemsOf = (kind: ItemSuggestion["kind"]) =>
+    itemSuggestions.filter((i) => i.kind === kind);
 
   /** Accept or reject one suggestion; false (and a message) when refused. */
   const decideOne = async (id: string, accept: boolean) => {
@@ -286,6 +290,23 @@ export function RequestForm({
     setSuggestBusy(false);
     router.refresh();
   };
+  // The robot's draft of section 9's notes (F16e-1): accepted in execution.
+  const notesSuggestion =
+    !disabled && itemsOf("execution_notes").length > 0 ? (
+      <SuggestedItems
+        items={itemsOf("execution_notes")}
+        busy={suggestBusy}
+        working={working}
+        waitHint={
+          form.state === "draft"
+            ? "You can accept the notes after Start execution (they belong to section 9). The checklist ticks stay yours."
+            : undefined
+        }
+        onAccept={(id) => void decide([id], true)}
+        onReject={(id) => void decide([id], false)}
+      />
+    ) : null;
+
   const allWaiting = () => [
     ...fieldSuggestions.map((f) => f.id),
     ...itemSuggestions
@@ -939,7 +960,19 @@ export function RequestForm({
               checks={checks}
               onChecksChange={setChecks}
               flag={flag(number)}
+              suggested={notesSuggestion}
             />
+          ) : number === 9 && notesSuggestion ? (
+            <Fragment key={number}>
+              {notesSuggestion}
+              <CollapsedSection
+                section={SECTIONS[number - 1]}
+                locked={lockedNote(number, values.type, started)}
+                note="Not started"
+                open={openSections.includes(number)}
+                onToggle={() => toggle(number)}
+              />
+            </Fragment>
           ) : number === 11 && form.signatures.length > 0 ? (
             <SignaturesSection
               key={number}

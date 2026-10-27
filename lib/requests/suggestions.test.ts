@@ -99,4 +99,17 @@ describe("buildSuggestions", () => {
     ]);
     expect(s.total).toBe(3);
   });
+  test("section 9: a draft of the implementation notes (F16e-1)", () => {
+    const s = buildSuggestions(
+      [row("execution_notes", "execution_notes", "Invite sent.")],
+      names,
+    );
+    expect(s.items).toEqual([
+      expect.objectContaining({
+        kind: "execution_notes",
+        name: "Implementation notes",
+        detail: "Invite sent.",
+      }),
+    ]);
+  });
 });
