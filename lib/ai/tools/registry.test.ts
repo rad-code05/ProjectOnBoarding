@@ -63,6 +63,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
       "getFormOptions",
       "createOnboardingDraft",
       "createOffboardingDraft",
+      "createAccessChangeDraft",
       "suggestValues",
     ];
     expect(toolNamesFor(["requester", "it_operator"])).toEqual([
@@ -106,6 +107,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
     expect(Object.keys(rules)).toEqual([
       "createOnboardingDraft",
       "createOffboardingDraft",
+      "createAccessChangeDraft",
     ]);
     expect(typeof rules.createOnboardingDraft).toBe("function");
     expect(

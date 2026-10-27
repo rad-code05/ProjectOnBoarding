@@ -103,6 +103,15 @@ describe.skipIf(!KEY)(`filling by chat — ${MODEL}`, () => {
     );
   });
 
+  test("an access change: never a card before the person, the changes and the date are clear", async () => {
+    const { text, confirmCards, tools } = await ask(
+      "Give Omar Haddad HubSpot Admin and remove his Figma.",
+    );
+    expect(confirmCards).toEqual([]);
+    expect(tools).not.toContain("createOnboardingDraft");
+    expect(text).toMatch(/omar/);
+  });
+
   test("two work emails: asks which one (the form has one)", async () => {
     const { text, tools } = await ask(
       "Add the primary email test2@test.com and test2@gmail.com to UAM-2026-000404.",

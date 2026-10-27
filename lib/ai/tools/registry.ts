@@ -1,6 +1,7 @@
 import type { ToolApprovalStatus, ToolSet } from "ai";
 import type { Role } from "@/lib/auth";
 import { getAppHelp } from "./get-app-help";
+import { createAccessChangeDraft } from "./create-access-change-draft";
 import { createOffboardingDraft } from "./create-offboarding-draft";
 import { createOnboardingDraft } from "./create-onboarding-draft";
 import { getCatalog } from "./get-catalog";
@@ -42,6 +43,7 @@ export const TOOLS: readonly AiTool[] = [
   getFormOptions,
   createOnboardingDraft,
   createOffboardingDraft,
+  createAccessChangeDraft,
   suggestValues,
   // Memory — the asker's own row only (F15d-2c).
   rememberPreference,

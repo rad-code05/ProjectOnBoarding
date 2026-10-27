@@ -184,6 +184,13 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
       const n = Number(field("suggestions") ?? 0);
       return `Started the offboarding ${field("ticket") ?? ""} · ${n} suggestion${n === 1 ? "" : "s"} waiting`;
     }
+    case "createAccessChangeDraft": {
+      if (!done) return "Starting the access change…";
+      if (field("created") !== "true")
+        return "Didn't start the access change — a few things to check";
+      const n = Number(field("suggestions") ?? 0);
+      return `Started the access change ${field("ticket") ?? ""} · ${n} suggestion${n === 1 ? "" : "s"} waiting`;
+    }
     case "suggestValues": {
       if (!done) return "Adding suggestions…";
       const n = Number(field("added") ?? 0);
@@ -432,6 +439,8 @@ export function confirmCard(tool: string, input: unknown): ConfirmCard | null {
   if (!input || typeof input !== "object") return null;
   if (tool === "createOffboardingDraft")
     return offboardingCard(input as Record<string, unknown>);
+  if (tool === "createAccessChangeDraft")
+    return accessChangeCard(input as Record<string, unknown>);
   if (tool !== "createOnboardingDraft") return null;
   const i = input as Record<string, unknown>;
   const name = [str(i.firstName), str(i.lastName)].filter(Boolean).join(" ");
@@ -549,5 +558,54 @@ function offboardingCard(i: Record<string, unknown>): ConfirmCard {
     rows,
     note: "Creates the offboarding draft with the timing and handover as suggestions. The SLA clock starts only when you press Start execution; removing the accounts in the tools, the removal method per app and the mailbox stay yours.",
     yes: "Confirm — start the offboarding",
+  };
+}
+
+type ChangeIn = { item?: unknown; action?: unknown; to?: unknown };
+
+/** Board note *access change works the same way*: what changes, in words. */
+function accessChangeCard(i: Record<string, unknown>): ConfirmCard {
+  const who = str(i.person) ?? "this person";
+  const changes = Array.isArray(i.changes) ? (i.changes as ChangeIn[]) : [];
+  const changed = changes
+    .filter((c) => c.action === "change")
+    .map((c) => `${str(c.item)} to ${str(c.to)}`)
+    .join(", ");
+  const removed = changes
+    .filter((c) => c.action === "remove")
+    .map((c) => str(c.item))
+    .filter(Boolean)
+    .join(", ");
+  const add = (i.add ?? {}) as Record<string, unknown>;
+  const added = [
+    listOf(
+      add.applications,
+      (a) =>
+        [str(a.name), str(a.permission)].filter(Boolean).join(" · ") || null,
+    ),
+    listOf(add.equipment, (e) => str(e.type)),
+    listOf(
+      add.access,
+      (a) => [str(a.type), str(a.scope)].filter(Boolean).join(" · ") || null,
+    ),
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const rows = [
+    { label: "Person", value: who },
+    {
+      label: "Effective date",
+      value: str(i.effectiveDate) ? formatDate(str(i.effectiveDate)) : "",
+    },
+    { label: "Change", value: changed },
+    { label: "Remove / return", value: removed },
+    { label: "Add", value: added },
+    { label: "Everything else", value: "Kept as they hold it today" },
+  ].filter((r) => r.value);
+  return {
+    title: `Start an access change for ${who}?`,
+    rows,
+    note: "Creates the access change draft with each change as a suggestion you accept. Nothing is changed in the tools; you still do the IT work, tick section 9 and Review & sign.",
+    yes: "Confirm — start the access change",
   };
 }

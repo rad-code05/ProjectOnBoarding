@@ -58,6 +58,27 @@ describe("buildSuggestions", () => {
     expect(f.shown).toBe("30 Oct 2026, 23:59");
   });
 
+  test("a change to something they hold, by its name (access change)", () => {
+    const s = buildSuggestions(
+      [
+        row("held", "held:inv-1", {
+          action: "Modify",
+          value: "Workspace Owner",
+        }),
+      ],
+      { ...names, held: new Map([["inv-1", "Slack"]]) },
+    );
+    expect(s.items).toEqual([
+      {
+        id: "held-held:inv-1",
+        kind: "held",
+        name: "Slack",
+        detail: "Modify · Workspace Owner",
+        reason: null,
+      },
+    ]);
+  });
+
   test("items: catalog names and what they'd do", () => {
     const s = buildSuggestions(
       [
