@@ -108,23 +108,37 @@ function Why({ reason }: { reason: string | null }) {
   );
 }
 
+/** Which of this suggestion's buttons is saving right now, if any. */
+export type Working = "accept" | "reject" | null;
+
+/**
+ * Accept / Reject. Only the button pressed shows that it is saving; the
+ * others keep their look (Raju, 2026-10-27) and simply wait — a click while
+ * another suggestion saves does nothing.
+ */
 function Decide({
   what,
   busy,
+  working,
   onAccept,
   onReject,
 }: {
   what: string;
   busy: boolean;
+  working: Working;
   onAccept: () => void;
   onReject: () => void;
 }) {
+  const guard = (fn: () => void) => () => {
+    if (!busy) fn();
+  };
   return (
     <span className="flex gap-1.5">
       <Button
         size="sm"
-        disabled={busy}
-        onClick={onAccept}
+        loading={working === "accept"}
+        aria-disabled={busy || undefined}
+        onClick={guard(onAccept)}
         aria-label={`Accept ${what}`}
       >
         Accept
@@ -132,8 +146,9 @@ function Decide({
       <Button
         size="sm"
         variant="secondary"
-        disabled={busy}
-        onClick={onReject}
+        loading={working === "reject"}
+        aria-disabled={busy || undefined}
+        onClick={guard(onReject)}
         aria-label={`Reject ${what}`}
       >
         Reject
@@ -147,6 +162,7 @@ export function SuggestedField({
   label,
   suggestion,
   busy,
+  working = null,
   onAccept,
   onReject,
   className,
@@ -154,6 +170,7 @@ export function SuggestedField({
   label: string;
   suggestion: FieldSuggestion;
   busy: boolean;
+  working?: Working;
   onAccept: () => void;
   onReject: () => void;
   /** The field's grid cell (phone span). */
@@ -164,6 +181,7 @@ export function SuggestedField({
     <div
       className={cn("flex min-w-0 flex-col gap-1.5", className)}
       data-suggestion={suggestion.id}
+      data-field-label={label}
     >
       <span id={id} className="text-xs font-semibold md:text-[11px]">
         {label}
@@ -180,6 +198,7 @@ export function SuggestedField({
         <Decide
           what={`${label}: ${suggestion.shown}`}
           busy={busy}
+          working={working}
           onAccept={onAccept}
           onReject={onReject}
         />
@@ -192,11 +211,14 @@ export function SuggestedField({
 export function SuggestedItems({
   items,
   busy,
+  working,
   onAccept,
   onReject,
 }: {
   items: ItemSuggestion[];
   busy: boolean;
+  /** The suggestion being decided and how (only its button shows it). */
+  working?: { id: string; accept: boolean } | null;
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
 }) {
@@ -224,6 +246,13 @@ export function SuggestedItems({
           <Decide
             what={`${item.name}${item.detail ? ` (${item.detail})` : ""}`}
             busy={busy}
+            working={
+              working?.id === item.id
+                ? working.accept
+                  ? "accept"
+                  : "reject"
+                : null
+            }
             onAccept={() => onAccept(item.id)}
             onReject={() => onReject(item.id)}
           />

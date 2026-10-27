@@ -423,8 +423,11 @@ export type Check = {
   /** Shown, but doesn't block (2026-10-13: section 9 / devices pending). */
   warn?: boolean;
   label: string;
-  /** Where to fix it: a section number or a page. */
-  fix: { section: number } | { href: string } | null;
+  /**
+   * Where to fix it: a section (and the exact field or control in it —
+   * a CSS selector, Raju 2026-10-27) or a page.
+   */
+  fix: { section: number; target?: string } | { href: string } | null;
 };
 
 /** Offboarding devices still "Return pending": a warning, not a block. */
@@ -497,12 +500,17 @@ export function signingChecks(review: SigningReview): Check[] {
       : {
           ok: false,
           label: `Required fields empty: ${missing.join(", ")}`,
-          fix: { section: 2 },
+          fix: {
+            section: 2,
+            target: `[data-field-label="${missing[0].replaceAll('"', "")}"]`,
+          },
         },
     ...blockers.map((b) => ({
       ok: false,
       label: b.label,
-      fix: { section: b.section },
+      fix: b.target
+        ? { section: b.section, target: b.target }
+        : { section: b.section },
     })),
     review.checklistComplete
       ? { ok: true, label: "Section 9 checklist complete", fix: null }

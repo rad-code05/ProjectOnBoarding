@@ -175,7 +175,7 @@ describe("ReviewSignSheet", () => {
       screen.getByText("Required fields empty: Country"),
     ).toBeInTheDocument();
     await u.click(screen.getByRole("button", { name: "Fix" }));
-    expect(onEdit).toHaveBeenCalledWith(2);
+    expect(onEdit).toHaveBeenCalledWith(2, '[data-field-label="Country"]');
   });
 
   test("an incomplete section 9 is a warning: signing stays possible (2026-10-13)", async () => {

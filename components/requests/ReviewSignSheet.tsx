@@ -54,7 +54,7 @@ export function ReviewSignSheet({
   /** The person's screen timezone (F05e). */
   timeZone?: string;
   /** Close and open a section of the form. */
-  onEdit: (section: number) => void;
+  onEdit: (section: number, target?: string) => void;
   onClose: () => void;
 }) {
   const router = useRouter();
@@ -307,7 +307,7 @@ function FixLink({
   onEdit,
 }: {
   fix: Check["fix"];
-  onEdit: (section: number) => void;
+  onEdit: (section: number, target?: string) => void;
 }) {
   if (!fix) return null;
   if ("href" in fix) {
@@ -320,7 +320,7 @@ function FixLink({
   return (
     <button
       type="button"
-      onClick={() => onEdit(fix.section)}
+      onClick={() => onEdit(fix.section, fix.target)}
       className={linkStyle}
     >
       Fix

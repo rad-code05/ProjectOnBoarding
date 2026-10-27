@@ -70,7 +70,10 @@ export function FieldRenderer({
 
   if (field.field_type === "system") {
     return (
-      <div className={cn("flex flex-col gap-1.5", phoneSpan(field))}>
+      <div
+        className={cn("flex flex-col gap-1.5", phoneSpan(field))}
+        data-field-label={field.label}
+      >
         <span id={id} className="text-xs font-semibold md:text-[11px]">
           {field.label}
         </span>
@@ -117,7 +120,10 @@ export function FieldRenderer({
 
   if (SEARCHABLE.has(field.field_type)) {
     return (
-      <div className={cn("flex min-w-0 flex-col gap-1.5", phoneSpan(field))}>
+      <div
+        className={cn("flex min-w-0 flex-col gap-1.5", phoneSpan(field))}
+        data-field-label={field.label}
+      >
         <label htmlFor={id} className="text-xs font-semibold md:text-[11px]">
           {field.label}
         </label>
@@ -144,7 +150,10 @@ export function FieldRenderer({
     const name = (code: string) =>
       choices.find((c) => c.value === code)?.label ?? code;
     return (
-      <div className={cn("flex min-w-0 flex-col gap-1.5", phoneSpan(field))}>
+      <div
+        className={cn("flex min-w-0 flex-col gap-1.5", phoneSpan(field))}
+        data-field-label={field.label}
+      >
         <label htmlFor={id} className="text-xs font-semibold md:text-[11px]">
           {field.label}
         </label>
@@ -209,7 +218,10 @@ export function FieldRenderer({
   }
 
   return (
-    <div className={cn("flex min-w-0 flex-col gap-1.5", phoneSpan(field))}>
+    <div
+      className={cn("flex min-w-0 flex-col gap-1.5", phoneSpan(field))}
+      data-field-label={field.label}
+    >
       <label htmlFor={id} className="text-xs font-semibold md:text-[11px]">
         {field.label}
       </label>

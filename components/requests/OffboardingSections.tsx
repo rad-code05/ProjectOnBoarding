@@ -445,6 +445,7 @@ export function HandoverSection({
       >
         <input
           id={`${id}-to`}
+          data-fix="handover"
           type="text"
           value={values.handover_to ?? ""}
           disabled={disabled}
