@@ -137,7 +137,10 @@ function Tick({
   doneAt,
   timeZone,
   detail,
+  fix,
 }: {
+  /** Review & sign "Fix" lands on the first one still to do. */
+  fix?: string;
   label: string;
   checked: boolean;
   disabled: boolean;
@@ -147,7 +150,10 @@ function Tick({
   detail: string;
 }) {
   return (
-    <label className="flex min-h-11 items-center gap-3">
+    <label
+      className="flex min-h-11 items-center gap-3"
+      data-fix={checked ? undefined : fix}
+    >
       <input
         type="checkbox"
         checked={checked}
@@ -265,6 +271,7 @@ export function WorkRemovalSections({
             className="flex flex-col gap-2 border-b border-line-subtle px-4 py-2.5 last:border-b-0 md:px-5"
           >
             <Tick
+              fix="app-done"
               label={app.name}
               detail={app.had ? `Had: ${app.had}` : app.category}
               checked={Boolean(app.doneAt)}
@@ -288,6 +295,7 @@ export function WorkRemovalSections({
             <fieldset
               disabled={!editable || apps.pending || Boolean(app.doneAt)}
               className="ml-9 md:ml-7.5"
+              data-fix={app.method ? undefined : "removal-method"}
             >
               <legend className="sr-only">How {app.name} is removed</legend>
               <div className="grid grid-cols-3 gap-0.75 rounded-pill bg-sand p-0.75 md:max-w-xs">
@@ -412,6 +420,7 @@ export function WorkRemovalSections({
             className="border-b border-line-subtle px-4 py-1.5 last:border-b-0 md:px-5"
           >
             <Tick
+              fix="access-done"
               label={row.name}
               detail={[row.action, row.scope].filter(Boolean).join(" · ")}
               checked={Boolean(row.doneAt)}
@@ -574,7 +583,11 @@ export function MailboxChoice({
   const { error, pending, run } = useWork();
   const [choice, setChoice] = useOptimistic(handling);
   return (
-    <fieldset disabled={!editable || pending} className="flex flex-col gap-2">
+    <fieldset
+      disabled={!editable || pending}
+      className="flex flex-col gap-2"
+      data-fix="mailbox"
+    >
       <legend className="mb-1.5 text-xs font-semibold">
         Mailbox <span className="text-signal">*</span>
       </legend>

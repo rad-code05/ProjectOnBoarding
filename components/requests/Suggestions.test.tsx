@@ -132,3 +132,61 @@ describe("SuggestedField and SuggestedItems", () => {
     expect(container).toBeEmptyDOMElement();
   });
 });
+
+describe("only the button pressed shows that it is saving (Raju, 2026-10-27)", () => {
+  test("while another suggestion saves, the buttons keep their look and wait", async () => {
+    const onAccept = vi.fn();
+    render(
+      <SuggestedField
+        label="Manager"
+        suggestion={{
+          id: "s1",
+          key: "manager_name",
+          patch: { manager_name: "Omar Haddad" },
+          shown: "Omar Haddad",
+          reason: null,
+        }}
+        busy
+        onAccept={onAccept}
+        onReject={vi.fn()}
+      />,
+    );
+    const accept = screen.getByRole("button", {
+      name: "Accept Manager: Omar Haddad",
+    });
+    expect(accept).not.toBeDisabled();
+    expect(accept).toHaveAttribute("aria-disabled", "true");
+    await userEvent.click(accept);
+    expect(onAccept).not.toHaveBeenCalled();
+  });
+
+  test("the one being saved shows it — Accept or Reject, not both", () => {
+    render(
+      <SuggestedItems
+        items={[
+          {
+            id: "a1",
+            kind: "access",
+            name: "GitHub",
+            detail: "",
+            reason: null,
+          },
+          { id: "a2", kind: "access", name: "Slack", detail: "", reason: null },
+        ]}
+        busy
+        working={{ id: "a1", accept: true }}
+        onAccept={vi.fn()}
+        onReject={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getByRole("button", { name: "Accept GitHub" }),
+    ).toHaveAttribute("aria-busy", "true");
+    expect(
+      screen.getByRole("button", { name: "Reject GitHub" }),
+    ).not.toHaveAttribute("aria-busy");
+    expect(
+      screen.getByRole("button", { name: "Accept Slack" }),
+    ).not.toHaveAttribute("aria-busy");
+  });
+});

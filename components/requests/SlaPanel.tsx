@@ -165,6 +165,7 @@ export function SlaPanel({
           </label>
           <textarea
             id={reasonId}
+            data-fix="sla-reason"
             rows={3}
             value={reason}
             disabled={disabled}

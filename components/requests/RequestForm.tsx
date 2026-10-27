@@ -108,10 +108,12 @@ const OFFBOARDING_SUGGESTED: string[] = [
 function OffboardingSuggestions({
   suggestions,
   busy,
+  workingOn,
   onDecide,
 }: {
   suggestions: FieldSuggestion[];
   busy: boolean;
+  workingOn: (id: string) => "accept" | "reject" | null;
   onDecide: (id: string, accept: boolean) => void;
 }) {
   if (suggestions.length === 0) return null;
@@ -127,6 +129,7 @@ function OffboardingSuggestions({
           }
           suggestion={s}
           busy={busy}
+          working={workingOn(s.id)}
           onAccept={() => onDecide(s.id, true)}
           onReject={() => onDecide(s.id, false)}
           className="col-span-2 md:col-span-1"
@@ -208,6 +211,13 @@ export function RequestForm({
   // F16b: the assistant's suggestions still waiting (decided ones hide at once).
   const [decided, setDecided] = useState<string[]>([]);
   const [suggestBusy, setSuggestBusy] = useState(false);
+  // The one being decided right now — only its button shows it.
+  const [working, setWorking] = useState<{
+    id: string;
+    accept: boolean;
+  } | null>(null);
+  const workingOn = (id: string) =>
+    working?.id === id ? (working.accept ? "accept" : "reject") : null;
   const [suggestMessage, setSuggestMessage] = useState<string | null>(null);
   // Access change (F10c): what they hold, each kept / changed / removed.
   const change = form.accessChange;
@@ -264,8 +274,10 @@ export function RequestForm({
     setSuggestBusy(true);
     setSuggestMessage(null);
     for (const id of ids) {
+      setWorking({ id, accept });
       if (!(await decideOne(id, accept))) break;
     }
+    setWorking(null);
     setSuggestBusy(false);
     router.refresh();
   };
@@ -316,13 +328,28 @@ export function RequestForm({
   };
 
   // "Edit" / "Fix" in the review: close it and open that section.
-  const editSection = (number: number) => {
+  // Fix (Review & sign) lands on the exact field or control when it can,
+  // and focuses it; otherwise on the section (Raju, 2026-10-27).
+  const editSection = (number: number, target?: string) => {
     setSheet(null);
     toggle(number, true);
+    // Two frames: the sheet closes and the section opens first.
     requestAnimationFrame(() =>
-      document
-        .getElementById(`s${number}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      requestAnimationFrame(() => {
+        const section = document.getElementById(`s${number}`);
+        const spot =
+          (target && document.querySelector<HTMLElement>(target)) || null;
+        (spot ?? section)?.scrollIntoView({
+          behavior: "smooth",
+          block: spot ? "center" : "start",
+        });
+        const focusable = spot?.matches("input, select, textarea, button")
+          ? spot
+          : spot?.querySelector<HTMLElement>(
+              "input:not([disabled]), select, textarea, button",
+            );
+        focusable?.focus({ preventScroll: true });
+      }),
     );
   };
 
@@ -606,7 +633,7 @@ export function RequestForm({
             Requests
           </Link>
           <span className="flex-1" />
-          <span className="flex items-center gap-2 md:w-full md:justify-between md:rounded-xl md:border md:border-line md:bg-paper md:p-3">
+          <span className="flex items-center gap-2 md:w-full md:flex-wrap md:justify-between md:rounded-xl md:border md:border-line md:bg-paper md:p-3">
             <span className="text-[13px] font-bold whitespace-nowrap md:text-xs">
               {form.ticketId}
             </span>
@@ -727,6 +754,7 @@ export function RequestForm({
               OFFBOARDING_SUGGESTED.includes(f.key),
             )}
             busy={suggestBusy}
+            workingOn={workingOn}
             onDecide={(id, accept) => void decide([id], accept)}
           />
         )}
@@ -810,6 +838,7 @@ export function RequestForm({
                 <SuggestedItems
                   items={itemsOf("held")}
                   busy={suggestBusy}
+                  working={working}
                   onAccept={(id) => void decide([id], true)}
                   onReject={(id) => void decide([id], false)}
                 />
@@ -819,6 +848,7 @@ export function RequestForm({
                 <SuggestedItems
                   items={itemsOf("access")}
                   busy={suggestBusy}
+                  working={working}
                   onAccept={(id) => void decide([id], true)}
                   onReject={(id) => void decide([id], false)}
                 />
@@ -842,6 +872,7 @@ export function RequestForm({
                 <SuggestedItems
                   items={itemsOf("equipment")}
                   busy={suggestBusy}
+                  working={working}
                   onAccept={(id) => void decide([id], true)}
                   onReject={(id) => void decide([id], false)}
                 />
@@ -862,6 +893,7 @@ export function RequestForm({
                 <SuggestedItems
                   items={itemsOf("physical")}
                   busy={suggestBusy}
+                  working={working}
                   onAccept={(id) => void decide([id], true)}
                   onReject={(id) => void decide([id], false)}
                 />
@@ -944,6 +976,7 @@ export function RequestForm({
                       label={field.label}
                       suggestion={suggestion}
                       busy={suggestBusy}
+                      working={workingOn(suggestion.id)}
                       onAccept={() => void decide([suggestion.id], true)}
                       onReject={() => void decide([suggestion.id], false)}
                       className={phoneSpan(field)}

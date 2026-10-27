@@ -174,7 +174,8 @@ describe("blocking checks", () => {
       {
         ok: false,
         label: "Required fields empty: Job title / role, Country",
-        fix: { section: 2 },
+        // Fix lands on the first empty field (Raju, 2026-10-27).
+        fix: { section: 2, target: '[data-field-label="Job title / role"]' },
       },
       {
         ok: false,
@@ -256,18 +257,18 @@ describe("blocking checks", () => {
       {
         ok: false,
         label: "Applications removed (4 of 7)",
-        fix: { section: 5 },
+        fix: { section: 5, target: '[data-fix="app-done"]' },
       },
       {
         ok: false,
         label:
           "Mailbox: converted to a shared mailbox, or no mailbox to convert",
-        fix: { section: 7 },
+        fix: { section: 7, target: '[data-fix="mailbox"]' },
       },
       {
         ok: false,
         label: "Reason the access removal SLA was missed",
-        fix: { section: 8 },
+        fix: { section: 8, target: '[data-fix="sla-reason"]' },
       },
     ]);
     expect(checks[0]).toEqual({

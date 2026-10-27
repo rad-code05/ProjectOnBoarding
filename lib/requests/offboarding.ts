@@ -171,29 +171,34 @@ export function slaHeadline(
  * that fixes it; the rest stay "Required fields empty". Keep the prefixes in
  * step with the database function (supabase/migrations/…_offboarding_work.sql).
  */
-const BLOCKER_SECTIONS: [prefix: string, section: number][] = [
+const BLOCKER_SECTIONS: [prefix: string, section: number, target?: string][] = [
   ["Access removal SLA", 8],
-  ["Reason the access removal SLA was missed", 8],
+  ["Reason the access removal SLA was missed", 8, '[data-fix="sla-reason"]'],
   ["At least one application or access to remove", 5],
-  ["Removal method", 5],
-  ["Applications removed", 5],
+  ["Removal method", 5, '[data-fix="removal-method"]'],
+  ["Applications removed", 5, '[data-fix="app-done"]'],
   ["Equipment received or marked not returned", 6],
-  ["Access disabled or removed", 7],
-  ["Data & mailbox go to", 7],
-  ["Mailbox:", 7],
+  ["Access disabled or removed", 7, '[data-fix="access-done"]'],
+  ["Data & mailbox go to", 7, '[data-fix="handover"]'],
+  ["Mailbox:", 7, '[data-fix="mailbox"]'],
   // Access change (F10a-2): nothing to change = nothing to sign.
   ["At least one change", 5],
 ];
 
 export function splitBlockers(missing: string[]): {
   fields: string[];
-  blockers: { label: string; section: number }[];
+  blockers: { label: string; section: number; target?: string }[];
 } {
   const fields: string[] = [];
-  const blockers: { label: string; section: number }[] = [];
+  const blockers: { label: string; section: number; target?: string }[] = [];
   for (const label of missing) {
     const hit = BLOCKER_SECTIONS.find(([prefix]) => label.startsWith(prefix));
-    if (hit) blockers.push({ label, section: hit[1] });
+    if (hit)
+      blockers.push(
+        hit[2]
+          ? { label, section: hit[1], target: hit[2] }
+          : { label, section: hit[1] },
+      );
     else fields.push(label);
   }
   return { fields, blockers };
