@@ -2,6 +2,7 @@ import type { UIMessage } from "ai";
 import type { Role } from "@/lib/auth";
 import { formatDate } from "@/lib/requests/format";
 import { zonedParts } from "@/lib/time/zoned";
+import { timelineLabel } from "./tools/offboarding-shared";
 import { TOPICS, type Topic } from "./tools/onboarding-shared";
 
 /** The longest question the assistant accepts (characters). */
@@ -175,6 +176,13 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
         return "Didn't create the draft — a few things to check";
       const n = Number(field("suggestions") ?? 0);
       return `Created the draft ${field("ticket") ?? ""} · ${n} suggestion${n === 1 ? "" : "s"} waiting`;
+    }
+    case "createOffboardingDraft": {
+      if (!done) return "Starting the offboarding…";
+      if (field("created") !== "true")
+        return "Didn't start the offboarding — a few things to check";
+      const n = Number(field("suggestions") ?? 0);
+      return `Started the offboarding ${field("ticket") ?? ""} · ${n} suggestion${n === 1 ? "" : "s"} waiting`;
     }
     case "suggestValues": {
       if (!done) return "Adding suggestions…";
@@ -421,8 +429,10 @@ const listOf = (v: unknown, show: (x: Named) => string | null) =>
  * (board *Confirm creates the draft*). null = not a write we know.
  */
 export function confirmCard(tool: string, input: unknown): ConfirmCard | null {
-  if (tool !== "createOnboardingDraft" || !input || typeof input !== "object")
-    return null;
+  if (!input || typeof input !== "object") return null;
+  if (tool === "createOffboardingDraft")
+    return offboardingCard(input as Record<string, unknown>);
+  if (tool !== "createOnboardingDraft") return null;
   const i = input as Record<string, unknown>;
   const name = [str(i.firstName), str(i.lastName)].filter(Boolean).join(" ");
   const rows = [
@@ -507,4 +517,37 @@ export function answeredApproval(
     }
   }
   return null;
+}
+
+/** Board *Offboarding by chat*: who leaves, when, the SLA and the handover. */
+function offboardingCard(i: Record<string, unknown>): ConfirmCard {
+  const who = str(i.person) ?? "this person";
+  const cutoff =
+    str(i.cutoffDate) && str(i.cutoffTime)
+      ? `${formatDate(str(i.cutoffDate))}, ${str(i.cutoffTime)}`
+      : "";
+  const rows = [
+    { label: "Leaving", value: who },
+    {
+      label: "Last working day",
+      value: str(i.lastWorkingDay) ? formatDate(str(i.lastWorkingDay)) : "",
+    },
+    { label: "SLA", value: timelineLabel(i.slaTimeline) ?? "" },
+    { label: "Access cut-off", value: cutoff },
+    {
+      label: "Handover",
+      value:
+        str(i.handoverTo) ??
+        (Array.isArray(i.notNeeded) && i.notNeeded.includes("handoverTo")
+          ? "Not needed"
+          : ""),
+    },
+    { label: "Removals", value: "Pre-filled from everything they hold today" },
+  ].filter((r) => r.value);
+  return {
+    title: `Start an offboarding for ${who}?`,
+    rows,
+    note: "Creates the offboarding draft with the timing and handover as suggestions. The SLA clock starts only when you press Start execution; removing the accounts in the tools, the removal method per app and the mailbox stay yours.",
+    yes: "Confirm — start the offboarding",
+  };
 }

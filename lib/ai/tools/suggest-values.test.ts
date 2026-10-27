@@ -101,6 +101,25 @@ describe("suggestValues (F16c-2)", () => {
     });
   });
 
+  test("an offboarding: only the timing and handover", async () => {
+    const { db, rpc } = fakeDb([{ ...draft, type: "offboarding" }]);
+    const out = await call(
+      { ticket: "404", offboarding: { handoverTo: "Rafiq Ahmed" } },
+      db,
+    );
+    expect(out).toMatchObject({ added: 2, ticket: "UAM-2026-000404" });
+    expect(rpc).toHaveBeenCalledWith("suggest_request_values", {
+      p_request_id: ID,
+      p_suggestions: [
+        { kind: "field", target: "handover_to", value: "Rafiq Ahmed" },
+      ],
+    });
+    const none = fakeDb([{ ...draft, type: "offboarding" }]);
+    await expect(
+      call({ ticket: "404", values: { jobTitle: "x" } }, none.db),
+    ).resolves.toMatchObject({ added: 0 });
+  });
+
   test("refuses closed requests, other types, unknown tickets and names", async () => {
     const closed = fakeDb([{ ...draft, state: "closed" }]);
     await expect(

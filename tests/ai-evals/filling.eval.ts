@@ -89,6 +89,20 @@ describe.skipIf(!KEY)(`filling by chat — ${MODEL}`, () => {
     expect(confirmCards).toEqual([]);
   });
 
+  test("someone leaving: never a card before the person and the timing are clear", async () => {
+    // The stand-in database holds nobody: the robot must look, say so and
+    // ask — or ask for the timing — never show a Confirm card.
+    const { text, confirmCards, tools } = await ask(
+      "Arjun Mehta is leaving on Friday.",
+    );
+    expect(confirmCards).toEqual([]);
+    expect(tools).not.toContain("createOnboardingDraft");
+    expect(text).toMatch(/arjun/);
+    expect(text).toMatch(
+      /can't find|cannot find|no one|nobody|not find|cut-?off|sla/,
+    );
+  });
+
   test("two work emails: asks which one (the form has one)", async () => {
     const { text, tools } = await ask(
       "Add the primary email test2@test.com and test2@gmail.com to UAM-2026-000404.",

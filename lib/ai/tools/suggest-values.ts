@@ -3,6 +3,8 @@ import * as z from "zod";
 import type { Json } from "@/lib/supabase/database.types";
 import { onboardingInputSchema } from "./create-onboarding-draft";
 import { loadFormOptions } from "./onboarding-load";
+import { offboardingInputSchema } from "./create-offboarding-draft";
+import { offboardingFields } from "./offboarding-shared";
 import { resolveOnboarding, type OnboardingInput } from "./onboarding-shared";
 import { parseTicket } from "./request-shared";
 import { defineTool } from "./types";
@@ -39,9 +41,37 @@ export const suggestValues = defineTool({
         values: onboardingInputSchema
           .omit({ notNeeded: true })
           .partial()
-          .describe("Only the values to add or change."),
+          .optional()
+          .describe("Onboarding only: the values to add or change."),
+        offboarding: offboardingInputSchema
+          .omit({ person: true, notNeeded: true })
+          .optional()
+          .describe(
+            "Offboarding only: the timing and handover to add or change.",
+          ),
       }),
-      execute: async ({ ticket, values }) => {
+      execute: async ({ ticket, values, offboarding }) => {
+        const save = async (
+          r: { id: string; ticket_id: string },
+          suggestions: unknown[],
+        ) => {
+          const saved = await ctx.db.rpc("suggest_request_values", {
+            p_request_id: r.id,
+            p_suggestions: suggestions as unknown as Json,
+          });
+          if (saved.error)
+            return {
+              added: 0,
+              ticket: r.ticket_id,
+              error:
+                "The suggestions could not be saved (this request may be closed).",
+            };
+          return {
+            added: saved.data ?? suggestions.length,
+            ticket: r.ticket_id,
+            link: `/requests/${r.id}`,
+          };
+        };
         const wanted = parseTicket(ticket);
         if (!wanted)
           return {
@@ -71,17 +101,28 @@ export const suggestValues = defineTool({
             matches: rows.map((r) => r.ticket_id),
           };
         const r = rows[0];
-        if (r.type !== "onboarding")
-          return {
-            added: 0,
-            ticket: r.ticket_id,
-            error: "Only onboardings can get suggestions by chat for now.",
-          };
         if (!EDITABLE.includes(r.state))
           return {
             added: 0,
             ticket: r.ticket_id,
             error: "This request can't be changed any more.",
+          };
+        if (r.type === "offboarding") {
+          const fields = offboardingFields(offboarding ?? {}, ctx.timeZone);
+          if (fields.problems.length || fields.suggestions.length === 0)
+            return {
+              added: 0,
+              ticket: r.ticket_id,
+              problems: fields.problems,
+              note: "On an offboarding only the timing and handover can be suggested (pass offboarding). Nothing was added.",
+            };
+          return save(r, fields.suggestions);
+        }
+        if (r.type !== "onboarding")
+          return {
+            added: 0,
+            ticket: r.ticket_id,
+            error: "Access changes can't get suggestions by chat yet.",
           };
 
         let options;
@@ -93,7 +134,10 @@ export const suggestValues = defineTool({
             error: "The form's lists could not be read just now.",
           };
         }
-        const resolved = resolveOnboarding(values as OnboardingInput, options);
+        const resolved = resolveOnboarding(
+          (values ?? {}) as OnboardingInput,
+          options,
+        );
         if (!resolved.ok)
           return {
             added: 0,
@@ -108,22 +152,7 @@ export const suggestValues = defineTool({
             note: "There was nothing to add.",
           };
 
-        const saved = await ctx.db.rpc("suggest_request_values", {
-          p_request_id: r.id,
-          p_suggestions: resolved.suggestions as unknown as Json,
-        });
-        if (saved.error)
-          return {
-            added: 0,
-            ticket: r.ticket_id,
-            error:
-              "The suggestions could not be saved (this request may be closed).",
-          };
-        return {
-          added: saved.data ?? resolved.suggestions.length,
-          ticket: r.ticket_id,
-          link: `/requests/${r.id}`,
-        };
+        return save(r, resolved.suggestions);
       },
     }),
 });

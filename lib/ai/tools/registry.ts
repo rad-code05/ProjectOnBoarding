@@ -1,6 +1,7 @@
 import type { ToolApprovalStatus, ToolSet } from "ai";
 import type { Role } from "@/lib/auth";
 import { getAppHelp } from "./get-app-help";
+import { createOffboardingDraft } from "./create-offboarding-draft";
 import { createOnboardingDraft } from "./create-onboarding-draft";
 import { getCatalog } from "./get-catalog";
 import { getFormOptions } from "./get-form-options";
@@ -40,6 +41,7 @@ export const TOOLS: readonly AiTool[] = [
   // Filling requests — admin / requester; creating a draft waits for Confirm (F16c).
   getFormOptions,
   createOnboardingDraft,
+  createOffboardingDraft,
   suggestValues,
   // Memory — the asker's own row only (F15d-2c).
   rememberPreference,
