@@ -34,7 +34,14 @@ export type FieldSuggestion = {
 export type ItemSuggestion = {
   id: string;
   /** held: a change to something the person holds (access change, F16d-2). */
-  kind: "access" | "equipment" | "physical" | "held" | "removal" | "mailbox";
+  kind:
+    | "access"
+    | "equipment"
+    | "physical"
+    | "held"
+    | "removal"
+    | "mailbox"
+    | "execution_notes";
   /** "Slack", "Laptop", "Office access". */
   name: string;
   /** "Grant · Regular Member", "Issue · Dell 14\"", "Grant · Badge". */
@@ -150,6 +157,16 @@ function itemSuggestion(
       kind: "mailbox",
       name: "Mailbox",
       detail: MAILBOX_LABELS[value] ?? value,
+      reason: row.reason,
+    };
+  }
+  if (row.kind === "execution_notes") {
+    // A draft of section 9's notes (F16e-1); the ticks stay human.
+    return {
+      id: row.id,
+      kind: "execution_notes",
+      name: "Implementation notes",
+      detail: asText(row.value),
       reason: row.reason,
     };
   }

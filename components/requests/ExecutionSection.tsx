@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, useTransition } from "react";
+import { useId, useState, useTransition, type ReactNode } from "react";
 import { saveExecution } from "@/app/(app)/requests/actions";
 import { CHECK_NOTES, type CheckValue } from "@/lib/requests/execution";
 import { InlineError } from "@/components/ui";
@@ -27,6 +27,7 @@ export function ExecutionSection({
   checks,
   onChecksChange,
   flag,
+  suggested,
 }: {
   requestId: string;
   items: ChecklistItem[];
@@ -38,6 +39,8 @@ export function ExecutionSection({
   onChecksChange: (checks: Record<string, CheckValue>) => void;
   /** "Flagged by Moises" after a return, or null. */
   flag?: string | null;
+  /** The robot's draft of the notes, shown above them (F16e-1). */
+  suggested?: ReactNode;
 }) {
   const notesId = useId();
   const [notes, setNotes] = useState(record.notes ?? "");
@@ -46,6 +49,15 @@ export function ExecutionSection({
   const [error, setError] = useState<string | null>(null);
   const [saving, startSaving] = useTransition();
   const done = doneCount(items, checks);
+
+  // Notes accepted from the robot arrive as a new record after the refresh:
+  // take them, unless the person is in the middle of typing their own.
+  const [seenNotes, setSeenNotes] = useState(record.notes);
+  if (record.notes !== seenNotes) {
+    setSeenNotes(record.notes);
+    if (notes === savedNotes) setNotes(record.notes ?? "");
+    setSavedNotes(record.notes ?? "");
+  }
 
   const save = (nextChecks: Record<string, CheckValue>, nextNotes: string) =>
     startSaving(async () => {
@@ -169,6 +181,7 @@ export function ExecutionSection({
         })}
       </fieldset>
 
+      {suggested}
       <div className="flex flex-col gap-1.5">
         <label htmlFor={notesId} className="text-xs font-semibold">
           Implementation notes{" "}

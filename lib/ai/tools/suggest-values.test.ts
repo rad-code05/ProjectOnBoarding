@@ -145,4 +145,39 @@ describe("suggestValues (F16c-2)", () => {
     expect(JSON.stringify(out)).toContain("isn't in the catalog");
     expect(ok.rpc).not.toHaveBeenCalled();
   });
+  test("section 9: a draft of the implementation notes, on any open request (F16e-1)", async () => {
+    // Notes only — an offboarding in execution: nothing else is checked.
+    const leaving = fakeDb([
+      { ...draft, type: "offboarding", state: "in_execution" },
+    ]);
+    await expect(
+      call(
+        { ticket: "404", implementationNotes: "Slack suspended, data kept." },
+        leaving.db,
+      ),
+    ).resolves.toMatchObject({ added: 2, ticket: "UAM-2026-000404" });
+    expect(leaving.rpc).toHaveBeenCalledWith("suggest_request_values", {
+      p_request_id: ID,
+      p_suggestions: [
+        {
+          kind: "execution_notes",
+          target: "execution_notes",
+          value: "Slack suspended, data kept.",
+        },
+      ],
+    });
+    // With other values: they go together.
+    const both = fakeDb([draft]);
+    await call(
+      {
+        ticket: "404",
+        values: { jobTitle: "Analyst" },
+        implementationNotes: "Invite sent.",
+      },
+      both.db,
+    );
+    expect(JSON.stringify(both.rpc.mock.calls[0])).toContain(
+      '{"kind":"execution_notes","target":"execution_notes","value":"Invite sent."}',
+    );
+  });
 });
