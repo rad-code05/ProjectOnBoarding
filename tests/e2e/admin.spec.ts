@@ -1602,3 +1602,59 @@ test("Filling by chat (F16c): the robot prepares a draft after Confirm; Raju acc
   ).toHaveValue("Omar Haddad");
   await expect(page.getByText("Saved", { exact: false }).first()).toBeVisible();
 });
+
+test("Section 9 by chat (F16e): the robot drafts the implementation notes; accepted, they reach Review & sign — the ticks stay Raju's", async ({
+  page,
+}) => {
+  test.slow();
+  await saveInitials(page);
+  // In execution, every tick done by hand (createExecutedRequest).
+  const ticketId = await createExecutedRequest(page, "Notes");
+  const section9 = page.getByRole("region", {
+    name: "IT execution confirmation",
+  });
+  await section9.getByLabel(/^Implementation notes/).fill("Badge handed over.");
+  await section9.getByLabel(/^Implementation notes/).blur();
+  await expect(section9.getByRole("status")).not.toHaveText("Saving…");
+
+  await page.getByRole("button", { name: /^Open the Laine assistant/ }).click();
+  const panel = page.getByRole("dialog", { name: "Laine assistant" });
+  await panel.getByRole("button", { name: "New chat" }).click();
+  const box = panel.getByRole("textbox", { name: "Message the assistant" });
+  // The fake test model (AI_FAKE_MODEL=1) drafts fixed notes on that ticket.
+  await box.fill(`Write the implementation notes for ${ticketId}`);
+  await box.press("Enter");
+  await expect(panel.getByRole("log")).toContainText(
+    "The notes wait on section 9 for you to accept.",
+    { timeout: 30_000 },
+  );
+  await box.press("Escape");
+
+  // A suggestion above the notes — nothing written yet.
+  await page.reload();
+  const notes = section9.getByLabel(/^Implementation notes/);
+  await expect(notes).toHaveValue("Badge handed over.");
+  const suggested = section9.getByRole("list", {
+    name: "Suggested by the assistant",
+  });
+  await expect(suggested).toContainText("Laptop enrolled in MDM.");
+  await suggested
+    .getByRole("button", { name: /^Accept Implementation notes/ })
+    .click();
+  await expect(suggested).toBeHidden();
+  // Added after what Raju typed, line breaks kept; the ticks untouched.
+  await expect(notes).toHaveValue(
+    "Badge handed over.\n\nSlack: Regular Member granted, invite sent.\nLaptop enrolled in MDM.",
+  );
+  await expect(section9.getByRole("status")).toHaveText(/^(\d+) of \1 done$/);
+
+  // Review & sign shows them; then signing is Raju's as always.
+  await page
+    .getByRole("button", { name: "Review & sign", exact: true })
+    .click();
+  const sheet = page.getByRole("dialog", { name: "Review & sign" });
+  await expect(sheet).toContainText("Laptop enrolled in MDM.");
+  await sheet.getByRole("button", { name: "Back to edit" }).click();
+  await expect(sheet).toHaveCount(0);
+  await reviewAndSign(page);
+});
