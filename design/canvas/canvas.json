@@ -757,6 +757,48 @@
       "w": 390,
       "h": 1320,
       "title": "Phone · Offboarding by chat (removals from what they hold) — F16 proposal"
+    },
+    "BatchStartMobile.dc.html": {
+      "x": 35230,
+      "y": 13560,
+      "w": 390,
+      "h": 1180,
+      "title": "Phone · New batch: kind + file or pasted list — F17b proposal"
+    },
+    "BatchChatMobile.dc.html": {
+      "x": 35700,
+      "y": 13560,
+      "w": 390,
+      "h": 1120,
+      "title": "Phone · Batch by chat: a pasted list becomes a batch — F17b proposal"
+    },
+    "BatchGridMobile.dc.html": {
+      "x": 36170,
+      "y": 13560,
+      "w": 390,
+      "h": 1560,
+      "title": "Phone · Batch grid: checks per person, fix or untick — F17b proposal"
+    },
+    "BatchRowSheetMobile.dc.html": {
+      "x": 36640,
+      "y": 13560,
+      "w": 390,
+      "h": 1200,
+      "title": "Phone · Fix a row (sheet) — F17b proposal"
+    },
+    "BatchConfirmMobile.dc.html": {
+      "x": 37110,
+      "y": 13560,
+      "w": 390,
+      "h": 1500,
+      "title": "Phone · Confirm the batch, then the drafts created — F17b proposal"
+    },
+    "BatchOffboardingMobile.dc.html": {
+      "x": 37580,
+      "y": 13560,
+      "w": 390,
+      "h": 1520,
+      "title": "Phone · Batch of leavers (offboarding; access change alike) — F17b proposal"
     }
   },
   "createdOnFiles": {
@@ -923,7 +965,13 @@
     "F16ConfirmMobile.dc.html",
     "F16FormMobile.dc.html",
     "F16AccessMobile.dc.html",
-    "F16OffboardingMobile.dc.html"
+    "F16OffboardingMobile.dc.html",
+    "BatchStartMobile.dc.html",
+    "BatchChatMobile.dc.html",
+    "BatchGridMobile.dc.html",
+    "BatchRowSheetMobile.dc.html",
+    "BatchConfirmMobile.dc.html",
+    "BatchOffboardingMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

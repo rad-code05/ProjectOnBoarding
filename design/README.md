@@ -12,7 +12,8 @@ UI design for the internal user access management app, styled after [laine.ai](h
 | [sign-in.md](sign-in.md) | Sign-in, wrong password, mobile, new-device code, reset password |
 | [request-list.md](request-list.md) | Requests list — Raju's landing page, with **New request** |
 | [main-page.md](main-page.md) | Request form (onboarding) with the Laine robot assistant |
-| [request-variants.md](request-variants.md) | Offboarding, access modification, returned, read-only (approver), batch review |
+| [request-variants.md](request-variants.md) | Offboarding, access modification, returned, read-only (approver), batch review (desktop draft — phone: `batch-requests.md`) |
+| [batch-requests.md](batch-requests.md) | Batch requests (F17b): New batch, grid with checks, Fix a row, Confirm, leavers |
 | [review-sign.md](review-sign.md) | Review & sign confirmation dialog (Raju) |
 | [approver-view.md](approver-view.md) | Moises's view: Approvals, Confirm & sign, Records, Reports |
 | [pdf-export.md](pdf-export.md) | Closed request page: Download PDF, Save to SharePoint |
@@ -53,6 +54,7 @@ All planned screens now have a first design. Nothing is built yet.
 | Phone: Laine assistant — robot closed, chat (Raju / approver), help & limits, My profile memory, Admin · AI settings + model sheet, **Previous chats** | Approved (2026-10-23); **all built** (F15c–F15e, 2026-10-24) |
 | Phone: **Filling requests by chat** — follow-up questions, Confirm creates the draft, draft with suggestions, suggested access, offboarding by chat (`request-by-chat.md`) | Approved (2026-10-25); **built** (F16 done 2026-10-28) |
 | Phone: **Custom reports** — the robot checks how it read the request, ready in the chat, custom report page, Your custom reports, grouped with a chart (`custom-reports.md`) | Approved (2026-10-25); **all built** (F17a, 2026-10-25) |
+| Phone: **Batch requests** — New batch, batch by chat, grid with checks, Fix a row, Confirm + drafts created, batch of leavers (`batch-requests.md`) | Approved (2026-10-28); building (F17b) |
 
 ## Canvas sources
 `canvas/` holds a copy of every artboard (`*.dc.html`) and the layout index (`canvas.json`) from the live canvas, so the design survives outside claude.ai. Keep it in sync after canvas edits. `assets/laine-logo-white.png` is the logo the artboards use (uploaded to the canvas as `/_blob/17b23c9ce6dc5f048942c7b514470f03`).

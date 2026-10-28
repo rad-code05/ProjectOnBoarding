@@ -21,7 +21,7 @@
 | D5 | How admin role changes are controlled (second admin vs logged + visible to approvers) | F18 |
 | D6 | Auditor OK with end-only approval (no pre-provisioning approval)? | R |
 | D7 | AI provider & model (Claude direct vs via OpenRouter), may employee data be sent, retention | F15 — **part 1 decided 2026-10-09:** Anthropic; model chosen in Admin (default Claude Sonnet 5.5); assistant fills / updates forms, creates reports, answers data questions (PROJECT_PLAN §6.5). **Part 2 decided 2026-10-20:** employee data may go to Anthropic (only what a task needs; API terms; zero retention if available); approvers get report questions only; chat history 60 days; a per-person memory (name, favourite reports / questions / request types); import admin only (xlsx, csv, text PDF — no scans yet) — PROJECT_PLAN §6.6 ✅ |
-| D8 | Batch input format (CSV, XLSX, pasted text) | F17 |
+| ~~D8~~ | ✅ **Resolved 2026-10-28:** pasted text + **.xlsx** (first sheet) + **.csv**, up to 50 rows / 1 MB, read as data; batches kept 7 days; rows fixed in the grid or unticked; values written directly into each draft at Confirm (audit source ai) | — (F17b) |
 | D9 | SharePoint: download only / Save button / automatic; site, library, folder; who does the Entra app registration | F22 |
 | D10 | Notifications: email (Resend) and/or Slack; v1 or later | F23 |
 | ~~D11~~ | ✅ **Resolved 2026-10-11: yes** — Excel import of the existing records and access (F24) + AI check of screenshots against the database (F25), both before go-live | — (F24, F25) |
