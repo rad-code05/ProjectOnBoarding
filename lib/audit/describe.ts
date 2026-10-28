@@ -60,6 +60,13 @@ const roleLabel = (role: string | null) =>
     ? ROLE_LABELS[role as keyof typeof ROLE_LABELS]
     : (role ?? "a");
 
+/** What a batch holds, by request type (F17b). */
+const BATCH_KINDS: Record<string, string> = {
+  onboarding: "onboardings",
+  offboarding: "offboardings",
+  access_modification: "access changes",
+};
+
 const SOURCE_CHIPS: Record<Source, SourceChip> = {
   user: "People",
   ai: "AI",
@@ -438,6 +445,24 @@ export function describeEvent(
     case "audit.exported": {
       const rows = num(d, "rows");
       return say(`exported ${rows} audit event${rows === 1 ? "" : "s"} (CSV)`);
+    }
+    // Batch requests (F17b): the title and counts, never the rows.
+    case "batch.made":
+    case "batch.discarded": {
+      const kind = BATCH_KINDS[str(d, "type") ?? ""] ?? "requests";
+      return say(
+        `${ev.action === "batch.made" ? "made" : "discarded"} a batch of ${kind} ("${str(d, "title") ?? "untitled"}")`,
+        "Batch",
+      );
+    }
+    case "batch.created": {
+      const n = num(d, "created");
+      const left = num(d, "left_out");
+      const kind = BATCH_KINDS[str(d, "type") ?? ""] ?? "requests";
+      return say(
+        `created ${n} draft ${n === 1 ? kind.replace(/s$/, "") : kind} from the batch "${str(d, "title") ?? "untitled"}"${left ? ` (${left} left out)` : ""}`,
+        "Batch",
+      );
     }
     case "report.custom_saved":
     case "report.custom_changed":
