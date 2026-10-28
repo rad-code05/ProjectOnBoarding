@@ -107,6 +107,11 @@ export const BATCH_FIELDS: Record<RequestType, BatchField[]> = {
       label: "Physical access",
       aliases: ["badge", "door access", "building access"],
     },
+    {
+      key: "requestedBy",
+      label: "Requested by",
+      aliases: ["requestor", "requester", "requested"],
+    },
   ],
   offboarding: [
     PERSON,
