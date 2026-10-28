@@ -59,6 +59,12 @@ export const FAKE_ONBOARDING_ANSWER =
 export const FAKE_NOT_NOW_ANSWER =
   "This is the test assistant. Fine, nothing was created.";
 
+/** What the fake robot writes when asked for section 9's notes (F16e-3). */
+export const FAKE_NOTES =
+  "Slack: Regular Member granted, invite sent.\nLaptop enrolled in MDM.";
+export const FAKE_NOTES_ANSWER =
+  "This is the test assistant. The notes wait on section 9 for you to accept.";
+
 export function fakeModel(): LanguageModel {
   return new MockLanguageModelV4({
     // Admin → AI settings → Test the model (one answer, not streamed).
@@ -87,7 +93,12 @@ export function fakeModel(): LanguageModel {
       const report = /custom report/i.test(asked);
       // "Onboard …" (browser test, F16c): prepare a draft — it waits for Confirm.
       const onboard = !report && /\bonboard\b/i.test(asked);
-      const toolCall = report || onboard;
+      // "… implementation notes for UAM-…" (browser test, F16e-3): a draft
+      // of section 9's notes on that ticket.
+      const ticket = /implementation notes/i.test(asked)
+        ? asked.match(/UAM-\d{4}-\d{6}/)?.[0]
+        : undefined;
+      const toolCall = report || onboard || Boolean(ticket);
       const result = last?.role === "tool" ? JSON.stringify(last.content) : "";
       const text = !result
         ? FAKE_ANSWER
@@ -95,7 +106,9 @@ export function fakeModel(): LanguageModel {
           ? FAKE_NOT_NOW_ANSWER
           : result.includes("createOnboardingDraft")
             ? FAKE_ONBOARDING_ANSWER
-            : FAKE_REPORT_ANSWER;
+            : result.includes("suggestValues")
+              ? FAKE_NOTES_ANSWER
+              : FAKE_REPORT_ANSWER;
       return {
         stream: simulateReadableStream({
           chunkDelayInMs: 20,
@@ -107,9 +120,15 @@ export function fakeModel(): LanguageModel {
                     toolCallId: `fake-${Date.now()}`,
                     toolName: report
                       ? "saveCustomReport"
-                      : "createOnboardingDraft",
+                      : ticket
+                        ? "suggestValues"
+                        : "createOnboardingDraft",
                     input: JSON.stringify(
-                      report ? { definition: FAKE_REPORT } : FAKE_ONBOARDING,
+                      report
+                        ? { definition: FAKE_REPORT }
+                        : ticket
+                          ? { ticket, implementationNotes: FAKE_NOTES }
+                          : FAKE_ONBOARDING,
                     ),
                   },
                 ]

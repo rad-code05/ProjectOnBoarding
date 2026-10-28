@@ -1,6 +1,6 @@
 # Filling requests by chat (F16)
 
-> Boards approved 2026-10-25 (phone row of the design canvas). Decisions: `plan/features.md` → F16, PROJECT_PLAN §6.5–6.6.
+> Boards approved 2026-10-25 (phone row of the design canvas). **Built — F16 done 2026-10-28** (#176–#191); after the boards, Raju's test rounds added: the robot asks the removal method + mailbox on an offboarding, and drafts section 9's implementation notes (accepted in execution, added after notes already there). Decisions: `plan/features.md` → F16, PROJECT_PLAN §6.5–6.6.
 
 You tell the robot who joins, leaves or changes role. It asks for what is missing, creates the **draft** after your **Confirm**, and fills the form with **suggestions** you accept or reject one by one (or all at once). The robot never ticks section 9, signs, approves, returns, closes or cancels.
 
