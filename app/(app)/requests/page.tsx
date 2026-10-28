@@ -3,7 +3,7 @@ import { EmptyRequestsSwitch } from "@/components/requests/EmptyRequestsSwitch";
 import { RequestFilters } from "@/components/requests/RequestFilters";
 import { RequestList } from "@/components/requests/RequestList";
 import { NewRequestMenu } from "@/components/requests/NewRequestSheet";
-import { Button, SummaryTile, buttonStyles } from "@/components/ui";
+import { SummaryTile, buttonStyles } from "@/components/ui";
 import { requireRole } from "@/lib/auth";
 import { PAGES } from "@/lib/navigation";
 import {
@@ -11,8 +11,10 @@ import {
   hasActiveFilters,
   parseFilters,
 } from "@/lib/requests/filters";
+import { listMyBatches } from "@/lib/requests/batch/store";
 import { listLeavers } from "@/lib/requests/leavers";
 import { listRequests, requestSummary } from "@/lib/requests/list";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
 import { monthStart } from "@/lib/time/zoned";
 
@@ -21,13 +23,18 @@ export const metadata = { title: "Requests" };
 export default async function RequestsPage({
   searchParams,
 }: PageProps<"/requests">) {
-  await requireRole(...PAGES.requests.roles);
+  const user = await requireRole(...PAGES.requests.roles);
+  // Batches: admin and requester (F17b).
+  const canBatch = user.roles.some((r) => r === "admin" || r === "requester");
   const filters = parseFilters(await searchParams);
   const since = monthStart(await companyTimezone());
-  const [{ rows, total }, counts, leavers] = await Promise.all([
+  const [{ rows, total }, counts, leavers, batches] = await Promise.all([
     listRequests(filters),
     requestSummary(since),
     listLeavers(),
+    canBatch
+      ? listMyBatches(createServerSupabaseClient())
+      : Promise.resolve([]),
   ]);
 
   const moreParams = new URLSearchParams();
@@ -62,16 +69,45 @@ export default async function RequestsPage({
               className="md:h-10 md:text-[13px]"
             />
           </div>
-          <Button
-            variant="secondary"
-            disabled
-            title="Batch onboarding arrives with the Laine assistant"
-            className="md:order-1 md:h-10 md:text-[13px]"
-          >
-            Batch onboarding
-          </Button>
+          {canBatch && (
+            <Link
+              href="/requests/batch/new"
+              className={`${buttonStyles("secondary", "md")} md:order-1 md:h-10 md:text-[13px]`}
+            >
+              Batch
+            </Link>
+          )}
         </div>
       </div>
+
+      {batches.length > 0 && (
+        <section
+          aria-label="Your batches"
+          className="bg-white flex flex-col gap-2 rounded-card border border-line-subtle px-3.5 py-3"
+        >
+          <h2 className="text-[13px] font-semibold">Your batches</h2>
+          <ul className="flex flex-col">
+            {batches.map((b) => (
+              <li
+                key={b.id}
+                className="flex items-center gap-2.5 border-t border-line-subtle py-2 first:border-t-0"
+              >
+                <Link
+                  href={`/requests/batch/${b.id}`}
+                  className="min-w-0 flex-1 truncate text-sm font-semibold underline"
+                >
+                  {b.title}
+                </Link>
+                <span className="text-xs whitespace-nowrap text-graphite">
+                  {b.rows} {b.rows === 1 ? "person" : "people"} ·{" "}
+                  {b.status === "created" ? "created" : "not created yet"}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <span className="text-xs text-graphite">Kept 7 days.</span>
+        </section>
+      )}
 
       <section
         aria-label="Summary"

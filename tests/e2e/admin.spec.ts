@@ -1658,3 +1658,133 @@ test("Section 9 by chat (F16e): the robot drafts the implementation notes; accep
   await expect(sheet).toHaveCount(0);
   await reviewAndSign(page);
 });
+
+test("Batch (F17b-3): a pasted list becomes a checked grid; fix a row, leave one out, Confirm creates the drafts", async ({
+  page,
+}) => {
+  test.slow();
+  const tab = String.fromCharCode(9);
+  const stamp = Date.now();
+  const line = (...cells: string[]) => cells.join(tab);
+  const list = [
+    line(
+      "First name",
+      "Last name",
+      "Work email",
+      "Job title",
+      "Department",
+      "Office",
+      "Manager",
+      "Start date",
+      "Applications",
+    ),
+    line(
+      "Ada",
+      "Batch",
+      `ada.${stamp}@laine.ai`,
+      "Analyst",
+      "Engineering",
+      "Dubai",
+      "Omar Haddad",
+      "02/01/2030",
+      "Slack (Regular Member)",
+    ),
+    line(
+      "Ben",
+      "Batch",
+      `ben.${stamp}@laine.ai`,
+      "Designer",
+      "Engeneering",
+      "Dubai",
+      "Omar Haddad",
+      "2030-01-02",
+      "",
+    ),
+    line(
+      "Cy",
+      "Batch",
+      `cy.${stamp}@laine.ai`,
+      "Sales",
+      "Sales",
+      "Dubai",
+      "Rafiq Ahmed",
+      "2030-01-02",
+      "",
+    ),
+  ].join("\n");
+
+  await openApp(page, "/requests");
+  await page.getByRole("link", { name: "Batch", exact: true }).click();
+  await expect(page).toHaveURL(/\/requests\/batch\/new$/);
+  await page.getByRole("tab", { name: "Paste a list" }).click();
+  await page.getByLabel("Pasted list").fill(list);
+  await page.getByRole("button", { name: "Read the list" }).click();
+  await expect(page).toHaveURL(/\/requests\/batch\/[0-9a-f-]{36}$/, {
+    timeout: 30_000,
+  });
+
+  // Ben's department isn't one: his card comes first, outlined, with the reason.
+  const people = page.getByRole("list", { name: "People in this batch" });
+  const ben = people.getByRole("listitem", {
+    name: "Ben Batch — Needs attention",
+  });
+  await expect(ben).toContainText('There is no department "Engeneering"');
+  await expect(people.getByRole("listitem").first()).toHaveAccessibleName(
+    "Ben Batch — Needs attention",
+  );
+  await expect(
+    page.getByRole("button", { name: "Create 2 drafts…" }),
+  ).toBeVisible();
+
+  // Fix this row: pick Engineering, Save → Ready.
+  await ben.getByRole("button", { name: "Fix this row" }).click();
+  const sheet = page.getByRole("dialog", { name: "Ben Batch" });
+  await choose(page, "Department / team", "Engineering");
+  await sheet.getByRole("button", { name: "Save row" }).click();
+  await expect(
+    people.getByRole("listitem", { name: "Ben Batch — Ready" }),
+  ).toBeVisible();
+
+  // Leave Cy out.
+  await page.getByRole("checkbox", { name: "Include Cy Batch" }).uncheck();
+  await expect(
+    people.getByRole("listitem", { name: "Cy Batch — Left out" }),
+  ).toBeVisible();
+
+  // Confirm: 2 drafts, all or nothing.
+  await page.getByRole("button", { name: "Create 2 drafts…" }).click();
+  const confirm = page.getByRole("dialog", {
+    name: "Create 2 draft onboardings?",
+  });
+  await expect(confirm).toContainText("Cy Batch — left out");
+  await confirm
+    .getByRole("button", { name: "Confirm — create 2 drafts" })
+    .click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "2 drafts created." }),
+  ).toBeVisible({
+    timeout: 30_000,
+  });
+  const drafts = page.getByRole("list", { name: "Drafts created" });
+  await expect(drafts.getByText(/^UAM-\d{4}-\d{6}$/)).toHaveCount(2);
+
+  // A draft has the values, written straight in (no suggestions left).
+  await drafts
+    .getByRole("listitem")
+    .filter({ hasText: "Ada Batch" })
+    .getByRole("link", { name: "Open" })
+    .click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Ada Batch");
+  await expect(
+    page.getByRole("textbox", { name: "Job title / role", exact: true }),
+  ).toHaveValue("Analyst");
+  await expect(
+    page.getByRole("region", { name: "Suggestions from the assistant" }),
+  ).toHaveCount(0);
+
+  // Your batches on the Requests list.
+  await openApp(page, "/requests");
+  await expect(
+    page.getByRole("region", { name: "Your batches" }),
+  ).toContainText("created");
+});
