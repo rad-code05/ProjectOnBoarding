@@ -440,6 +440,36 @@ describe("eventChanges / eventFacts — the details sheet", () => {
     });
   });
 
+  test("a batch made, created, discarded: title and counts, never rows (F17b)", () => {
+    const batch = (action: string, diff: Record<string, unknown>) =>
+      describeEvent(
+        ev({
+          ...raju,
+          source: "ai",
+          action,
+          entity: "request_batch",
+          entity_id: "00000000-0000-0000-0000-00000000b001",
+          diff: { title: "joiners-november.xlsx", type: "onboarding", ...diff },
+        }),
+      );
+    expect(batch("batch.made", { source: "file" })).toMatchObject({
+      what: 'made a batch of onboardings ("joiners-november.xlsx")',
+      context: "Batch",
+    });
+    expect(batch("batch.created", { created: 11, left_out: 1 }).what).toBe(
+      'created 11 draft onboardings from the batch "joiners-november.xlsx" (1 left out)',
+    );
+    expect(
+      batch("batch.created", { type: "offboarding", created: 1, left_out: 0 })
+        .what,
+    ).toBe(
+      'created 1 draft offboarding from the batch "joiners-november.xlsx"',
+    );
+    expect(batch("batch.discarded", {}).what).toBe(
+      'discarded a batch of onboardings ("joiners-november.xlsx")',
+    );
+  });
+
   test("a custom report made, changed, deleted: title and parts, never rows", () => {
     const custom = (action: string) =>
       describeEvent(

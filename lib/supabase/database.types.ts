@@ -1122,6 +1122,119 @@ export type Database = {
           },
         ];
       };
+      request_batch_rows: {
+        Row: {
+          batch_id: string;
+          data: NonNullable<Json>;
+          employee_id: string | null;
+          id: string;
+          included: boolean;
+          position: number;
+          problems: NonNullable<Json>;
+          request_id: string | null;
+          updated_at: string;
+          writes: NonNullable<Json>;
+        };
+        ComputedFields: never;
+        Insert: {
+          batch_id: string;
+          data?: NonNullable<Json>;
+          employee_id?: string | null;
+          id?: string;
+          included?: boolean;
+          position: number;
+          problems?: NonNullable<Json>;
+          request_id?: string | null;
+          updated_at?: string;
+          writes?: NonNullable<Json>;
+        };
+        Update: {
+          batch_id?: string;
+          data?: NonNullable<Json>;
+          employee_id?: string | null;
+          id?: string;
+          included?: boolean;
+          position?: number;
+          problems?: NonNullable<Json>;
+          request_id?: string | null;
+          updated_at?: string;
+          writes?: NonNullable<Json>;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "request_batch_rows_batch_id_fkey";
+            columns: ["batch_id"];
+            isOneToOne: false;
+            referencedRelation: "request_batches";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "request_batch_rows_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "request_batch_rows_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      request_batches: {
+        Row: {
+          confirmed_at: string | null;
+          created_at: string;
+          created_by: string;
+          file_name: string | null;
+          id: string;
+          settings: NonNullable<Json>;
+          source: string;
+          status: string;
+          title: string;
+          type: Database["public"]["Enums"]["request_type"];
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          confirmed_at?: string | null;
+          created_at?: string;
+          created_by?: string;
+          file_name?: string | null;
+          id?: string;
+          settings?: NonNullable<Json>;
+          source: string;
+          status?: string;
+          title: string;
+          type: Database["public"]["Enums"]["request_type"];
+          updated_at?: string;
+        };
+        Update: {
+          confirmed_at?: string | null;
+          created_at?: string;
+          created_by?: string;
+          file_name?: string | null;
+          id?: string;
+          settings?: NonNullable<Json>;
+          source?: string;
+          status?: string;
+          title?: string;
+          type?: Database["public"]["Enums"]["request_type"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "request_batches_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
+      };
       request_equipment_items: {
         Row: {
           action: string;
@@ -1959,6 +2072,7 @@ export type Database = {
         Args: { p_employee_id?: string };
         Returns: string;
       };
+      create_batch_drafts: { Args: { p_batch_id: string }; Returns: Json };
       create_offboarding: { Args: { p_employee_id?: string }; Returns: string };
       delete_my_ai_chat: { Args: { p_chat_id: string }; Returns: boolean };
       delete_my_ai_chats: { Args: Record<PropertyKey, never>; Returns: number };
