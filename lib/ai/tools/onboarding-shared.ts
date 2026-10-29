@@ -144,6 +144,13 @@ const some = (names: string[]) =>
     ? `${names.slice(0, LIST).join(", ")} … (${names.length} in all)`
     : names.join(", ");
 
+/**
+ * A role as people write it: "Core-user", "Core - User", "Super-Admin",
+ * "WorkSpace Owner" are the catalog's "Core user", "Super Admin", "Workspace
+ * Owner" (case, spaces and hyphens ignored).
+ */
+const roleKey = (text: string) => normalize(text).replace(/[\s_-]+/g, "");
+
 function byName<T extends { name: string }>(rows: T[], name: string) {
   const want = normalize(name);
   return rows.find((r) => normalize(r.name) === want);
@@ -272,7 +279,7 @@ export function resolveOnboarding(
     if (text(a.permission)) {
       const wanted = a.permission!.split(";").map((p) => p.trim());
       const found = wanted.map((w) =>
-        app.permissions.find((p) => normalize(p) === normalize(w)),
+        app.permissions.find((p) => roleKey(p) === roleKey(w)),
       );
       if (found.some((p) => !p) || (!app.multiple && found.length > 1)) {
         problems.push(

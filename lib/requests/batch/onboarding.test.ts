@@ -9,6 +9,7 @@ import {
   toOnboardingInput,
   type BatchContext,
   withAppColumns,
+  pickRoles,
 } from "./onboarding";
 
 const options: FormOptions = {
@@ -269,5 +270,81 @@ describe("one column per application (Raju's template, 2026-10-29)", () => {
   test("no application column: the row is unchanged", () => {
     const record = { values: { firstName: "Tom" }, other: { Notes: "x" } };
     expect(withAppColumns(record, apps)).toEqual(record);
+  });
+});
+
+describe("Raju's own access sheet as a batch (2026-10-29)", () => {
+  const catalog = [
+    { name: "Office 365" },
+    { name: "Google Workspace" },
+    { name: "Google Cloud" },
+    { name: "Hexnode (MDM)" },
+    { name: "HostedScan" },
+    { name: "resend.com" },
+    { name: "Slack" },
+  ];
+
+  test("his column names find the catalog's apps; No Access = not needed", () => {
+    expect(
+      withAppColumns(
+        {
+          values: {},
+          other: {
+            M365: "User",
+            "GCP Workspace": "Super Admin",
+            "GCP Cloud": "Viewer",
+            Hexnode: "Admin",
+            "HostedScan.com": "Admin",
+            Resend: "Member",
+            Slack: "No Access",
+          },
+        },
+        catalog,
+      ),
+    ).toEqual({
+      values: {
+        applications:
+          "Office 365 (User), Google Workspace (Super Admin), Google Cloud (Viewer), Hexnode (MDM) (Admin), HostedScan (Admin), resend.com (Member)",
+      },
+      other: {},
+    });
+  });
+});
+
+describe("brackets and several roles in one cell (Raju's access sheet)", () => {
+  test("the role is the last bracket pair; an app name may have its own", () => {
+    expect(splitItem("Hexnode (MDM) (Admin)")).toEqual({
+      name: "Hexnode (MDM)",
+      detail: "Admin",
+    });
+    expect(
+      splitItem("Google Cloud (Access Policy Admin (Beta) Editor)"),
+    ).toEqual({
+      name: "Google Cloud",
+      detail: "Access Policy Admin (Beta) Editor",
+    });
+  });
+
+  test("the catalog's roles are picked out; project names and (Beta) left aside", () => {
+    const roles = [
+      "Viewer",
+      "Editor",
+      "Admin",
+      "Cloud Run Admin",
+      "Secret Manager Secret Accessor",
+      "Access Policy Admin",
+      "Organization Administrator",
+    ];
+    expect(
+      pickRoles(
+        "Laine-ai-dev Cloud Run Admin Editor Secret Manager Secret Accessor",
+        roles,
+      ),
+    ).toBe("Secret Manager Secret Accessor; Cloud Run Admin; Editor");
+    expect(
+      pickRoles("Access Policy Admin (Beta) Organization Administrator", roles),
+    ).toBe("Organization Administrator; Access Policy Admin");
+    // Something unknown is left: nothing is guessed.
+    expect(pickRoles("Editor Billing Wizard", roles)).toBeNull();
   });
 });
