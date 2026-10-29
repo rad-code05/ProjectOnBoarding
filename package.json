@@ -24,13 +24,13 @@
     "users:sync": "node --env-file=.env.local scripts/sync-users.mjs"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "4.0.84",
-    "@ai-sdk/react": "4.0.150",
-    "@clerk/nextjs": "7.9.17",
+    "@ai-sdk/anthropic": "4.0.89",
+    "@ai-sdk/react": "4.0.158",
+    "@clerk/nextjs": "7.9.21",
     "@react-pdf/renderer": "4.9.0",
     "@supabase/supabase-js": "2.118.0",
-    "ai": "7.0.146",
-    "next": "16.4.2",
+    "ai": "7.0.154",
+    "next": "16.4.3",
     "qrcode.react": "4.2.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
@@ -41,7 +41,7 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "@clerk/testing": "2.2.47",
+    "@clerk/testing": "2.2.51",
     "@playwright/test": "1.64.1",
     "@tailwindcss/postcss": "4.3.3",
     "@testing-library/dom": "10.4.2",
@@ -54,11 +54,11 @@
     "@vitejs/plugin-react": "6.1.2",
     "canonicalize": "5.1.0",
     "eslint": "9.39.5",
-    "eslint-config-next": "16.4.2",
+    "eslint-config-next": "16.4.3",
     "jsdom": "30.1.3",
     "prettier": "3.9.10",
     "prettier-plugin-tailwindcss": "0.8.1",
-    "supabase": "2.121.0",
+    "supabase": "2.122.0",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vitest": "5.0.5"
