@@ -46,8 +46,21 @@ export function listItems(cell: string | undefined): string[] {
  * Member", "Slack - Regular Member" → the name and its detail.
  */
 export function splitItem(item: string): { name: string; detail?: string } {
-  const paren = item.match(/^(.+?)\s*\((.+)\)\s*$/);
-  if (paren) return { name: paren[1].trim(), detail: paren[2].trim() };
+  // The detail is the last bracket pair, brackets inside it included:
+  // "Hexnode (MDM) (Admin)", "Google Cloud (Access Policy Admin (Beta))".
+  const text = item.trim();
+  if (text.endsWith(")")) {
+    let depth = 0;
+    for (let i = text.length - 1; i > 0; i--) {
+      if (text[i] === ")") depth++;
+      else if (text[i] === "(" && --depth === 0) {
+        const name = text.slice(0, i).trim();
+        if (name)
+          return { name, detail: text.slice(i + 1, -1).trim() || undefined };
+        break;
+      }
+    }
+  }
   const sep =
     item.match(/^(.+?)\s+(?:·|-|–)\s+(.+)$/) ?? item.match(/^(.+?):\s*(.+)$/);
   if (sep) return { name: sep[1].trim(), detail: sep[2].trim() };
@@ -144,6 +157,64 @@ function fixEquipment(
   };
 }
 
+const lower = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
+
+/**
+ * Several roles typed in one cell of a multi-role app (Google Cloud in
+ * Raju's sheet): lines run together and carry project names ("laine-ai-dev
+ * Cloud Run Admin Editor"). The catalog's roles are picked out, longest
+ * first; project names, "(Beta)" and separators may be left over — anything
+ * else, and the cell stays as typed so the check shows it.
+ */
+export function pickRoles(text: string, roles: string[]): string | null {
+  let rest = ` ${lower(text)} `;
+  const found: string[] = [];
+  for (const role of [...roles].sort((a, b) => b.length - a.length)) {
+    const want = ` ${lower(role)} `;
+    const spaced = (s: string) =>
+      s.replace(/[;,:()]/g, " ").replace(/\s+/g, " ");
+    rest = spaced(rest);
+    if (rest.includes(want)) {
+      found.push(role);
+      rest = rest.split(want).join(" ");
+    }
+  }
+  const left = rest
+    // Project ids: lower-case words joined by hyphens ("laine-ai-dev").
+    .replace(/\b[a-z][a-z0-9]*(?:-[a-z0-9]+)+\b/g, " ")
+    .replace(/\bbeta\b/g, " ")
+    .replace(/[\s;,:()]+/g, "");
+  return found.length && !left ? found.join("; ") : null;
+}
+
+/**
+ * Applications as the catalog knows them: an app whose own name has a
+ * bracket ("Hexnode (MDM)") isn't a role; several roles in one cell of a
+ * multi-role app are picked out (`pickRoles`).
+ */
+function fixApps(
+  input: OnboardingInput,
+  options: FormOptions,
+): OnboardingInput {
+  const app = (name: string) =>
+    options.apps.find((a) => lower(a.name) === lower(name));
+  return {
+    ...input,
+    applications: input.applications?.map((a) => {
+      const whole = a.permission
+        ? app(`${a.name} (${a.permission})`)
+        : undefined;
+      if (whole) return { name: whole.name };
+      const known = app(a.name);
+      if (known?.multiple && a.permission) {
+        const picked = pickRoles(a.permission, known.permissions);
+        if (picked) return { ...a, permission: picked };
+      }
+      return a;
+    }),
+  };
+}
+
 export type BatchContext = {
   options: FormOptions;
   /** Today in the company timezone, YYYY-MM-DD. */
@@ -157,7 +228,10 @@ export function checkOnboardingRow(
   values: Record<string, string>,
   ctx: BatchContext,
 ): CheckedRow {
-  const input = fixEquipment(toOnboardingInput(values), ctx.options);
+  const input = fixApps(
+    fixEquipment(toOnboardingInput(values), ctx.options),
+    ctx.options,
+  );
   const problems: Problem[] = [];
 
   for (const r of REQUIRED) {
@@ -249,8 +323,8 @@ export function checkOnboardingBatch(
 
 /** "Yes", "x", "✓" in an application's column: the app with its usual role. */
 const YES = /^(yes|y|x|✓|✔|true|1|default)$/i;
-/** "No", "-", "n/a": not this app. */
-const NO = /^(no|n|-|–|n\/a|none|false|0)$/i;
+/** "No", "No Access", "-", "n/a": not this app. */
+const NO = /^(no|no\s*access|n|-|–|n\/a|none|false|0)$/i;
 
 const appKey = (s: string) =>
   s
@@ -258,6 +332,30 @@ const appKey = (s: string) =>
     .replace(/\p{M}/gu, "")
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
+
+/**
+ * The names people give the apps in their own sheets (Raju's access sheet,
+ * 2026-10-29) → the catalog's name, compared like titles.
+ */
+const APP_ALIASES: Record<string, string> = {
+  m365: "office365",
+  microsoft365: "office365",
+  o365: "office365",
+  gcpworkspace: "googleworkspace",
+  gsuite: "googleworkspace",
+  gcpcloud: "googlecloud",
+  gcp: "googlecloud",
+};
+
+/** Every title an app answers to: "Hexnode (MDM)" → hexnodemdm, hexnode; "resend.com" → resend. */
+function appKeys(name: string): string[] {
+  const keys = [
+    appKey(name),
+    appKey(name.replace(/\s*\(.*\)\s*$/, "")),
+    appKey(name.replace(/\.(com|io|ai|net|org)$/i, "")),
+  ];
+  return [...new Set(keys.filter(Boolean))];
+}
 
 /**
  * Raju's template (2026-10-29): one column per application, titled with its
@@ -269,11 +367,18 @@ export function withAppColumns(
   record: { values: Record<string, string>; other: Record<string, string> },
   apps: { name: string }[],
 ): { values: Record<string, string>; other: Record<string, string> } {
-  const byKey = new Map(apps.map((a) => [appKey(a.name), a.name]));
+  const byKey = new Map<string, string>();
+  for (const a of apps)
+    for (const key of appKeys(a.name))
+      if (!byKey.has(key)) byKey.set(key, a.name);
+  const find = (title: string) =>
+    appKeys(title)
+      .map((k) => byKey.get(APP_ALIASES[k] ?? k))
+      .find(Boolean);
   const items: string[] = [];
   const other: Record<string, string> = {};
   for (const [title, cell] of Object.entries(record.other)) {
-    const app = byKey.get(appKey(title));
+    const app = find(title);
     if (!app) {
       other[title] = cell;
       continue;

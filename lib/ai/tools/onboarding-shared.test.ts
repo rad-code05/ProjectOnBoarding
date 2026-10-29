@@ -245,3 +245,21 @@ describe("nothing missed before the Confirm (Raju, 2026-10-26)", () => {
     expect(precheckOnboarding(complete, options)).toBeNull();
   });
 });
+
+describe("roles as people write them (Raju's access sheet, 2026-10-29)", () => {
+  test("case, spaces and hyphens don't matter", () => {
+    const r = resolveOnboarding(
+      {
+        applications: [
+          { name: "Slack", permission: "WorkSpace-Owner" },
+          { name: "Google Cloud", permission: "viewer; EDITOR" },
+        ],
+      },
+      options,
+    );
+    expect(r.ok && r.suggestions.map((s) => s.value)).toEqual([
+      { action: "Grant", permission: "Workspace Owner" },
+      { action: "Grant", permission: "Viewer; Editor" },
+    ]);
+  });
+});
