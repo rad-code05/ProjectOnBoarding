@@ -21,12 +21,15 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
+import { readBatchUpload } from "@/app/(app)/requests/batch/actions";
 import { CheckIcon, CloseIcon, HistoryIcon, IconButton } from "@/components/ui";
 import type { Role } from "@/lib/auth";
 import {
   MAX_QUESTION_LENGTH,
   answeredApproval,
   answeredOnServer,
+  attachedList,
+  attachedListText,
   chatProblem,
   confirmCard,
   greeting,
@@ -273,6 +276,11 @@ function ChatPanel({
   const approverOnly = !roles.some(
     (r) => r === "admin" || r === "requester" || r === "it_operator",
   );
+  // The paperclip (F17b-4): a list of joiners becomes a batch.
+  const canBatch = roles.some((r) => r === "admin" || r === "requester");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [attaching, setAttaching] = useState(false);
+  const [attachError, setAttachError] = useState<string | null>(null);
 
   const transport = useMemo(
     () =>
@@ -358,6 +366,24 @@ function ChatPanel({
     clearError();
     void sendMessage({ text: question.slice(0, MAX_QUESTION_LENGTH) });
     setInput("");
+  };
+  // The file is read into a batch on the server (the same reader as the
+  // batch page); the chat only carries its name and the batch's id.
+  const attach = async (file: File | undefined) => {
+    if (!file || busy || attaching) return;
+    setAttachError(null);
+    setAttaching(true);
+    const form = new FormData();
+    form.set("type", "onboarding");
+    form.set("file", file);
+    const result = await readBatchUpload(form).catch(() => null);
+    setAttaching(false);
+    if (fileRef.current) fileRef.current.value = "";
+    if (!result?.ok) {
+      setAttachError(result?.message ?? "Could not read the file. Try again.");
+      return;
+    }
+    ask(attachedListText(file.name, result.id, input));
   };
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -565,7 +591,35 @@ function ChatPanel({
             onSubmit={submit}
             className="flex shrink-0 flex-col gap-2 border-t border-line bg-paper px-4 pt-3 pb-5"
           >
+            {attachError && (
+              <span role="alert" className="text-xs text-signal">
+                {attachError}
+              </span>
+            )}
             <div className="flex items-end gap-2">
+              {canBatch && (
+                <>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    hidden
+                    aria-label="Attach a list of joiners (.xlsx or .csv)"
+                    accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    onChange={(e) => void attach(e.target.files?.[0])}
+                  />
+                  <IconButton
+                    label={
+                      attaching
+                        ? "Reading the list…"
+                        : "Attach a list of joiners"
+                    }
+                    disabled={busy || attaching}
+                    onClick={() => fileRef.current?.click()}
+                    className="size-12"
+                    icon={<PaperclipIcon />}
+                  />
+                </>
+              )}
               <label htmlFor={inputId} className="sr-only">
                 Message the assistant
               </label>
@@ -718,6 +772,21 @@ function Message({
       {message.parts.map((part, i) => {
         if (isTextUIPart(part)) {
           if (!part.text.trim()) return null;
+          const list = message.role === "user" ? attachedList(part.text) : null;
+          if (list)
+            return (
+              <Bubble key={i} from="user">
+                <span className="flex items-center gap-1.5 font-semibold">
+                  <PaperclipIcon />
+                  {list.fileName}
+                </span>
+                {list.note && (
+                  <span className="mt-1 block whitespace-pre-line">
+                    {list.note}
+                  </span>
+                )}
+              </Bubble>
+            );
           return message.role === "user" ? (
             <Bubble key={i} from="user">
               <span className="whitespace-pre-line">{part.text}</span>
@@ -816,5 +885,23 @@ function Message({
         return null;
       })}
     </>
+  );
+}
+
+function PaperclipIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L10.2 17.7a1.7 1.7 0 0 1-2.4-2.4L15.5 7.6" />
+    </svg>
   );
 }

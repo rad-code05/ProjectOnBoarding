@@ -1676,7 +1676,8 @@ test("Batch (F17b-3): a pasted list becomes a checked grid; fix a row, leave one
       "Office",
       "Manager",
       "Start date",
-      "Applications",
+      // Raju's template: one column per application, the cell = the role.
+      "Slack",
     ),
     line(
       "Ada",
@@ -1687,7 +1688,7 @@ test("Batch (F17b-3): a pasted list becomes a checked grid; fix a row, leave one
       "Dubai",
       "Omar Haddad",
       "02/01/2030",
-      "Slack (Regular Member)",
+      "Regular Member",
     ),
     line(
       "Ben",
@@ -1778,6 +1779,10 @@ test("Batch (F17b-3): a pasted list becomes a checked grid; fix a row, leave one
   await expect(
     page.getByRole("textbox", { name: "Job title / role", exact: true }),
   ).toHaveValue("Analyst");
+  await expect(page.getByLabel("Slack action")).toHaveValue("Grant");
+  await expect(page.getByLabel("Slack permission")).toHaveValue(
+    "Regular Member",
+  );
   await expect(
     page.getByRole("region", { name: "Suggestions from the assistant" }),
   ).toHaveCount(0);
@@ -1787,4 +1792,59 @@ test("Batch (F17b-3): a pasted list becomes a checked grid; fix a row, leave one
   await expect(
     page.getByRole("region", { name: "Your batches" }),
   ).toContainText("created");
+});
+
+test("Batch by chat (F17b-4): a list attached with the paperclip becomes a batch; Confirm in the chat creates the drafts", async ({
+  page,
+}) => {
+  test.slow();
+  const stamp = Date.now();
+  // Raju's template: one column per application, the cell = the role.
+  const csv = [
+    "First name,Last name,Work email,Job title,Department,Office,Manager,Start date,Slack",
+    `Dina,Chatbatch,dina.${stamp}@laine.ai,Analyst,Engineering,Dubai,Omar Haddad,02/01/2030,Regular Member`,
+    `Eli,Chatbatch,eli.${stamp}@laine.ai,Designer,Engineering,Dubai,Omar Haddad,2030-01-02,`,
+  ].join("\n");
+
+  await openApp(page, "/requests");
+  await page.getByRole("button", { name: /^Open the Laine assistant/ }).click();
+  const panel = page.getByRole("dialog", { name: "Laine assistant" });
+  await panel.getByRole("button", { name: "New chat" }).click();
+  await panel.locator('input[type="file"]').setInputFiles({
+    name: "joiners.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(csv),
+  });
+
+  // The file is read into a batch; the fake test model reads it back.
+  const log = panel.getByRole("log");
+  await expect(log).toContainText("joiners.csv", { timeout: 30_000 });
+  await expect(log.getByText("Read 2 people · 2 ready")).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(log.getByRole("link", { name: "Open the batch" })).toBeVisible();
+
+  // "Create the drafts" → the Confirm card names both → Confirm.
+  await expect(panel.getByRole("button", { name: "Stop" })).toHaveCount(0);
+  const box = panel.getByRole("textbox", { name: "Message the assistant" });
+  await box.fill("Create the drafts");
+  await box.press("Enter");
+  const card = log.getByRole("region", { name: "Create 2 draft onboardings?" });
+  await expect(card).toContainText("Dina Chatbatch, Eli Chatbatch", {
+    timeout: 30_000,
+  });
+  await card.getByRole("button", { name: "Confirm — create 2 drafts" }).click();
+  await expect(log.getByText("Created 2 drafts")).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(log).toContainText("The drafts are created");
+
+  await log.getByRole("link", { name: "Open the batch" }).last().click();
+  await expect(page).toHaveURL(/\/requests\/batch\/[0-9a-f-]{36}$/);
+  await box.press("Escape").catch(() => {});
+  await expect(
+    page
+      .getByRole("list", { name: "Drafts created" })
+      .getByText(/^UAM-\d{4}-\d{6}$/),
+  ).toHaveCount(2);
 });

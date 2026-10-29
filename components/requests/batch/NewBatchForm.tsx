@@ -184,8 +184,10 @@ export function NewBatchForm() {
           Download the onboarding template (.xlsx)
         </a>
         <span className="text-xs leading-normal text-graphite">
-          Your own columns are fine too: they are matched by name (First name,
-          Email, Department, Office, Start date, Applications …).
+          One column per application, titled with its name: write the role (or
+          Yes for its usual role), leave it empty when not needed. Your own
+          columns are fine too: they are matched by name (First name, Email,
+          Department, Office, Start date …).
         </span>
       </div>
 

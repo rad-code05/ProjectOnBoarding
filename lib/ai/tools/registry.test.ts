@@ -65,6 +65,11 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
       "createOffboardingDraft",
       "createAccessChangeDraft",
       "suggestValues",
+      // Batches (F17b-4).
+      "proposeBatch",
+      "getBatch",
+      "fixBatchRow",
+      "createBatchDrafts",
     ];
     expect(toolNamesFor(["requester", "it_operator"])).toEqual([
       "getAppHelp",
@@ -108,6 +113,7 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
       "createOnboardingDraft",
       "createOffboardingDraft",
       "createAccessChangeDraft",
+      "createBatchDrafts",
     ]);
     expect(typeof rules.createOnboardingDraft).toBe("function");
     expect(

@@ -71,7 +71,10 @@ export function footerLine(counts: ReturnType<typeof batchCounts>): string {
   return parts.join(" · ");
 }
 
-/** The columns of the onboarding template, in order (the .xlsx download). */
+/**
+ * The onboarding template's own columns, in order (the .xlsx download); one
+ * column per active application follows (`templateColumns`).
+ */
 export const TEMPLATE_COLUMNS = [
   "First name",
   "Last name",
@@ -84,8 +87,16 @@ export const TEMPLATE_COLUMNS = [
   "Manager",
   "Start date",
   "Nationality",
-  "Applications",
   "Equipment",
   "Physical access",
   "Requested by",
 ];
+
+/**
+ * Raju's layout (2026-10-29): after the person's columns, one column per
+ * application in the catalog — the cell holds the role, "Yes" for its usual
+ * role, empty when not needed. A new app in the catalog = a new column.
+ */
+export function templateColumns(apps: string[]): string[] {
+  return [...TEMPLATE_COLUMNS, ...apps];
+}
