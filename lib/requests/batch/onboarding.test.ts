@@ -8,6 +8,7 @@ import {
   splitItem,
   toOnboardingInput,
   type BatchContext,
+  withAppColumns,
 } from "./onboarding";
 
 const options: FormOptions = {
@@ -220,5 +221,53 @@ describe("the whole batch", () => {
     expect(rows.get(2)?.problems).toEqual([
       { field: "workEmail", message: "The same work email as row 1" },
     ]);
+  });
+});
+
+describe("one column per application (Raju's template, 2026-10-29)", () => {
+  const apps = [
+    { name: "Slack" },
+    { name: "Google Workspace" },
+    { name: "Figma" },
+  ];
+
+  test("the role, Yes for the usual role, empty or No = not needed", () => {
+    expect(
+      withAppColumns(
+        {
+          values: { firstName: "Meera" },
+          other: {
+            slack: "Regular Member",
+            "Google  Workspace": "yes",
+            Figma: "No",
+            "Email used": "meera@x.com",
+          },
+        },
+        apps,
+      ),
+    ).toEqual({
+      values: {
+        firstName: "Meera",
+        applications: "Slack (Regular Member), Google Workspace",
+      },
+      other: { "Email used": "meera@x.com" },
+    });
+  });
+
+  test("joins an Applications cell; several roles in one cell stay one item", () => {
+    expect(
+      withAppColumns(
+        {
+          values: { applications: "GitHub (Member)" },
+          other: { Figma: "Viewer, Editor", Slack: "" },
+        },
+        apps,
+      ).values.applications,
+    ).toBe("GitHub (Member), Figma (Viewer; Editor)");
+  });
+
+  test("no application column: the row is unchanged", () => {
+    const record = { values: { firstName: "Tom" }, other: { Notes: "x" } };
+    expect(withAppColumns(record, apps)).toEqual(record);
   });
 });

@@ -5,6 +5,9 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 let pathname = "/requests";
 vi.mock("next/navigation", () => ({ usePathname: () => pathname }));
 vi.mock("./actions", () => ({ loadAssistantChat: vi.fn(async () => []) }));
+vi.mock("@/app/(app)/requests/batch/actions", () => ({
+  readBatchUpload: vi.fn(),
+}));
 vi.mock("@/app/(app)/profile/actions", () => ({
   deleteMyAssistantChats: vi.fn(),
 }));

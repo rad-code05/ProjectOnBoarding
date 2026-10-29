@@ -17,6 +17,8 @@ import {
   toolStep,
   withRefusedText,
   answeredApproval,
+  attachedList,
+  attachedListText,
   confirmCard,
 } from "./chat-ui";
 
@@ -407,5 +409,71 @@ describe("filling by chat (F16c)", () => {
     expect(
       answeredApproval({ id: "u", role: "user", parts: [] } as UIMessage),
     ).toBeNull();
+  });
+});
+
+describe("batches by chat (F17b-4)", () => {
+  const ID = "6f9619ff-8b86-4011-b42d-00c04fc964ff";
+  const read = {
+    link: `/requests/batch/${ID}`,
+    people: 4,
+    ready: 2,
+    needAttention: 1,
+    leftOut: 1,
+  };
+
+  test("the step line counts the rows and links to the batch", () => {
+    expect(toolStep("proposeBatch", true, read)).toBe(
+      "Read 4 people · 2 ready · 1 needs attention · 1 left out",
+    );
+    expect(toolStep("fixBatchRow", true, { ...read, changedRow: 2 })).toBe(
+      "Fixed row 2 · 2 ready · 1 needs attention · 1 left out",
+    );
+    expect(toolStep("getBatch", true, { error: "No such batch" })).toBe(
+      "Couldn't read the batch",
+    );
+    expect(stepLink(read)).toBe(`/requests/batch/${ID}`);
+    expect(stepLinkLabel(`/requests/batch/${ID}`)).toBe("Open the batch");
+    expect(stepLink({ link: "/requests/batch/new" })).toBeNull();
+    expect(
+      toolStep("createBatchDrafts", true, { created: true, drafts: 3 }),
+    ).toBe("Created 3 drafts");
+  });
+
+  test("the Confirm card names who gets a draft and who doesn't", () => {
+    const card = confirmCard("createBatchDrafts", {
+      batchId: ID,
+      create: ["Meera Nair", "Tom Becker"],
+      notCreated: ["Sara Lopez"],
+    });
+    expect(card?.title).toBe("Create 2 draft onboardings?");
+    expect(card?.rows).toEqual([
+      { label: "Drafts for", value: "Meera Nair, Tom Becker" },
+      { label: "Not created", value: "Sara Lopez" },
+    ]);
+    expect(card?.yes).toBe("Confirm — create 2 drafts");
+    expect(card?.note).toMatch(/signed one by one/);
+  });
+
+  test("a paperclip message carries the file name and the batch id only", () => {
+    const text = attachedListText(
+      "joiners “Nov”.xlsx",
+      ID,
+      " these start Monday ",
+    );
+    expect(text).toBe(
+      `Attached list “joiners Nov.xlsx” (batch ${ID}).\nthese start Monday`,
+    );
+    expect(attachedList(text)).toEqual({
+      fileName: "joiners Nov.xlsx",
+      batchId: ID,
+      note: "these start Monday",
+    });
+    expect(attachedList(attachedListText("a.csv", ID))).toEqual({
+      fileName: "a.csv",
+      batchId: ID,
+      note: "",
+    });
+    expect(attachedList("Attached list “a.csv” (batch nope).")).toBeNull();
   });
 });

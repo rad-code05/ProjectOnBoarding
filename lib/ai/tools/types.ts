@@ -6,8 +6,9 @@ import type { ServerSupabase } from "@/lib/supabase/server";
  * read = looks something up; propose = a suggestion the person accepts;
  * write = changes data (always needs a Confirm); memory = changes only the
  * asker's own assistant memory (`ai_memory`, own row — never business data),
- * so no Confirm; own = saves only the asker's own custom report
- * (`custom_reports`, own rows — never business data; audited), no Confirm.
+ * so no Confirm; own = saves only the asker's own custom report or batch
+ * (`custom_reports`, `request_batches` — own rows, nothing created in the
+ * requests; audited), no Confirm.
  */
 export type ToolKind = "read" | "propose" | "write" | "memory" | "own";
 

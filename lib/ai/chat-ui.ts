@@ -202,6 +202,24 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
         ? `Added ${n} suggestion${n === 1 ? "" : "s"} to ${field("ticket") ?? "the request"}`
         : "Didn't add anything — a few things to check";
     }
+    case "proposeBatch":
+    case "getBatch":
+    case "fixBatchRow": {
+      if (!done)
+        return name === "fixBatchRow" ? "Fixing the row…" : "Reading the list…";
+      if (field("link") === null) return "Couldn't read the batch";
+      const counts = batchCounts(output);
+      return name === "fixBatchRow"
+        ? `Fixed row ${field("changedRow")} · ${counts}`
+        : `Read ${field("people")} people · ${counts}`;
+    }
+    case "createBatchDrafts": {
+      if (!done) return "Creating the drafts…";
+      if (field("created") !== "true")
+        return "Didn't create the drafts — a few things to check";
+      const n = Number(field("drafts") ?? 0);
+      return `Created ${n} draft${n === 1 ? "" : "s"}`;
+    }
     case "getRequest":
       if (!done) return "Opening the request…";
       return field("status")
@@ -210,6 +228,21 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
     default:
       return done ? "Looked it up" : "Looking it up…";
   }
+}
+
+/** "2 ready · 1 needs attention · 1 left out" — a batch step's counts. */
+function batchCounts(output: unknown): string {
+  const n = (key: string) => {
+    const v = (output as Record<string, unknown>)[key];
+    return typeof v === "number" ? v : 0;
+  };
+  const parts = [`${n("ready")} ready`];
+  if (n("needAttention"))
+    parts.push(
+      `${n("needAttention")} need${n("needAttention") === 1 ? "s" : ""} attention`,
+    );
+  if (n("leftOut")) parts.push(`${n("leftOut")} left out`);
+  return parts.join(" · ");
 }
 
 /**
@@ -222,7 +255,7 @@ export function stepLink(output: unknown): string | null {
   const link = (output as { link: unknown }).link;
   if (typeof link !== "string") return null;
   return link.startsWith("/reports/") ||
-    /^\/(requests|records)\/[0-9a-f-]{36}$/.test(link)
+    /^\/(requests|records|requests\/batch)\/[0-9a-f-]{36}$/.test(link)
     ? link
     : null;
 }
@@ -274,7 +307,10 @@ export function stepDownloads(
 
 /** The words on a step's link. */
 export function stepLinkLabel(href: string): string {
-  return href.startsWith("/reports/") ? "Open the report" : "Open the request";
+  if (href.startsWith("/reports/")) return "Open the report";
+  return href.startsWith("/requests/batch/")
+    ? "Open the batch"
+    : "Open the request";
 }
 
 const textOf = (m: UIMessage) =>
@@ -445,6 +481,8 @@ export function confirmCard(tool: string, input: unknown): ConfirmCard | null {
     return offboardingCard(input as Record<string, unknown>);
   if (tool === "createAccessChangeDraft")
     return accessChangeCard(input as Record<string, unknown>);
+  if (tool === "createBatchDrafts")
+    return batchCard(input as Record<string, unknown>);
   if (tool !== "createOnboardingDraft") return null;
   const i = input as Record<string, unknown>;
   const name = [str(i.firstName), str(i.lastName)].filter(Boolean).join(" ");
@@ -632,4 +670,47 @@ function accessChangeCard(i: Record<string, unknown>): ConfirmCard {
     note: "Creates the access change draft with each change as a suggestion you accept. Nothing is changed in the tools; you still do the IT work, tick section 9 and Review & sign.",
     yes: "Confirm — start the access change",
   };
+}
+
+/** Board *Confirm the batch*: who gets a draft and who doesn't. */
+function batchCard(i: Record<string, unknown>): ConfirmCard {
+  const names = (v: unknown) =>
+    Array.isArray(v) ? v.map(str).filter((x): x is string => Boolean(x)) : [];
+  const create = names(i.create);
+  const rest = names(i.notCreated);
+  const n = create.length;
+  return {
+    title: `Create ${n} draft onboarding${n === 1 ? "" : "s"}?`,
+    rows: [
+      { label: "Drafts for", value: create.join(", ") },
+      { label: "Not created", value: rest.join(", ") },
+    ].filter((r) => r.value),
+    note: "The values from the batch are written straight into each draft. This creates drafts only — nothing is sent to the tools; each request is still executed, ticked and signed one by one.",
+    yes: `Confirm — create ${n} draft${n === 1 ? "" : "s"}`,
+  };
+}
+
+const ATTACHED =
+  /^Attached list “([^”\n]{1,200})” \(batch ([0-9a-f-]{36})\)\.(?:\n([\s\S]*))?$/;
+
+/**
+ * The message a paperclip file sends (F17b-4): the file is read into a batch
+ * on the server first; the chat only carries its name and the batch id.
+ */
+export function attachedListText(
+  fileName: string,
+  batchId: string,
+  note = "",
+): string {
+  const name = fileName.replace(/[“”\n]/g, "").slice(0, 200) || "list";
+  const extra = note.trim();
+  return `Attached list “${name}” (batch ${batchId}).${extra ? `\n${extra}` : ""}`;
+}
+
+/** A paperclip message, read back for its bubble; null for any other text. */
+export function attachedList(
+  text: string,
+): { fileName: string; batchId: string; note: string } | null {
+  const m = text.match(ATTACHED);
+  return m ? { fileName: m[1], batchId: m[2], note: m[3] ?? "" } : null;
 }

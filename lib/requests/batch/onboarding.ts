@@ -246,3 +246,51 @@ export function checkOnboardingBatch(
   }
   return out;
 }
+
+/** "Yes", "x", "✓" in an application's column: the app with its usual role. */
+const YES = /^(yes|y|x|✓|✔|true|1|default)$/i;
+/** "No", "-", "n/a": not this app. */
+const NO = /^(no|n|-|–|n\/a|none|false|0)$/i;
+
+const appKey = (s: string) =>
+  s
+    .normalize("NFKD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+/**
+ * Raju's template (2026-10-29): one column per application, titled with its
+ * catalog name, the cell = the role ("Regular Member"; "Yes" = its usual
+ * role; empty or "No" = not needed). Those columns join the Applications
+ * cell; a new app in the catalog is just a new column.
+ */
+export function withAppColumns(
+  record: { values: Record<string, string>; other: Record<string, string> },
+  apps: { name: string }[],
+): { values: Record<string, string>; other: Record<string, string> } {
+  const byKey = new Map(apps.map((a) => [appKey(a.name), a.name]));
+  const items: string[] = [];
+  const other: Record<string, string> = {};
+  for (const [title, cell] of Object.entries(record.other)) {
+    const app = byKey.get(appKey(title));
+    if (!app) {
+      other[title] = cell;
+      continue;
+    }
+    const value = cell.trim();
+    if (!value || NO.test(value)) continue;
+    // Several roles in one cell ("Viewer, Editor") stay one item.
+    const role = value.replace(/\s*[,\n]\s*/g, "; ");
+    items.push(YES.test(value) ? app : `${app} (${role})`);
+  }
+  if (!items.length) return { values: record.values, other };
+  const existing = record.values.applications?.trim();
+  return {
+    values: {
+      ...record.values,
+      applications: [existing, ...items].filter(Boolean).join(", "),
+    },
+    other,
+  };
+}

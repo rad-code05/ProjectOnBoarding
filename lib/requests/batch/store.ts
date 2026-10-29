@@ -1,5 +1,6 @@
 import "server-only";
 import { loadFormOptions } from "@/lib/ai/tools/onboarding-load";
+import type { FormOptions } from "@/lib/ai/tools/onboarding-shared";
 import { COMPANY_TIMEZONE } from "@/lib/requests/format";
 import type { Database, Json } from "@/lib/supabase/database.types";
 import type { ServerSupabase } from "@/lib/supabase/server";
@@ -10,6 +11,7 @@ import {
   type BatchContext,
   type CheckedRow,
   type Problem,
+  withAppColumns,
 } from "./onboarding";
 
 /**
@@ -57,9 +59,10 @@ export function batchTypeReady(type: RequestType) {
 async function context(
   db: ServerSupabase,
   emails: string[],
+  known?: FormOptions,
 ): Promise<BatchContext> {
   const [options, settings, open] = await Promise.all([
-    loadFormOptions(db),
+    known ?? loadFormOptions(db),
     db.from("app_settings").select("company_timezone").maybeSingle(),
     emails.length
       ? db
@@ -92,8 +95,9 @@ const emailsOf = (rows: { values: Record<string, string> }[]) => [
 async function checkAll(
   db: ServerSupabase,
   rows: { position: number; values: Record<string, string> }[],
+  options?: FormOptions,
 ): Promise<Map<number, CheckedRow>> {
-  return checkOnboardingBatch(rows, await context(db, emailsOf(rows)));
+  return checkOnboardingBatch(rows, await context(db, emailsOf(rows), options));
 }
 
 /** A new batch from a read list; returns its id. */
@@ -121,9 +125,15 @@ export async function makeBatch(
     .select("id")
     .single();
   if (error || !batch) throw new Error(error?.message ?? "batch not saved");
-  const checked = await checkAll(db, input.records);
+  // One column per application (Raju's template) joins the Applications cell.
+  const options = await loadFormOptions(db);
+  const records = input.records.map((r) => ({
+    position: r.position,
+    ...withAppColumns(r, options.apps),
+  }));
+  const checked = await checkAll(db, records, options);
   const { error: rowsError } = await db.from("request_batch_rows").insert(
-    input.records.map((r) => {
+    records.map((r) => {
       const c = checked.get(r.position);
       return {
         batch_id: batch.id,

@@ -65,6 +65,36 @@ export const FAKE_NOTES =
 export const FAKE_NOTES_ANSWER =
   "This is the test assistant. The notes wait on section 9 for you to accept.";
 
+/** Batches by chat (F17b-4): a list attached, then "create the drafts". */
+export const FAKE_BATCH_ANSWER =
+  "This is the test assistant. I read the list into a batch: open it from the step line above.";
+export const FAKE_BATCH_DRAFTS_ANSWER =
+  "This is the test assistant. The drafts are created; each is executed and signed one by one.";
+
+type Prompt = Parameters<MockLanguageModelV4["doStream"]>[0]["prompt"];
+
+/** The last batch a tool read back in this chat: its ready / other names. */
+function lastBatch(prompt: Prompt) {
+  for (const message of [...prompt].reverse()) {
+    if (message.role !== "tool") continue;
+    for (const part of message.content) {
+      if (part.type !== "tool-result" || part.output.type !== "json") continue;
+      const v = part.output.value as {
+        batchId?: string;
+        readyNames?: string[];
+        notCreated?: { name: string }[];
+      } | null;
+      if (v?.batchId && v.readyNames && v.notCreated)
+        return {
+          batchId: v.batchId,
+          create: v.readyNames,
+          notCreated: v.notCreated.map((n) => n.name),
+        };
+    }
+  }
+  return undefined;
+}
+
 export function fakeModel(): LanguageModel {
   return new MockLanguageModelV4({
     // Admin → AI settings → Test the model (one answer, not streamed).
@@ -98,17 +128,31 @@ export function fakeModel(): LanguageModel {
       const ticket = /implementation notes/i.test(asked)
         ? asked.match(/UAM-\d{4}-\d{6}/)?.[0]
         : undefined;
-      const toolCall = report || onboard || Boolean(ticket);
+      // A paperclip list (F17b-4): read its batch; "create the drafts": confirm it.
+      const batchId = asked.match(/\(batch ([0-9a-f-]{36})\)/)?.[1];
+      const drafts = /create the drafts/i.test(asked)
+        ? lastBatch(prompt)
+        : undefined;
+      const toolCall =
+        report ||
+        onboard ||
+        Boolean(ticket) ||
+        Boolean(batchId) ||
+        Boolean(drafts);
       const result = last?.role === "tool" ? JSON.stringify(last.content) : "";
       const text = !result
         ? FAKE_ANSWER
         : result.includes("execution-denied")
           ? FAKE_NOT_NOW_ANSWER
-          : result.includes("createOnboardingDraft")
-            ? FAKE_ONBOARDING_ANSWER
-            : result.includes("suggestValues")
-              ? FAKE_NOTES_ANSWER
-              : FAKE_REPORT_ANSWER;
+          : result.includes("createBatchDrafts")
+            ? FAKE_BATCH_DRAFTS_ANSWER
+            : result.includes("getBatch")
+              ? FAKE_BATCH_ANSWER
+              : result.includes("createOnboardingDraft")
+                ? FAKE_ONBOARDING_ANSWER
+                : result.includes("suggestValues")
+                  ? FAKE_NOTES_ANSWER
+                  : FAKE_REPORT_ANSWER;
       return {
         stream: simulateReadableStream({
           chunkDelayInMs: 20,
@@ -122,13 +166,19 @@ export function fakeModel(): LanguageModel {
                       ? "saveCustomReport"
                       : ticket
                         ? "suggestValues"
-                        : "createOnboardingDraft",
+                        : batchId
+                          ? "getBatch"
+                          : drafts
+                            ? "createBatchDrafts"
+                            : "createOnboardingDraft",
                     input: JSON.stringify(
                       report
                         ? { definition: FAKE_REPORT }
                         : ticket
                           ? { ticket, implementationNotes: FAKE_NOTES }
-                          : FAKE_ONBOARDING,
+                          : batchId
+                            ? { batchId }
+                            : (drafts ?? FAKE_ONBOARDING),
                     ),
                   },
                 ]

@@ -2,14 +2,18 @@ import type { ToolApprovalStatus, ToolSet } from "ai";
 import type { Role } from "@/lib/auth";
 import { getAppHelp } from "./get-app-help";
 import { createAccessChangeDraft } from "./create-access-change-draft";
+import { createBatchDrafts } from "./create-batch-drafts";
 import { createOffboardingDraft } from "./create-offboarding-draft";
 import { createOnboardingDraft } from "./create-onboarding-draft";
+import { fixBatchRow } from "./fix-batch-row";
+import { getBatch } from "./get-batch";
 import { getCatalog } from "./get-catalog";
 import { getFormOptions } from "./get-form-options";
 import { getPersonAccess } from "./get-person-access";
 import { getRequest } from "./get-request";
 import { listRequests } from "./list-requests";
 import { nationalityBreakdown } from "./nationality-breakdown";
+import { proposeBatch } from "./propose-batch";
 import { rememberPreference } from "./remember-preference";
 import { rememberQuestion } from "./remember-question";
 import { runReport } from "./run-report";
@@ -45,6 +49,11 @@ export const TOOLS: readonly AiTool[] = [
   createOffboardingDraft,
   createAccessChangeDraft,
   suggestValues,
+  // Batches — admin / requester; creating the drafts waits for Confirm (F17b-4).
+  proposeBatch,
+  getBatch,
+  fixBatchRow,
+  createBatchDrafts,
   // Memory — the asker's own row only (F15d-2c).
   rememberPreference,
   rememberQuestion,

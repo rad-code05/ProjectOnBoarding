@@ -6,6 +6,7 @@ import {
   rowName,
   rowState,
   sortForGrid,
+  templateColumns,
 } from "./view";
 
 const row = (
@@ -56,5 +57,15 @@ describe("the batch grid", () => {
   test("field labels from the template", () => {
     expect(fieldLabel("startDate")).toBe("Start date");
     expect(fieldLabel("unknownThing")).toBe("unknownThing");
+  });
+});
+
+describe("the template's columns", () => {
+  test("the person's columns, then one per application — no Applications or email-used column", () => {
+    const cols = templateColumns(["Slack", "Figma"]);
+    expect(cols.slice(0, 3)).toEqual(["First name", "Last name", "Work email"]);
+    expect(cols.slice(-3)).toEqual(["Requested by", "Slack", "Figma"]);
+    expect(cols).not.toContain("Applications");
+    expect(cols.filter((c) => /email used/i.test(c))).toEqual([]);
   });
 });
