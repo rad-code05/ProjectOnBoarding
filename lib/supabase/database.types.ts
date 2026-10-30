@@ -291,6 +291,7 @@ export type Database = {
           email: string;
           first_name: string | null;
           last_name: string | null;
+          role_changes_seen_at: string | null;
           timezone: string | null;
           updated_at: string;
         };
@@ -302,6 +303,7 @@ export type Database = {
           email: string;
           first_name?: string | null;
           last_name?: string | null;
+          role_changes_seen_at?: string | null;
           timezone?: string | null;
           updated_at?: string;
         };
@@ -312,6 +314,7 @@ export type Database = {
           email?: string;
           first_name?: string | null;
           last_name?: string | null;
+          role_changes_seen_at?: string | null;
           timezone?: string | null;
           updated_at?: string;
         };
@@ -1857,6 +1860,77 @@ export type Database = {
           },
         ];
       };
+      user_invitations: {
+        Row: {
+          accepted_user_id: string | null;
+          clerk_invitation_id: string;
+          closed_at: string | null;
+          closed_by: string | null;
+          created_at: string;
+          email: string;
+          expires_at: string;
+          first_name: string;
+          id: string;
+          invited_by: string;
+          last_name: string;
+          roles: Database["public"]["Enums"]["app_role"][];
+          status: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          accepted_user_id?: string | null;
+          clerk_invitation_id: string;
+          closed_at?: string | null;
+          closed_by?: string | null;
+          created_at?: string;
+          email: string;
+          expires_at: string;
+          first_name: string;
+          id?: string;
+          invited_by: string;
+          last_name: string;
+          roles: Database["public"]["Enums"]["app_role"][];
+          status?: string;
+        };
+        Update: {
+          accepted_user_id?: string | null;
+          clerk_invitation_id?: string;
+          closed_at?: string | null;
+          closed_by?: string | null;
+          created_at?: string;
+          email?: string;
+          expires_at?: string;
+          first_name?: string;
+          id?: string;
+          invited_by?: string;
+          last_name?: string;
+          roles?: Database["public"]["Enums"]["app_role"][];
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_invitations_accepted_user_id_fkey";
+            columns: ["accepted_user_id"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "user_invitations_closed_by_fkey";
+            columns: ["closed_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "user_invitations_invited_by_fkey";
+            columns: ["invited_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
+      };
       user_roles: {
         Row: {
           clerk_user_id: string;
@@ -1900,6 +1974,28 @@ export type Database = {
     };
     Functions: {
       accept_request_suggestion: { Args: { p_id: string }; Returns: Json };
+      admin_deactivate_user: { Args: { p_user: string }; Returns: undefined };
+      admin_reactivate_user: {
+        Args: {
+          p_roles: Database["public"]["Enums"]["app_role"][];
+          p_user: string;
+        };
+        Returns: undefined;
+      };
+      admin_record_invitation: {
+        Args: {
+          p_clerk_invitation_id?: string;
+          p_email: string;
+          p_first_name: string;
+          p_last_name: string;
+          p_roles: Database["public"]["Enums"]["app_role"][];
+        };
+        Returns: string;
+      };
+      admin_resend_invitation: {
+        Args: { p_clerk_invitation_id?: string; p_id: string };
+        Returns: string;
+      };
       admin_save_access_type: {
         Args: {
           p_actions: string[];
@@ -2000,6 +2096,14 @@ export type Database = {
         Args: { p_active: boolean; p_id: number };
         Returns: undefined;
       };
+      admin_set_user_roles: {
+        Args: {
+          p_roles: Database["public"]["Enums"]["app_role"][];
+          p_user: string;
+        };
+        Returns: undefined;
+      };
+      admin_withdraw_invitation: { Args: { p_id: string }; Returns: undefined };
       ai_start_request: {
         Args: {
           p_employee_id?: string;
@@ -2121,6 +2225,10 @@ export type Database = {
           p_report: string;
           p_rows?: number;
         };
+        Returns: undefined;
+      };
+      mark_role_changes_seen: {
+        Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
       my_timezone: { Args: Record<PropertyKey, never>; Returns: string };
@@ -2491,6 +2599,18 @@ export type Database = {
         Args: { p_comment: string; p_flagged?: number[]; p_request_id: string };
         Returns: string;
       };
+      role_changes: {
+        Args: { p_before?: string; p_limit?: number };
+        Returns: {
+          action: string;
+          actor_name: string;
+          created_at: string;
+          id: number;
+          is_new: boolean;
+          roles: string[];
+          target_name: string;
+        }[];
+      };
       set_access_note: {
         Args: { p_item_id: string; p_note: string };
         Returns: undefined;
@@ -2526,6 +2646,16 @@ export type Database = {
       suggest_request_values: {
         Args: { p_request_id: string; p_suggestions: Json };
         Returns: number;
+      };
+      sync_clerk_user: {
+        Args: {
+          p_banned?: boolean;
+          p_clerk_user_id: string;
+          p_email: string;
+          p_first_name: string;
+          p_last_name: string;
+        };
+        Returns: string;
       };
       transition_request: {
         Args: {

@@ -42,7 +42,7 @@ describe("POST /api/webhooks/clerk", () => {
 
   it("applies a verified event and returns 200", async () => {
     verifyWebhook.mockResolvedValue({ type: "user.created", data: {} });
-    applyClerkUserEvent.mockResolvedValue("upserted");
+    applyClerkUserEvent.mockResolvedValue("updated");
     const res = await POST(request());
     expect(res.status).toBe(200);
     expect(applyClerkUserEvent).toHaveBeenCalledOnce();

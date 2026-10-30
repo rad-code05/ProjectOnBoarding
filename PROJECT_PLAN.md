@@ -356,7 +356,7 @@ Users can hold multiple roles.
 
 **Segregation-of-duties rules (enforced server-side):**
 - A user can never approve or close a request they prepared or executed — so Raju's admin rights do not let Raju approve Raju's own requests.
-- An admin cannot grant themselves the Approver or Reviewer role on their own; role changes require a second admin or are at minimum flagged in the audit log and visible to Moises. *(Choose one in Section 17.)*
+- An admin cannot grant themselves the Approver or Reviewer role on their own; role changes are flagged in the audit log and **visible to every approver** (*Role changes* card on Approvals — D5, decided 2026-10-30). *(Was: choose one in Section 17.)*
 - **Approver is a role, not a person.** Any account with the Approver / Reviewer role can confirm a request; the PDF and audit log record which approver actually signed. Raju (admin) assigns the role from the Admin → Users screen when the additional account is created (Clerk invitation → role assigned in `user_roles`).
 - **Pending confirmations go to all approvers** (queue visible to every approver; phase 2: notification to each). The first approver to confirm closes it; the others see it as done.
 - The *default approver* setting (Section 4.1) can name Moises as primary while still allowing any approver to sign.
@@ -601,7 +601,7 @@ const buffer = await renderToBuffer(<AccessRequestPdf snapshot={snapshot} />)
 **Resolved 2026-09-30:** roles (Raju = admin + requester + IT operator; Moises = approver + reviewer — Section 10.1); additional field = Country (Section 4.5); application catalog must be editable without code (Section 7).
 
 1. **Auth:** *resolved 2026-10-01 (D1)* — **Clerk**, email + password, **MFA required**, invitation-only (sign-up restricted). No SSO for now; Microsoft 365 / Google SSO can be added later without redesign.
-2. **Approval:** resolved — Moises signs once at the end (Section 5.1). Backup approver: an additional account with the Approver role (Section 10.1); person still to be named. Still open: how are role changes by an admin controlled (Section 10.1)? Is post-provisioning confirmation acceptable to Laine's auditor?
+2. **Approval:** resolved — Moises signs once at the end (Section 5.1). Backup approver: an additional account with the Approver role (Section 10.1); person still to be named. Role changes by an admin: *resolved 2026-10-30 (D5)* — logged and shown to every approver; removing a person = deactivate. Still open: is post-provisioning confirmation acceptable to Laine's auditor?
 3. **Monthly metric:** "onboarded" = execution completed (proposed), final review, or closure? (D16) — **decided 2026-10-15: closure** — an onboarding counts in the month the approver confirmed, signed and closed it (company timezone); approvers see the same request states in reports as everywhere. — *2026-10-07 (D21):* the designed report list is enough for now; "monthly counts by ticket type" (§9.3 #1) can be added later.
 4. **Signature:** *resolved 2026-09-30 (D13)* — **internal acknowledgment only**, a record that the onboarding process was carried out and approved; not a legally binding e-signature, so no e-signature provider. Users sign with an uploaded PNG signature or initials (PNG or typed). See `ROLES.md`.
 5. **Edits after signing:** *resolved (design)* — any change after Raju signs (including after a return) clears his signature and requires signing again; closed requests are never edited (a new access-modification request is created instead).

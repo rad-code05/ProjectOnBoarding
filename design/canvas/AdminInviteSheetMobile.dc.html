@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin · Invite a person · Phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}
+a{color:#000000}a:hover{color:#cf2e2e}
+</style>
+</helmet>
+<div style="width: 390px; height: 1060px; position: relative; font-family: Raleway, sans-serif; background: rgba(0,0,0,0.45); color: #000000">
+
+<div role="dialog" aria-labelledby="sheet-title" style="position: absolute; left: 0; right: 0; bottom: 0; top: 40px; background: #FFFFFF; border-radius: 20px 20px 0 0; display: flex; flex-direction: column">
+<div style="padding: 10px 16px 0; display: flex; justify-content: center"><span style="width: 40px; height: 4px; border-radius: 100px; background: #dcd4c7"></span></div>
+<div style="padding: 12px 16px 8px; display: flex; align-items: flex-start; gap: 12px">
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #535353">Users &amp; roles</span>
+<h2 id="sheet-title" style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 26px">Invite a person</h2>
+</div>
+<button type="button" aria-label="Close" style="width: 44px; height: 44px; border: none; background: transparent; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+
+<div style="flex-grow: 1; overflow: auto; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<label for="inv-first" style="font-size: 13px; font-weight: 600">First name</label>
+<input id="inv-first" value="Celine" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; min-width: 0">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+<label for="inv-last" style="font-size: 13px; font-weight: 600">Last name</label>
+<input id="inv-last" value="Example" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px; min-width: 0">
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="inv-email" style="font-size: 13px; font-weight: 600">Work email</label>
+<input id="inv-email" type="email" value="celine@example.com" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #cfc7ba; border-radius: 10px; font-family: Raleway, sans-serif; font-size: 16px">
+<span style="font-size: 12px; color: #535353">The invitation goes here. It works for 7 days.</span>
+</div>
+
+<fieldset style="margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: 8px">
+<legend style="padding: 0 0 6px; font-size: 13px; font-weight: 600">Roles — at least one</legend>
+<sc-for list="{{roles}}" as="r" hint-placeholder-count="5">
+<label style="min-height: 56px; padding: 10px 12px; border: 1px solid #cfc7ba; border-radius: 12px; display: flex; align-items: flex-start; gap: 10px">
+<input type="checkbox" checked="{{r.on}}" style="width: 20px; height: 20px; margin: 2px 0 0; accent-color: #000000; flex-shrink: 0">
+<span style="display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 14px; font-weight: 700">{{r.name}}</span>
+<span style="font-size: 12px; line-height: 1.45; color: #535353">{{r.what}}</span>
+</span>
+</label>
+</sc-for>
+</fieldset>
+
+<div style="padding: 12px 14px; background: #F4F0EA; border-radius: 12px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; font-weight: 700">Approver with other roles?</span>
+<span style="font-size: 12px; line-height: 1.5; color: #535353">Allowed — but nobody approves a request they prepared or executed. An approver who is also IT can only confirm other people's requests.</span>
+</div>
+
+<span style="font-size: 12px; line-height: 1.5; color: #535353">Celine gets an email from Laine onboarding rights. She sets a password and MFA, then lands on Approvals. This invitation and the roles are written to the audit log, and approvers see them under Role changes.</span>
+</div>
+
+<div style="padding: 12px 16px 20px; border-top: 1px solid #dcd4c7; display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px">
+<button type="button" style="height: 48px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Cancel</button>
+<button type="button" style="height: 48px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Send invitation</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1060}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+  roles: [
+    { name: 'Approver', on: true, what: 'Confirm, sign & close — or return. Records, reports, PDFs. Never sees drafts.' },
+    { name: 'Requester', on: false, what: 'Creates and edits requests, uses the assistant and batches.' },
+    { name: 'IT operator', on: false, what: 'Does the IT work, ticks section 9 and signs Review & sign.' },
+    { name: 'Auditor', on: false, what: 'Reads records, reports and the audit log. Changes nothing.' },
+    { name: 'Admin', on: false, what: 'Users & roles, catalog, offices, settings, AI settings.' }
+  ]
+};
+}
+}
+</script>
+</body>
+</html>

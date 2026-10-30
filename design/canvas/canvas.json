@@ -799,6 +799,41 @@
       "w": 390,
       "h": 1520,
       "title": "Phone · Batch of leavers (offboarding; access change alike) — F17b proposal"
+    },
+    "AdminUsersMobile.dc.html": {
+      "x": 38050,
+      "y": 13560,
+      "w": 390,
+      "h": 1460,
+      "title": "Phone · Admin · Users & roles — F18 proposal"
+    },
+    "AdminInviteSheetMobile.dc.html": {
+      "x": 38520,
+      "y": 13560,
+      "w": 390,
+      "h": 1060,
+      "title": "Phone · Invite a person (sheet) — F18 proposal"
+    },
+    "AdminUserSheetMobile.dc.html": {
+      "x": 38990,
+      "y": 13560,
+      "w": 390,
+      "h": 1120,
+      "title": "Phone · Edit a person's roles, deactivate (sheet) — F18 proposal"
+    },
+    "ApprovalsRoleChangesMobile.dc.html": {
+      "x": 39460,
+      "y": 13560,
+      "w": 390,
+      "h": 1080,
+      "title": "Phone · Approvals · Role changes (D5) — F18 proposal"
+    },
+    "AcceptInvitationMobile.dc.html": {
+      "x": 39930,
+      "y": 13560,
+      "w": 390,
+      "h": 1000,
+      "title": "Phone · Accept invitation (set name, password, then MFA) — F18 proposal"
     }
   },
   "createdOnFiles": {
@@ -820,7 +855,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 35230,
+      "maxW": 40400,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -971,7 +1006,12 @@
     "BatchGridMobile.dc.html",
     "BatchRowSheetMobile.dc.html",
     "BatchConfirmMobile.dc.html",
-    "BatchOffboardingMobile.dc.html"
+    "BatchOffboardingMobile.dc.html",
+    "AdminUsersMobile.dc.html",
+    "AdminInviteSheetMobile.dc.html",
+    "AdminUserSheetMobile.dc.html",
+    "ApprovalsRoleChangesMobile.dc.html",
+    "AcceptInvitationMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { WebhookEvent } from "@clerk/nextjs/webhooks";
-import { applyClerkUserEvent, toAppUserRow, type ClerkUserData } from "./sync";
+import { applyClerkUserEvent, toSyncArgs, type ClerkUserData } from "./sync";
 
 const clerkUser: ClerkUserData = {
   id: "user_123",
@@ -17,32 +17,36 @@ const clerkUser: ClerkUserData = {
 function fakeSupabase(error: { message: string } | null = null) {
   const eq = vi.fn().mockResolvedValue({ error });
   const update = vi.fn().mockReturnValue({ eq });
-  const upsert = vi.fn().mockResolvedValue({ error });
-  const from = vi.fn().mockReturnValue({ upsert, update });
-  return { client: { from } as never, from, upsert, update, eq };
+  const from = vi.fn().mockReturnValue({ update });
+  const rpc = vi.fn().mockResolvedValue({ data: "updated", error });
+  return { client: { from, rpc } as never, from, rpc, update, eq };
 }
 
 const event = (type: string, data: unknown) =>
   ({ type, data }) as unknown as WebhookEvent;
 
-describe("toAppUserRow", () => {
+describe("toSyncArgs", () => {
   it("uses the primary email, trimmed and in lower case", () => {
-    expect(toAppUserRow(clerkUser)).toEqual({
-      clerk_user_id: "user_123",
-      email: "ada@example.test",
-      first_name: "Ada",
-      last_name: "Lovelace",
-      active: true,
+    expect(toSyncArgs(clerkUser)).toEqual({
+      p_clerk_user_id: "user_123",
+      p_email: "ada@example.test",
+      p_first_name: "Ada",
+      p_last_name: "Lovelace",
+      p_banned: false,
     });
   });
 
   it("falls back to the first email when no primary is set", () => {
-    const row = toAppUserRow({ ...clerkUser, primary_email_address_id: null });
-    expect(row.email).toBe("old@example.test");
+    const args = toSyncArgs({ ...clerkUser, primary_email_address_id: null });
+    expect(args.p_email).toBe("old@example.test");
+  });
+
+  it("banned in Clerk is passed on (= deactivated, F18a)", () => {
+    expect(toSyncArgs({ ...clerkUser, banned: true }).p_banned).toBe(true);
   });
 
   it("rejects a user without an email", () => {
-    expect(() => toAppUserRow({ ...clerkUser, email_addresses: [] })).toThrow(
+    expect(() => toSyncArgs({ ...clerkUser, email_addresses: [] })).toThrow(
       /no email/,
     );
   });
@@ -50,20 +54,20 @@ describe("toAppUserRow", () => {
 
 describe("applyClerkUserEvent", () => {
   it.each(["user.created", "user.updated"])(
-    "upserts the user on %s",
+    "syncs the user through sync_clerk_user() on %s",
     async (type) => {
       const db = fakeSupabase();
       await expect(
         applyClerkUserEvent(db.client, event(type, clerkUser)),
-      ).resolves.toBe("upserted");
-      expect(db.from).toHaveBeenCalledWith("app_users");
-      expect(db.upsert).toHaveBeenCalledWith(
+      ).resolves.toBe("updated");
+      expect(db.rpc).toHaveBeenCalledWith(
+        "sync_clerk_user",
         expect.objectContaining({
-          clerk_user_id: "user_123",
-          email: "ada@example.test",
+          p_clerk_user_id: "user_123",
+          p_email: "ada@example.test",
         }),
-        { onConflict: "clerk_user_id" },
       );
+      expect(db.from).not.toHaveBeenCalled();
     },
   );
 

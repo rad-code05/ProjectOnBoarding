@@ -6,9 +6,10 @@
 // ROLE_BOOTSTRAP, e.g.
 //   ROLE_BOOTSTRAP="admin@example.test=admin+requester+it_operator; approver@example.test=approver"
 //
-// Safe to run again: users are upserted, roles are only ADDED (never removed),
-// and every change is written to the audit log by database triggers
-// (source "system"). Real emails stay in .env.local — never in the repo.
+// Safe to run again: users go through sync_clerk_user() like the webhook (a
+// deactivated person stays deactivated — F18a), roles are only ADDED (never
+// removed), and every change is written to the audit log by database
+// triggers (source "system"). Real emails stay in .env.local — never in the repo.
 import { createClient } from "@supabase/supabase-js";
 
 const ROLES = ["admin", "requester", "it_operator", "approver", "auditor"];
@@ -72,7 +73,7 @@ function toAppUserRow(user) {
     email: primary.email_address.trim().toLowerCase(),
     first_name: user.first_name,
     last_name: user.last_name,
-    active: true,
+    banned: Boolean(user.banned),
   };
 }
 
@@ -88,11 +89,16 @@ const supabase = createClient(
 const rows = (await listClerkUsers(env("CLERK_SECRET_KEY")))
   .map(toAppUserRow)
   .filter(Boolean);
-const { error: upsertError } = await supabase
-  .from("app_users")
-  .upsert(rows, { onConflict: "clerk_user_id" });
-if (upsertError)
-  throw new Error(`app_users upsert failed: ${upsertError.message}`);
+for (const row of rows) {
+  const { error } = await supabase.rpc("sync_clerk_user", {
+    p_clerk_user_id: row.clerk_user_id,
+    p_email: row.email,
+    p_first_name: row.first_name,
+    p_last_name: row.last_name,
+    p_banned: row.banned,
+  });
+  if (error) throw new Error(`sync_clerk_user failed: ${error.message}`);
+}
 console.log(`Synced ${rows.length} Clerk user(s) into app_users.`);
 
 for (const [email, roles] of bootstrap) {

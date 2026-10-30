@@ -55,6 +55,7 @@ All planned screens now have a first design. Nothing is built yet.
 | Phone: **Filling requests by chat** — follow-up questions, Confirm creates the draft, draft with suggestions, suggested access, offboarding by chat (`request-by-chat.md`) | Approved (2026-10-25); **built** (F16 done 2026-10-28) |
 | Phone: **Custom reports** — the robot checks how it read the request, ready in the chat, custom report page, Your custom reports, grouped with a chart (`custom-reports.md`) | Approved (2026-10-25); **all built** (F17a, 2026-10-25) |
 | Phone: **Batch requests** — New batch, batch by chat, grid with checks, Fix a row, Confirm + drafts created, batch of leavers (`batch-requests.md`) | Approved (2026-10-28); **built** (F17b done 2026-10-30) — all three kinds on the Batch page and by chat |
+| Phone: **Users & roles** (F18) — Admin · Users & roles, Invite a person, Edit a person's roles / deactivate, Approvals · Role changes (D5), Accept invitation (`profile-admin.md`) | Approved (2026-10-30); building (F18) |
 
 ## Canvas sources
 `canvas/` holds a copy of every artboard (`*.dc.html`) and the layout index (`canvas.json`) from the live canvas, so the design survives outside claude.ai. Keep it in sync after canvas edits. `assets/laine-logo-white.png` is the logo the artboards use (uploaded to the canvas as `/_blob/17b23c9ce6dc5f048942c7b514470f03`).

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin · Edit a person's roles · Phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}
+a{color:#000000}a:hover{color:#cf2e2e}
+</style>
+</helmet>
+<div style="width: 390px; height: 1120px; position: relative; font-family: Raleway, sans-serif; background: rgba(0,0,0,0.45); color: #000000">
+
+<div role="dialog" aria-labelledby="sheet-title" style="position: absolute; left: 0; right: 0; bottom: 0; top: 40px; background: #FFFFFF; border-radius: 20px 20px 0 0; display: flex; flex-direction: column">
+<div style="padding: 10px 16px 0; display: flex; justify-content: center"><span style="width: 40px; height: 4px; border-radius: 100px; background: #dcd4c7"></span></div>
+<div style="padding: 12px 16px 8px; display: flex; align-items: flex-start; gap: 12px">
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #535353">Users &amp; roles · Active</span>
+<h2 id="sheet-title" style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 26px">Moises Larez</h2>
+<span style="font-size: 12px; color: #535353">moises@example.com · MFA on · signed in yesterday 17:05</span>
+</div>
+<button type="button" aria-label="Close" style="width: 44px; height: 44px; border: none; background: transparent; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+
+<div style="flex-grow: 1; overflow: auto; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 16px">
+<fieldset style="margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: 8px">
+<legend style="padding: 0 0 6px; font-size: 13px; font-weight: 600">Roles</legend>
+<sc-for list="{{roles}}" as="r" hint-placeholder-count="5">
+<label style="min-height: 52px; padding: 10px 12px; border: 1px solid #cfc7ba; border-radius: 12px; display: flex; align-items: flex-start; gap: 10px">
+<input type="checkbox" checked="{{r.on}}" disabled="{{r.locked}}" style="width: 20px; height: 20px; margin: 2px 0 0; accent-color: #000000; flex-shrink: 0">
+<span style="display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 14px; font-weight: 700">{{r.name}}</span>
+<span style="font-size: 12px; line-height: 1.45; color: #535353">{{r.note}}</span>
+</span>
+</label>
+</sc-for>
+</fieldset>
+
+<div role="note" style="padding: 12px 14px; border: 1px solid #000000; border-radius: 12px; display: flex; gap: 10px; align-items: flex-start">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+<span style="font-size: 12px; line-height: 1.5">Approver can't be removed: Moises is the only active approver. Invite or give another person Approver first.</span>
+</div>
+
+<span style="font-size: 12px; line-height: 1.5; color: #535353">Given roles take effect at once; removed ones on their next page. Written to the audit log and shown to approvers under Role changes. On your own row this sheet is read-only — nobody changes their own roles.</span>
+
+<div style="padding: 14px; border: 1px solid #cf2e2e; border-radius: 12px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 14px; font-weight: 700">Deactivate Moises</span>
+<span style="font-size: 12px; line-height: 1.5; color: #535353">He can't sign in any more (blocked in Clerk) and loses every role. Everything he confirmed and signed stays on the records and PDFs. You can reactivate him later and give roles again.</span>
+<span style="font-size: 12px; line-height: 1.5; color: #cf2e2e">Not possible now: he is the only active approver.</span>
+<button type="button" disabled style="align-self: flex-start; height: 40px; padding: 0 16px; border: 1px solid #cf2e2e; border-radius: 100px; background: transparent; color: #cf2e2e; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600; opacity: 0.45">Deactivate…</button>
+</div>
+
+<div style="padding: 14px; background: #F4F0EA; border-radius: 12px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; font-weight: 700">Deactivate… asks once more</span>
+<span style="font-size: 12px; line-height: 1.5; color: #535353">“Deactivate Aisha Noor? She can't sign in and loses Auditor. Her history stays.” — <b style="color: #000000">Keep her</b> · <b style="color: #cf2e2e">Deactivate</b>. A deactivated person shows <b style="color: #000000">Reactivate</b> here instead (roles chosen again).</span>
+</div>
+</div>
+
+<div style="padding: 12px 16px 20px; border-top: 1px solid #dcd4c7; display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px">
+<button type="button" style="height: 48px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Cancel</button>
+<button type="button" style="height: 48px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 15px; font-weight: 600">Save roles</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1120}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+  roles: [
+    { name: 'Approver', on: true, locked: true, note: 'The only active approver — locked on.' },
+    { name: 'Auditor', on: true, locked: false, note: 'Reads records, reports and the audit log.' },
+    { name: 'Requester', on: false, locked: false, note: 'Creates and edits requests.' },
+    { name: 'IT operator', on: false, locked: false, note: 'Does the IT work and signs section 9.' },
+    { name: 'Admin', on: false, locked: false, note: 'Users & roles, catalog, settings.' }
+  ]
+};
+}
+}
+</script>
+</body>
+</html>
