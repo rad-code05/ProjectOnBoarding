@@ -36,11 +36,10 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 **Continue unfinished work**
 > Read CLAUDE.md, then continue F04 in plan/features.md. Check the session log and the open branch/PR to see where we stopped.
 
-**Next session (after F16, 2026-10-28): F17b batches**
-> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date (clean up merged branches). If Docker is not running, start Docker Desktop first. The cloud database should match local (45 migrations, last 20261028120000_execution_notes_suggestions.sql) — confirm with `supabase migration list --linked`.
-> 1) If I report anything from trying F16 (filling requests by chat), fix it first.
-> 2) Then F17b in plan/features.md — batch requests for all three types (a list / CSV / Excel of joiners, leavers or role changes → batch grid with checks → drafts after my Confirm, values as suggestions like F16). Brief me (where we are, what F17b builds and why now), propose the PR split and draw the phone boards on the design canvas for my approval before building.
-> Later: F26 access matrix (every person × every application with role, PDF + Excel, like my User Access Approval Sheet) and F28 optional second email on all forms and in the reports.
+**Next session (after F17b, 2026-10-30): F18 Admin · users & roles**
+> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date (clean up merged branches). If Docker is not running, start Docker Desktop first. The cloud database should match local (47 migrations, last 20261029130000_department_innovation.sql) — confirm with `supabase migration list --linked`.
+> 1) If I report anything from trying F17b (batches of joiners, leavers or role changes — on the Batch page or with the robot's paperclip), fix it first.
+> 2) Then the next feature in plan/features.md (F18 Admin · users & roles, unless I pick F26 access matrix or F28 second email instead). Brief me (where we are, what it builds and why now), check its open decisions, propose the PR split and draw the phone boards on the design canvas for my approval before building.
 > Verify library APIs with Context7 before coding (AI SDK 7: toolApproval, not needsApproval; instructions, not system). Run the git commands for me (branch, commit, push, PR); watch CI to the end and only tell me to squash-merge when every check is green; I say "done". After every merged migration, do the cloud db push dry run and wait for my "push". Browser tests from your PC use the local Supabase only (AI_FAKE_MODEL=1). Update my learning guide (Rajulearning/Learn.md) at the end of every PR — Part 10, glossary, data model, repo map and roadmap — and record every configuration change there.
 
 **Check the state** (after a break or a disconnect)
