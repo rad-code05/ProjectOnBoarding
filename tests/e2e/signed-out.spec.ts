@@ -27,3 +27,25 @@ test("sign out ends the session and returns to sign-in", async ({ page }) => {
   await page.goto("/approvals");
   await expect(page).toHaveURL(/\/sign-in/);
 });
+
+// F18c-2: the invitation page is public (no account yet); a missing or
+// broken ticket shows the "ask Raju" message and no form. (The full accept
+// is tried by hand: Clerk's development instance sends its webhooks to
+// production, so a test account would land in the cloud database.)
+for (const [label, path] of [
+  ["no ticket", "/accept-invitation"],
+  ["a broken ticket", "/accept-invitation?__clerk_ticket=not-a-real-ticket"],
+] as const) {
+  test(`accept invitation with ${label}: the link doesn't work`, async ({
+    page,
+  }) => {
+    test.setTimeout(90_000); // Clerk retries a broken ticket a few times
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/accept-invitation/);
+    await expect(
+      page.getByRole("heading", { name: "This link doesn't work" }),
+    ).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByText(/Ask Raju to send it again/)).toBeVisible();
+    await expect(page.getByLabel(/^Password/)).toHaveCount(0);
+  });
+}
