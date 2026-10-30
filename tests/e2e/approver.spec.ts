@@ -947,6 +947,118 @@ test("Batch of leavers (F17b-5b): a pasted list, Same for everyone, an unknown p
   await rajuContext.close();
 });
 
+test("Batch journey (F17b-6b): a draft from a batch is executed, signed, confirmed and closed with its PDF", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(300_000);
+
+  const rajuContext = await browser.newContext({
+    storageState: authFile("admin"),
+  });
+  const raju = await rajuContext.newPage();
+  await setupClerkTestingToken({ page: raju });
+  await saveInitials(raju);
+  await saveInitials(page);
+
+  // 1. A pasted list of one joiner with every required field.
+  const tab = String.fromCharCode(9);
+  const list = [
+    [
+      "First name",
+      "Last name",
+      "Work email",
+      "Job title",
+      "Department",
+      "Office",
+      "Manager",
+      "Start date",
+      "Requested by",
+    ],
+    [
+      "Bea",
+      "Journey",
+      `bea.${Date.now()}@laine.ai`,
+      "Analyst",
+      "Engineering",
+      "Dubai",
+      "Mara Manager",
+      "2030-01-02",
+      "Rita Requestor",
+    ],
+  ]
+    .map((cells) => cells.join(tab))
+    .join("\n");
+  await openApp(raju, "/requests/batch/new");
+  await raju.getByRole("tab", { name: "Paste a list" }).click();
+  await raju.getByLabel("Pasted list").fill(list);
+  await raju.getByRole("button", { name: "Read the list" }).click();
+  await expect(raju).toHaveURL(/\/requests\/batch\/[0-9a-f-]{36}$/, {
+    timeout: 30_000,
+  });
+  await expect(
+    raju
+      .getByRole("list", { name: "People in this batch" })
+      .getByRole("listitem", { name: "Bea Journey — Ready" }),
+  ).toBeVisible();
+
+  // 2. Confirm → one draft onboarding.
+  await raju.getByRole("button", { name: "Create 1 draft…" }).click();
+  await raju
+    .getByRole("dialog", { name: "Create 1 draft onboarding?" })
+    .getByRole("button", { name: "Confirm — create 1 draft" })
+    .click();
+  await expect(
+    raju.getByRole("status").filter({ hasText: "1 draft created." }),
+  ).toBeVisible({ timeout: 30_000 });
+  const drafts = raju.getByRole("list", { name: "Drafts created" });
+  const ticket = await drafts.getByText(/^UAM-\d{4}-\d{6}$/).innerText();
+  await drafts.getByRole("link", { name: "Open" }).click();
+  await expect(raju.getByRole("heading", { level: 1 })).toHaveText(
+    "Bea Journey",
+  );
+  const requestId = raju.url().split("/").pop();
+
+  // 3. Raju executes it like any other request: section 9, Review & sign.
+  await raju.getByRole("button", { name: "Start execution" }).click();
+  await raju
+    .getByRole("dialog", { name: "Start execution?" })
+    .getByRole("button", { name: "Start execution" })
+    .click();
+  const section9 = raju.getByRole("region", {
+    name: "IT execution confirmation",
+  });
+  await expect(section9.getByRole("checkbox").first()).toBeVisible();
+  for (const box of await section9.getByRole("checkbox").all()) {
+    await box.check();
+    await expect(section9.getByRole("status")).not.toHaveText("Saving…");
+  }
+  await expect(section9.getByRole("status")).toHaveText(/^(\d+) of \1 done$/);
+  await reviewAndSign(raju);
+  await rajuContext.close();
+
+  // 4. The approver confirms; it closes with its PDF record.
+  await openApp(page, "/approvals");
+  await page
+    .getByRole("listitem")
+    .filter({ hasText: ticket })
+    .getByRole("link", { name: "Review & confirm" })
+    .click();
+  await page.getByRole("button", { name: "Confirm & sign" }).click();
+  const confirm = page.getByRole("dialog", { name: "Confirm & sign" });
+  await confirm.getByLabel(/I have reviewed this record/).check();
+  await confirm.getByRole("button", { name: "Confirm, sign & close" }).click();
+  await expect(page).toHaveURL(`/records/${requestId}?closed=1`, {
+    timeout: 30_000,
+  });
+  await expect(
+    page.getByRole("region", { name: "Access record" }),
+  ).toContainText("bea.journey-onboarding.pdf");
+  const pdf = await page.request.get(`/records/${requestId}/pdf`);
+  expect(pdf.status()).toBe(200);
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
+});
+
 test("Batch of access changes (F17b-5c): a pasted list checked against what each person holds, one draft access change with the new role", async ({
   page,
   browser,
