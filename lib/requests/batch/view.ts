@@ -122,3 +122,20 @@ export const LEAVER_EXAMPLE: Record<string, string> = {
   removalMethod: "Suspend",
   mailbox: "Convert to a shared mailbox",
 };
+
+/**
+ * The access-change template (F17b-5c): the person, the day it takes
+ * effect, and three list cells — Change (new role), Remove, Add.
+ */
+export const CHANGE_TEMPLATE = BATCH_FIELDS.access_modification.map(
+  (f) => f.label,
+);
+
+/** The example row (an invented person — a real one would be flagged as unknown). */
+export const CHANGE_EXAMPLE: Record<string, string> = {
+  person: "arjun.mehta@laine.ai",
+  effectiveDate: "01/12/2026",
+  change: "Slack (Workspace Admin)",
+  remove: "Figma",
+  add: "Notion (Member)",
+};

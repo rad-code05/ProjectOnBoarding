@@ -28,8 +28,7 @@ const typeSchema = z.enum(["onboarding", "offboarding", "access_modification"]);
 const idSchema = z.uuid();
 const valuesSchema = z.record(z.string().max(60), z.string().max(500));
 
-const SOON =
-  "Batches of role changes come next — for now, start them one by one.";
+const SOON = "This kind of batch isn't available — start them one by one.";
 
 function failed(error: unknown): { ok: false; message: string } {
   if (error instanceof BatchReadError)

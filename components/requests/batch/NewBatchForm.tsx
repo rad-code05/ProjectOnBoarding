@@ -30,17 +30,36 @@ const KINDS: { value: Kind; title: string; note: string; ready: boolean }[] = [
   {
     value: "access_modification",
     title: "Access change",
-    note: "Role changes — coming next",
-    ready: false,
+    note: "Role changes — checked against what each person holds today",
+    ready: true,
   },
 ];
 
 /** What the list should hold, per kind (the template's own columns). */
-const HINTS: Record<"onboarding" | "offboarding", string> = {
+const HINTS: Record<Kind, string> = {
   onboarding:
     "One column per application, titled with its name: write the role (or Yes for its usual role), leave it empty when not needed. Your own columns are fine too: they are matched by name (First name, Email, Department, Office, Start date …).",
   offboarding:
     "One row per leaver: name or work email, and the last working day. SLA, cut-off time, handover, removal method and mailbox can stay empty — set them once for everyone on the next page; a row's own cell wins.",
+  access_modification:
+    "One row per person: name or work email, the effective date, and what changes — Change (what they hold, the new role in brackets), Remove (names or asset tags) and Add (something new), commas between items.",
+};
+
+/** The pasted list's example, per kind. */
+const PLACEHOLDERS: Record<Kind, string> = {
+  onboarding:
+    "First name\tLast name\tWork email\t…\nMeera\tNair\tmeera.nair@laine.ai\t…",
+  offboarding:
+    "Name or work email\tLast working day\t…\narjun.mehta@laine.ai\t30/11/2026\t…",
+  access_modification:
+    "Name or work email\tEffective date\tChange\tRemove\tAdd\narjun.mehta@laine.ai\t01/12/2026\tSlack (Workspace Admin)\tFigma\tNotion (Member)",
+};
+
+/** The template's name in the link. */
+const TEMPLATE_NAMES: Record<Kind, string> = {
+  onboarding: "onboarding",
+  offboarding: "offboarding",
+  access_modification: "access change",
 };
 
 /**
@@ -55,7 +74,6 @@ export function NewBatchForm() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const leavers = kind === "offboarding";
 
   async function read() {
     setError(null);
@@ -174,11 +192,7 @@ export function NewBatchForm() {
               rows={7}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder={
-                leavers
-                  ? "Name or work email\tLast working day\t…\narjun.mehta@laine.ai\t30/11/2026\t…"
-                  : "First name\tLast name\tWork email\t…\nMeera\tNair\tmeera.nair@laine.ai\t…"
-              }
+              placeholder={PLACEHOLDERS[kind]}
               className="bg-white rounded-field border border-field-border px-3 py-2.5 text-base leading-snug font-normal outline-none focus:border-ink md:text-sm"
             />
             <span className="text-xs font-normal text-graphite">
@@ -188,14 +202,14 @@ export function NewBatchForm() {
           </label>
         )}
         <a
-          href={leavers ? `${TEMPLATE}?kind=offboarding` : TEMPLATE}
+          href={kind === "onboarding" ? TEMPLATE : `${TEMPLATE}?kind=${kind}`}
           download
           className="self-start text-[13px] font-semibold underline"
         >
-          Download the {leavers ? "offboarding" : "onboarding"} template (.xlsx)
+          Download the {TEMPLATE_NAMES[kind]} template (.xlsx)
         </a>
         <span className="text-xs leading-normal text-graphite">
-          {HINTS[leavers ? "offboarding" : "onboarding"]}
+          {HINTS[kind]}
         </span>
       </div>
 

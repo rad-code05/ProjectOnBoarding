@@ -72,7 +72,28 @@ const LEAVER_LINES: Line[] = [
   { label: "Removal", fields: ["removalMethod", "mailbox"] },
 ];
 
-const DATES = new Set(["startDate", "lastWorkingDay", "cutoffDate"]);
+/** An access change's card: the person, when, and what changes. */
+const CHANGE_LINES: Line[] = [
+  { label: "Person", fields: ["person"] },
+  { label: "Effective", fields: ["effectiveDate"] },
+  { label: "Change", fields: ["change"] },
+  { label: "Remove", fields: ["remove"] },
+  { label: "Add", fields: ["add"] },
+];
+
+const DATES = new Set([
+  "startDate",
+  "lastWorkingDay",
+  "cutoffDate",
+  "effectiveDate",
+]);
+
+/** "draft onboarding" / "draft offboarding" / "draft access change". */
+const NOUNS: Record<GridBatch["type"], string> = {
+  onboarding: "onboarding",
+  offboarding: "offboarding",
+  access_modification: "access change",
+};
 
 const show = (field: string, value: string) =>
   DATES.has(field) && readDay(value)
@@ -119,7 +140,11 @@ export function BatchGrid({
 
   if (batch.status === "created") return <Created batch={batch} />;
   const leavers = batch.type === "offboarding";
-  const LINES = leavers ? LEAVER_LINES : JOINER_LINES;
+  const LINES = leavers
+    ? LEAVER_LINES
+    : batch.type === "access_modification"
+      ? CHANGE_LINES
+      : JOINER_LINES;
 
   async function include(row: GridRow, included: boolean) {
     setBusy(row.id);
@@ -313,7 +338,7 @@ export function BatchGrid({
         <FixRowSheet
           key={fixing.id}
           row={fixing}
-          leavers={leavers}
+          type={batch.type}
           departments={departments}
           offices={offices}
           onClose={() => setFixing(null)}
@@ -396,17 +421,42 @@ const TEXT_FIELDS: { key: string; label: string; hint?: string }[] = [
   { key: "requestedBy", label: "Requested by" },
 ];
 
+/** An access change's cells in Fix a row (names as the person holds them). */
+const CHANGE_FIELDS: { key: string; label: string; hint?: string }[] = [
+  { key: "person", label: "Name or work email" },
+  {
+    key: "effectiveDate",
+    label: "Effective date",
+    hint: "Like 2026-11-02 or 02/11/2026.",
+  },
+  {
+    key: "change",
+    label: "Change",
+    hint: "What they hold, the new role in brackets: Slack (Workspace Admin).",
+  },
+  {
+    key: "remove",
+    label: "Remove",
+    hint: "Comma between items: Figma, LT-1008 (an asset tag for a device).",
+  },
+  {
+    key: "add",
+    label: "Add",
+    hint: "Something new, like on an onboarding: Notion (Member), Laptop · macOS.",
+  },
+];
+
 /** Fix a row (sheet): the row's cells, the same lists as the form; Save checks again. */
 function FixRowSheet({
   row,
-  leavers,
+  type,
   departments,
   offices,
   onClose,
   onSaved,
 }: {
   row: GridRow;
-  leavers: boolean;
+  type: GridBatch["type"];
   departments: string[];
   offices: string[];
   onClose: () => void;
@@ -460,8 +510,19 @@ function FixRowSheet({
       }
     >
       <div className="flex flex-col gap-3.5">
-        {leavers ? (
+        {type === "offboarding" ? (
           <LeaverFields values={values} problem={problem} set={set} />
+        ) : type === "access_modification" ? (
+          CHANGE_FIELDS.map((f) => (
+            <TextField
+              key={f.key}
+              label={f.label}
+              hint={f.hint}
+              value={values[f.key] ?? ""}
+              error={problem(f.key)}
+              onChange={(e) => set(f.key, e.target.value)}
+            />
+          ))
         ) : (
           <JoinerFields
             values={values}
@@ -557,7 +618,7 @@ function ConfirmSheet({
   const ready = batch.rows.filter((r) => rowState(r) === "ready");
   const out = batch.rows.filter((r) => rowState(r) !== "ready");
   const n = ready.length;
-  const noun = batch.type === "offboarding" ? "offboarding" : "onboarding";
+  const noun = NOUNS[batch.type];
   return (
     <Sheet
       eyebrow="Needs your Confirm"
@@ -620,6 +681,12 @@ function ConfirmSheet({
             Each offboarding lists what the person holds today. The removal
             method and mailbox wait on it as suggestions until you start
             execution.
+          </li>
+        )}
+        {batch.type === "access_modification" && (
+          <li>
+            Each access change starts from what the person holds today; the
+            changes you listed are written onto it.
           </li>
         )}
         <li>

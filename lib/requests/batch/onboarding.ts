@@ -41,12 +41,28 @@ export const REQUIRED: { field: string; label: string }[] = [
   { field: "startDate", label: "Start date" },
 ];
 
-/** Items of a list cell: "Slack · Regular Member, GitHub (Member)". */
+/**
+ * Items of a list cell: "Slack · Regular Member, GitHub (Member)". A comma
+ * inside brackets stays ("Google Cloud (Viewer, Editor)"); a new line always
+ * splits.
+ */
 export function listItems(cell: string | undefined): string[] {
-  return (cell ?? "")
-    .split(/[,\n]/)
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const items: string[] = [];
+  let depth = 0;
+  let current = "";
+  for (const ch of cell ?? "") {
+    if (ch === "\n" || (ch === "," && depth === 0)) {
+      items.push(current);
+      current = "";
+      depth = 0;
+      continue;
+    }
+    if (ch === "(") depth++;
+    else if (ch === ")") depth = Math.max(0, depth - 1);
+    current += ch;
+  }
+  items.push(current);
+  return items.map((s) => s.trim()).filter(Boolean);
 }
 
 /**
@@ -200,7 +216,7 @@ export function pickRoles(text: string, roles: string[]): string | null {
  * bracket ("Hexnode (MDM)") isn't a role; several roles in one cell of a
  * multi-role app are picked out (`pickRoles`).
  */
-function fixApps(
+export function fixApps(
   input: OnboardingInput,
   options: FormOptions,
 ): OnboardingInput {
