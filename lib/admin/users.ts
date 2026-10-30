@@ -2,7 +2,7 @@ import "server-only";
 import { clerkClient } from "@clerk/nextjs/server";
 import type { Role } from "@/lib/auth";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { AdminPerson } from "./users-shared";
+import type { AdminInvitation, AdminPerson } from "./users-shared";
 
 /**
  * Everything Admin · Users & roles shows (F18b): every person (active and
@@ -75,4 +75,30 @@ async function clerkFacts(
     console.error("Clerk users could not be read", err);
     return null;
   }
+}
+
+/** Open invitations (pending, expired ones too — they can be sent again). */
+export async function loadInvitations(): Promise<AdminInvitation[]> {
+  const { data, error } = await createServerSupabaseClient()
+    .from("user_invitations")
+    .select(
+      "id, email, first_name, last_name, roles, created_at, expires_at, inviter:app_users!user_invitations_invited_by_fkey(first_name, last_name, email)",
+    )
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+  if (error) {
+    throw new Error(`Could not load the invitations: ${error.message}`);
+  }
+  return (data ?? []).map((i) => ({
+    id: i.id,
+    email: i.email,
+    firstName: i.first_name,
+    lastName: i.last_name,
+    roles: i.roles,
+    invitedBy:
+      [i.inviter?.first_name, i.inviter?.last_name].filter(Boolean).join(" ") ||
+      (i.inviter?.email ?? "an admin"),
+    createdAt: i.created_at,
+    expiresAt: i.expires_at,
+  }));
 }

@@ -5,6 +5,7 @@ import {
   eventFacts,
   type RawAuditEvent,
 } from "./describe";
+import type { Json } from "@/lib/supabase/database.types";
 
 const raju = { actor_id: "user_raju", actor_name: "Raju Bholani" };
 const moises = { actor_id: "user_moises", actor_name: "Moises Larez" };
@@ -546,5 +547,33 @@ describe("AI models (Admin → AI settings)", () => {
       "restored the AI model “Claude Sonnet 4.5”",
     );
     expect(say("ai.settings_changed", {})).toBe("changed the AI settings");
+  });
+});
+
+describe("invitations (F18c)", () => {
+  const say = (action: string, diff: Record<string, Json>) =>
+    describeEvent(ev({ action, diff })).what;
+
+  test("invited, sent again, withdrawn, link copied, accepted", () => {
+    expect(
+      say("user.invited", {
+        email: "celine@example.test",
+        first_name: "Celine",
+        last_name: "Example",
+        roles: ["approver", "auditor"],
+      }),
+    ).toBe("invited Celine Example as Approver and Auditor");
+    expect(
+      say("user.invitation_sent_again", { email: "celine@example.test" }),
+    ).toBe("sent the invitation to celine@example.test again");
+    expect(
+      say("user.invitation_withdrawn", { email: "celine@example.test" }),
+    ).toBe("withdrew the invitation to celine@example.test");
+    expect(
+      say("user.invitation_link_copied", { email: "celine@example.test" }),
+    ).toBe("copied the invitation link for celine@example.test");
+    expect(say("user.invitation_accepted", { roles: ["approver"] })).toBe(
+      "recorded an accepted invitation as Approver",
+    );
   });
 });

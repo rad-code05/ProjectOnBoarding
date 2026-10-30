@@ -587,12 +587,48 @@ export function describeEvent(
       return say(`deactivated the account of ${target}`);
     case "user.reactivated":
       return say(`reactivated the account of ${target}`);
+    case "user.invited": {
+      const name = [str(d, "first_name"), str(d, "last_name")]
+        .filter(Boolean)
+        .join(" ");
+      return say(
+        `invited ${name || str(d, "email") || "a person"}${rolesWords(d)}`,
+        "Users & roles",
+      );
+    }
+    case "user.invitation_sent_again":
+      return say(
+        `sent the invitation to ${str(d, "email") ?? "a person"} again`,
+        "Users & roles",
+      );
+    case "user.invitation_withdrawn":
+      return say(
+        `withdrew the invitation to ${str(d, "email") ?? "a person"}`,
+        "Users & roles",
+      );
+    case "user.invitation_link_copied":
+      return say(
+        `copied the invitation link for ${str(d, "email") ?? "a person"}`,
+        "Users & roles",
+      );
+    case "user.invitation_accepted":
+      return say(`recorded an accepted invitation${rolesWords(d)}`);
     case "role.granted":
       return say(`gave ${target} the ${roleLabel(str(d, "role"))} role`);
     case "role.revoked":
       return say(`took the ${roleLabel(str(d, "role"))} role from ${target}`);
   }
   return say(`recorded “${ev.action}”`);
+}
+
+/** " as Approver and Auditor" from an invitation's roles. */
+function rolesWords(d: Obj): string {
+  const roles = Array.isArray(d.roles)
+    ? d.roles.filter((r): r is string => typeof r === "string")
+    : [];
+  if (roles.length === 0) return "";
+  const labels = roles.map((r) => roleLabel(r));
+  return ` as ${labels.length > 1 ? `${labels.slice(0, -1).join(", ")} and ${labels.at(-1)}` : labels[0]}`;
 }
 
 /** Keys that are shown elsewhere or mean nothing to a reader. */
