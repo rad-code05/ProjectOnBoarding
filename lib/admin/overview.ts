@@ -13,6 +13,9 @@ export type AdminOverview = {
   accessTypes: number;
   offices: number;
   officeCities: number;
+  /** Users & roles (F18b). */
+  peopleActive: number;
+  peopleDeactivated: number;
   companyTimezone: string;
   /** "On · Claude Sonnet 5.5" (Admin → AI settings). */
   assistant: string;
@@ -20,31 +23,40 @@ export type AdminOverview = {
 
 export async function loadAdminOverview(): Promise<AdminOverview> {
   const supabase = createServerSupabaseClient();
-  const [apps, categories, equipment, access, offices, cities, settings] =
-    await Promise.all([
-      supabase.from("catalog_apps").select("active"),
-      supabase
-        .from("catalog_categories")
-        .select("id", { count: "exact", head: true })
-        .eq("active", true),
-      supabase
-        .from("equipment_types")
-        .select("id", { count: "exact", head: true })
-        .eq("active", true),
-      supabase
-        .from("physical_access_types")
-        .select("id", { count: "exact", head: true })
-        .eq("active", true),
-      supabase
-        .from("offices")
-        .select("id", { count: "exact", head: true })
-        .eq("active", true),
-      supabase
-        .from("office_cities")
-        .select("id", { count: "exact", head: true })
-        .eq("active", true),
-      supabase.from("app_settings").select("company_timezone").maybeSingle(),
-    ]);
+  const [
+    apps,
+    categories,
+    equipment,
+    access,
+    offices,
+    cities,
+    settings,
+    people,
+  ] = await Promise.all([
+    supabase.from("catalog_apps").select("active"),
+    supabase
+      .from("catalog_categories")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true),
+    supabase
+      .from("equipment_types")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true),
+    supabase
+      .from("physical_access_types")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true),
+    supabase
+      .from("offices")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true),
+    supabase
+      .from("office_cities")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true),
+    supabase.from("app_settings").select("company_timezone").maybeSingle(),
+    supabase.from("app_users").select("active"),
+  ]);
   const ai = await supabase
     .from("ai_settings")
     .select("enabled, model:ai_models(name)")
@@ -58,6 +70,8 @@ export async function loadAdminOverview(): Promise<AdminOverview> {
     accessTypes: access.count ?? 0,
     offices: offices.count ?? 0,
     officeCities: cities.count ?? 0,
+    peopleActive: (people.data ?? []).filter((p) => p.active).length,
+    peopleDeactivated: (people.data ?? []).filter((p) => !p.active).length,
     companyTimezone: settings.data?.company_timezone ?? "Asia/Dubai",
     assistant: ai.data
       ? `${ai.data.enabled ? "On" : "Off"} · ${ai.data.model?.name ?? "—"}`

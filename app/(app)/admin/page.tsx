@@ -7,7 +7,6 @@ import { PAGES } from "@/lib/navigation";
 export const metadata = { title: "Admin" };
 
 const LATER = [
-  { title: "Users & roles", note: "Invite people, change roles" },
   { title: "Form fields & versions", note: "Add a field to the form" },
   {
     title: "Templates & defaults",
@@ -20,6 +19,11 @@ export default async function AdminPage() {
   await requireRole(...PAGES.admin.roles);
   const o = await loadAdminOverview();
   const areas = [
+    {
+      href: "/admin/users",
+      title: "Users & roles",
+      note: `${o.peopleActive} active · ${o.peopleDeactivated} deactivated`,
+    },
     {
       href: "/admin/applications",
       title: "Applications",
