@@ -4,8 +4,14 @@ import type { FormOptions } from "@/lib/ai/tools/onboarding-shared";
 import { COMPANY_TIMEZONE } from "@/lib/requests/format";
 import type { Database, Json } from "@/lib/supabase/database.types";
 import type { ServerSupabase } from "@/lib/supabase/server";
+import { listLeavers } from "@/lib/requests/leavers";
 import { zonedParts } from "@/lib/time/zoned";
 import type { BatchRecord } from "./columns";
+import {
+  checkLeaverBatch,
+  readDefaults,
+  type LeaverDefaults,
+} from "./offboarding";
 import {
   checkOnboardingBatch,
   type BatchContext,
@@ -48,12 +54,32 @@ export type Batch = {
   status: "open" | "created";
   createdAt: string;
   confirmedAt: string | null;
+  /** Leavers: "the same for everyone" (empty for other kinds). */
+  defaults: LeaverDefaults;
   rows: BatchRow[];
 };
 
-/** Only onboarding batches until F17b-5. */
+/** The batch pages offer onboarding only until F17b-5b. */
 export function batchTypeReady(type: RequestType) {
   return type === "onboarding";
+}
+
+/** Kinds the store checks (leavers since F17b-5a; access changes F17b-5c). */
+const CHECKED: RequestType[] = ["onboarding", "offboarding"];
+
+/** A checked row; leavers also carry the person found. */
+type Checked = CheckedRow & { employeeId?: string | null };
+
+async function companyToday(db: ServerSupabase) {
+  const { data } = await db
+    .from("app_settings")
+    .select("company_timezone")
+    .maybeSingle();
+  const timeZone = data?.company_timezone ?? COMPANY_TIMEZONE;
+  return {
+    timeZone,
+    today: zonedParts(new Date().toISOString(), timeZone).date,
+  };
 }
 
 async function context(
@@ -61,9 +87,9 @@ async function context(
   emails: string[],
   known?: FormOptions,
 ): Promise<BatchContext> {
-  const [options, settings, open] = await Promise.all([
+  const [options, { today }, open] = await Promise.all([
     known ?? loadFormOptions(db),
-    db.from("app_settings").select("company_timezone").maybeSingle(),
+    companyToday(db),
     emails.length
       ? db
           .from("requests")
@@ -72,10 +98,9 @@ async function context(
           .not("state", "in", "(closed,cancelled)")
       : Promise.resolve({ data: [] as { work_email: string | null }[] }),
   ]);
-  const timeZone = settings.data?.company_timezone ?? COMPANY_TIMEZONE;
   return {
     options,
-    today: zonedParts(new Date().toISOString(), timeZone).date,
+    today,
     openEmails: new Set(
       (open.data ?? [])
         .map((r) => (r.work_email ?? "").toLowerCase())
@@ -94,9 +119,18 @@ const emailsOf = (rows: { values: Record<string, string> }[]) => [
 
 async function checkAll(
   db: ServerSupabase,
+  type: RequestType,
   rows: { position: number; values: Record<string, string> }[],
+  defaults: LeaverDefaults,
   options?: FormOptions,
-): Promise<Map<number, CheckedRow>> {
+): Promise<Map<number, Checked>> {
+  if (type === "offboarding") {
+    const [leavers, { today, timeZone }] = await Promise.all([
+      listLeavers(db),
+      companyToday(db),
+    ]);
+    return checkLeaverBatch(rows, defaults, { leavers, today, timeZone });
+  }
   return checkOnboardingBatch(rows, await context(db, emailsOf(rows), options));
 }
 
@@ -109,11 +143,15 @@ export async function makeBatch(
     source: "file" | "paste" | "chat";
     fileName?: string | null;
     records: BatchRecord[];
+    /** Leavers: "the same for everyone". */
+    defaults?: LeaverDefaults;
   },
 ): Promise<string> {
-  if (!batchTypeReady(input.type)) {
-    throw new Error("Batches of leavers and role changes come next.");
+  if (!CHECKED.includes(input.type)) {
+    throw new Error("Batches of role changes come next.");
   }
+  const defaults =
+    input.type === "offboarding" ? readDefaults(input.defaults) : {};
   const { data: batch, error } = await db
     .from("request_batches")
     .insert({
@@ -121,17 +159,19 @@ export async function makeBatch(
       title: input.title.trim().slice(0, 200) || "Batch",
       source: input.source,
       file_name: input.fileName?.slice(0, 200) ?? null,
+      settings: defaults as NonNullable<Json>,
     })
     .select("id")
     .single();
   if (error || !batch) throw new Error(error?.message ?? "batch not saved");
   // One column per application (Raju's template) joins the Applications cell.
-  const options = await loadFormOptions(db);
+  const options =
+    input.type === "onboarding" ? await loadFormOptions(db) : undefined;
   const records = input.records.map((r) => ({
     position: r.position,
-    ...withAppColumns(r, options.apps),
+    ...(options ? withAppColumns(r, options.apps) : r),
   }));
-  const checked = await checkAll(db, records, options);
+  const checked = await checkAll(db, input.type, records, defaults, options);
   const { error: rowsError } = await db.from("request_batch_rows").insert(
     records.map((r) => {
       const c = checked.get(r.position);
@@ -139,6 +179,7 @@ export async function makeBatch(
         batch_id: batch.id,
         position: r.position,
         data: { values: r.values, other: r.other } as NonNullable<Json>,
+        employee_id: c?.employeeId ?? null,
         writes: (c?.writes ?? []) as NonNullable<Json>,
         problems: (c?.problems ?? []) as NonNullable<Json>,
       };
@@ -159,7 +200,7 @@ export async function loadBatch(
   const { data: b } = await db
     .from("request_batches")
     .select(
-      "id, type, title, source, file_name, status, created_at, confirmed_at",
+      "id, type, title, source, file_name, status, created_at, confirmed_at, settings",
     )
     .eq("id", id)
     .maybeSingle();
@@ -180,6 +221,7 @@ export async function loadBatch(
     status: b.status as Batch["status"],
     createdAt: b.created_at,
     confirmedAt: b.confirmed_at,
+    defaults: b.type === "offboarding" ? readDefaults(b.settings) : {},
     rows: (rows ?? []).map((r) => {
       const data = (r.data ?? {}) as Partial<BatchRowData>;
       return {
@@ -198,27 +240,46 @@ export async function loadBatch(
 
 /** Every row checked again; only rows whose result changed are written. */
 export async function recheckBatch(db: ServerSupabase, batchId: string) {
-  const { data: rows, error } = await db
-    .from("request_batch_rows")
-    .select("id, position, data, writes, problems")
-    .eq("batch_id", batchId);
+  const [{ data: batch, error: batchError }, { data: rows, error }] =
+    await Promise.all([
+      db
+        .from("request_batches")
+        .select("type, settings")
+        .eq("id", batchId)
+        .single(),
+      db
+        .from("request_batch_rows")
+        .select("id, position, data, writes, problems, employee_id")
+        .eq("batch_id", batchId),
+    ]);
+  if (batchError || !batch)
+    throw new Error(batchError?.message ?? "batch not found");
   if (error) throw new Error(error.message);
   const list = (rows ?? []).map((r) => ({
     ...r,
     values: ((r.data ?? {}) as Partial<BatchRowData>).values ?? {},
   }));
-  const checked = await checkAll(db, list);
+  const checked = await checkAll(
+    db,
+    batch.type,
+    list,
+    readDefaults(batch.settings),
+  );
   for (const r of list) {
     const c = checked.get(r.position);
     if (!c) continue;
+    const employeeId =
+      c.employeeId === undefined ? r.employee_id : c.employeeId;
     if (
       JSON.stringify(c.writes) === JSON.stringify(r.writes) &&
-      JSON.stringify(c.problems) === JSON.stringify(r.problems)
+      JSON.stringify(c.problems) === JSON.stringify(r.problems) &&
+      employeeId === r.employee_id
     )
       continue;
     const { error: e } = await db
       .from("request_batch_rows")
       .update({
+        employee_id: employeeId,
         writes: c.writes as NonNullable<Json>,
         problems: c.problems as NonNullable<Json>,
       })
@@ -258,6 +319,21 @@ export async function saveBatchRow(
   if (e) throw new Error(e.message);
   if (change.values) await recheckBatch(db, row.batch_id);
   return row.batch_id;
+}
+
+/** Leavers: new "same for everyone" values, then every row checked again. */
+export async function saveBatchDefaults(
+  db: ServerSupabase,
+  batchId: string,
+  defaults: LeaverDefaults,
+) {
+  const { error } = await db
+    .from("request_batches")
+    .update({ settings: readDefaults(defaults) as NonNullable<Json> })
+    .eq("id", batchId)
+    .eq("status", "open");
+  if (error) throw new Error(error.message);
+  await recheckBatch(db, batchId);
 }
 
 /** The person's batches, newest first (kept 7 days). */

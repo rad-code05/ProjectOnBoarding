@@ -16,8 +16,16 @@ import {
 
 export type Problem = { field: string; message: string };
 
+/**
+ * What a draft gets at Confirm: the robot's suggestions, plus (leavers) one
+ * removal method for every application, applied by `create_batch_drafts()`.
+ */
+export type BatchWrite =
+  | Suggestion
+  | { kind: "removal_all"; target: "removal_all"; value: { method: string } };
+
 export type CheckedRow = {
-  writes: Suggestion[];
+  writes: BatchWrite[];
   problems: Problem[];
 };
 

@@ -64,6 +64,7 @@ const batch = (
   status,
   createdAt: "2026-10-29T08:00:00Z",
   confirmedAt: null,
+  defaults: {},
   rows,
 });
 
