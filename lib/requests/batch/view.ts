@@ -55,9 +55,13 @@ export function sortForGrid<T extends ViewRow>(rows: T[]): T[] {
   );
 }
 
-/** The field's label in the onboarding template ("startDate" → "Start date"). */
+/** The field's label in its template ("startDate" → "Start date", "person" → "Name or work email"). */
 export function fieldLabel(field: string): string {
-  return BATCH_FIELDS.onboarding.find((f) => f.key === field)?.label ?? field;
+  return (
+    Object.values(BATCH_FIELDS)
+      .flat()
+      .find((f) => f.key === field)?.label ?? field
+  );
 }
 
 /** "1 left out" / "2 need attention" — the footer line. */
@@ -100,3 +104,21 @@ export const TEMPLATE_COLUMNS = [
 export function templateColumns(apps: string[]): string[] {
   return [...TEMPLATE_COLUMNS, ...apps];
 }
+
+/**
+ * The leavers template (F17b-5b): the person and their last day; the rest
+ * may stay empty when "Same for everyone" on the batch page covers it.
+ */
+export const LEAVER_TEMPLATE = BATCH_FIELDS.offboarding.map((f) => f.label);
+
+/** The example leaver (an invented person — a real one would be flagged as unknown). */
+export const LEAVER_EXAMPLE: Record<string, string> = {
+  person: "arjun.mehta@laine.ai",
+  lastWorkingDay: "30/11/2026",
+  slaTimeline: "Within 24h",
+  cutoffDate: "",
+  cutoffTime: "18:00",
+  handoverTo: "Line manager",
+  removalMethod: "Suspend",
+  mailbox: "Convert to a shared mailbox",
+};

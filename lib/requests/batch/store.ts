@@ -59,9 +59,9 @@ export type Batch = {
   rows: BatchRow[];
 };
 
-/** The batch pages offer onboarding only until F17b-5b. */
+/** The kinds the batch pages offer (access changes come in F17b-5c). */
 export function batchTypeReady(type: RequestType) {
-  return type === "onboarding";
+  return type === "onboarding" || type === "offboarding";
 }
 
 /** Kinds the store checks (leavers since F17b-5a; access changes F17b-5c). */
@@ -321,11 +321,14 @@ export async function saveBatchRow(
   return row.batch_id;
 }
 
-/** Leavers: new "same for everyone" values, then every row checked again. */
+/**
+ * Leavers: new "same for everyone" values (as typed — what doesn't read is
+ * dropped), then every row checked again.
+ */
 export async function saveBatchDefaults(
   db: ServerSupabase,
   batchId: string,
-  defaults: LeaverDefaults,
+  defaults: Record<string, string> | LeaverDefaults,
 ) {
   const { error } = await db
     .from("request_batches")

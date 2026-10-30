@@ -6,6 +6,8 @@ import {
   rowName,
   rowState,
   sortForGrid,
+  LEAVER_EXAMPLE,
+  LEAVER_TEMPLATE,
   templateColumns,
 } from "./view";
 
@@ -67,5 +69,19 @@ describe("the template's columns", () => {
     expect(cols.slice(-3)).toEqual(["Requested by", "Slack", "Figma"]);
     expect(cols).not.toContain("Applications");
     expect(cols.filter((c) => /email used/i.test(c))).toEqual([]);
+  });
+});
+
+describe("leaver batches (F17b-5b)", () => {
+  test("labels come from every kind's template", () => {
+    expect(fieldLabel("person")).toBe("Name or work email");
+    expect(fieldLabel("lastWorkingDay")).toBe("Last working day");
+    expect(fieldLabel("startDate")).toBe("Start date");
+  });
+
+  test("the leavers template: person first, an example for every column", () => {
+    expect(LEAVER_TEMPLATE[0]).toBe("Name or work email");
+    expect(LEAVER_TEMPLATE).toContain("Removal method");
+    expect(Object.keys(LEAVER_EXAMPLE)).toHaveLength(LEAVER_TEMPLATE.length);
   });
 });

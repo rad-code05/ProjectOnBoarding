@@ -3,7 +3,12 @@ import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import { openApp } from "./open";
 import { expect, test } from "@playwright/test";
 import { authFile } from "../../playwright.config";
-import { createExecutedRequest, reviewAndSign, saveInitials } from "./journey";
+import {
+  choose,
+  createExecutedRequest,
+  reviewAndSign,
+  saveInitials,
+} from "./journey";
 
 test.beforeEach(async ({ page }) => {
   await setupClerkTestingToken({ page });
@@ -826,4 +831,118 @@ test("access change journey: Who is changing?, change / keep / add, sign, approv
     'attachment; filename="ada.loop-access-modification.pdf"',
   );
   expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
+});
+
+test("Batch of leavers (F17b-5b): a pasted list, Same for everyone, an unknown person flagged, one draft offboarding with what they hold", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(300_000);
+
+  const rajuContext = await browser.newContext({
+    storageState: authFile("admin"),
+  });
+  const raju = await rajuContext.newPage();
+  await setupClerkTestingToken({ page: raju });
+  await saveInitials(raju);
+  await saveInitials(page);
+
+  // 1. Lea holds Slack: onboarded and closed.
+  const ticket = await createExecutedRequest(raju, "Lea");
+  const email = await raju.getByLabel("Work email").inputValue();
+  await raju.getByLabel("Slack action").selectOption("Grant");
+  await raju.getByLabel("Slack permission").selectOption("Regular Member");
+  await expect(
+    raju
+      .getByRole("region", { name: "Application access" })
+      .getByRole("status")
+      .first(),
+  ).toHaveText(/^1 of \d+ set$/);
+  await reviewAndSign(raju);
+  await openApp(page, "/approvals");
+  await page
+    .getByRole("listitem")
+    .filter({ hasText: ticket })
+    .getByRole("link", { name: "Review & confirm" })
+    .click();
+  await page.getByRole("button", { name: "Confirm & sign" }).click();
+  const confirmSign = page.getByRole("dialog", { name: "Confirm & sign" });
+  await confirmSign.getByLabel(/I have reviewed this record/).check();
+  await confirmSign
+    .getByRole("button", { name: "Confirm, sign & close" })
+    .click();
+  await expect(page.getByRole("status")).toHaveText(
+    "Confirmed, signed and closed",
+    { timeout: 30_000 },
+  );
+
+  // 2. A pasted list of leavers: Lea, and someone who holds nothing.
+  const list = [
+    "Name or work email\tLast working day",
+    `${email}\t02/01/2030`,
+    "Nobody Batchleaver\t02/01/2030",
+  ].join("\n");
+  await openApp(raju, "/requests/batch/new");
+  await raju.getByRole("radio", { name: /Offboarding/ }).check();
+  await raju.getByRole("tab", { name: "Paste a list" }).click();
+  await raju.getByLabel("Pasted list").fill(list);
+  await raju.getByRole("button", { name: "Read the list" }).click();
+  await expect(raju).toHaveURL(/\/requests\/batch\/[0-9a-f-]{36}$/, {
+    timeout: 30_000,
+  });
+
+  const people = raju.getByRole("list", { name: "People in this batch" });
+  const lea = people.getByRole("listitem", { name: new RegExp(`^${email}`) });
+  await expect(lea).toContainText(
+    'fill it in for this row or in "Same for everyone"',
+  );
+  const nobody = people.getByRole("listitem", {
+    name: "Nobody Batchleaver — Needs attention",
+  });
+  await expect(nobody).toContainText("holds anything in the app");
+
+  // 3. Same for everyone → Lea is ready; Nobody still needs attention.
+  const same = raju.getByRole("region", { name: "Same for everyone" });
+  await choose(raju, "SLA", "Within 24h");
+  await same.getByLabel("Cut-off time (company time)").fill("18:00");
+  await same.getByLabel("Handover").fill("Line manager");
+  await choose(raju, "Removal method (every application)", "Suspend");
+  await choose(raju, "Mailbox", "No mailbox to convert");
+  await same.getByRole("button", { name: "Save for everyone" }).click();
+  await expect(same.getByRole("status")).toHaveText(
+    "✓ Saved — every row checked again",
+  );
+  await expect(
+    people.getByRole("listitem", { name: `${email} — Ready` }),
+  ).toBeVisible();
+  await expect(nobody).toBeVisible();
+
+  // 4. Confirm: one draft offboarding; Nobody is not created.
+  await raju.getByRole("button", { name: "Create 1 draft…" }).click();
+  const confirm = raju.getByRole("dialog", {
+    name: "Create 1 draft offboarding?",
+  });
+  await expect(confirm).toContainText("Nobody Batchleaver — needs attention");
+  await confirm
+    .getByRole("button", { name: "Confirm — create 1 draft" })
+    .click();
+  await expect(
+    raju.getByRole("status").filter({ hasText: "1 draft created." }),
+  ).toBeVisible({ timeout: 30_000 });
+
+  // The draft lists what Lea holds, with the SLA from the batch.
+  await raju
+    .getByRole("list", { name: "Drafts created" })
+    .getByRole("link", { name: "Open" })
+    .click();
+  await expect(raju.getByRole("heading", { level: 1 })).toHaveText("Lea Loop");
+  const apps = raju.getByRole("region", { name: "Applications to remove" });
+  await expect(apps).toContainText("Slack");
+  await expect(apps).toContainText("had Regular Member");
+  await expect(
+    raju
+      .getByRole("region", { name: "Access removal SLA" })
+      .getByLabel("Last working day"),
+  ).toHaveValue("2030-01-02");
+  await rajuContext.close();
 });
