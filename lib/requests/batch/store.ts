@@ -1,4 +1,5 @@
 import "server-only";
+import { loadHeld } from "@/lib/ai/tools/create-access-change-draft";
 import { loadFormOptions } from "@/lib/ai/tools/onboarding-load";
 import type { FormOptions } from "@/lib/ai/tools/onboarding-shared";
 import { COMPANY_TIMEZONE } from "@/lib/requests/format";
@@ -6,6 +7,7 @@ import type { Database, Json } from "@/lib/supabase/database.types";
 import type { ServerSupabase } from "@/lib/supabase/server";
 import { listLeavers } from "@/lib/requests/leavers";
 import { zonedParts } from "@/lib/time/zoned";
+import { checkAccessChangeBatch, findChanger } from "./access-change";
 import type { BatchRecord } from "./columns";
 import {
   checkLeaverBatch,
@@ -59,13 +61,17 @@ export type Batch = {
   rows: BatchRow[];
 };
 
-/** The kinds the batch pages offer (access changes come in F17b-5c). */
+/** The kinds the batch pages offer (all three since F17b-5c). */
 export function batchTypeReady(type: RequestType) {
-  return type === "onboarding" || type === "offboarding";
+  return CHECKED.includes(type);
 }
 
-/** Kinds the store checks (leavers since F17b-5a; access changes F17b-5c). */
-const CHECKED: RequestType[] = ["onboarding", "offboarding"];
+/** Kinds the store checks (leavers since F17b-5a, access changes F17b-5c). */
+const CHECKED: RequestType[] = [
+  "onboarding",
+  "offboarding",
+  "access_modification",
+];
 
 /** A checked row; leavers also carry the person found. */
 type Checked = CheckedRow & { employeeId?: string | null };
@@ -131,6 +137,30 @@ async function checkAll(
     ]);
     return checkLeaverBatch(rows, defaults, { leavers, today, timeZone });
   }
+  if (type === "access_modification") {
+    const [leavers, { today }, formOptions] = await Promise.all([
+      listLeavers(db),
+      companyToday(db),
+      options ?? loadFormOptions(db),
+    ]);
+    // What each person found holds, read once per person.
+    const ids = new Set<string>();
+    for (const r of rows) {
+      const found = findChanger(leavers, r.values.person ?? "");
+      if ("leaver" in found) ids.add(found.leaver.id);
+    }
+    const held = new Map(
+      await Promise.all(
+        [...ids].map(async (id) => [id, await loadHeld(db, id)] as const),
+      ),
+    );
+    return checkAccessChangeBatch(rows, {
+      leavers,
+      held,
+      options: formOptions,
+      today,
+    });
+  }
   return checkOnboardingBatch(rows, await context(db, emailsOf(rows), options));
 }
 
@@ -148,7 +178,7 @@ export async function makeBatch(
   },
 ): Promise<string> {
   if (!CHECKED.includes(input.type)) {
-    throw new Error("Batches of role changes come next.");
+    throw new Error("This kind of batch is not supported.");
   }
   const defaults =
     input.type === "offboarding" ? readDefaults(input.defaults) : {};

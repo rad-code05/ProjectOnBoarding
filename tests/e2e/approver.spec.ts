@@ -946,3 +946,108 @@ test("Batch of leavers (F17b-5b): a pasted list, Same for everyone, an unknown p
   ).toHaveValue("2030-01-02");
   await rajuContext.close();
 });
+
+test("Batch of access changes (F17b-5c): a pasted list checked against what each person holds, one draft access change with the new role", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(300_000);
+
+  const rajuContext = await browser.newContext({
+    storageState: authFile("admin"),
+  });
+  const raju = await rajuContext.newPage();
+  await setupClerkTestingToken({ page: raju });
+  await saveInitials(raju);
+  await saveInitials(page);
+
+  // 1. Cleo holds Slack (Regular Member): onboarded and closed.
+  const ticket = await createExecutedRequest(raju, "Cleo");
+  const email = await raju.getByLabel("Work email").inputValue();
+  await raju.getByLabel("Slack action").selectOption("Grant");
+  await raju.getByLabel("Slack permission").selectOption("Regular Member");
+  await expect(
+    raju
+      .getByRole("region", { name: "Application access" })
+      .getByRole("status")
+      .first(),
+  ).toHaveText(/^1 of \d+ set$/);
+  await reviewAndSign(raju);
+  await openApp(page, "/approvals");
+  await page
+    .getByRole("listitem")
+    .filter({ hasText: ticket })
+    .getByRole("link", { name: "Review & confirm" })
+    .click();
+  await page.getByRole("button", { name: "Confirm & sign" }).click();
+  const confirmSign = page.getByRole("dialog", { name: "Confirm & sign" });
+  await confirmSign.getByLabel(/I have reviewed this record/).check();
+  await confirmSign
+    .getByRole("button", { name: "Confirm, sign & close" })
+    .click();
+  await expect(page.getByRole("status")).toHaveText(
+    "Confirmed, signed and closed",
+    { timeout: 30_000 },
+  );
+
+  // 2. A pasted list: Cleo gets a new Slack role (and a role Slack
+  //    doesn't have, fixed below); someone who holds nothing is flagged.
+  const list = [
+    "Name or work email\tEffective date\tChange",
+    `${email}\t02/01/2030\tSlack (Boss)`,
+    "Nobody Batchchanger\t02/01/2030\tSlack (Workspace Owner)",
+  ].join("\n");
+  await openApp(raju, "/requests/batch/new");
+  await raju.getByRole("radio", { name: /Access change/ }).check();
+  await raju.getByRole("tab", { name: "Paste a list" }).click();
+  await raju.getByLabel("Pasted list").fill(list);
+  await raju.getByRole("button", { name: "Read the list" }).click();
+  await expect(raju).toHaveURL(/\/requests\/batch\/[0-9a-f-]{36}$/, {
+    timeout: 30_000,
+  });
+
+  const people = raju.getByRole("list", { name: "People in this batch" });
+  const cleo = people.getByRole("listitem", { name: new RegExp(`^${email}`) });
+  await expect(cleo).toContainText("Slack: change to what?");
+  await expect(
+    people.getByRole("listitem", {
+      name: "Nobody Batchchanger — Needs attention",
+    }),
+  ).toContainText("holds anything in the app");
+
+  // 3. Fix Cleo's row: a role Slack has → ready.
+  await cleo.getByRole("button", { name: "Fix this row" }).click();
+  const fix = raju.getByRole("dialog", { name: email });
+  await fix
+    .getByLabel("Change", { exact: true })
+    .fill("Slack (Workspace Owner)");
+  await fix.getByRole("button", { name: "Save row" }).click();
+  await expect(
+    people.getByRole("listitem", { name: `${email} — Ready` }),
+  ).toBeVisible({ timeout: 30_000 });
+
+  // 4. Confirm: one draft access change.
+  await raju.getByRole("button", { name: "Create 1 draft…" }).click();
+  const confirm = raju.getByRole("dialog", {
+    name: "Create 1 draft access change?",
+  });
+  await expect(confirm).toContainText("Nobody Batchchanger — needs attention");
+  await confirm
+    .getByRole("button", { name: "Confirm — create 1 draft" })
+    .click();
+  await expect(
+    raju.getByRole("status").filter({ hasText: "1 draft created." }),
+  ).toBeVisible({ timeout: 30_000 });
+
+  // The draft changes Slack's role, from the date in the list.
+  await raju
+    .getByRole("list", { name: "Drafts created" })
+    .getByRole("link", { name: "Open" })
+    .click();
+  await expect(raju.getByRole("heading", { level: 1 })).toHaveText("Cleo Loop");
+  await expect(
+    raju.getByRole("region", { name: "Applications they have" }),
+  ).toContainText("Regular Member → Workspace Owner");
+  await expect(raju.getByLabel("Effective date")).toHaveValue("2030-01-02");
+  await rajuContext.close();
+});

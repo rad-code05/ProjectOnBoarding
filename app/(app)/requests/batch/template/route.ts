@@ -4,6 +4,8 @@ import { loadFormOptions } from "@/lib/ai/tools/onboarding-load";
 import { requireRole } from "@/lib/auth";
 import { BATCH_FIELDS } from "@/lib/requests/batch/columns";
 import {
+  CHANGE_EXAMPLE,
+  CHANGE_TEMPLATE,
   LEAVER_EXAMPLE,
   LEAVER_TEMPLATE,
   templateColumns,
@@ -48,17 +50,28 @@ async function onboarding() {
  * The batch templates (.xlsx): the column titles a batch understands best,
  * bold, and one example row to overwrite. Onboarding (F17b-3b): one column
  * per active application (the cell = the role, Raju's layout 2026-10-29).
- * Offboarding (F17b-5b): `?kind=offboarding`.
+ * Offboarding (F17b-5b): `?kind=offboarding`; access change (F17b-5c):
+ * `?kind=access_modification`.
  */
 export async function GET(request: NextRequest) {
   await requireRole("admin", "requester");
-  const leavers = request.nextUrl.searchParams.get("kind") === "offboarding";
-  const { columns, example } = leavers
-    ? {
-        columns: LEAVER_TEMPLATE,
-        example: BATCH_FIELDS.offboarding.map((f) => LEAVER_EXAMPLE[f.key]),
-      }
-    : await onboarding();
+  const kind = request.nextUrl.searchParams.get("kind");
+  const { name, columns, example } =
+    kind === "offboarding"
+      ? {
+          name: "offboarding",
+          columns: LEAVER_TEMPLATE,
+          example: BATCH_FIELDS.offboarding.map((f) => LEAVER_EXAMPLE[f.key]),
+        }
+      : kind === "access_modification"
+        ? {
+            name: "access-change",
+            columns: CHANGE_TEMPLATE,
+            example: BATCH_FIELDS.access_modification.map(
+              (f) => CHANGE_EXAMPLE[f.key],
+            ),
+          }
+        : { name: "onboarding", ...(await onboarding()) };
   const file = await writeXlsxFile(
     [columns.map((value) => ({ value, fontWeight: "bold" as const })), example],
     {
@@ -66,7 +79,6 @@ export async function GET(request: NextRequest) {
       stickyRowsCount: 1,
     },
   ).toBuffer();
-  const name = leavers ? "offboarding" : "onboarding";
   return new Response(new Uint8Array(file), {
     headers: {
       "Content-Type":

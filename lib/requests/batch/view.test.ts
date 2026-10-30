@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
   batchCounts,
+  CHANGE_EXAMPLE,
+  CHANGE_TEMPLATE,
   fieldLabel,
   footerLine,
   rowName,
@@ -83,5 +85,19 @@ describe("leaver batches (F17b-5b)", () => {
     expect(LEAVER_TEMPLATE[0]).toBe("Name or work email");
     expect(LEAVER_TEMPLATE).toContain("Removal method");
     expect(Object.keys(LEAVER_EXAMPLE)).toHaveLength(LEAVER_TEMPLATE.length);
+  });
+});
+
+describe("access-change batches (F17b-5c)", () => {
+  test("the template: person, effective date, Change / Remove / Add", () => {
+    expect(CHANGE_TEMPLATE).toEqual([
+      "Name or work email",
+      "Effective date",
+      "Change",
+      "Remove",
+      "Add",
+    ]);
+    expect(Object.keys(CHANGE_EXAMPLE)).toHaveLength(CHANGE_TEMPLATE.length);
+    expect(fieldLabel("effectiveDate")).toBe("Effective date");
   });
 });
