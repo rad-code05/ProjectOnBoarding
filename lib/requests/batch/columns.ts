@@ -253,3 +253,32 @@ export function toRecords(table: Table, columns: ColumnMatch[]): BatchRecord[] {
 export function looksLikeTable(headers: string[], type: RequestType): boolean {
   return matchColumns(headers, type).filter((m) => m.field).length >= 2;
 }
+
+/**
+ * A list attached in the chat (F17b-5d): which kind it is, by its column
+ * titles (the template titles and keys, no loose aliases — "Start date" is
+ * a joiner's, not an effective date). Role-change columns first, then a
+ * leaver's, else joiners.
+ */
+export function guessBatchKind(headers: string[]): RequestType {
+  const keys = new Set(headers.map(titleKey).filter(Boolean));
+  const has = (type: RequestType, fields: string[]) =>
+    BATCH_FIELDS[type]
+      .filter((f) => fields.includes(f.key))
+      .some((f) => keys.has(titleKey(f.label)) || keys.has(titleKey(f.key)));
+  if (has("access_modification", ["effectiveDate", "change", "remove", "add"]))
+    return "access_modification";
+  if (
+    has("offboarding", [
+      "lastWorkingDay",
+      "slaTimeline",
+      "cutoffDate",
+      "cutoffTime",
+      "removalMethod",
+      "mailbox",
+    ]) ||
+    ["lastday", "leavingdate"].some((k) => keys.has(k))
+  )
+    return "offboarding";
+  return "onboarding";
+}

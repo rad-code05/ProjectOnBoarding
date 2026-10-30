@@ -1,7 +1,13 @@
 // @vitest-environment node
 import writeXlsxFile from "write-excel-file/node";
 import { describe, expect, test, vi } from "vitest";
-import { looksLikeTable, matchColumns, titleKey, toRecords } from "./columns";
+import {
+  guessBatchKind,
+  looksLikeTable,
+  matchColumns,
+  titleKey,
+  toRecords,
+} from "./columns";
 import { readBatchFile, readPastedList } from "./read-file";
 import {
   BatchReadError,
@@ -236,5 +242,33 @@ describe("reading a file or a pasted list", () => {
     expect(() => readPastedList("   ", "onboarding")).toThrow(
       "The list is empty.",
     );
+  });
+});
+
+describe("a list attached in the chat: its kind by its titles (F17b-5d)", () => {
+  test("role changes, leavers, else joiners", () => {
+    expect(
+      guessBatchKind(["Name or work email", "Effective date", "Change"]),
+    ).toBe("access_modification");
+    expect(guessBatchKind(["Employee", "Remove"])).toBe("access_modification");
+    expect(guessBatchKind(["Email", "Last working day"])).toBe("offboarding");
+    expect(guessBatchKind(["Name", "Last day", "Mailbox"])).toBe("offboarding");
+    expect(
+      guessBatchKind(["First name", "Last name", "Start date", "Slack"]),
+    ).toBe("onboarding");
+  });
+
+  test("an attached file's records follow the guessed kind", async () => {
+    const csv = "Email,Last working day\narjun@example.com,30/11/2026";
+    const read = await readBatchFile(
+      "leavers.csv",
+      new TextEncoder().encode(csv),
+      "auto",
+    );
+    expect(read.kind === "table" && read.type).toBe("offboarding");
+    expect(read.kind === "table" && read.records[0].values).toEqual({
+      person: "arjun@example.com",
+      lastWorkingDay: "30/11/2026",
+    });
   });
 });

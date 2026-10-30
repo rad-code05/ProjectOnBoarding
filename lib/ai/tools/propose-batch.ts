@@ -1,8 +1,46 @@
 import { tool } from "ai";
 import * as z from "zod";
+import type { LeaverDefaults } from "@/lib/requests/batch/offboarding";
 import { loadBatch, makeBatch } from "@/lib/requests/batch/store";
+import type { Database } from "@/lib/supabase/database.types";
+import type { ServerSupabase } from "@/lib/supabase/server";
 import { batchPeopleSchema, batchSummary, personCells } from "./batch-shared";
 import { defineTool } from "./types";
+
+/**
+ * A list from the chat → a saved, checked batch → what the robot reads back
+ * (shared by the three propose tools, F17b-5d).
+ */
+export async function makeChatBatch(
+  db: ServerSupabase,
+  type: Database["public"]["Enums"]["request_type"],
+  title: string | undefined,
+  people: Record<string, string | string[] | undefined>[],
+  defaults?: Record<string, string | undefined>,
+) {
+  let id: string;
+  try {
+    id = await makeBatch(db, {
+      type,
+      title: title || "Batch from the chat",
+      source: "chat",
+      records: people.map((p, i) => ({
+        position: i + 1,
+        values: personCells(p),
+        other: {},
+      })),
+      ...(defaults && { defaults: defaults as LeaverDefaults }),
+    });
+  } catch {
+    return {
+      error:
+        "The batch could not be saved (only admins and requesters can make one).",
+    };
+  }
+  const batch = await loadBatch(db, id);
+  if (!batch) return { error: "The batch could not be read back." };
+  return batchSummary(batch);
+}
 
 /**
  * A list of joiners from the chat → a batch (F17b-4, board *Batch by chat*):
@@ -22,7 +60,7 @@ export const proposeBatch = defineTool({
         "Put 2 or more joiners from the person's message into a batch (one draft onboarding per person later, after their Confirm). Use it instead of asking about each person one by one; createOnboardingDraft is for a single joiner.",
         "Write each person's values as the person said them (shared values such as 'all Dubai, start 2 November' go on every person); turn relative dates into YYYY-MM-DD. Never invent a work email: only when given, or when the person states a pattern ('usual emails' = first.last@laine.ai only if they said that pattern earlier or confirm it — say it in your answer).",
         "The batch checks every row against the form's lists. Afterwards list the problems in plain words (row name + what is wrong + the closest valid name if obvious) and say that nothing is created until they confirm; the step line has the link to open the batch.",
-        "Batches of leavers and role changes are not ready yet: for those, do them one by one.",
+        "Leavers: proposeLeaverBatch. Role changes: proposeChangeBatch.",
       ].join(" "),
       inputSchema: z.object({
         title: z
@@ -33,28 +71,7 @@ export const proposeBatch = defineTool({
           .describe("A short name, e.g. 'Joiners 2 November'."),
         people: batchPeopleSchema,
       }),
-      execute: async ({ title, people }) => {
-        let id: string;
-        try {
-          id = await makeBatch(ctx.db, {
-            type: "onboarding",
-            title: title || "Batch from the chat",
-            source: "chat",
-            records: people.map((p, i) => ({
-              position: i + 1,
-              values: personCells(p),
-              other: {},
-            })),
-          });
-        } catch {
-          return {
-            error:
-              "The batch could not be saved (only admins and requesters can make one).",
-          };
-        }
-        const batch = await loadBatch(ctx.db, id);
-        if (!batch) return { error: "The batch could not be read back." };
-        return batchSummary(batch);
-      },
+      execute: ({ title, people }) =>
+        makeChatBatch(ctx.db, "onboarding", title, people),
     }),
 });

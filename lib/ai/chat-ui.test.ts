@@ -453,6 +453,35 @@ describe("batches by chat (F17b-4)", () => {
     ]);
     expect(card?.yes).toBe("Confirm — create 2 drafts");
     expect(card?.note).toMatch(/signed one by one/);
+    // Leavers and role changes (F17b-5d): the card says the batch's kind.
+    expect(
+      confirmCard("createBatchDrafts", {
+        batchId: ID,
+        kind: "offboarding",
+        create: ["Arjun Mehta"],
+        notCreated: [],
+      })?.title,
+    ).toBe("Create 1 draft offboarding?");
+    expect(
+      confirmCard("createBatchDrafts", {
+        batchId: ID,
+        kind: "access_modification",
+        create: ["Arjun Mehta", "Sara Khan"],
+        notCreated: [],
+      })?.title,
+    ).toBe("Create 2 draft access changes?");
+  });
+
+  test("leaver batches: the step line for the values for everyone", () => {
+    expect(toolStep("proposeLeaverBatch", true, read)).toBe(
+      "Read 4 people · 2 ready · 1 needs attention · 1 left out",
+    );
+    expect(toolStep("setSameForEveryone", false, undefined)).toBe(
+      "Setting the values for everyone…",
+    );
+    expect(toolStep("setSameForEveryone", true, read)).toBe(
+      "Set the values for everyone · 2 ready · 1 needs attention · 1 left out",
+    );
   });
 
   test("a paperclip message carries the file name and the batch id only", () => {

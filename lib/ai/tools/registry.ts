@@ -14,11 +14,14 @@ import { getRequest } from "./get-request";
 import { listRequests } from "./list-requests";
 import { nationalityBreakdown } from "./nationality-breakdown";
 import { proposeBatch } from "./propose-batch";
+import { proposeChangeBatch } from "./propose-change-batch";
+import { proposeLeaverBatch } from "./propose-leaver-batch";
 import { rememberPreference } from "./remember-preference";
 import { rememberQuestion } from "./remember-question";
 import { runReport } from "./run-report";
 import { saveCustomReport } from "./save-custom-report";
 import { searchPeople } from "./search-people";
+import { setSameForEveryone } from "./set-same-for-everyone";
 import { suggestValues } from "./suggest-values";
 import { whoHasAccess } from "./who-has-access";
 import { hasAnyRole, type AiTool, type ToolContext } from "./types";
@@ -51,6 +54,10 @@ export const TOOLS: readonly AiTool[] = [
   suggestValues,
   // Batches — admin / requester; creating the drafts waits for Confirm (F17b-4).
   proposeBatch,
+  // Leavers and role changes too (F17b-5d).
+  proposeLeaverBatch,
+  proposeChangeBatch,
+  setSameForEveryone,
   getBatch,
   fixBatchRow,
   createBatchDrafts,

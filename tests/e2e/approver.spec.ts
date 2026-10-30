@@ -1051,3 +1051,95 @@ test("Batch of access changes (F17b-5c): a pasted list checked against what each
   await expect(raju.getByLabel("Effective date")).toHaveValue("2030-01-02");
   await rajuContext.close();
 });
+
+test("Leavers by chat (F17b-5d): a leaver list attached with the paperclip is read as an offboarding batch; Confirm in the chat creates the draft", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(300_000);
+
+  const rajuContext = await browser.newContext({
+    storageState: authFile("admin"),
+  });
+  const raju = await rajuContext.newPage();
+  await setupClerkTestingToken({ page: raju });
+  await saveInitials(raju);
+  await saveInitials(page);
+
+  // 1. Gia holds Slack: onboarded and closed.
+  const ticket = await createExecutedRequest(raju, "Gia");
+  const email = await raju.getByLabel("Work email").inputValue();
+  await raju.getByLabel("Slack action").selectOption("Grant");
+  await raju.getByLabel("Slack permission").selectOption("Regular Member");
+  await expect(
+    raju
+      .getByRole("region", { name: "Application access" })
+      .getByRole("status")
+      .first(),
+  ).toHaveText(/^1 of \d+ set$/);
+  await reviewAndSign(raju);
+  await openApp(page, "/approvals");
+  await page
+    .getByRole("listitem")
+    .filter({ hasText: ticket })
+    .getByRole("link", { name: "Review & confirm" })
+    .click();
+  await page.getByRole("button", { name: "Confirm & sign" }).click();
+  const confirmSign = page.getByRole("dialog", { name: "Confirm & sign" });
+  await confirmSign.getByLabel(/I have reviewed this record/).check();
+  await confirmSign
+    .getByRole("button", { name: "Confirm, sign & close" })
+    .click();
+  await expect(page.getByRole("status")).toHaveText(
+    "Confirmed, signed and closed",
+    { timeout: 30_000 },
+  );
+
+  // 2. A leaver list in the chat: its titles make it an offboarding batch.
+  const csv = [
+    "Name or work email,Last working day,SLA,Cut-off time,Handover,Removal method,Mailbox",
+    `${email},02/01/2030,24h,18:00,Line manager,Suspend,No mailbox`,
+    "Nobody Chatleaver,02/01/2030,24h,18:00,Line manager,Suspend,No mailbox",
+  ].join("\n");
+  await openApp(raju, "/requests");
+  await raju.getByRole("button", { name: /^Open the Laine assistant/ }).click();
+  const panel = raju.getByRole("dialog", { name: "Laine assistant" });
+  await panel.getByRole("button", { name: "New chat" }).click();
+  await panel.locator('input[type="file"]').setInputFiles({
+    name: "leavers.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(csv),
+  });
+  const log = panel.getByRole("log");
+  await expect(log.getByText(/^Read 2 people · 1 ready · 1 needs/)).toBeVisible(
+    { timeout: 60_000 },
+  );
+
+  // 3. "Create the drafts" → the card says offboarding → Confirm.
+  await expect(panel.getByRole("button", { name: "Stop" })).toHaveCount(0);
+  const box = panel.getByRole("textbox", { name: "Message the assistant" });
+  await box.fill("Create the drafts");
+  await box.press("Enter");
+  const card = log.getByRole("region", {
+    name: "Create 1 draft offboarding?",
+  });
+  await expect(card).toContainText("Nobody Chatleaver", { timeout: 30_000 });
+  await card.getByRole("button", { name: "Confirm — create 1 draft" }).click();
+  await expect(log.getByText("Created 1 draft")).toBeVisible({
+    timeout: 30_000,
+  });
+
+  // The draft is Gia's offboarding, with Slack to remove.
+  await log.getByRole("link", { name: "Open the batch" }).last().click();
+  await expect(raju).toHaveURL(/\/requests\/batch\/[0-9a-f-]{36}$/);
+  await box.press("Escape").catch(() => {});
+  await raju
+    .getByRole("list", { name: "Drafts created" })
+    .getByRole("link", { name: "Open" })
+    .click();
+  await expect(raju.getByRole("heading", { level: 1 })).toHaveText("Gia Loop");
+  await expect(
+    raju.getByRole("region", { name: "Applications to remove" }),
+  ).toContainText("Slack");
+  await rajuContext.close();
+});

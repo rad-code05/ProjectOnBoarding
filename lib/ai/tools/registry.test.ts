@@ -67,6 +67,9 @@ describe("the tool registry (PROJECT_PLAN §6.6)", () => {
       "suggestValues",
       // Batches (F17b-4).
       "proposeBatch",
+      "proposeLeaverBatch",
+      "proposeChangeBatch",
+      "setSameForEveryone",
       "getBatch",
       "fixBatchRow",
       "createBatchDrafts",
