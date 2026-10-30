@@ -79,20 +79,25 @@ export function askAboutOffboarding(input: OffboardingInput): string | null {
     : null;
 }
 
+/** Who "person" may mean — by email, else by name (all words, any order). */
+export function leaverMatches(leavers: Leaver[], person: string): Leaver[] {
+  const q = normalize(person);
+  if (!q) return [];
+  const byEmail = leavers.filter((l) => normalize(l.email) === q);
+  if (byEmail.length) return byEmail;
+  const words = q.split(" ").filter(Boolean);
+  return leavers.filter((l) => {
+    const name = normalize(l.name);
+    return words.every((w) => name.includes(w));
+  });
+}
+
 /** The one person meant — by email, else by name (all words, any order). */
 export function findLeaver(
   leavers: Leaver[],
   person: string,
 ): { leaver: Leaver } | { problem: string } {
-  const q = normalize(person);
-  const byEmail = leavers.filter((l) => normalize(l.email) === q);
-  const words = q.split(" ").filter(Boolean);
-  const matches = byEmail.length
-    ? byEmail
-    : leavers.filter((l) => {
-        const name = normalize(l.name);
-        return words.every((w) => name.includes(w));
-      });
+  const matches = leaverMatches(leavers, person);
   if (matches.length === 1) return { leaver: matches[0] };
   if (matches.length === 0)
     return {
