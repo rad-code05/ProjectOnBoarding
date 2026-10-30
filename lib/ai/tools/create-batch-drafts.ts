@@ -9,6 +9,9 @@ const names = (what: string) =>
 
 export const createBatchDraftsSchema = z.object({
   batchId: z.uuid(),
+  kind: z
+    .enum(["onboarding", "offboarding", "access_modification"])
+    .describe("The batch's kind, as the batch says it."),
   create: names(
     "The names of the ready rows, exactly as the batch lists them (readyNames).",
   ),
@@ -38,14 +41,15 @@ export const createBatchDrafts = defineTool({
       batchSummary(batch),
       parsed.data.create,
       parsed.data.notCreated,
+      parsed.data.kind,
     );
   },
   build: (ctx) =>
     tool({
       description:
-        "Create the drafts of a batch once the person asks for it: one draft onboarding per ready row; rows that need attention or are left out are not created. The person sees the names and must Confirm. Pass the batch's readyNames as create and the other rows' names as notCreated, exactly. Afterwards say how many drafts were created and that each is executed and signed one by one.",
+        "Create the drafts of a batch once the person asks for it: one draft (onboarding, offboarding or access change — the batch's kind) per ready row; rows that need attention or are left out are not created. The person sees the names and must Confirm. Pass the batch's kind, its readyNames as create and the other rows' names as notCreated, exactly. Afterwards say how many drafts were created and that each is executed and signed one by one.",
       inputSchema: createBatchDraftsSchema,
-      execute: async ({ batchId, create, notCreated }) => {
+      execute: async ({ batchId, kind, create, notCreated }) => {
         // The person may have changed the batch page since the card showed.
         const batch = await loadBatch(ctx.db, batchId);
         if (!batch)
@@ -54,6 +58,7 @@ export const createBatchDrafts = defineTool({
           batchSummary(batch),
           create,
           notCreated,
+          kind,
         );
         if (changed)
           return {

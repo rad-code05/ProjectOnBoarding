@@ -2,6 +2,7 @@ import "server-only";
 import { readSheet } from "read-excel-file/node";
 import type { Database } from "@/lib/supabase/database.types";
 import {
+  guessBatchKind,
   looksLikeTable,
   matchColumns,
   toRecords,
@@ -21,6 +22,8 @@ type RequestType = Database["public"]["Enums"]["request_type"];
 export type ReadList =
   | {
       kind: "table";
+      /** The kind of requests (as chosen, or guessed from the titles). */
+      type: RequestType;
       table: Table;
       columns: ColumnMatch[];
       records: BatchRecord[];
@@ -34,11 +37,12 @@ const XLSX = [0x50, 0x4b, 0x03, 0x04]; // a zip file: "PK.."
  * An uploaded .xlsx (the first sheet) or .csv → the table, its columns and
  * one record per person. The file type is checked by its content, not only
  * its name; anything else is refused. Nothing in the file is ever run.
+ * `"auto"` (a file attached in the chat): the kind follows its titles.
  */
 export async function readBatchFile(
   fileName: string,
   bytes: Uint8Array,
-  type: RequestType,
+  kind: RequestType | "auto",
 ): Promise<ReadList> {
   checkSize(bytes.byteLength);
   const name = fileName.toLowerCase();
@@ -61,8 +65,15 @@ export async function readBatchFile(
   } else {
     throw new BatchReadError("Upload an .xlsx or a .csv file.");
   }
+  const type = kind === "auto" ? guessBatchKind(table.headers) : kind;
   const columns = matchColumns(table.headers, type);
-  return { kind: "table", table, columns, records: toRecords(table, columns) };
+  return {
+    kind: "table",
+    type,
+    table,
+    columns,
+    records: toRecords(table, columns),
+  };
 }
 
 /**
@@ -80,6 +91,7 @@ export function readPastedList(text: string, type: RequestType): ReadList {
     const columns = matchColumns(table.headers, type);
     return {
       kind: "table",
+      type,
       table,
       columns,
       records: toRecords(table, columns),

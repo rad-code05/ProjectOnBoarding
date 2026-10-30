@@ -276,7 +276,8 @@ function ChatPanel({
   const approverOnly = !roles.some(
     (r) => r === "admin" || r === "requester" || r === "it_operator",
   );
-  // The paperclip (F17b-4): a list of joiners becomes a batch.
+  // The paperclip (F17b-4): a list of joiners, leavers or role changes
+  // becomes a batch (its kind follows the column titles, F17b-5d).
   const canBatch = roles.some((r) => r === "admin" || r === "requester");
   const fileRef = useRef<HTMLInputElement>(null);
   const [attaching, setAttaching] = useState(false);
@@ -374,7 +375,7 @@ function ChatPanel({
     setAttachError(null);
     setAttaching(true);
     const form = new FormData();
-    form.set("type", "onboarding");
+    form.set("type", "auto");
     form.set("file", file);
     const result = await readBatchUpload(form).catch(() => null);
     setAttaching(false);
@@ -603,7 +604,7 @@ function ChatPanel({
                     ref={fileRef}
                     type="file"
                     hidden
-                    aria-label="Attach a list of joiners (.xlsx or .csv)"
+                    aria-label="Attach a list (.xlsx or .csv)"
                     accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     onChange={(e) => void attach(e.target.files?.[0])}
                   />
@@ -611,7 +612,7 @@ function ChatPanel({
                     label={
                       attaching
                         ? "Reading the list…"
-                        : "Attach a list of joiners"
+                        : "Attach a list (joiners, leavers or role changes)"
                     }
                     disabled={busy || attaching}
                     onClick={() => fileRef.current?.click()}

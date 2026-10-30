@@ -81,12 +81,14 @@ function lastBatch(prompt: Prompt) {
       if (part.type !== "tool-result" || part.output.type !== "json") continue;
       const v = part.output.value as {
         batchId?: string;
+        kind?: string;
         readyNames?: string[];
         notCreated?: { name: string }[];
       } | null;
       if (v?.batchId && v.readyNames && v.notCreated)
         return {
           batchId: v.batchId,
+          kind: v.kind,
           create: v.readyNames,
           notCreated: v.notCreated.map((n) => n.name),
         };

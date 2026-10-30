@@ -203,15 +203,24 @@ export function toolStep(name: string, done: boolean, output: unknown): string {
         : "Didn't add anything — a few things to check";
     }
     case "proposeBatch":
+    case "proposeLeaverBatch":
+    case "proposeChangeBatch":
     case "getBatch":
-    case "fixBatchRow": {
+    case "fixBatchRow":
+    case "setSameForEveryone": {
       if (!done)
-        return name === "fixBatchRow" ? "Fixing the row…" : "Reading the list…";
+        return name === "fixBatchRow"
+          ? "Fixing the row…"
+          : name === "setSameForEveryone"
+            ? "Setting the values for everyone…"
+            : "Reading the list…";
       if (field("link") === null) return "Couldn't read the batch";
       const counts = batchCounts(output);
       return name === "fixBatchRow"
         ? `Fixed row ${field("changedRow")} · ${counts}`
-        : `Read ${field("people")} people · ${counts}`;
+        : name === "setSameForEveryone"
+          ? `Set the values for everyone · ${counts}`
+          : `Read ${field("people")} people · ${counts}`;
     }
     case "createBatchDrafts": {
       if (!done) return "Creating the drafts…";
@@ -679,8 +688,14 @@ function batchCard(i: Record<string, unknown>): ConfirmCard {
   const create = names(i.create);
   const rest = names(i.notCreated);
   const n = create.length;
+  const noun =
+    i.kind === "offboarding"
+      ? "offboarding"
+      : i.kind === "access_modification"
+        ? "access change"
+        : "onboarding";
   return {
-    title: `Create ${n} draft onboarding${n === 1 ? "" : "s"}?`,
+    title: `Create ${n} draft ${noun}${n === 1 ? "" : "s"}?`,
     rows: [
       { label: "Drafts for", value: create.join(", ") },
       { label: "Not created", value: rest.join(", ") },

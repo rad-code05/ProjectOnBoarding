@@ -8,15 +8,20 @@ const store = {
   loadBatch: vi.fn(),
   saveBatchRow: vi.fn(),
   confirmBatch: vi.fn(),
+  saveBatchDefaults: vi.fn(),
 };
 vi.mock("@/lib/requests/batch/store", () => ({
   makeBatch: (...a: unknown[]) => store.makeBatch(...a),
   loadBatch: (...a: unknown[]) => store.loadBatch(...a),
   saveBatchRow: (...a: unknown[]) => store.saveBatchRow(...a),
   confirmBatch: (...a: unknown[]) => store.confirmBatch(...a),
+  saveBatchDefaults: (...a: unknown[]) => store.saveBatchDefaults(...a),
 }));
 
 const { proposeBatch } = await import("./propose-batch");
+const { proposeLeaverBatch } = await import("./propose-leaver-batch");
+const { proposeChangeBatch } = await import("./propose-change-batch");
+const { setSameForEveryone } = await import("./set-same-for-everyone");
 const { getBatch } = await import("./get-batch");
 const { fixBatchRow } = await import("./fix-batch-row");
 const { createBatchDrafts } = await import("./create-batch-drafts");
@@ -134,23 +139,39 @@ describe("batch cells from the chat (F17b-4)", () => {
         s,
         ["tom becker", "Meera  Nair"],
         ["Abdul Rahman", "Sara Lopez"],
+        "onboarding",
       ),
     ).toBeNull();
     expect(
       confirmMismatch(
         s,
+        ["Meera Nair", "Tom Becker"],
+        ["Abdul Rahman", "Sara Lopez"],
+        "offboarding",
+      ),
+    ).toMatch(/kind = "onboarding"/);
+    expect(
+      confirmMismatch(
+        s,
         ["Meera Nair", "Tom Becker", "Abdul Rahman"],
         ["Sara Lopez"],
+        "onboarding",
       ),
     ).toMatch(/don't match the batch/);
     expect(
-      confirmMismatch(batchSummary(batch([row(1, {})], "created")), [], []),
+      confirmMismatch(
+        batchSummary(batch([row(1, {})], "created")),
+        [],
+        [],
+        "onboarding",
+      ),
     ).toMatch(/already created/);
     expect(
       confirmMismatch(
         batchSummary(batch([FOUR.rows[1]])),
         [],
         ["Abdul Rahman"],
+        "onboarding",
       ),
     ).toMatch(/No row is ready/);
   });
@@ -236,6 +257,7 @@ describe("the batch tools", () => {
     store.loadBatch.mockResolvedValue(FOUR);
     const good = {
       batchId: ID,
+      kind: "onboarding",
       create: ["Meera Nair", "Tom Becker"],
       notCreated: ["Abdul Rahman", "Sara Lopez"],
     };
@@ -267,10 +289,104 @@ describe("the batch tools", () => {
     store.loadBatch.mockResolvedValue(FOUR);
     const out = await run(createBatchDrafts, {
       batchId: ID,
+      kind: "onboarding",
       create: ["Meera Nair"],
       notCreated: ["Abdul Rahman", "Sara Lopez", "Tom Becker"],
     });
     expect(store.confirmBatch).not.toHaveBeenCalled();
     expect(out).toMatchObject({ created: false });
+  });
+
+  test("proposeLeaverBatch: an offboarding batch, the shared values saved once", async () => {
+    store.makeBatch.mockResolvedValue(ID);
+    store.loadBatch.mockResolvedValue({ ...FOUR, type: "offboarding" });
+    const out = await run(proposeLeaverBatch, {
+      leavers: [
+        { person: "Arjun Mehta", lastWorkingDay: "2026-11-30" },
+        { person: "sara.khan@example.com", lastWorkingDay: "2026-11-30" },
+      ],
+      sameForEveryone: { slaTimeline: "24h", removalMethod: "Suspend" },
+    });
+    expect(store.makeBatch).toHaveBeenCalledWith(ctx.db, {
+      type: "offboarding",
+      title: "Batch from the chat",
+      source: "chat",
+      records: [
+        {
+          position: 1,
+          values: { person: "Arjun Mehta", lastWorkingDay: "2026-11-30" },
+          other: {},
+        },
+        {
+          position: 2,
+          values: {
+            person: "sara.khan@example.com",
+            lastWorkingDay: "2026-11-30",
+          },
+          other: {},
+        },
+      ],
+      defaults: { slaTimeline: "24h", removalMethod: "Suspend" },
+    });
+    expect(out).toMatchObject({ kind: "offboarding", sameForEveryone: {} });
+  });
+
+  test("proposeChangeBatch: change / remove / add become the batch's list cells", async () => {
+    store.makeBatch.mockResolvedValue(ID);
+    store.loadBatch.mockResolvedValue({ ...FOUR, type: "access_modification" });
+    await run(proposeChangeBatch, {
+      people: [
+        {
+          person: "Arjun Mehta",
+          effectiveDate: "2026-12-01",
+          change: ["Slack (Workspace Owner)"],
+          remove: ["Figma", "LT-1008"],
+        },
+        { person: "Sara Khan", effectiveDate: "2026-12-01", add: ["Notion"] },
+      ],
+    });
+    expect(store.makeBatch.mock.calls[0][1].records).toEqual([
+      {
+        position: 1,
+        values: {
+          person: "Arjun Mehta",
+          effectiveDate: "2026-12-01",
+          change: "Slack (Workspace Owner)",
+          remove: "Figma, LT-1008",
+        },
+        other: {},
+      },
+      {
+        position: 2,
+        values: {
+          person: "Sara Khan",
+          effectiveDate: "2026-12-01",
+          add: "Notion",
+        },
+        other: {},
+      },
+    ]);
+    expect(store.makeBatch.mock.calls[0][1].type).toBe("access_modification");
+  });
+
+  test("setSameForEveryone: leaver batches only; the given values replace, the rest stay", async () => {
+    store.loadBatch.mockResolvedValue(FOUR);
+    expect(
+      await run(setSameForEveryone, { batchId: ID, values: { mailbox: "No" } }),
+    ).toEqual({ error: "Only a batch of leavers has values for everyone." });
+    store.loadBatch.mockResolvedValue({
+      ...FOUR,
+      type: "offboarding",
+      defaults: { slaTimeline: "within_24h", removalMethod: "Suspend" },
+    });
+    await run(setSameForEveryone, {
+      batchId: ID,
+      values: { removalMethod: "Delete", mailbox: "No mailbox" },
+    });
+    expect(store.saveBatchDefaults).toHaveBeenCalledWith(ctx.db, ID, {
+      slaTimeline: "within_24h",
+      removalMethod: "Delete",
+      mailbox: "No mailbox",
+    });
   });
 });

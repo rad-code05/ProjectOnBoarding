@@ -59,14 +59,66 @@ const LIST_KEYS = {
   access: "physical",
 } as const;
 
+/** A leaver (F17b-5d): the leaver batch's own cells, as said. */
+export const batchLeaverSchema = z.object({
+  person: z
+    .string()
+    .trim()
+    .min(2)
+    .max(120)
+    .describe("Full name or work email, as said."),
+  lastWorkingDay: cell("Last working day as YYYY-MM-DD.", 10),
+  slaTimeline: cell("Only when this person's differs: Same day, 24h or 48h."),
+  cutoffDate: cell("Only when not the last working day: YYYY-MM-DD.", 10),
+  cutoffTime: cell("Only when this person's differs: HH:MM, company time."),
+  handoverTo: cell("Only when this person's differs: who gets their data."),
+  removalMethod: cell(
+    "Only when this person's differs: Delete, Suspend or Disable.",
+  ),
+  mailbox: cell(
+    "Only when this person's differs: Convert to shared, or No mailbox.",
+  ),
+});
+
+/** "The same for everyone" on a leaver batch; a row's own value wins. */
+export const sameForEveryoneSchema = z
+  .object({
+    slaTimeline: cell("Same day, 24h or 48h."),
+    cutoffTime: cell("HH:MM, company time."),
+    handoverTo: cell("Who gets their data (e.g. Line manager)."),
+    removalMethod: cell("Delete, Suspend or Disable — every application."),
+    mailbox: cell("Convert to shared, or No mailbox."),
+  })
+  .describe("Values for every leaver, as the person said them.");
+
+/** A role change (F17b-5d): what changes on what the person holds, as said. */
+export const batchChangeSchema = z.object({
+  person: z
+    .string()
+    .trim()
+    .min(2)
+    .max(120)
+    .describe("Full name or work email, as said."),
+  effectiveDate: cell("When it takes effect, YYYY-MM-DD.", 10),
+  change: items(
+    "Something they hold with the new role: 'Slack (Workspace Owner)'.",
+  ),
+  remove: items("Things they hold to remove or return: names or asset tags."),
+  add: items(
+    "Something new: 'Notion (Member)', an equipment type, 'Office access (Badge)'.",
+  ),
+});
+
 /** One person → the batch row's cells (list cells joined like a file's). */
-export function personCells(person: BatchPerson): Record<string, string> {
+export function personCells(
+  person: Record<string, string | string[] | undefined>,
+): Record<string, string> {
   const values: Record<string, string> = {};
   for (const [key, value] of Object.entries(person)) {
     if (value === undefined) continue;
     if (Array.isArray(value)) {
       if (!value.length) continue;
-      const field = LIST_KEYS[key as keyof typeof LIST_KEYS];
+      const field = LIST_KEYS[key as keyof typeof LIST_KEYS] ?? key;
       values[field] = value.join(key === "nationalities" ? "; " : ", ");
     } else if (value) {
       values[key] = value;
@@ -93,6 +145,19 @@ export const rowChangeSchema = z
     equipment: cell("'Type, Type' — the whole cell."),
     physical: cell("Access as 'Type (scope), …' — the whole cell."),
     requestedBy: cell("Requested by."),
+    // Leavers and role changes (F17b-5d).
+    person: cell("Leaver / role change: name or work email."),
+    lastWorkingDay: cell("Leaver: YYYY-MM-DD.", 10),
+    slaTimeline: cell("Leaver: Same day, 24h or 48h."),
+    cutoffDate: cell("Leaver: YYYY-MM-DD.", 10),
+    cutoffTime: cell("Leaver: HH:MM."),
+    handoverTo: cell("Leaver: handover."),
+    removalMethod: cell("Leaver: Delete, Suspend or Disable."),
+    mailbox: cell("Leaver: Convert to shared, or No mailbox."),
+    effectiveDate: cell("Role change: YYYY-MM-DD.", 10),
+    change: cell("Role change: 'Slack (Workspace Owner), …' — the whole cell."),
+    remove: cell("Role change: 'Figma, LT-1008' — the whole cell."),
+    add: cell("Role change: 'Notion (Member), …' — the whole cell."),
   })
   .describe("Only the cells that change; an empty text clears a cell.");
 
@@ -122,6 +187,9 @@ export function batchSummary(batch: Batch) {
   return {
     batchId: batch.id,
     kind: batch.type,
+    ...(batch.type === "offboarding" && {
+      sameForEveryone: batch.defaults,
+    }),
     status: batch.status,
     link: BATCH_LINK(batch.id),
     people: rows.length,
@@ -164,7 +232,10 @@ export function confirmMismatch(
   summary: BatchSummary,
   create: string[],
   notCreated: string[],
+  kind: string,
 ): string | null {
+  if (kind !== summary.kind)
+    return `This batch is of kind ${summary.kind}. Call again with kind = "${summary.kind}".`;
   if (summary.status !== "open")
     return "This batch was already created. Say so and give its link.";
   if (!summary.ready)

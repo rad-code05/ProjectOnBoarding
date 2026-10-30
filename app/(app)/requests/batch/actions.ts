@@ -25,6 +25,8 @@ export type BatchResult =
   | { ok: false; message: string; needsAssistant?: boolean };
 
 const typeSchema = z.enum(["onboarding", "offboarding", "access_modification"]);
+/** The chat's paperclip sends "auto": the kind follows the file's titles. */
+const uploadTypeSchema = z.union([typeSchema, z.literal("auto")]);
 const idSchema = z.uuid();
 const valuesSchema = z.record(z.string().max(60), z.string().max(500));
 
@@ -42,12 +44,13 @@ function failed(error: unknown): { ok: false; message: string } {
 /** New batch from an uploaded .xlsx / .csv. */
 export async function readBatchUpload(form: FormData): Promise<BatchResult> {
   await requireRole("admin", "requester");
-  const type = typeSchema.safeParse(form.get("type"));
+  const type = uploadTypeSchema.safeParse(form.get("type"));
   const file = form.get("file");
   if (!type.success || !(file instanceof File)) {
     return { ok: false, message: "Choose the kind of requests and a file." };
   }
-  if (!batchTypeReady(type.data)) return { ok: false, message: SOON };
+  if (type.data !== "auto" && !batchTypeReady(type.data))
+    return { ok: false, message: SOON };
   try {
     const read = await readBatchFile(
       file.name,
@@ -57,7 +60,7 @@ export async function readBatchUpload(form: FormData): Promise<BatchResult> {
     if (read.kind !== "table")
       return { ok: false, message: "The file has no table." };
     const id = await makeBatch(createServerSupabaseClient(), {
-      type: type.data,
+      type: read.type,
       title: file.name,
       source: "file",
       fileName: file.name,
