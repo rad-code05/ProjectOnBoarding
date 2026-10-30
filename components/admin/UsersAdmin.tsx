@@ -2,29 +2,43 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Avatar, ChevronLeftIcon, ChevronRightIcon } from "@/components/ui";
+import {
+  Avatar,
+  Button,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@/components/ui";
 import {
   personName,
   roleLabels,
   sortPeople,
+  type AdminInvitation,
   type AdminPerson,
 } from "@/lib/admin/users-shared";
 import { cn } from "@/lib/cn";
+import { InvitationList } from "./InvitationList";
+import { InviteSheet } from "./InviteSheet";
 import { UserSheet } from "./UserSheet";
 
-type Show = "active" | "deactivated";
+type Show = "active" | "invited" | "deactivated";
 
 /**
  * Admin · Users & roles (board: Phone · Admin · Users & roles): who can sign
  * in and what they may do. Each row opens the person's sheet (roles; your
- * own row is read-only). Invitations come with F18c, deactivating with F18d.
+ * own row is read-only); Invite a person + the invitations waiting to be
+ * accepted (F18c). Deactivating comes with F18d.
  */
 export function UsersAdmin({
   people,
   you,
   meta,
+  invitations,
+  invitationLines,
 }: {
   people: AdminPerson[];
+  invitations: AdminInvitation[];
+  /** "Sent … by … · expires …" per invitation (server-formatted). */
+  invitationLines: Record<string, string>;
   /** The signed-in admin's Clerk id. */
   you: string;
   /** "MFA on · signed in 12 Oct 2026, 09:41" per person (server-formatted). */
@@ -33,6 +47,8 @@ export function UsersAdmin({
   const [show, setShow] = useState<Show>("active");
   // By id, so a refresh after saving shows the new roles in the open sheet.
   const [open, setOpen] = useState<string | null>(null);
+  const [inviting, setInviting] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const active = people.filter((p) => p.active);
   const shown = sortPeople(
     people.filter((p) => p.active === (show === "active")),
@@ -60,10 +76,24 @@ export function UsersAdmin({
         </p>
       </div>
 
+      <Button
+        className="self-start"
+        aria-haspopup="dialog"
+        onClick={() => setInviting(true)}
+      >
+        Invite a person
+      </Button>
+      {sentTo && (
+        <p role="status" className="text-sm font-semibold">
+          ✓ Invitation sent to {sentTo}
+        </p>
+      )}
+
       <div role="group" aria-label="Show" className="flex flex-wrap gap-2">
         {(
           [
             ["active", `Active · ${active.length}`],
+            ["invited", `Invited · ${invitations.length}`],
             ["deactivated", `Deactivated · ${people.length - active.length}`],
           ] as const
         ).map(([value, label]) => (
@@ -82,7 +112,7 @@ export function UsersAdmin({
         ))}
       </div>
 
-      {shown.length === 0 ? (
+      {show === "invited" ? null : shown.length === 0 ? (
         <p className="rounded-card border border-line bg-paper p-3.5 text-sm text-graphite">
           {show === "active" ? "Nobody is active." : "Nobody is deactivated."}
         </p>
@@ -138,6 +168,11 @@ export function UsersAdmin({
         </ul>
       )}
 
+      {(show === "invited" ||
+        (show === "active" && invitations.length > 0)) && (
+        <InvitationList invitations={invitations} lines={invitationLines} />
+      )}
+
       <section
         aria-labelledby="rules-title"
         className="flex flex-col gap-2 rounded-card border border-line p-3.5"
@@ -166,6 +201,9 @@ export function UsersAdmin({
         everything they prepared or signed stays on the records.
       </p>
 
+      {inviting && (
+        <InviteSheet onClose={() => setInviting(false)} onSent={setSentTo} />
+      )}
       {person && (
         <UserSheet
           key={person.id}

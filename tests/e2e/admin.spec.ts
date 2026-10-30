@@ -171,6 +171,53 @@ test("Admin · Users & roles (F18b): people with roles; your own row is read-onl
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
+test("Admin · Users & roles (F18c): invite a person (Clerk), see it waiting, then withdraw it", async ({
+  page,
+}) => {
+  test.slow(); // Clerk is called twice
+  // A +clerk_test address: Clerk's development instance sends no real email.
+  const email = `e2e.invite.${Date.now()}+clerk_test@laine.ai`;
+  await openApp(page, "/admin/users");
+  await page.getByRole("button", { name: "Invite a person" }).click();
+  const sheet = page.getByRole("dialog", { name: "Invite a person" });
+  await sheet.getByLabel("First name").fill("Ivy");
+  await sheet.getByLabel("Last name").fill("Invite");
+  await sheet.getByLabel("Work email").fill(email);
+  await sheet.getByRole("checkbox", { name: /^Auditor/ }).check();
+  await sheet.getByRole("button", { name: "Send invitation" }).click();
+  await expect(page.getByRole("status").filter({ hasText: email })).toHaveText(
+    `✓ Invitation sent to ${email}`,
+    { timeout: 30_000 },
+  );
+
+  const invitation = page
+    .getByRole("list", { name: "Invitations" })
+    .getByRole("listitem", { name: "Ivy Invite" });
+  try {
+    await expect(invitation).toContainText(`${email} · Auditor`);
+    await expect(invitation).toContainText(/expires \d/);
+    // The same email can't be invited twice.
+    await page.getByRole("button", { name: "Invite a person" }).click();
+    const again = page.getByRole("dialog", { name: "Invite a person" });
+    await again.getByLabel("First name").fill("Ivy");
+    await again.getByLabel("Last name").fill("Invite");
+    await again.getByLabel("Work email").fill(email);
+    await again.getByRole("checkbox", { name: /^Auditor/ }).check();
+    await again.getByRole("button", { name: "Send invitation" }).click();
+    await expect(again).toContainText(
+      "is already invited — send it again instead",
+    );
+    await again.getByRole("button", { name: "Cancel" }).click();
+  } finally {
+    // Always withdraw it, also when a check above failed.
+    await invitation.getByRole("button", { name: "Withdraw" }).click();
+    await invitation
+      .getByRole("button", { name: "Withdraw — the link stops working" })
+      .click();
+  }
+  await expect(invitation).toHaveCount(0, { timeout: 30_000 });
+});
+
 test("Admin · Applications: add an application, change it, find it, retire it", async ({
   page,
 }) => {

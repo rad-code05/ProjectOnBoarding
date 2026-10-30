@@ -116,3 +116,31 @@ export function usersErrorMessage(
   }
   return "Could not save. Reload and try again.";
 }
+
+// ---------------------------------------------------------------------------
+// Invitations (F18c)
+// ---------------------------------------------------------------------------
+
+export type AdminInvitation = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roles: Role[];
+  invitedBy: string;
+  createdAt: string;
+  expiresAt: string;
+};
+
+export const invitationExpired = (i: AdminInvitation, now = Date.now()) =>
+  new Date(i.expiresAt).getTime() <= now;
+
+/** "Sent 30 Oct 2026, 10:12 by Raju Bholani · expires 6 Nov 2026" — dates formatted. */
+export function invitationLine(
+  i: AdminInvitation,
+  sent: string,
+  expires: string,
+  now = Date.now(),
+): string {
+  return `Sent ${sent} by ${i.invitedBy} · ${invitationExpired(i, now) ? `expired ${expires} — send it again` : `expires ${expires}`}`;
+}
