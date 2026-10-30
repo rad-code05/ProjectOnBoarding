@@ -16,7 +16,6 @@ import {
   Sheet,
   SummaryTile,
   TextField,
-  type ComboboxOption,
 } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { readDay } from "@/lib/requests/batch/onboarding";
@@ -31,6 +30,7 @@ import {
   type RowState,
   type ViewRow,
 } from "@/lib/requests/batch/view";
+import { choiceOptions, LeaverFields, SameForEveryone } from "./LeaverPieces";
 
 export type GridRow = ViewRow & {
   id: string;
@@ -41,14 +41,19 @@ export type GridRow = ViewRow & {
 
 export type GridBatch = {
   id: string;
+  type: "onboarding" | "offboarding" | "access_modification";
   title: string;
   status: "open" | "created";
   meta: string;
+  /** Leavers: "Same for everyone", as words. */
+  defaults: Record<string, string>;
   rows: GridRow[];
 };
 
+type Line = { label: string; fields: string[] };
+
 /** What a card lists (the rest is in Fix this row). */
-const LINES: { label: string; fields: string[] }[] = [
+const JOINER_LINES: Line[] = [
   { label: "Work email", fields: ["workEmail"] },
   { label: "Job", fields: ["jobTitle", "department"] },
   { label: "Office · start", fields: ["office", "state", "city", "startDate"] },
@@ -57,8 +62,20 @@ const LINES: { label: string; fields: string[] }[] = [
   { label: "Nationality", fields: ["nationalities"] },
 ];
 
+/** A leaver's card: their own cells (empty ones use "Same for everyone"). */
+const LEAVER_LINES: Line[] = [
+  { label: "Person", fields: ["person"] },
+  { label: "Last day", fields: ["lastWorkingDay"] },
+  { label: "Cut-off", fields: ["cutoffDate", "cutoffTime"] },
+  { label: "SLA", fields: ["slaTimeline"] },
+  { label: "Handover", fields: ["handoverTo"] },
+  { label: "Removal", fields: ["removalMethod", "mailbox"] },
+];
+
+const DATES = new Set(["startDate", "lastWorkingDay", "cutoffDate"]);
+
 const show = (field: string, value: string) =>
-  field === "startDate" && readDay(value)
+  DATES.has(field) && readDay(value)
     ? new Date(`${readDay(value)}T00:00:00Z`).toLocaleDateString("en-GB", {
         weekday: "short",
         day: "numeric",
@@ -101,6 +118,8 @@ export function BatchGrid({
   );
 
   if (batch.status === "created") return <Created batch={batch} />;
+  const leavers = batch.type === "offboarding";
+  const LINES = leavers ? LEAVER_LINES : JOINER_LINES;
 
   async function include(row: GridRow, included: boolean) {
     setBusy(row.id);
@@ -121,6 +140,9 @@ export function BatchGrid({
 
   return (
     <div className="flex flex-col gap-4 pb-32">
+      {leavers && (
+        <SameForEveryone batchId={batch.id} defaults={batch.defaults} />
+      )}
       <section
         aria-label="Summary"
         className="grid grid-cols-3 gap-2 md:max-w-xl"
@@ -291,6 +313,7 @@ export function BatchGrid({
         <FixRowSheet
           key={fixing.id}
           row={fixing}
+          leavers={leavers}
           departments={departments}
           offices={offices}
           onClose={() => setFixing(null)}
@@ -376,12 +399,14 @@ const TEXT_FIELDS: { key: string; label: string; hint?: string }[] = [
 /** Fix a row (sheet): the row's cells, the same lists as the form; Save checks again. */
 function FixRowSheet({
   row,
+  leavers,
   departments,
   offices,
   onClose,
   onSaved,
 }: {
   row: GridRow;
+  leavers: boolean;
   departments: string[];
   offices: string[];
   onClose: () => void;
@@ -405,15 +430,6 @@ function FixRowSheet({
       .join(" ") || undefined;
   const set = (key: string, value: string) =>
     setValues((v) => ({ ...v, [key]: value }));
-  const choices = (names: string[], current?: string): ComboboxOption[] => {
-    const list = names.map((n) => ({ value: n, label: n }));
-    return current && !names.includes(current)
-      ? [
-          { value: current, label: `${current} (from the list — not known)` },
-          ...list,
-        ]
-      : list;
-  };
 
   return (
     <Sheet
@@ -444,45 +460,17 @@ function FixRowSheet({
       }
     >
       <div className="flex flex-col gap-3.5">
-        {TEXT_FIELDS.slice(0, 4).map((f) => (
-          <TextField
-            key={f.key}
-            label={f.label}
-            value={values[f.key] ?? ""}
-            error={problem(f.key)}
-            onChange={(e) => set(f.key, e.target.value)}
+        {leavers ? (
+          <LeaverFields values={values} problem={problem} set={set} />
+        ) : (
+          <JoinerFields
+            values={values}
+            problem={problem}
+            set={set}
+            departments={departments}
+            offices={offices}
           />
-        ))}
-        {(
-          [
-            ["department", "Department / team", departments],
-            ["office", "Office", offices],
-          ] as const
-        ).map(([key, label, names]) => (
-          <div key={key} className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-semibold" id={`batch-${key}`}>
-              {label}
-            </span>
-            <Combobox
-              ariaLabel={label}
-              value={values[key] ?? ""}
-              options={choices([...names], values[key])}
-              invalid={Boolean(problem(key))}
-              onChange={(v) => set(key, v)}
-            />
-            {problem(key) && <InlineError>{problem(key)}</InlineError>}
-          </div>
-        ))}
-        {TEXT_FIELDS.slice(4).map((f) => (
-          <TextField
-            key={f.key}
-            label={f.label}
-            hint={f.hint}
-            value={values[f.key] ?? ""}
-            error={problem(f.key)}
-            onChange={(e) => set(f.key, e.target.value)}
-          />
-        ))}
+        )}
         {Object.keys(row.other).length > 0 && (
           <p className="text-xs leading-normal text-graphite">
             Other columns in the list (not used):{" "}
@@ -493,6 +481,65 @@ function FixRowSheet({
         )}
       </div>
     </Sheet>
+  );
+}
+
+/** A joiner's row in Fix a row: the same lists as the form. */
+function JoinerFields({
+  values,
+  problem,
+  set,
+  departments,
+  offices,
+}: {
+  values: Record<string, string>;
+  problem: (field: string) => string | undefined;
+  set: (key: string, value: string) => void;
+  departments: string[];
+  offices: string[];
+}) {
+  return (
+    <>
+      {TEXT_FIELDS.slice(0, 4).map((f) => (
+        <TextField
+          key={f.key}
+          label={f.label}
+          value={values[f.key] ?? ""}
+          error={problem(f.key)}
+          onChange={(e) => set(f.key, e.target.value)}
+        />
+      ))}
+      {(
+        [
+          ["department", "Department / team", departments],
+          ["office", "Office", offices],
+        ] as const
+      ).map(([key, label, names]) => (
+        <div key={key} className="flex flex-col gap-1.5">
+          <span className="text-[13px] font-semibold" id={`batch-${key}`}>
+            {label}
+          </span>
+          <Combobox
+            ariaLabel={label}
+            value={values[key] ?? ""}
+            options={choiceOptions([...names], values[key])}
+            invalid={Boolean(problem(key))}
+            onChange={(v) => set(key, v)}
+          />
+          {problem(key) && <InlineError>{problem(key)}</InlineError>}
+        </div>
+      ))}
+      {TEXT_FIELDS.slice(4).map((f) => (
+        <TextField
+          key={f.key}
+          label={f.label}
+          hint={f.hint}
+          value={values[f.key] ?? ""}
+          error={problem(f.key)}
+          onChange={(e) => set(f.key, e.target.value)}
+        />
+      ))}
+    </>
   );
 }
 
@@ -510,10 +557,11 @@ function ConfirmSheet({
   const ready = batch.rows.filter((r) => rowState(r) === "ready");
   const out = batch.rows.filter((r) => rowState(r) !== "ready");
   const n = ready.length;
+  const noun = batch.type === "offboarding" ? "offboarding" : "onboarding";
   return (
     <Sheet
       eyebrow="Needs your Confirm"
-      title={`Create ${n} draft onboarding${n === 1 ? "" : "s"}?`}
+      title={`Create ${n} draft ${noun}${n === 1 ? "" : "s"}?`}
       onClose={onClose}
       footer={
         <div className="flex flex-col gap-2">
@@ -567,6 +615,13 @@ function ConfirmSheet({
           Creates <strong className="text-ink">drafts only</strong>. Nothing is
           sent to Slack, Google or anywhere else.
         </li>
+        {batch.type === "offboarding" && (
+          <li>
+            Each offboarding lists what the person holds today. The removal
+            method and mailbox wait on it as suggestions until you start
+            execution.
+          </li>
+        )}
         <li>
           Each request is still executed, ticked in section 9 and signed{" "}
           <strong className="text-ink">one by one</strong>.

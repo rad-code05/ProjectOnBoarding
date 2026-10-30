@@ -7,6 +7,7 @@ import {
   batchTypeReady,
   confirmBatch,
   makeBatch,
+  saveBatchDefaults,
   saveBatchRow,
   type CreatedDraft,
 } from "@/lib/requests/batch/store";
@@ -28,7 +29,7 @@ const idSchema = z.uuid();
 const valuesSchema = z.record(z.string().max(60), z.string().max(500));
 
 const SOON =
-  "Batches of leavers and role changes come next — for now, start them one by one.";
+  "Batches of role changes come next — for now, start them one by one.";
 
 function failed(error: unknown): { ok: false; message: string } {
   if (error instanceof BatchReadError)
@@ -122,6 +123,24 @@ export async function saveBatchRowValues(
     return { ok: true, id: batchId };
   } catch {
     return { ok: false, message: "This row can't be changed any more." };
+  }
+}
+
+/** Leavers: "the same for everyone" (every row is checked again). */
+export async function saveLeaverDefaults(
+  batchId: string,
+  defaults: Record<string, string>,
+): Promise<BatchResult> {
+  await requireRole("admin", "requester");
+  const id = idSchema.safeParse(batchId);
+  const v = valuesSchema.safeParse(defaults);
+  if (!id.success || !v.success)
+    return { ok: false, message: "These values can't be saved." };
+  try {
+    await saveBatchDefaults(createServerSupabaseClient(), id.data, v.data);
+    return { ok: true, id: id.data };
+  } catch {
+    return { ok: false, message: "This batch can't be changed any more." };
   }
 }
 

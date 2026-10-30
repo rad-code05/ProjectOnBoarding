@@ -2,9 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BatchGrid } from "@/components/requests/batch/BatchGrid";
 import { ChevronLeftIcon } from "@/components/ui";
+import { MAILBOX_WORDS } from "@/lib/ai/tools/offboarding-shared";
 import { loadFormOptions } from "@/lib/ai/tools/onboarding-load";
 import { requireRole } from "@/lib/auth";
+import type { LeaverDefaults } from "@/lib/requests/batch/offboarding";
 import { loadBatch } from "@/lib/requests/batch/store";
+import { TIMELINE_LABELS } from "@/lib/requests/offboarding";
 import { formatDay } from "@/lib/requests/format";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { displayTimezone } from "@/lib/time/display";
@@ -16,6 +19,17 @@ const KIND: Record<string, string> = {
   offboarding: "Offboarding",
   access_modification: "Access change",
 };
+
+/** Leavers' "Same for everyone" as the words the box shows (and reads back). */
+function defaultWords(d: LeaverDefaults): Record<string, string> {
+  const words: Record<string, string> = {};
+  if (d.slaTimeline) words.slaTimeline = TIMELINE_LABELS[d.slaTimeline];
+  if (d.cutoffTime) words.cutoffTime = d.cutoffTime;
+  if (d.handoverTo) words.handoverTo = d.handoverTo;
+  if (d.removalMethod) words.removalMethod = d.removalMethod;
+  if (d.mailbox) words.mailbox = MAILBOX_WORDS[d.mailbox];
+  return words;
+}
 
 /** A batch (F17b-3b): the grid with its checks, or the drafts it created. */
 export default async function BatchPage({
@@ -65,9 +79,11 @@ export default async function BatchPage({
       <BatchGrid
         batch={{
           id: batch.id,
+          type: batch.type,
           title: batch.title,
           status: batch.status,
           meta,
+          defaults: defaultWords(batch.defaults),
           rows: batch.rows.map((r) => ({
             id: r.id,
             position: r.position,

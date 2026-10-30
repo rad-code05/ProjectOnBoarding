@@ -24,8 +24,8 @@ const KINDS: { value: Kind; title: string; note: string; ready: boolean }[] = [
   {
     value: "offboarding",
     title: "Offboarding",
-    note: "Leavers — coming next",
-    ready: false,
+    note: "Leavers — found among the people who hold access today",
+    ready: true,
   },
   {
     value: "access_modification",
@@ -34,6 +34,14 @@ const KINDS: { value: Kind; title: string; note: string; ready: boolean }[] = [
     ready: false,
   },
 ];
+
+/** What the list should hold, per kind (the template's own columns). */
+const HINTS: Record<"onboarding" | "offboarding", string> = {
+  onboarding:
+    "One column per application, titled with its name: write the role (or Yes for its usual role), leave it empty when not needed. Your own columns are fine too: they are matched by name (First name, Email, Department, Office, Start date …).",
+  offboarding:
+    "One row per leaver: name or work email, and the last working day. SLA, cut-off time, handover, removal method and mailbox can stay empty — set them once for everyone on the next page; a row's own cell wins.",
+};
 
 /**
  * New batch (board *Phone · New batch*): the kind, then a file or a pasted
@@ -47,6 +55,7 @@ export function NewBatchForm() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const leavers = kind === "offboarding";
 
   async function read() {
     setError(null);
@@ -166,7 +175,9 @@ export function NewBatchForm() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder={
-                "First name\tLast name\tWork email\t…\nMeera\tNair\tmeera.nair@laine.ai\t…"
+                leavers
+                  ? "Name or work email\tLast working day\t…\narjun.mehta@laine.ai\t30/11/2026\t…"
+                  : "First name\tLast name\tWork email\t…\nMeera\tNair\tmeera.nair@laine.ai\t…"
               }
               className="bg-white rounded-field border border-field-border px-3 py-2.5 text-base leading-snug font-normal outline-none focus:border-ink md:text-sm"
             />
@@ -177,17 +188,14 @@ export function NewBatchForm() {
           </label>
         )}
         <a
-          href={TEMPLATE}
+          href={leavers ? `${TEMPLATE}?kind=offboarding` : TEMPLATE}
           download
           className="self-start text-[13px] font-semibold underline"
         >
-          Download the onboarding template (.xlsx)
+          Download the {leavers ? "offboarding" : "onboarding"} template (.xlsx)
         </a>
         <span className="text-xs leading-normal text-graphite">
-          One column per application, titled with its name: write the role (or
-          Yes for its usual role), leave it empty when not needed. Your own
-          columns are fine too: they are matched by name (First name, Email,
-          Department, Office, Start date …).
+          {HINTS[leavers ? "offboarding" : "onboarding"]}
         </span>
       </div>
 
