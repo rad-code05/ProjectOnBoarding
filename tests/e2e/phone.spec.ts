@@ -256,6 +256,11 @@ test.describe("admin on a phone", () => {
     );
     await expectNoSideScroll(page);
     await sheet.getByRole("button", { name: "Cancel" }).click();
+    await openApp(page, "/admin/users");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Users & roles" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
     await openApp(page, "/admin/settings");
     await expect(page.getByLabel("Timezone", { exact: true })).toHaveCSS(
       "font-size",

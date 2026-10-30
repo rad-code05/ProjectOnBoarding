@@ -125,6 +125,52 @@ test("Admin home leads to Settings with the company timezone", async ({
   await expect(page.getByRole("button", { name: "Save" })).toBeDisabled();
 });
 
+test("Admin · Users & roles (F18b): people with roles; your own row is read-only; the only approver keeps the role", async ({
+  page,
+}) => {
+  // Read only: the two test users' roles are shared by every other test.
+  await openApp(page, "/admin");
+  await page.getByRole("link", { name: /^Users & roles/ }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Users & roles" }),
+  ).toBeVisible();
+  const people = page.getByRole("list", { name: "People" });
+  const admin = process.env.E2E_ADMIN_EMAIL ?? "";
+  const approver = process.env.E2E_APPROVER_EMAIL ?? "";
+
+  // Your own row: "(you)", roles as chips, read-only sheet.
+  const me = people.getByRole("listitem").filter({ hasText: admin });
+  await expect(me).toContainText("(you)");
+  await expect(me).toContainText("IT operator");
+  await me.getByRole("button").click();
+  let sheet = page.getByRole("dialog");
+  await expect(sheet.getByRole("note")).toContainText(
+    "Nobody changes their own roles",
+  );
+  await expect(sheet.getByRole("checkbox", { name: /^Admin/ })).toBeDisabled();
+  await expect(sheet.getByRole("button", { name: "Save roles" })).toHaveCount(
+    0,
+  );
+  await sheet.getByRole("button", { name: "Close" }).click();
+
+  // The test approver is the only active approver: the role is locked on.
+  await people
+    .getByRole("listitem")
+    .filter({ hasText: approver })
+    .getByRole("button")
+    .click();
+  sheet = page.getByRole("dialog");
+  await expect(
+    sheet.getByRole("checkbox", { name: /^Approver/ }),
+  ).toBeDisabled();
+  await expect(sheet).toContainText("The only active approver — locked on.");
+  await expect(
+    sheet.getByRole("button", { name: "Save roles" }),
+  ).toBeDisabled();
+  await sheet.getByRole("button", { name: "Cancel" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
 test("Admin · Applications: add an application, change it, find it, retire it", async ({
   page,
 }) => {
