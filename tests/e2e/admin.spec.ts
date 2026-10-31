@@ -167,6 +167,11 @@ test("Admin · Users & roles (F18b): people with roles; your own row is read-onl
   await expect(
     sheet.getByRole("button", { name: "Save roles" }),
   ).toBeDisabled();
+  // … and can't be deactivated (F18d).
+  await expect(
+    sheet.getByRole("button", { name: "Deactivate…" }),
+  ).toBeDisabled();
+  await expect(sheet).toContainText("Not possible now:");
   await sheet.getByRole("button", { name: "Cancel" }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
