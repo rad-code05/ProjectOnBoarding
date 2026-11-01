@@ -36,11 +36,12 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 **Continue unfinished work**
 > Read CLAUDE.md, then continue F04 in plan/features.md. Check the session log and the open branch/PR to see where we stopped.
 
-**Next session (after F18, 2026-11-01): F23 email notifications**
-> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date (clean up merged branches). If Docker is not running, start Docker Desktop first. The cloud database should match local (48 migrations, last 20261030120000_users_and_invitations.sql) — confirm with `supabase migration list --linked`.
-> 1) If I report anything from inviting Moises / Celine (Users & roles → Invite a person → Accept invitation → MFA → Approvals), fix it first.
-> 2) Then F23 email notifications in plan/features.md (before go-live — see the go-live scope in plan/release.md). Brief me (where we are, what it builds and why now), check its open decisions (sender address, which emails, reminders), propose the PR split and draw the phone/email boards on the design canvas for my approval before building.
-> Verify library APIs with Context7 before coding. Run the git commands for me (branch, commit, push, PR); watch CI to the end and only tell me to squash-merge when every check is green; I say "done". A PR with its own migration: get my "push" before I merge. Browser tests from your PC use the local Supabase only (AI_FAKE_MODEL=1). Update my learning guide (Rajulearning/Learn.md) at the end of every PR — Part 10, glossary, data model, repo map and roadmap — and record every configuration change there.
+**Next session (after F23a, 2026-11-01): F23b email sending**
+> Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date (clean up merged branches). If Docker is not running, start Docker Desktop first, then `supabase start -x …` like CI. Remind me once about asking Laine IT for `access.laine.ai` + `access-notify.laine.ai` DNS.
+> 1) The cloud database is one behind: local 49, cloud 48 — `20261101120000_email_outbox.sql` (F23a, merged #212) still needs the push. Do the dry run and wait for my "push". Merge Dependabot #199 (minor/patch) if CI is green.
+> 2) Then continue F23 email notifications in plan/features.md: F23b sending (our own Resend account, sender no-reply@access-notify.laine.ai, the six email templates, the sender route working through the outbox, test / preview sites email the test accounts only) → F23c Admin → Notifications → F23d tests + wrap-up. Verify the Resend SDK with Context7 first. Real sending waits for Laine IT's DNS records — until then emails stay in the outbox.
+> After F23: F24 import of existing staff (backdating ONLY through the import — rules in CLAUDE.md), then R1 security, R2 accessibility, R4 backups + restore test, R6 guides, R7 production (see the go-live scope in plan/release.md).
+> Run the git commands for me (branch, commit, push, PR); watch CI to the end and only tell me to squash-merge when every check is green; I say "done". A PR with its own migration: get my "push" before I merge. Browser tests from your PC use the local Supabase only (AI_FAKE_MODEL=1). Update my learning guide (Rajulearning/Learn.md) at the end of every PR and record every configuration change there.
 
 **Check the state** (after a break or a disconnect)
 > Read CLAUDE.md and check everything: git status, branches, open PRs, CI, and whether the notes in CLAUDE.md match reality.
