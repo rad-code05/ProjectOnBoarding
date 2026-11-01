@@ -1,6 +1,12 @@
 "use server";
 
+import * as z from "zod";
+import {
+  loadRoleChanges,
+  type RoleChangesPage,
+} from "@/lib/approvals/role-changes";
 import { requireRole } from "@/lib/auth";
+import { PAGES } from "@/lib/navigation";
 import { ensureRecordPdf } from "@/lib/records/ensure";
 import {
   approvalErrorMessage,
@@ -71,4 +77,20 @@ export async function returnRequest(input: {
     };
   }
   return { ok: true };
+}
+
+/** Role changes card (F18d-2): the next, older page. */
+export async function loadOlderRoleChanges(input: {
+  before: string;
+}): Promise<RoleChangesPage> {
+  await requireRole(...PAGES.approvals.roles);
+  const before = z.iso.datetime({ offset: true }).safeParse(input.before);
+  if (!before.success) return { lines: [], before: null };
+  return loadRoleChanges(before.data);
+}
+
+/** The approver has seen the role changes: "new" starts from now. */
+export async function markRoleChangesSeen(): Promise<void> {
+  await requireRole(...PAGES.approvals.roles);
+  await createServerSupabaseClient().rpc("mark_role_changes_seen");
 }

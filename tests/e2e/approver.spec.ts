@@ -207,6 +207,20 @@ test("Approvals shows the tiles, what waits and what closed", async ({
   ).toBeVisible();
 });
 
+test("Approvals · Role changes (F18d-2, D5): the approver sees who gave which role", async ({
+  page,
+}) => {
+  // The test accounts' roles are granted by the sync script ("System") when
+  // the test database starts, so the card always has at least those lines.
+  await openApp(page, "/approvals");
+  const card = page.getByRole("region", { name: "Role changes" });
+  await expect(card).toBeVisible();
+  await expect(card.getByRole("list", { name: "Role changes" })).toContainText(
+    /gave .+ (Approver|Admin|Requester|IT operator|Auditor)/,
+  );
+  await expect(card).toContainText("Shown to every approver");
+});
+
 // Any request page — the role check runs before the request is looked up.
 const REQUEST_PAGE = "/requests/00000000-0000-4000-8000-000000000000";
 
