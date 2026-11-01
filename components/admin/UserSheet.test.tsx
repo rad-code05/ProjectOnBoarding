@@ -5,9 +5,13 @@ import type { AdminPerson } from "@/lib/admin/users-shared";
 import { UserSheet } from "./UserSheet";
 
 const saveUserRoles = vi.fn();
+const deactivateUser = vi.fn();
+const reactivateUser = vi.fn();
 const refresh = vi.fn();
 vi.mock("@/app/(app)/admin/users/actions", () => ({
   saveUserRoles: (i: unknown) => saveUserRoles(i),
+  deactivateUser: (i: unknown) => deactivateUser(i),
+  reactivateUser: (i: unknown) => reactivateUser(i),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 
@@ -59,7 +63,9 @@ const sheet = (person: AdminPerson) =>
 describe("UserSheet (F18b)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    saveUserRoles.mockResolvedValue({ ok: true });
+    for (const fn of [saveUserRoles, deactivateUser, reactivateUser]) {
+      fn.mockResolvedValue({ ok: true });
+    }
   });
 
   test("gives a role and saves; Save waits for a change", async () => {
@@ -109,5 +115,46 @@ describe("UserSheet (F18b)", () => {
     expect(
       await screen.findByText("At least one active approver must remain."),
     ).toBeVisible();
+  });
+
+  test("deactivate asks once more, then blocks sign-in (F18d)", async () => {
+    const u = userEvent.setup();
+    sheet(aisha);
+    await u.click(screen.getByRole("button", { name: "Deactivate…" }));
+    expect(
+      screen.getByText(
+        /Deactivate Aisha Noor\? They can.t sign in and lose Auditor/,
+      ),
+    ).toBeVisible();
+    expect(deactivateUser).not.toHaveBeenCalled();
+    await u.click(screen.getByRole("button", { name: "Deactivate" }));
+    expect(deactivateUser).toHaveBeenCalledWith({ userId: "user_aisha" });
+    expect(
+      await screen.findByText("✓ Aisha Noor is deactivated — sign-in blocked"),
+    ).toBeVisible();
+  });
+
+  test("the only active approver can't be deactivated", () => {
+    sheet(moises);
+    expect(screen.getByRole("button", { name: "Deactivate…" })).toBeDisabled();
+    expect(
+      screen.getByText(
+        "Not possible now: Moises Larez is the only active approver.",
+      ),
+    ).toBeVisible();
+  });
+
+  test("a deactivated person is reactivated with at least one role", async () => {
+    const u = userEvent.setup();
+    sheet({ ...aisha, active: false, roles: [] });
+    const reactivate = screen.getByRole("button", { name: "Reactivate" });
+    expect(reactivate).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Deactivate…" })).toBeNull();
+    await u.click(screen.getByRole("checkbox", { name: /^Auditor/ }));
+    await u.click(reactivate);
+    expect(reactivateUser).toHaveBeenCalledWith({
+      userId: "user_aisha",
+      roles: ["auditor"],
+    });
   });
 });

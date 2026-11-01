@@ -261,3 +261,72 @@ export async function invitationLink(input: {
     });
   return { ok: true, url };
 }
+
+// ---------------------------------------------------------------------------
+// Deactivate / reactivate (F18d): the database first (roles, active flag,
+// audit, the last-approver rule), then Clerk blocks or unblocks sign-in.
+// Clerk's user.updated webhook then keeps the person as the database says.
+// ---------------------------------------------------------------------------
+
+const ALREADY_DEACTIVATED = "this person is already deactivated";
+
+/** Deactivate: no roles, inactive, and banned in Clerk (sign-in blocked). */
+export async function deactivateUser(input: {
+  userId: string;
+}): Promise<UsersResult> {
+  await requireRole("admin");
+  const parsed = userId.safeParse(input.userId);
+  if (!parsed.success) return { ok: false, message: "Unknown person." };
+  const { error } = await createServerSupabaseClient().rpc(
+    "admin_deactivate_user",
+    { p_user: parsed.data },
+  );
+  // Already deactivated (e.g. Clerk failed last time): block sign-in again.
+  if (error && error.message !== ALREADY_DEACTIVATED) {
+    return { ok: false, message: usersErrorMessage(error.code, error.message) };
+  }
+  try {
+    const client = await clerkClient();
+    await client.users.banUser(parsed.data);
+  } catch (err) {
+    revalidatePath("/admin", "layout");
+    return {
+      ok: false,
+      message: `Deactivated in the app (no roles), but sign-in is not blocked yet — ${clerkMessage(err)} Press Deactivate again.`,
+    };
+  }
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+/** Reactivate with the chosen roles; Clerk lets them sign in again. */
+export async function reactivateUser(input: {
+  userId: string;
+  roles: string[];
+}): Promise<UsersResult> {
+  await requireRole("admin");
+  const parsed = z.object({ userId, roles }).safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Check the roles." };
+  if (parsed.data.roles.length === 0) {
+    return { ok: false, message: "Choose at least one role." };
+  }
+  const { error } = await createServerSupabaseClient().rpc(
+    "admin_reactivate_user",
+    { p_user: parsed.data.userId, p_roles: parsed.data.roles },
+  );
+  if (error) {
+    return { ok: false, message: usersErrorMessage(error.code, error.message) };
+  }
+  try {
+    const client = await clerkClient();
+    await client.users.unbanUser(parsed.data.userId);
+  } catch (err) {
+    revalidatePath("/admin", "layout");
+    return {
+      ok: false,
+      message: `Reactivated in the app, but Clerk still blocks sign-in — ${clerkMessage(err)} Unblock them in the Clerk dashboard (Users → … → Unban).`,
+    };
+  }
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
