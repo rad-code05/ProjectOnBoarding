@@ -129,8 +129,8 @@
       "y": 4400
     },
     "EmailTemplates.dc.html": {
-      "h": 760,
-      "title": "Email notifications (phase 2)",
+      "h": 1000,
+      "title": "Email notifications (F23 proposal — six emails)",
       "w": 1440,
       "x": 3268,
       "y": 12060
@@ -834,6 +834,13 @@
       "w": 390,
       "h": 1000,
       "title": "Phone · Accept invitation (set name, password, then MFA) — F18 proposal"
+    },
+    "AdminNotificationsMobile.dc.html": {
+      "x": 40400,
+      "y": 13560,
+      "w": 390,
+      "h": 1500,
+      "title": "Phone · Admin · Notifications (sender, which emails, recent emails) — F23 proposal"
     }
   },
   "createdOnFiles": {
@@ -855,7 +862,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 40400,
+      "maxW": 40870,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -1011,7 +1018,8 @@
     "AdminInviteSheetMobile.dc.html",
     "AdminUserSheetMobile.dc.html",
     "ApprovalsRoleChangesMobile.dc.html",
-    "AcceptInvitationMobile.dc.html"
+    "AcceptInvitationMobile.dc.html",
+    "AdminNotificationsMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"

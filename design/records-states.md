@@ -20,7 +20,9 @@ Mirrors the 11 sections of form v4 so it reads like the paper form.
 | Loading | Skeleton blocks in the page layout; pulse off with reduced motion |
 | Errors | Save conflict ("Someone else updated this request" → **Reload and merge**, edits kept), offline banner, SharePoint save failed → **Retry** |
 
-## Email notifications (phase 2) — board *Email notifications*
+## Email notifications (F23) — board *Email notifications* + *Phone · Admin · Notifications*
+**Approved 2026-11-01.** Sender `no-reply@access-notify.laine.ai` (own Resend account). Six emails: waiting for approval (every approver who may confirm), **reminder** (daily after 2 days), returned (to the IT signer, comment excerpt), **closed — PDF ready** (to the IT signer), SLA due in 6 h, **SLA missed** (to IT). Admin → Notifications: sender status (*Not connected yet — emails wait in the outbox* until DNS + key), on / off per email, *Send a test email to me*, recent emails (Sent / Waiting / Failed; 3 tries). Test / preview sites email the test accounts only.
+
 Sent with Resend. Black header with logo, title, one-line body, fact strip, one button, footer "internal system; no personal details beyond the name".
 1. **To approvers:** "Waiting for your confirmation: <name>" → Review & confirm.
 2. **To Raju:** "Returned by Moises: <name>" with the comment excerpt → Open request.
