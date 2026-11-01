@@ -62,7 +62,8 @@ describe("the memory tools", () => {
     vi.resetModules();
     const remember = vi.fn(async () => true);
     vi.doMock("@/lib/ai/memory-store", () => ({ remember }));
-    const { rememberQuestion } = await import("./tools/remember-question");
+    const { ANSWER_STILL_DUE, rememberQuestion } =
+      await import("./tools/remember-question");
     const db = {
       from: () => ({
         select: async () => ({
@@ -84,15 +85,20 @@ describe("the memory tools", () => {
         }
       ).execute({ question }, { toolCallId: "1", messages: [] });
 
+    // Saved or not, the model is told its answer is still due (2026-11-01:
+    // it once wrote only "Nothing more to add" after this call).
     expect(await exec("Who has Admin rights in any application")).toEqual({
       saved: true,
+      next: ANSWER_STILL_DUE,
     });
     expect(remember).toHaveBeenCalledWith(db, "user_raju", {
       question: "Who has Admin rights in any application?",
     });
     expect(await exec("What does Rose Bernal-Test hold today?")).toEqual({
       saved: false,
+      next: ANSWER_STILL_DUE,
     });
+    expect(ANSWER_STILL_DUE).toMatch(/write the full answer now/);
     expect(remember).toHaveBeenCalledTimes(1);
   });
 

@@ -49,6 +49,8 @@ alter table public.request_physical_access_items disable trigger request_physica
 
 -- Order matters: items on access changes point at the inventory, the
 -- inventory points at requests, everything points at requests / people.
+-- Request emails (F23) go with their requests; test emails stay.
+delete from public.email_outbox where request_id is not null;
 delete from public.request_access_items;
 delete from public.request_equipment_items;
 delete from public.request_physical_access_items;
