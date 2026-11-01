@@ -564,6 +564,73 @@ export type Database = {
         };
         Relationships: [];
       };
+      email_outbox: {
+        Row: {
+          attempts: number;
+          created_at: string;
+          dedupe_key: string;
+          details: NonNullable<Json>;
+          id: number;
+          kind: string;
+          last_error: string | null;
+          provider_id: string | null;
+          request_id: string | null;
+          send_after: string;
+          sent_at: string | null;
+          status: string;
+          to_email: string;
+          to_user: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          attempts?: number;
+          created_at?: string;
+          dedupe_key: string;
+          details?: NonNullable<Json>;
+          id?: never;
+          kind: string;
+          last_error?: string | null;
+          provider_id?: string | null;
+          request_id?: string | null;
+          send_after?: string;
+          sent_at?: string | null;
+          status?: string;
+          to_email: string;
+          to_user: string;
+        };
+        Update: {
+          attempts?: number;
+          created_at?: string;
+          dedupe_key?: string;
+          details?: NonNullable<Json>;
+          id?: never;
+          kind?: string;
+          last_error?: string | null;
+          provider_id?: string | null;
+          request_id?: string | null;
+          send_after?: string;
+          sent_at?: string | null;
+          status?: string;
+          to_email?: string;
+          to_user?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "email_outbox_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "email_outbox_to_user_fkey";
+            columns: ["to_user"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
+      };
       employee_access_inventory: {
         Row: {
           access_type_id: number | null;
@@ -876,6 +943,57 @@ export type Database = {
           version?: string;
         };
         Relationships: [];
+      };
+      notification_settings: {
+        Row: {
+          closed: boolean;
+          id: boolean;
+          reminder: boolean;
+          reminder_after_days: number;
+          returned: boolean;
+          sla_due: boolean;
+          sla_missed: boolean;
+          sla_warn_hours: number;
+          updated_at: string;
+          updated_by: string | null;
+          waiting: boolean;
+        };
+        ComputedFields: never;
+        Insert: {
+          closed?: boolean;
+          id?: boolean;
+          reminder?: boolean;
+          reminder_after_days?: number;
+          returned?: boolean;
+          sla_due?: boolean;
+          sla_missed?: boolean;
+          sla_warn_hours?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+          waiting?: boolean;
+        };
+        Update: {
+          closed?: boolean;
+          id?: boolean;
+          reminder?: boolean;
+          reminder_after_days?: number;
+          returned?: boolean;
+          sla_due?: boolean;
+          sla_missed?: boolean;
+          sla_warn_hours?: number;
+          updated_at?: string;
+          updated_by?: string | null;
+          waiting?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_settings_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+        ];
       };
       office_cities: {
         Row: {
@@ -2049,6 +2167,17 @@ export type Database = {
         };
         Returns: number;
       };
+      admin_save_notification_settings: {
+        Args: {
+          p_closed: boolean;
+          p_reminder: boolean;
+          p_returned: boolean;
+          p_sla_due: boolean;
+          p_sla_missed: boolean;
+          p_waiting: boolean;
+        };
+        Returns: undefined;
+      };
       admin_save_office: {
         Args: {
           p_city: string;
@@ -2168,6 +2297,31 @@ export type Database = {
           total_count: number;
         }[];
       };
+      claim_outbox: {
+        Args: { p_limit?: number };
+        Returns: {
+          attempts: number;
+          created_at: string;
+          dedupe_key: string;
+          details: NonNullable<Json>;
+          id: number;
+          kind: string;
+          last_error: string | null;
+          provider_id: string | null;
+          request_id: string | null;
+          send_after: string;
+          sent_at: string | null;
+          status: string;
+          to_email: string;
+          to_user: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "email_outbox";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       confirm_request: {
         Args: { p_request_id: string; p_reviewed: Json };
         Returns: string;
@@ -2227,11 +2381,27 @@ export type Database = {
         };
         Returns: undefined;
       };
+      mark_outbox_failed: {
+        Args: { p_error: string; p_id: number };
+        Returns: undefined;
+      };
+      mark_outbox_sent: {
+        Args: { p_id: number; p_provider_id: string };
+        Returns: undefined;
+      };
       mark_role_changes_seen: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
       my_timezone: { Args: Record<PropertyKey, never>; Returns: string };
+      queue_scheduled_notifications: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
+      queue_test_email: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
       record_ai_usage: {
         Args: {
           p_input_tokens: number;

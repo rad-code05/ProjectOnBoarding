@@ -44,7 +44,8 @@ All planned screens now have a first design. Nothing is built yet.
 | Sign-in: new-device code, reset password | Draft, awaiting review |
 | My profile · Admin (4 screens) · Audit log | Phone boards approved; My profile, Admin apps/types/settings and **Audit log + Request activity built** (F05, F19, F11) |
 | Offboarding · Returned · Batch review (access modification described in spec) | Offboarding built (F09, phone boards approved 2026-10-12) · Returned built (F07c) · Batch review: draft |
-| PDF document (2 pages) · System states · Email notifications (phase 2) | Draft, awaiting review |
+| PDF document (2 pages) · System states | Draft, awaiting review |
+| **Email notifications** (six emails) + Phone · **Admin · Notifications** (F23) | Approved (2026-11-01); building (F23) |
 | Components sheet · shared components (TopBar, BrandPanel, AdminNav) | Draft |
 | Phone (D22): app shell (menu closed/open) · requests list (+ empty) · request form sections 1–2 (+ changed elsewhere) | Approved (2026-10-07) |
 | Phone (D22): sections 4–5 application access (+ edit-an-app sheet) | Approved (2026-10-08) |

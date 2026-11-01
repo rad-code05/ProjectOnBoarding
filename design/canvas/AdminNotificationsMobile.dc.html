@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Admin · Notifications · Phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500&amp;family=Raleway:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;font-family:Raleway,sans-serif;color:#000000;background:#F4F0EA}
+a{color:#000000}a:hover{color:#cf2e2e}
+</style>
+</helmet>
+<div style="width: 390px; height: 1500px; position: relative; font-family: Raleway, sans-serif; background: #F4F0EA; color: #000000">
+
+<header style="height: 56px; box-sizing: border-box; padding: 0 8px 0 16px; background: #000000; display: flex; align-items: center; gap: 12px; color: #FFFFFF">
+<img src="/_blob/17b23c9ce6dc5f048942c7b514470f03" alt="Laine" style="width: 60px; height: 22px; display: block; flex-shrink: 0">
+<div style="width: 1px; height: 18px; background: #333333; flex-shrink: 0"></div>
+<span style="flex-grow: 1; font-family: Newsreader, serif; font-size: 16px">Onboarding rights</span>
+<a href="#" aria-label="My profile: Raju Bholani" style="width: 36px; height: 36px; border-radius: 100px; background: #333333; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; text-decoration: none">RB</a>
+<button type="button" aria-label="Open menu" style="width: 44px; height: 44px; border: none; background: transparent; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h16"></path></svg>
+</button>
+</header>
+
+<div style="padding: 4px 16px 0; height: 52px; display: flex; align-items: center; border-bottom: 1px solid #dcd4c7">
+<a href="#" style="display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Admin</a>
+</div>
+
+<main style="padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: Newsreader, serif; font-weight: 400; font-size: 32px; line-height: 1.1">Notifications</h1>
+<p style="margin: 0; font-size: 13px; line-height: 1.5; color: #535353">Emails the app sends when something needs someone. Every email is recorded below.</p>
+</div>
+
+<section aria-labelledby="sender-h" style="padding: 14px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; display: flex; flex-direction: column; gap: 8px">
+<h2 id="sender-h" style="margin: 0; font-size: 13px; font-weight: 700">Sender</h2>
+<span style="font-size: 15px; font-weight: 700">no-reply@access-notify.laine.ai</span>
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="height: 22px; padding: 0 9px; border: 1px solid #000000; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center">Not connected yet</span>
+<span style="font-size: 12px; color: #535353">Emails wait in the outbox</span>
+</div>
+<span style="font-size: 12px; line-height: 1.5; color: #535353">Real sending starts when the domain's DNS records are added (Laine IT) and the Resend key is saved on the server. Test and preview sites only ever email the test accounts.</span>
+<button type="button" style="align-self: flex-start; height: 40px; padding: 0 16px; border: 1px solid #000000; border-radius: 100px; background: transparent; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">Send a test email to me</button>
+</section>
+
+<section aria-labelledby="which-h" style="padding: 14px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; display: flex; flex-direction: column; gap: 4px">
+<h2 id="which-h" style="margin: 0 0 6px; font-size: 13px; font-weight: 700">Which emails</h2>
+<sc-for list="{{kinds}}" as="k" hint-placeholder-count="6">
+<label style="min-height: 56px; padding: 8px 0; border-top: 1px solid #ece6db; display: flex; align-items: center; gap: 12px">
+<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 700">{{k.name}}</span>
+<span style="font-size: 12px; line-height: 1.4; color: #535353">{{k.when}}</span>
+</span>
+<span style="width: 44px; height: 26px; border-radius: 100px; background: #000000; position: relative; flex-shrink: 0"><span style="position: absolute; top: 3px; left: 21px; width: 20px; height: 20px; border-radius: 100px; background: #FFFFFF"></span></span>
+<input type="checkbox" checked style="position: absolute; opacity: 0; width: 1px; height: 1px">
+</label>
+</sc-for>
+<span style="margin-top: 6px; font-size: 12px; line-height: 1.5; color: #535353">Reminders: once a day after 2 days of waiting (company time), until someone confirms or returns it. Switching an email off stops new ones; nothing already sent changes.</span>
+<button type="button" style="margin-top: 6px; align-self: flex-start; height: 40px; padding: 0 16px; border: none; border-radius: 100px; background: #000000; color: #FFFFFF; font-family: Raleway, sans-serif; font-size: 13px; font-weight: 600">Save</button>
+</section>
+
+<section aria-labelledby="sent-h" style="padding: 14px; background: #FFFFFF; border: 1px solid #dcd4c7; border-radius: 14px; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<h2 id="sent-h" style="margin: 0 0 6px; font-size: 13px; font-weight: 700">Recent emails</h2>
+<span style="font-size: 12px; color: #535353">last 30 days</span>
+</div>
+<ul style="margin: 0; padding: 0; list-style: none">
+<sc-for list="{{sent}}" as="m" hint-placeholder-count="5">
+<li style="padding: 10px 0; border-top: 1px solid #ece6db; display: flex; flex-direction: column; gap: 3px">
+<span style="display: flex; align-items: center; gap: 8px">
+<span style="flex-grow: 1; font-size: 13px; font-weight: 700">{{m.subject}}</span>
+<span style="height: 20px; padding: 0 8px; border: 1px solid {{m.border}}; color: {{m.color}}; border-radius: 100px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; white-space: nowrap">{{m.status}}</span>
+</span>
+<span style="font-size: 12px; color: #535353">To {{m.to}} · {{m.when}}</span>
+</li>
+</sc-for>
+</ul>
+<span style="font-size: 12px; line-height: 1.5; color: #535353">A failed email is tried again 3 times, then shown as Failed with the reason. Every email is also in the audit log.</span>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1500}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+  kinds: [
+    { name: 'Waiting for approval', when: 'To every approver, when IT signs a request (and after a fix).' },
+    { name: 'Reminder to approvers', when: 'Daily after 2 days of waiting.' },
+    { name: 'Returned', when: 'To the IT signer, with a short excerpt of the comment.' },
+    { name: 'Closed — PDF ready', when: 'To the IT signer, when an approver confirms.' },
+    { name: 'SLA due soon', when: 'To IT, 6 hours before an offboarding deadline.' },
+    { name: 'SLA missed', when: 'To IT, when the deadline passes unfinished.' }
+  ],
+  sent: [
+    { subject: 'Waiting for your confirmation: Anna Keller', to: 'Moises Larez, Celine Example', when: 'today 10:12', status: 'Sent', border: '#000000', color: '#000000' },
+    { subject: 'Closed — PDF ready: Tom Becker', to: 'Raju Bholani', when: 'today 09:05', status: 'Sent', border: '#000000', color: '#000000' },
+    { subject: 'SLA due in 6h: Marco Rossi offboarding', to: 'Raju Bholani', when: 'yesterday 12:00', status: 'Waiting', border: '#8a8378', color: '#535353' },
+    { subject: 'Returned by Moises: Lina Haddad', to: 'Raju Bholani', when: '29 Oct 16:40', status: 'Failed', border: '#cf2e2e', color: '#cf2e2e' },
+    { subject: 'Test email', to: 'Raju Bholani', when: '29 Oct 16:02', status: 'Sent', border: '#000000', color: '#000000' }
+  ]
+};
+}
+}
+</script>
+</body>
+</html>

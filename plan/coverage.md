@@ -214,7 +214,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 
 | # | Item | Source | Where | Status |
 | --- | --- | --- | --- | --- |
-| M1 | Email notifications (approver waiting, returned, SLA due) | §13, `records-states.md` | F23 | ⏳ ❓ D10 |
+| M1 | Email notifications (approver waiting + daily reminders, returned, closed, SLA due / missed) | §13, `records-states.md` | F23 | pgTAP `email_outbox`; F23b–d tests | 🟡 D10 ✅ (email, before go-live); F23a outbox + triggers + schedule (pgTAP `email_outbox`) — sending F23b, Admin F23c |
 | M2 | Slack notifications, contractor end-date reminders | §13 | not planned yet | ➖ phase 2 — add as F27+ when wanted |
 | M3 | SSO (Microsoft 365 / Google) | D1 | later, no redesign needed | ➖ |
 | M4 | Automatic provisioning in external tools | §1, §16 | out of scope v1 | ➖ |
