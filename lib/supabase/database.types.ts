@@ -2389,11 +2389,16 @@ export type Database = {
         Args: { p_id: number; p_provider_id: string };
         Returns: undefined;
       };
+      mark_outbox_skipped: {
+        Args: { p_id: number; p_reason: string };
+        Returns: undefined;
+      };
       mark_role_changes_seen: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
       my_timezone: { Args: Record<PropertyKey, never>; Returns: string };
+      outbox_email_facts: { Args: { p_id: number }; Returns: Json };
       queue_scheduled_notifications: {
         Args: Record<PropertyKey, never>;
         Returns: number;
