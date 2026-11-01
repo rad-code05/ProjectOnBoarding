@@ -5,7 +5,9 @@ import {
   SummaryTile,
   buttonStyles,
 } from "@/components/ui";
+import { RoleChangesCard } from "@/components/approvals/RoleChangesCard";
 import { loadApprovals, type WaitingRequest } from "@/lib/approvals/list";
+import { recentRoleChanges } from "@/lib/approvals/role-changes";
 import { requireRole } from "@/lib/auth";
 import { PAGES } from "@/lib/navigation";
 
@@ -55,8 +57,8 @@ function WaitingCard({ request }: { request: WaitingRequest }) {
 /** Moises's landing page (design: Moises · Approvals + Phone · Approvals). */
 export default async function ApprovalsPage() {
   await requireRole(...PAGES.approvals.roles);
-  const { waiting, returnedCount, closedThisMonth, recentlyClosed } =
-    await loadApprovals();
+  const [{ waiting, returnedCount, closedThisMonth, recentlyClosed }, roles] =
+    await Promise.all([loadApprovals(), recentRoleChanges()]);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
@@ -137,6 +139,10 @@ export default async function ApprovalsPage() {
           <p className="text-sm text-graphite">Nothing closed yet.</p>
         )}
       </section>
+
+      {roles.lines.length > 0 && (
+        <RoleChangesCard lines={roles.lines} older={roles.older} />
+      )}
 
       <p className="text-xs text-graphite">
         You can confirm or return requests, view reports and export records.

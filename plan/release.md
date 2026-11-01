@@ -1,6 +1,8 @@
 # Release (go-live)
 
-**When (changed 2026-10-11 by Raju):** after **all features** (F01–F23 and F26) and then the data load — **F24** Excel import and **F25** AI screenshot check — so production starts with **complete data** (everyone's current access, past onboardings). Earlier plan was go-live after F11.
+**Go-live scope (decided 2026-11-01, Raju):** go live with a *core* release instead of after every feature. **Before go-live:** F18 users & roles ✅ · **F23 email notifications** · **F24** Excel import of existing staff (D11) · R1 security · R2 accessibility · **R4 backups + database** (restore test) · R6 guides · R7 production. **After go-live:** F22 SharePoint · R3 observability · F28 second email (optional — laine.ai is the main domain, lainetech.ai optional) · F20 form fields · F21 templates & defaults · F25 screenshot check · F26 access matrix / quarterly review. Laine to start now (they take longest): a subdomain + someone for DNS (Clerk production and sending email from laine.ai), approval of the running costs (Clerk Pro, Supabase Pro, Vercel Pro), D12 account ownership, D6 auditor OK, D2 retention.
+
+**Earlier (2026-10-11, replaced above):** after **all features** (F01–F23 and F26) and then the data load — **F24** Excel import and **F25** AI screenshot check — so production starts with **complete data** (everyone's current access, past onboardings). Earlier plan was go-live after F11.
 
 Security and accessibility are checked **in every feature**; this is the final review, not the first.
 
