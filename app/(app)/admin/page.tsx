@@ -45,6 +45,11 @@ export default async function AdminPage() {
       note: `Laine assistant: ${o.assistant}`,
     },
     {
+      href: "/admin/notifications",
+      title: "Notifications",
+      note: o.notifications,
+    },
+    {
       href: "/admin/settings",
       title: "Settings",
       note: `Company timezone: ${o.companyTimezone}`,

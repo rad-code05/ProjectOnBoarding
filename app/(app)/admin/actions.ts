@@ -11,6 +11,7 @@ import {
 import { testModel } from "@/lib/ai/test-model";
 import { catalogErrorMessage } from "@/lib/admin/catalog-shared";
 import { requireRole } from "@/lib/auth";
+import { nudgeSender } from "@/lib/notifications/run";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export type AdminResult = { ok: true } | { ok: false; message: string };
@@ -525,5 +526,66 @@ export async function testAiModel(input: {
       p_output_tokens: result.outputTokens,
     });
   }
+  return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Notifications (F23c)
+// ---------------------------------------------------------------------------
+
+const switchesInput = z.object({
+  waiting: z.boolean(),
+  reminder: z.boolean(),
+  returned: z.boolean(),
+  closed: z.boolean(),
+  sla_due: z.boolean(),
+  sla_missed: z.boolean(),
+});
+
+/** Which emails are sent. The database checks the admin and audits it. */
+export async function saveNotificationSettings(
+  input: z.infer<typeof switchesInput>,
+): Promise<AdminResult> {
+  await requireRole("admin");
+  const parsed = switchesInput.safeParse(input);
+  if (!parsed.success) return { ok: false, message: "Check the switches." };
+  const s = parsed.data;
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("admin_save_notification_settings", {
+    p_waiting: s.waiting,
+    p_reminder: s.reminder,
+    p_returned: s.returned,
+    p_closed: s.closed,
+    p_sla_due: s.sla_due,
+    p_sla_missed: s.sla_missed,
+  });
+  if (error) {
+    return {
+      ok: false,
+      message:
+        error.code === "42501"
+          ? "Only an admin changes the notifications."
+          : "Could not save. Reload and try again.",
+    };
+  }
+  revalidatePath("/admin/notifications");
+  return { ok: true };
+}
+
+/** A test email to the admin themselves, sent straight away when possible. */
+export async function sendTestEmail(): Promise<AdminResult> {
+  await requireRole("admin");
+  const supabase = createServerSupabaseClient();
+  const { error } = await supabase.rpc("queue_test_email");
+  if (error) {
+    return {
+      ok: false,
+      message:
+        error.code === "42501"
+          ? "Only an admin sends a test email."
+          : "Could not queue the test email. Try again.",
+    };
+  }
+  nudgeSender();
   return { ok: true };
 }
