@@ -196,6 +196,17 @@ const SECTION9 = (checks: Obj) => {
  * request's own timeline ("added Slack", "confirmed, signed and closed it").
  * `people` maps Clerk IDs to names, for events about another account.
  */
+/** Notification email kinds in the audit log (F23). */
+const EMAIL_NAMES: Record<string, string> = {
+  waiting: "Waiting for approval",
+  reminder: "Reminder to approvers",
+  returned: "Returned",
+  closed: "Closed — PDF ready",
+  sla_due: "SLA due soon",
+  sla_missed: "SLA missed",
+  test: "Test email",
+};
+
 export function describeEvent(
   ev: RawAuditEvent,
   options: { ref?: string | null; people?: Record<string, string> } = {},
@@ -573,6 +584,20 @@ export function describeEvent(
           : "went back to the company timezone",
         "My profile",
       );
+    }
+    case "notification.settings_changed":
+      return say("changed which emails are sent", "Admin → Notifications");
+    case "notification.test_queued":
+      return say("asked for a test email", "Admin → Notifications");
+    case "notification.sent":
+    case "notification.failed": {
+      const name = EMAIL_NAMES[str(d, "kind") ?? ""];
+      const email = name ? `the email “${name}”` : "an email";
+      const person = str(d, "to");
+      const whom = (person && people[person]) || "a person";
+      const verb =
+        ev.action === "notification.sent" ? "sent" : "could not send";
+      return say(`${verb} ${email} to ${whom}${on}`, "Admin → Notifications");
     }
     case "settings.timezone_changed":
       return say(

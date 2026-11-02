@@ -577,3 +577,22 @@ describe("invitations (F18c)", () => {
     );
   });
 });
+
+describe("notifications (F23)", () => {
+  test("settings, test email, sent and failed emails", () => {
+    const say = (action: string, diff: Record<string, Json> = {}) =>
+      describeEvent(ev({ action, diff, ticket_id: null }), {
+        people: { user_m: "Moises Larez" },
+      }).what;
+    expect(say("notification.settings_changed")).toBe(
+      "changed which emails are sent",
+    );
+    expect(say("notification.test_queued")).toBe("asked for a test email");
+    expect(say("notification.sent", { kind: "waiting", to: "user_m" })).toBe(
+      "sent the email “Waiting for approval” to Moises Larez",
+    );
+    expect(say("notification.failed", { kind: "odd", to: "user_x" })).toBe(
+      "could not send an email to a person",
+    );
+  });
+});

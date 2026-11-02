@@ -1,8 +1,10 @@
 import "server-only";
+import { sendMode } from "@/lib/notifications/policy";
 import { formatDay } from "@/lib/requests/format";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { displayTimezone } from "@/lib/time/display";
 import { personName } from "@/lib/requests/labels";
+import { EMAIL_SWITCHES, senderStatus } from "./notifications-shared";
 
 /** Numbers for the Admin home (board: Phone · Admin (home)). */
 export type AdminOverview = {
@@ -19,6 +21,8 @@ export type AdminOverview = {
   companyTimezone: string;
   /** "On · Claude Sonnet 5.5" (Admin → AI settings). */
   assistant: string;
+  /** "6 of 6 emails on · Not connected yet" (Admin → Notifications). */
+  notifications: string;
 };
 
 export async function loadAdminOverview(): Promise<AdminOverview> {
@@ -61,6 +65,11 @@ export async function loadAdminOverview(): Promise<AdminOverview> {
     .from("ai_settings")
     .select("enabled, model:ai_models(name)")
     .maybeSingle();
+  const mail = await supabase
+    .from("notification_settings")
+    .select("waiting, reminder, returned, closed, sla_due, sla_missed")
+    .maybeSingle();
+  const on = mail.data ? Object.values(mail.data).filter(Boolean).length : 0;
   const rows = apps.data ?? [];
   return {
     appsActive: rows.filter((a) => a.active).length,
@@ -76,6 +85,7 @@ export async function loadAdminOverview(): Promise<AdminOverview> {
     assistant: ai.data
       ? `${ai.data.enabled ? "On" : "Off"} · ${ai.data.model?.name ?? "—"}`
       : "Not set up",
+    notifications: `${on} of ${EMAIL_SWITCHES.length} emails on · ${senderStatus(sendMode(process.env)).headline}`,
   };
 }
 
