@@ -7,6 +7,7 @@ import {
 } from "@/lib/approvals/role-changes";
 import { requireRole } from "@/lib/auth";
 import { PAGES } from "@/lib/navigation";
+import { nudgeSender } from "@/lib/notifications/run";
 import { ensureRecordPdf } from "@/lib/records/ensure";
 import {
   approvalErrorMessage,
@@ -40,6 +41,7 @@ export async function confirmRequest(input: {
       message: approvalErrorMessage(error.code, error.message),
     };
   }
+  nudgeSender();
   // The request is closed: make its PDF record now. If that fails, the
   // first download makes it instead (same snapshot, same result).
   try {
@@ -76,6 +78,7 @@ export async function returnRequest(input: {
       message: approvalErrorMessage(error.code, error.message),
     };
   }
+  nudgeSender();
   return { ok: true };
 }
 

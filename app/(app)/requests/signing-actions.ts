@@ -3,6 +3,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import * as z from "zod";
 import { requireRole } from "@/lib/auth";
+import { nudgeSender } from "@/lib/notifications/run";
 import { loadSignatures } from "@/lib/profile/signatures";
 import {
   signErrorMessage,
@@ -111,5 +112,6 @@ export async function signRequest(input: {
   });
   if (error)
     return { ok: false, message: signErrorMessage(error.code, error.message) };
+  nudgeSender();
   return { ok: true };
 }
