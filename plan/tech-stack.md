@@ -23,7 +23,7 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | AI model | **Anthropic (D7, 2026-10-09).** Chosen in Admin → AI settings from a list kept as data (seeded in `ai_models`, F15a: `claude-sonnet-5-5` default, `claude-opus-5-5`, `claude-haiku-4-5`; the admin adds more in Admin → AI settings) | `@ai-sdk/anthropic` | 4.0.81 (F15c) | F15 |
 | Batch files | CSV / XLSX parsing (server-side) — **pending D8** | `papaparse`, `exceljs` | 5.7.0 · 4.4.0 | F17 |
 | Charts | Plain SVG/HTML bars (single series) — no chart library needed | — | — | F12 |
-| Email (phase 7) | Resend | `resend` | 6.31.0 | F23 |
+| Email (phase 7) | Resend | `resend` | 6.34.1 (pinned 2026-11-02) | F23b-3 |
 | SharePoint (phase 7) | Microsoft Graph via server `fetch` (`Sites.Selected`) — client library optional | `@microsoft/microsoft-graph-client` (optional) | 3.0.7 | F22 |
 | Error monitoring | Sentry with personal-data scrubbing (to confirm in 6.3) | `@sentry/nextjs` | 11.1.0 | R3 |
 
@@ -79,7 +79,9 @@ Versions below are the **latest published on npm on 2026-09-30** — step **S1**
 | `ROLE_BOOTSTRAP` (`email=role+role; …` for `pnpm users:sync` — keeps real emails out of the public repo) | `.env.local` only (CI builds it from the test-user variables) | S6 |
 | `E2E_ADMIN_EMAIL`, `E2E_APPROVER_EMAIL` (Clerk dev test users, `+clerk_test`) · `E2E_ADMIN_TOTP_SECRET`, `E2E_APPROVER_TOTP_SECRET` (their authenticator keys — MFA is required for everyone) | `.env.local` + GitHub Actions (emails = variables, keys = secrets; keys also as Dependabot secrets) | S7d |
 | `AI_PROVIDER`, `AI_MODEL`, `ANTHROPIC_API_KEY` (or `OPENROUTER_API_KEY`) | server | F15 |
-| `RESEND_API_KEY` | server | F23 |
+| `RESEND_API_KEY` | server (no key = emails wait) | F23 |
+| `EMAIL_SENDER_SECRET` | server — same value as Supabase Vault `email_sender_secret` | F23b-3 |
+| `EMAIL_FROM` / `APP_URL` | server, optional (sender; site the buttons open) | F23b-3 |
 | `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `SHAREPOINT_SITE_ID`, `SHAREPOINT_FOLDER_ID` | server | F22 |
 | `SENTRY_DSN` | all envs | R3 |
 
