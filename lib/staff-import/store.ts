@@ -30,6 +30,8 @@ export type StaffImportRow = {
   problems: Problem[];
   onboardingRequestId: string | null;
   offboardingRequestId: string | null;
+  /** The Imported records' tickets, once imported (IMP-…). */
+  tickets: string[];
 };
 
 export type StaffImport = {
@@ -193,7 +195,7 @@ export async function loadImport(
   const { data: rows, error } = await db
     .from("staff_import_rows")
     .select(
-      "id, position, included, data, person, problems, onboarding_request_id, offboarding_request_id",
+      "id, position, included, data, person, problems, onboarding_request_id, offboarding_request_id, onboarding:requests!staff_import_rows_onboarding_request_id_fkey(ticket_id), offboarding:requests!staff_import_rows_offboarding_request_id_fkey(ticket_id)",
     )
     .eq("import_id", id)
     .order("position");
@@ -224,6 +226,9 @@ export async function loadImport(
         problems: (r.problems ?? []) as unknown as Problem[],
         onboardingRequestId: r.onboarding_request_id,
         offboardingRequestId: r.offboarding_request_id,
+        tickets: [r.onboarding?.ticket_id, r.offboarding?.ticket_id].filter(
+          (t): t is string => Boolean(t),
+        ),
       };
     }),
   };
@@ -252,4 +257,101 @@ export async function listImports(db: ServerSupabase) {
     rows:
       (i.staff_import_rows as unknown as { count: number }[])[0]?.count ?? 0,
   }));
+}
+
+/**
+ * Every row of an open import checked again (after a fix, and before
+ * Confirm — someone may have joined the app meanwhile); only rows whose
+ * result changed are written. A person now in the app is left out.
+ */
+export async function recheckImport(db: ServerSupabase, importId: string) {
+  const { data: rows, error } = await db
+    .from("staff_import_rows")
+    .select("id, position, included, data, person, problems")
+    .eq("import_id", importId);
+  if (error) throw new Error(error.message);
+  const list = (rows ?? []).map((r) => {
+    const data = (r.data ?? {}) as Partial<ImportRowData>;
+    return { ...r, values: data.values ?? {}, data };
+  });
+  const checked = checkImport(list, await context(db, list));
+  for (const r of list) {
+    const c = checked.get(r.position);
+    if (!c) continue;
+    const skipped = c.skipped ?? null;
+    const included = skipped ? false : r.included;
+    if (
+      JSON.stringify(c.person) === JSON.stringify(r.person) &&
+      JSON.stringify(c.problems) === JSON.stringify(r.problems) &&
+      skipped === (r.data.skipped ?? null) &&
+      included === r.included
+    )
+      continue;
+    const { error: e } = await db
+      .from("staff_import_rows")
+      .update({
+        included,
+        data: { ...r.data, skipped } as NonNullable<Json>,
+        person: c.person as NonNullable<Json>,
+        problems: c.problems as NonNullable<Json>,
+      })
+      .eq("id", r.id);
+    if (e) throw new Error(e.message);
+  }
+}
+
+/** A fixed row (new cells and / or Include); after new cells, the whole import is checked again. */
+export async function saveImportRow(
+  db: ServerSupabase,
+  rowId: string,
+  change: { values?: Record<string, string>; included?: boolean },
+): Promise<string> {
+  const { data: row, error } = await db
+    .from("staff_import_rows")
+    .select("import_id, data")
+    .eq("id", rowId)
+    .single();
+  if (error || !row) throw new Error(error?.message ?? "row not found");
+  const update: { data?: NonNullable<Json>; included?: boolean } = {};
+  if (change.values) {
+    const data = (row.data ?? {}) as Partial<ImportRowData>;
+    const values = Object.fromEntries(
+      Object.entries(change.values)
+        .map(([k, v]) => [k, v.trim().slice(0, 500)] as const)
+        .filter(([, v]) => v !== ""),
+    );
+    update.data = { ...data, values } as NonNullable<Json>;
+  }
+  if (change.included !== undefined) update.included = change.included;
+  const { error: e } = await db
+    .from("staff_import_rows")
+    .update(update)
+    .eq("id", rowId);
+  if (e) throw new Error(e.message);
+  if (change.values) await recheckImport(db, row.import_id);
+  return row.import_id;
+}
+
+/**
+ * Confirm: checked once more with the latest data, then the database
+ * imports every ready row or none (`import_staff()`).
+ */
+export async function confirmImport(
+  db: ServerSupabase,
+  importId: string,
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  await recheckImport(db, importId);
+  const { error } = await db.rpc("import_staff", { p_import: importId });
+  if (!error) return { ok: true };
+  if (error.code === "42501")
+    return { ok: false, message: "Only an admin imports staff." };
+  if (["23514", "23505", "P0002"].includes(error.code ?? ""))
+    return {
+      ok: false,
+      message: `Nothing was imported: ${error.message.replace(/^row (\d+):/, "row $1 —")}. Fix it and confirm again.`,
+    };
+  return {
+    ok: false,
+    message: "Could not import. Check your connection and try again.",
+  };
 }

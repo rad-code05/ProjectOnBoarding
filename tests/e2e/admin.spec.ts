@@ -891,6 +891,76 @@ test("Admin → AI settings: limits saved and audited, then put back", async ({
   await expect(page.getByText("AI settings saved.")).toBeVisible();
 });
 
+test("Admin → Import (F24c): a staff file is checked, one row fixed, then imported as IMP records with the file's dates", async ({
+  page,
+}) => {
+  test.slow(); // upload, a fix, Confirm
+  const stamp = Date.now();
+  const email = (who: string) => `e2e.import.${who}.${stamp}@example.com`;
+  const csv = [
+    "First name,Last name,Work email,Department,Office,Start date,Leave date,Other applications",
+    `Lena,Import,${email("lena")},Engineering,Dubai,2025-01-06,,Notion (Member)`,
+    `Hugo,Import,${email("hugo")},Nowhere,Dubai,2024-06-10,2026-02-28,`,
+  ].join("\n");
+
+  await openApp(page, "/admin");
+  await page.getByRole("link", { name: /^Import existing staff/ }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Import existing staff" }),
+  ).toBeVisible();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: `staff-${stamp}.csv`,
+    mimeType: "text/csv",
+    buffer: Buffer.from(csv),
+  });
+  await page.getByRole("button", { name: "Read the file" }).click();
+  await expect(page).toHaveURL(/\/admin\/import\/[0-9a-f-]{36}$/);
+
+  // Hugo's department isn't in the list: the card names the cell.
+  const hugo = page.getByRole("listitem", { name: /^Hugo Import/ });
+  await expect(hugo).toContainText("Needs attention");
+  await expect(hugo).toContainText('There is no department "Nowhere"');
+  await expect(
+    page.getByRole("listitem", { name: /^Lena Import — Ready/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Import 1 person…" }),
+  ).toBeVisible();
+
+  await hugo.getByRole("button", { name: "Fix this row" }).click();
+  const sheet = page.getByRole("dialog", { name: "Hugo Import" });
+  await choose(page, "Department / team", "Engineering");
+  await sheet.getByRole("button", { name: "Save row" }).click();
+  await expect(sheet).toHaveCount(0);
+  await expect(
+    page.getByRole("listitem", { name: /^Hugo Import — Ready/ }),
+  ).toContainText("Leaver");
+
+  await page.getByRole("button", { name: "Import 2 people…" }).click();
+  const confirm = page.getByRole("dialog", { name: "Import 2 people?" });
+  await expect(confirm).toContainText("working here");
+  await confirm.getByRole("button", { name: "Confirm — import 2" }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "2 people imported" }),
+  ).toBeVisible();
+  const records = page.getByRole("list", { name: "Imported records" });
+  // Lena: one record dated 2025; Hugo: onboarding 2024 + offboarding 2026.
+  await expect(records).toContainText(/IMP-2025-\d{6}/);
+  await expect(records).toContainText(/IMP-2024-\d{6} · IMP-2026-\d{6}/);
+  await expect(
+    page.getByRole("link", { name: "Download the import file" }),
+  ).toBeVisible();
+
+  // The import is listed, done.
+  await page.getByRole("link", { name: "Import", exact: true }).click();
+  await expect(
+    page
+      .getByRole("listitem")
+      .filter({ hasText: `staff-${stamp}.csv` })
+      .first(),
+  ).toContainText("2 people (1 leaver)");
+});
+
 test("Admin → Notifications: sender status, a switch saved and put back, a test email in the outbox", async ({
   page,
 }) => {
