@@ -3,7 +3,8 @@
  *
  * - No Resend key → nothing is sent; emails wait in the outbox.
  * - Preview sites (pull requests) never send.
- * - Production sends to everyone.
+ * - Production sends to everyone but the test accounts (stand-in Clerk
+ *   addresses with no real mailbox — an email to them bounces).
  * - Every other site (local, CI, development) emails the test accounts only.
  */
 export type SendMode =
@@ -33,6 +34,8 @@ export function isTestAccountEmail(email: string): boolean {
 }
 
 export const TEST_SITE_SKIP = "Test site: only the test accounts get emails.";
+export const LIVE_SITE_SKIP =
+  "Test account: no real mailbox — the live site doesn't email it.";
 
 /** The sender address (`EMAIL_FROM` overrides it, e.g. before DNS is ready). */
 export const DEFAULT_FROM =

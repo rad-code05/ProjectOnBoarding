@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { COMPANY_TIMEZONE } from "@/lib/requests/format";
 import type { Database } from "@/lib/supabase/database.types";
-import { isTestAccountEmail, TEST_SITE_SKIP } from "./policy";
+import { isTestAccountEmail, LIVE_SITE_SKIP, TEST_SITE_SKIP } from "./policy";
 import { renderEmail, type EmailFacts } from "./templates";
 
 /**
@@ -69,8 +69,9 @@ export async function sendDueEmails(options: {
 
   for (const row of rows) {
     try {
-      if (options.testAccountsOnly && !isTestAccountEmail(row.to_email)) {
-        await skip(row.id, TEST_SITE_SKIP);
+      const testAccount = isTestAccountEmail(row.to_email);
+      if (options.testAccountsOnly !== testAccount) {
+        await skip(row.id, testAccount ? LIVE_SITE_SKIP : TEST_SITE_SKIP);
         continue;
       }
       const { data, error: factsError } = await db.rpc("outbox_email_facts", {

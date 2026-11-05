@@ -1,11 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Database } from "@/lib/supabase/database.types";
-import { TEST_SITE_SKIP } from "./policy";
+import { LIVE_SITE_SKIP, TEST_SITE_SKIP } from "./policy";
 import { sendDueEmails, type Mailer } from "./sender";
 import type { EmailFacts } from "./templates";
 
 const ADMIN = "e2e.admin+clerk_test@laine.ai";
+/** A real person: the live site emails them. */
+const PERSON = "rita.requestor@example.com";
 
 const facts = (id: string): EmailFacts => ({
   kind: "waiting",
@@ -98,11 +100,11 @@ describe("sendDueEmails", () => {
   });
 
   it("sends a due email and marks it sent with Resend's id", async () => {
-    const { db, marks } = fakeDb([{ id: 7, to_email: ADMIN }], due);
+    const { db, marks } = fakeDb([{ id: 7, to_email: PERSON }], due);
     expect(await run(db)).toMatchObject({ claimed: 1, sent: 1 });
     const [mail, key] = mailer.mock.calls[0]!;
     expect(key).toBe("laine-outbox-7");
-    expect(mail.to).toBe(ADMIN);
+    expect(mail.to).toBe(PERSON);
     expect(mail.from).toBe("Laine <no-reply@access-notify.laine.ai>");
     expect(mail.subject).toContain("Leila Haddad");
     expect(mail.html).toContain("https://app.example/approvals/req-7");
@@ -110,7 +112,7 @@ describe("sendDueEmails", () => {
   });
 
   it("skips an email that is no longer due, with the database's reason", async () => {
-    const { db, marks } = fakeDb([{ id: 8, to_email: ADMIN }], () => ({
+    const { db, marks } = fakeDb([{ id: 8, to_email: PERSON }], () => ({
       due: false,
       why: "no longer waiting for confirmation",
       facts: null,
@@ -120,6 +122,28 @@ describe("sendDueEmails", () => {
     expect(marks()).toEqual([
       ["mark_outbox_skipped", 8, "no longer waiting for confirmation"],
     ]);
+  });
+
+  it("on the live site, skips the test accounts unread (no real mailbox)", async () => {
+    const { db, marks, calls } = fakeDb(
+      [
+        { id: 1, to_email: ADMIN },
+        { id: 2, to_email: "rbh@laine.ai" },
+      ],
+      due,
+    );
+    expect(await run(db)).toMatchObject({ claimed: 2, sent: 1, skipped: 1 });
+    expect(mailer).toHaveBeenCalledTimes(1);
+    expect(mailer.mock.calls[0]![0].to).toBe("rbh@laine.ai");
+    expect(marks()).toEqual([
+      ["mark_outbox_skipped", 1, LIVE_SITE_SKIP],
+      ["mark_outbox_sent", 2, "re_1"],
+    ]);
+    expect(
+      calls
+        .filter((c) => c.fn === "outbox_email_facts")
+        .map((c) => c.args.p_id),
+    ).toEqual([2]);
   });
 
   it("on a test site, emails only the test accounts — others are skipped unread", async () => {
@@ -157,8 +181,8 @@ describe("sendDueEmails", () => {
       .mockResolvedValueOnce({ ok: true, id: "re_2" });
     const { db, marks } = fakeDb(
       [
-        { id: 3, to_email: ADMIN },
-        { id: 4, to_email: ADMIN },
+        { id: 3, to_email: PERSON },
+        { id: 4, to_email: PERSON },
       ],
       due,
     );
@@ -171,11 +195,13 @@ describe("sendDueEmails", () => {
 
   it("marks a thrown error or unreadable facts as failed", async () => {
     mailer.mockRejectedValueOnce(new Error("socket hang up"));
-    const one = fakeDb([{ id: 5, to_email: ADMIN }], due);
+    const one = fakeDb([{ id: 5, to_email: PERSON }], due);
     expect(await run(one.db)).toMatchObject({ failed: 1 });
     expect(one.marks()).toEqual([["mark_outbox_failed", 5, "socket hang up"]]);
 
-    const two = fakeDb([{ id: 6, to_email: ADMIN }], due, { factsError: true });
+    const two = fakeDb([{ id: 6, to_email: PERSON }], due, {
+      factsError: true,
+    });
     expect(await run(two.db)).toMatchObject({ failed: 1 });
     expect(two.marks()).toEqual([
       ["mark_outbox_failed", 6, "Facts not read: boom"],
