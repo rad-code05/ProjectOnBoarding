@@ -52,11 +52,22 @@ export function cleanCell(value: unknown): string {
     .slice(0, MAX_CELL);
 }
 
+/** How big a table may be: a batch (D8), or the staff import (F24b). */
+export type TableLimits = { rows: number; columns: number; noun: string };
+const BATCH_LIMITS: TableLimits = {
+  rows: MAX_ROWS,
+  columns: MAX_COLUMNS,
+  noun: "a batch",
+};
+
 /**
  * Rows of cells → a table: the first non-empty row is the header, empty
  * rows are dropped, every row padded to the header's width.
  */
-export function toTable(raw: unknown[][]): Table {
+export function toTable(
+  raw: unknown[][],
+  limits: TableLimits = BATCH_LIMITS,
+): Table {
   const rows = raw
     .map((row) => row.map(cleanCell))
     .filter((row) => row.some((cell) => cell !== ""));
@@ -65,17 +76,19 @@ export function toTable(raw: unknown[][]): Table {
   // Trailing empty titles (a sheet's unused columns) don't count.
   let width = first.length;
   while (width > 0 && first[width - 1] === "") width -= 1;
-  if (width > MAX_COLUMNS) {
-    throw new BatchReadError(`The list has more than ${MAX_COLUMNS} columns.`);
+  if (width > limits.columns) {
+    throw new BatchReadError(
+      `The list has more than ${limits.columns} columns.`,
+    );
   }
   if (people.length === 0) {
     throw new BatchReadError(
       "Only one row was found: the first row holds the column titles, the people come below it.",
     );
   }
-  if (people.length > MAX_ROWS) {
+  if (people.length > limits.rows) {
     throw new BatchReadError(
-      `The list has ${people.length} people — a batch takes up to ${MAX_ROWS}. Split it into smaller lists.`,
+      `The list has ${people.length} people — ${limits.noun} takes up to ${limits.rows}. Split it into smaller lists.`,
     );
   }
   const headers = first.slice(0, width);
