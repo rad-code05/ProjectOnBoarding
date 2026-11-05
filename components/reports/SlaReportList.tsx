@@ -4,7 +4,7 @@ import type { SlaReportRow, SlaSummary } from "@/lib/reports/sla";
 
 const toneStyles: Record<SlaReportRow["tone"], string> = {
   met: "bg-line-subtle text-ink",
-  missed: "bg-signal text-white",
+  missed: "bg-signal text-paper",
   open: "border border-signal text-signal",
 };
 

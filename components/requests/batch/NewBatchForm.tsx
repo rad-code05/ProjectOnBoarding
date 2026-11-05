@@ -109,7 +109,7 @@ export function NewBatchForm() {
           <label
             key={k.value}
             className={cn(
-              "bg-white flex items-center gap-3 rounded-card px-3.5 py-3",
+              "flex items-center gap-3 rounded-card bg-paper px-3.5 py-3",
               kind === k.value
                 ? "border-2 border-ink"
                 : "border border-field-border",
@@ -151,7 +151,7 @@ export function NewBatchForm() {
               className={cn(
                 "h-9 rounded-pill px-3.5 text-[13px] font-semibold",
                 mode === value
-                  ? "text-white bg-ink"
+                  ? "bg-ink text-paper"
                   : "border border-field-border",
               )}
             >
@@ -161,7 +161,7 @@ export function NewBatchForm() {
         </div>
 
         {mode === "file" ? (
-          <label className="bg-white flex cursor-pointer flex-col items-center gap-2 rounded-card border-[1.5px] border-dashed border-ink px-4 py-5 text-center">
+          <label className="flex cursor-pointer flex-col items-center gap-2 rounded-card border-[1.5px] border-dashed border-ink bg-paper px-4 py-5 text-center">
             <span className="text-sm">
               {file ? (
                 <>
@@ -193,7 +193,7 @@ export function NewBatchForm() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder={PLACEHOLDERS[kind]}
-              className="bg-white rounded-field border border-field-border px-3 py-2.5 text-base leading-snug font-normal outline-none focus:border-ink md:text-sm"
+              className="rounded-field border border-field-border bg-paper px-3 py-2.5 text-base leading-snug font-normal outline-none focus:border-ink md:text-sm"
             />
             <span className="text-xs font-normal text-graphite">
               Copy the cells from Excel, with the title row. A list without
