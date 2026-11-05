@@ -891,6 +891,57 @@ test("Admin → AI settings: limits saved and audited, then put back", async ({
   await expect(page.getByText("AI settings saved.")).toBeVisible();
 });
 
+test("Admin → Notifications: sender status, a switch saved and put back, a test email in the outbox", async ({
+  page,
+}) => {
+  await openApp(page, "/admin");
+  await expect(
+    page.getByRole("link", { name: /^Notifications/ }),
+  ).toContainText(/\d of 6 emails on/);
+  await page.getByRole("link", { name: /^Notifications/ }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Notifications" }),
+  ).toBeVisible();
+  // CI has no Resend key: emails wait. A local key makes it a test site.
+  await expect(
+    page.getByRole("group", { name: "Sender status" }),
+  ).toContainText(/Not connected yet|Test site/);
+  await expect(page.getByRole("switch")).toHaveCount(6);
+
+  // Flip "SLA missed" (never "Waiting for approval": the signing test reads
+  // that email) and always put it back — the settings are shared.
+  const missed = page.getByRole("switch", { name: /^SLA missed/ });
+  const before = await missed.isChecked();
+  // The real box is visually hidden; its label is what people click.
+  const flip = () => page.locator("label").filter({ has: missed }).click();
+  try {
+    await flip();
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByText("Notifications saved.")).toBeVisible();
+    await page.reload();
+    if (before) await expect(missed).not.toBeChecked();
+    else await expect(missed).toBeChecked();
+    await expect(page.getByText(/^Last changed by /)).toBeVisible();
+  } finally {
+    await page.reload();
+    if ((await missed.isChecked()) !== before) {
+      await flip();
+      await page.getByRole("button", { name: "Save" }).click();
+      await expect(page.getByText("Notifications saved.")).toBeVisible();
+    }
+  }
+
+  // A test email to the admin waits in the outbox (or is sent with a key).
+  await page.getByRole("button", { name: "Send a test email to me" }).click();
+  await expect(
+    page.getByText("Test email queued — it shows under Recent emails."),
+  ).toBeVisible();
+  const recent = page.getByRole("region", { name: "Recent emails" });
+  await expect(
+    recent.getByRole("listitem").filter({ hasText: "Test email" }).first(),
+  ).toContainText(/Waiting|Sent/);
+});
+
 test("Admin → AI settings: add a model, test it, then retire it", async ({
   page,
 }) => {
@@ -1071,6 +1122,18 @@ test("Raju reviews and signs a request; it awaits confirmation with his signatur
   await expect(
     page.getByRole("button", { name: "Review & sign", exact: true }),
   ).toHaveCount(0);
+
+  // Signing queued the "waiting" email to the approvers (F23).
+  await openApp(page, "/admin/notifications");
+  const recent = page.getByRole("region", { name: "Recent emails" });
+  const more = recent.getByRole("button", { name: /^Show more/ });
+  if (await more.isVisible()) await more.click();
+  await expect(
+    recent
+      .getByRole("listitem")
+      .filter({ hasText: "Waiting for your confirmation: Sina Signer" })
+      .first(),
+  ).toBeVisible();
 });
 
 /** Section 5's own status line ("N of M set"); the catalog grows over time. */

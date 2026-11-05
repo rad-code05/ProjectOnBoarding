@@ -227,6 +227,7 @@ const REQUEST_PAGE = "/requests/00000000-0000-4000-8000-000000000000";
 for (const path of [
   "/admin",
   "/admin/ai",
+  "/admin/notifications",
   "/requests",
   REQUEST_PAGE,
   "/audit",
