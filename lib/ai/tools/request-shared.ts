@@ -9,19 +9,29 @@ import { OPEN_STATES } from "./people-shared";
 
 /**
  * "UAM-2026-000375", "uam 2026 375", "2026-375" or just "375" → what to look
- * for. Without a year, every year's ticket with that number matches.
+ * for. Without a year, every year's ticket with that number matches; without
+ * UAM / IMP (an Imported record, F24), both series do.
  */
-export function parseTicket(
-  text: string,
-): { year: number | null; number: number } | null {
+export function parseTicket(text: string): {
+  prefix: "UAM" | "IMP" | null;
+  year: number | null;
+  number: number;
+} | null {
+  const prefix = /\bimp/i.test(text)
+    ? "IMP"
+    : /\buam/i.test(text)
+      ? "UAM"
+      : null;
   const digits = text.match(/\d+/g);
   if (!digits) return null;
   if (digits.length === 1) {
     const n = Number(digits[0]);
-    return n > 0 ? { year: null, number: n } : null;
+    return n > 0 ? { prefix, year: null, number: n } : null;
   }
   const [year, number] = digits.slice(-2).map(Number);
-  return year >= 2000 && year <= 2100 && number > 0 ? { year, number } : null;
+  return year >= 2000 && year <= 2100 && number > 0
+    ? { prefix, year, number }
+    : null;
 }
 
 /** Where the request opens in the app: closed ones as a record. */

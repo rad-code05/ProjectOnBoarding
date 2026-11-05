@@ -123,6 +123,8 @@ export const suggestValues = defineTool({
           .eq("ticket_number", wanted.number)
           .order("ticket_year", { ascending: false });
         if (wanted.year) query = query.eq("ticket_year", wanted.year);
+        // Imported records (IMP) are closed: only UAM requests take values.
+        query = query.eq("ticket_prefix", wanted.prefix ?? "UAM");
         const found = await query;
         if (found.error)
           return { added: 0, error: "The request could not be read just now." };
@@ -135,8 +137,7 @@ export const suggestValues = defineTool({
         if (rows.length > 1)
           return {
             added: 0,
-            error:
-              "Several years have this ticket number. Ask which one is meant.",
+            error: "Several tickets have this number. Ask which one is meant.",
             matches: rows.map((r) => r.ticket_id),
           };
         const r = rows[0];

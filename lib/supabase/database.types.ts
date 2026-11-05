@@ -1646,6 +1646,7 @@ export type Database = {
           form_version_id: number;
           handover_to: string | null;
           id: string;
+          import_id: string | null;
           job_title: string | null;
           last_name: string | null;
           last_working_day: string | null;
@@ -1667,6 +1668,7 @@ export type Database = {
           state_changed_at: string | null;
           ticket_id: string;
           ticket_number: number;
+          ticket_prefix: string;
           ticket_year: number;
           type: Database["public"]["Enums"]["request_type"];
           updated_at: string;
@@ -1693,6 +1695,7 @@ export type Database = {
           form_version_id: number;
           handover_to?: string | null;
           id?: string;
+          import_id?: string | null;
           job_title?: string | null;
           last_name?: string | null;
           last_working_day?: string | null;
@@ -1714,6 +1717,7 @@ export type Database = {
           state_changed_at?: string | null;
           ticket_id: string;
           ticket_number: number;
+          ticket_prefix?: string;
           ticket_year: number;
           type?: Database["public"]["Enums"]["request_type"];
           updated_at?: string;
@@ -1739,6 +1743,7 @@ export type Database = {
           form_version_id?: number;
           handover_to?: string | null;
           id?: string;
+          import_id?: string | null;
           job_title?: string | null;
           last_name?: string | null;
           last_working_day?: string | null;
@@ -1760,6 +1765,7 @@ export type Database = {
           state_changed_at?: string | null;
           ticket_id?: string;
           ticket_number?: number;
+          ticket_prefix?: string;
           ticket_year?: number;
           type?: Database["public"]["Enums"]["request_type"];
           updated_at?: string;
@@ -1807,6 +1813,13 @@ export type Database = {
             columns: ["form_version_id"];
             isOneToOne: false;
             referencedRelation: "form_versions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "requests_import_id_fkey";
+            columns: ["import_id"];
+            isOneToOne: false;
+            referencedRelation: "staff_imports";
             referencedColumns: ["id"];
           },
           {
@@ -1975,6 +1988,113 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "request_snapshots";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      staff_import_rows: {
+        Row: {
+          data: NonNullable<Json>;
+          id: string;
+          import_id: string;
+          included: boolean;
+          offboarding_request_id: string | null;
+          onboarding_request_id: string | null;
+          person: NonNullable<Json>;
+          position: number;
+          problems: NonNullable<Json>;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          data?: NonNullable<Json>;
+          id?: string;
+          import_id: string;
+          included?: boolean;
+          offboarding_request_id?: string | null;
+          onboarding_request_id?: string | null;
+          person?: NonNullable<Json>;
+          position: number;
+          problems?: NonNullable<Json>;
+          updated_at?: string;
+        };
+        Update: {
+          data?: NonNullable<Json>;
+          id?: string;
+          import_id?: string;
+          included?: boolean;
+          offboarding_request_id?: string | null;
+          onboarding_request_id?: string | null;
+          person?: NonNullable<Json>;
+          position?: number;
+          problems?: NonNullable<Json>;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "staff_import_rows_import_id_fkey";
+            columns: ["import_id"];
+            isOneToOne: false;
+            referencedRelation: "staff_imports";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "staff_import_rows_offboarding_request_id_fkey";
+            columns: ["offboarding_request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "staff_import_rows_onboarding_request_id_fkey";
+            columns: ["onboarding_request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      staff_imports: {
+        Row: {
+          counts: NonNullable<Json>;
+          created_at: string;
+          created_by: string;
+          file_name: string;
+          file_path: string | null;
+          finished_at: string | null;
+          id: string;
+          status: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          counts?: NonNullable<Json>;
+          created_at?: string;
+          created_by?: string;
+          file_name: string;
+          file_path?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          counts?: NonNullable<Json>;
+          created_at?: string;
+          created_by?: string;
+          file_name?: string;
+          file_path?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "staff_imports_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
           },
         ];
       };
@@ -2334,6 +2454,7 @@ export type Database = {
       create_offboarding: { Args: { p_employee_id?: string }; Returns: string };
       delete_my_ai_chat: { Args: { p_chat_id: string }; Returns: boolean };
       delete_my_ai_chats: { Args: Record<PropertyKey, never>; Returns: number };
+      discard_staff_import: { Args: { p_import: string }; Returns: undefined };
       export_audit_log: {
         Args: {
           p_actor?: string;
@@ -2368,6 +2489,7 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
+      import_staff: { Args: { p_import: string }; Returns: Json };
       log_record_download: {
         Args: { p_request_id: string };
         Returns: undefined;

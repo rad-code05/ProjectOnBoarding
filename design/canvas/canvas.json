@@ -841,6 +841,34 @@
       "w": 390,
       "h": 1500,
       "title": "Phone · Admin · Notifications (sender, which emails, recent emails) — F23 proposal"
+    },
+    "ImportStartMobile.dc.html": {
+      "x": 40870,
+      "y": 13560,
+      "w": 390,
+      "h": 1240,
+      "title": "Phone · Admin · Import existing staff (upload, template, earlier imports) — F24 proposal"
+    },
+    "ImportGridMobile.dc.html": {
+      "x": 41340,
+      "y": 13560,
+      "w": 390,
+      "h": 1640,
+      "title": "Phone · Import check (people, past dates from your file, leavers, skipped) — F24 proposal"
+    },
+    "ImportConfirmMobile.dc.html": {
+      "x": 41810,
+      "y": 13560,
+      "w": 390,
+      "h": 1460,
+      "title": "Phone · Confirm import + result — F24 proposal"
+    },
+    "ImportedPersonMobile.dc.html": {
+      "x": 42280,
+      "y": 13560,
+      "w": 390,
+      "h": 1640,
+      "title": "Phone · An imported person (SharePoint note, attach signed PDF) — F24 proposal"
     }
   },
   "createdOnFiles": {
@@ -862,7 +890,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 40870,
+      "maxW": 42750,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -1019,7 +1047,11 @@
     "AdminUserSheetMobile.dc.html",
     "ApprovalsRoleChangesMobile.dc.html",
     "AcceptInvitationMobile.dc.html",
-    "AdminNotificationsMobile.dc.html"
+    "AdminNotificationsMobile.dc.html",
+    "ImportStartMobile.dc.html",
+    "ImportGridMobile.dc.html",
+    "ImportConfirmMobile.dc.html",
+    "ImportedPersonMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
