@@ -102,7 +102,7 @@ export function SameForEveryone({
   return (
     <section
       aria-label="Same for everyone"
-      className="bg-white flex flex-col gap-3.5 rounded-card border border-line-subtle p-3.5"
+      className="flex flex-col gap-3.5 rounded-card border border-line-subtle bg-paper p-3.5"
     >
       <div className="flex flex-col gap-0.5">
         <h2 className="text-[15px] font-semibold md:text-sm">

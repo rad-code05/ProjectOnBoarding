@@ -194,7 +194,7 @@ export function BatchGrid({
             className={cn(
               "h-9 rounded-pill px-3 text-[13px] font-semibold whitespace-nowrap",
               filter === value
-                ? "text-white bg-ink"
+                ? "bg-ink text-paper"
                 : "border border-field-border",
             )}
           >
@@ -217,7 +217,7 @@ export function BatchGrid({
               key={row.id}
               aria-label={`${rowName(row)} — ${STATE_WORDS[state]}`}
               className={cn(
-                "bg-white flex flex-col gap-2.5 rounded-card p-3.5",
+                "flex flex-col gap-2.5 rounded-card bg-paper p-3.5",
                 state === "attention"
                   ? "border-[1.5px] border-signal"
                   : "border border-line-subtle",
@@ -319,7 +319,7 @@ export function BatchGrid({
         })}
       </ul>
 
-      <div className="bg-white fixed inset-x-0 bottom-0 z-10 flex flex-col gap-2 border-t border-line-subtle px-4 pt-3 pb-5 md:static md:rounded-card md:border">
+      <div className="fixed inset-x-0 bottom-0 z-10 flex flex-col gap-2 border-t border-line-subtle bg-paper px-4 pt-3 pb-5 md:static md:rounded-card md:border">
         <span className="text-xs text-graphite">{footerLine(counts)}</span>
         <div className="grid grid-cols-[1fr_1.6fr] gap-2 md:flex md:justify-end">
           <Button variant="secondary" onClick={() => setDiscarding(true)}>
@@ -650,7 +650,7 @@ function ConfirmSheet({
         </div>
       }
     >
-      <p className="bg-white rounded-card border border-line-subtle px-3.5 py-3 text-[13px] leading-relaxed">
+      <p className="rounded-card border border-line-subtle bg-paper px-3.5 py-3 text-[13px] leading-relaxed">
         {ready.map(rowName).join(", ")}
       </p>
       {out.length > 0 && (
@@ -705,7 +705,7 @@ function Created({ batch }: { batch: GridBatch }) {
     <div className="flex flex-col gap-4">
       <div
         role="status"
-        className="text-white rounded-card bg-ink px-3.5 py-3 text-sm leading-normal"
+        className="rounded-card bg-ink px-3.5 py-3 text-sm leading-normal text-paper"
       >
         <strong>
           {made.length} draft{made.length === 1 ? "" : "s"} created.
@@ -715,7 +715,7 @@ function Created({ batch }: { batch: GridBatch }) {
       </div>
       <ul
         aria-label="Drafts created"
-        className="bg-white rounded-card border border-line-subtle"
+        className="rounded-card border border-line-subtle bg-paper"
       >
         {made.map((r) => (
           <li

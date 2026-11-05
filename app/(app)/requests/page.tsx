@@ -83,7 +83,7 @@ export default async function RequestsPage({
       {batches.length > 0 && (
         <section
           aria-label="Your batches"
-          className="bg-white flex flex-col gap-2 rounded-card border border-line-subtle px-3.5 py-3"
+          className="flex flex-col gap-2 rounded-card border border-line-subtle bg-paper px-3.5 py-3"
         >
           <h2 className="text-[13px] font-semibold">Your batches</h2>
           <ul className="flex flex-col">
