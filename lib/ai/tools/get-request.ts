@@ -61,7 +61,7 @@ export const getRequest = defineTool({
           let query = ctx.db
             .from("requests")
             .select(
-              "id, ticket_id, type, state, first_name, last_name, work_email, job_title, country, nationalities, effective_date, sla_due_at, created_at, updated_at, closed_at, office:offices(name), department:departments(name), assignee:app_users!requests_assignee_id_fkey(first_name, last_name)",
+              "id, ticket_id, type, state, import_id, first_name, last_name, work_email, job_title, country, nationalities, effective_date, sla_due_at, created_at, updated_at, closed_at, office:offices(name), department:departments(name), assignee:app_users!requests_assignee_id_fkey(first_name, last_name)",
             )
             .eq("ticket_number", wanted.number)
             .order("ticket_year", { ascending: false });
@@ -169,8 +169,17 @@ export const getRequest = defineTool({
                 }
               : {}),
             link: requestLink(r.id, r.state),
+            // An Imported record (F24): dates from the import file, no app PDF.
+            ...(r.import_id
+              ? {
+                  imported:
+                    "Imported record: this person joined before the app. Its dates come from the import file; the signed form is on SharePoint, there is no PDF made by the app.",
+                }
+              : {}),
             // The record PDF — for the people Records is for (admin, auditor).
-            ...(r.state === "closed" && canOpenRecords(ctx.roles)
+            ...(r.state === "closed" &&
+            !r.import_id &&
+            canOpenRecords(ctx.roles)
               ? {
                   pdfLink: `/records/${r.id}/pdf`,
                   // The name the PDF route gives the file (same function).

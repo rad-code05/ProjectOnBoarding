@@ -14,11 +14,14 @@ export type RecordRow = {
   /** "9 Oct 2026" (company timezone). */
   closed: string;
   approvedBy: string;
+  /** An Imported record (F24): no app PDF, its dates from the import file. */
+  imported: boolean;
 };
 
 /**
- * Closed requests, newest first, with who approved them. Read with the
- * signed-in user's session (RLS); search and type work as on Requests.
+ * Closed requests, newest first, with who approved them — and Imported
+ * records (F24), which have no approval. Read with the signed-in user's
+ * session (RLS); search and type work as on Requests.
  */
 export async function listRecords(filters: RequestFilters) {
   const supabase = createServerSupabaseClient();
@@ -27,7 +30,7 @@ export async function listRecords(filters: RequestFilters) {
   let query = supabase
     .from("requests")
     .select(
-      "id, ticket_id, type, first_name, last_name, closed_at, approvals!approvals_request_id_fkey!inner(decision, approver:app_users!approvals_decided_by_fkey(first_name, last_name))",
+      "id, ticket_id, type, first_name, last_name, closed_at, import_id, approvals!approvals_request_id_fkey(decision, approver:app_users!approvals_decided_by_fkey(first_name, last_name))",
       { count: "exact" },
     )
     .eq("state", "closed")
@@ -57,6 +60,7 @@ export async function listRecords(filters: RequestFilters) {
       name: personName(row.first_name, row.last_name) || "Unnamed person",
       closed: formatDay(row.closed_at, tz),
       approvedBy: personName(approver?.first_name, approver?.last_name) || "—",
+      imported: Boolean(row.import_id),
     };
   });
   return { rows, total: count ?? 0 };
