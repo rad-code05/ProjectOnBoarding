@@ -25,6 +25,11 @@ export default async function AdminPage() {
       note: `${o.peopleActive} active · ${o.peopleDeactivated} deactivated`,
     },
     {
+      href: "/admin/import",
+      title: "Import existing staff",
+      note: "People who joined before the app, with their real dates",
+    },
+    {
       href: "/admin/applications",
       title: "Applications",
       note: `${o.appsActive} active · ${o.appsRetired} retired · ${o.categories} categories`,

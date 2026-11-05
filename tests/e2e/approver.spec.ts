@@ -228,6 +228,7 @@ for (const path of [
   "/admin",
   "/admin/ai",
   "/admin/notifications",
+  "/admin/import",
   "/requests",
   REQUEST_PAGE,
   "/audit",
