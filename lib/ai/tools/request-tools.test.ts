@@ -72,10 +72,35 @@ const run = async (
 
 describe("tickets as people type them", () => {
   test("full, short, or just the number", () => {
-    expect(parseTicket("UAM-2026-000375")).toEqual({ year: 2026, number: 375 });
-    expect(parseTicket("uam 2026 375")).toEqual({ year: 2026, number: 375 });
-    expect(parseTicket("375")).toEqual({ year: null, number: 375 });
+    expect(parseTicket("UAM-2026-000375")).toEqual({
+      prefix: "UAM",
+      year: 2026,
+      number: 375,
+    });
+    expect(parseTicket("uam 2026 375")).toEqual({
+      prefix: "UAM",
+      year: 2026,
+      number: 375,
+    });
+    expect(parseTicket("375")).toEqual({
+      prefix: null,
+      year: null,
+      number: 375,
+    });
     expect(parseTicket("Rose")).toBeNull();
+  });
+
+  test("an Imported record's ticket (F24) keeps its IMP series", () => {
+    expect(parseTicket("IMP-2025-000004")).toEqual({
+      prefix: "IMP",
+      year: 2025,
+      number: 4,
+    });
+    expect(parseTicket("imp 4")).toEqual({
+      prefix: "IMP",
+      year: null,
+      number: 4,
+    });
   });
 
   test("closed requests open as records; flagged sections by name", () => {
@@ -190,7 +215,7 @@ describe("getRequest", () => {
       requests: [draft, { ...draft, ticket_id: "UAM-2025-000374" }],
     });
     expect(await run(getRequest, { ticket: "374" }, db)).toMatchObject({
-      error: "Several years have this ticket number. Ask which one is meant.",
+      error: "Several tickets have this number. Ask which one is meant.",
       matches: ["UAM-2026-000374", "UAM-2025-000374"],
     });
   });

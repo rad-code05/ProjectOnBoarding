@@ -66,6 +66,7 @@ export const getRequest = defineTool({
             .eq("ticket_number", wanted.number)
             .order("ticket_year", { ascending: false });
           if (wanted.year) query = query.eq("ticket_year", wanted.year);
+          if (wanted.prefix) query = query.eq("ticket_prefix", wanted.prefix);
           const { data, error } = await query;
           if (error) throw new Error(error.message);
           const found = data ?? [];
@@ -80,7 +81,7 @@ export const getRequest = defineTool({
             return {
               ticket,
               error:
-                "Several years have this ticket number. Ask which one is meant.",
+                "Several tickets have this number. Ask which one is meant.",
               matches: found.map((r) => r.ticket_id),
             };
           }
