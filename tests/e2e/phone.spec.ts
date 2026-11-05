@@ -226,7 +226,7 @@ test.describe("admin on a phone", () => {
   test("Admin home, lists, Offices and Settings fit the phone", async ({
     page,
   }) => {
-    test.slow(); // five admin pages
+    test.slow(); // seven admin pages
     await openApp(page, "/admin");
     await expect(
       page.getByRole("heading", { level: 1, name: "Admin" }),
@@ -259,6 +259,11 @@ test.describe("admin on a phone", () => {
     await openApp(page, "/admin/users");
     await expect(
       page.getByRole("heading", { level: 1, name: "Users & roles" }),
+    ).toBeVisible();
+    await expectNoSideScroll(page);
+    await openApp(page, "/admin/notifications");
+    await expect(
+      page.getByRole("group", { name: "Sender status" }),
     ).toBeVisible();
     await expectNoSideScroll(page);
     await openApp(page, "/admin/settings");

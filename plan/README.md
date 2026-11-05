@@ -36,11 +36,11 @@ Open VS Code in the `Project_Onboarding` folder first (so `CLAUDE.md` loads auto
 **Continue unfinished work**
 > Read CLAUDE.md, then continue F04 in plan/features.md. Check the session log and the open branch/PR to see where we stopped.
 
-**Next session (after F23a, 2026-11-01): F23b email sending**
+**Next session (after F23, 2026-11-05): F24 import of existing staff**
 > Read plan/CONTEXT.md, CLAUDE.md ("Resume here") and plan/README.md. Check git status, open PRs and CI, and make sure main is up to date (clean up merged branches). If Docker is not running, start Docker Desktop first, then `supabase start -x …` like CI. Remind me once about asking Laine IT for `access.laine.ai` + `access-notify.laine.ai` DNS.
-> 1) The cloud database is one behind: local 49, cloud 48 — `20261101120000_email_outbox.sql` (F23a, merged #212) still needs the push. Do the dry run and wait for my "push". Merge Dependabot #199 (minor/patch) if CI is green.
-> 2) Then continue F23 email notifications in plan/features.md: F23b sending (our own Resend account, sender no-reply@access-notify.laine.ai, the six email templates, the sender route working through the outbox, test / preview sites email the test accounts only) → F23c Admin → Notifications → F23d tests + wrap-up. Verify the Resend SDK with Context7 first. Real sending waits for Laine IT's DNS records — until then emails stay in the outbox.
-> After F23: F24 import of existing staff (backdating ONLY through the import — rules in CLAUDE.md), then R1 security, R2 accessibility, R4 backups + restore test, R6 guides, R7 production (see the go-live scope in plan/release.md).
+> 1) Check the cloud database matches local (51 migrations, last `20261105120000_notification_settings_where.sql`) with `supabase migration list --linked`; if the cloud is behind, do the dry run and wait for my "push". If I have created the Resend account, walk me through switching real sending on (Vercel env vars, Supabase Vault, redeploy, Send a test email to me) and record it in Learn.md.
+> 2) Then F24 import of existing staff in plan/features.md (backdating ONLY through the import — rules in CLAUDE.md): brief me, propose the PR split and draw the phone boards for my approval before building. I'll give you my sheets + application screenshots in Rajulearning/ (never committed).
+> After F24: R1 security, R2 accessibility, R4 backups + restore test, R6 guides, R7 production (see the go-live scope in plan/release.md).
 > Run the git commands for me (branch, commit, push, PR); watch CI to the end and only tell me to squash-merge when every check is green; I say "done". A PR with its own migration: get my "push" before I merge. Browser tests from your PC use the local Supabase only (AI_FAKE_MODEL=1). Update my learning guide (Rajulearning/Learn.md) at the end of every PR and record every configuration change there.
 
 **Check the state** (after a break or a disconnect)
