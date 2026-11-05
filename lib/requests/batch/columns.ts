@@ -192,7 +192,14 @@ export function matchColumns(
   headers: string[],
   type: RequestType,
 ): ColumnMatch[] {
-  const fields = BATCH_FIELDS[type];
+  return matchFields(headers, BATCH_FIELDS[type]);
+}
+
+/** The same matching for any list of fields (the staff import, F24b). */
+export function matchFields(
+  headers: string[],
+  fields: BatchField[],
+): ColumnMatch[] {
   const taken = new Set<string>();
   const find = (key: string, useAliases: boolean) =>
     fields.find(

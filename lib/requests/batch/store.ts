@@ -76,7 +76,7 @@ const CHECKED: RequestType[] = [
 /** A checked row; leavers also carry the person found. */
 type Checked = CheckedRow & { employeeId?: string | null };
 
-async function companyToday(db: ServerSupabase) {
+export async function companyToday(db: ServerSupabase) {
   const { data } = await db
     .from("app_settings")
     .select("company_timezone")
