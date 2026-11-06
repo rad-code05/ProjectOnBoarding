@@ -1726,6 +1726,7 @@ export type Database = {
           updated_at: string;
           version: number;
           work_email: string | null;
+          worker_type: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -1775,6 +1776,7 @@ export type Database = {
           updated_at?: string;
           version?: number;
           work_email?: string | null;
+          worker_type?: string | null;
         };
         Update: {
           access_cutoff_at?: string | null;
@@ -1823,6 +1825,7 @@ export type Database = {
           updated_at?: string;
           version?: number;
           work_email?: string | null;
+          worker_type?: string | null;
         };
         Relationships: [
           {

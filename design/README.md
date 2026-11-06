@@ -47,6 +47,7 @@ All planned screens now have a first design. Nothing is built yet.
 | PDF document (2 pages) · System states | Draft, awaiting review |
 | **Email notifications** (six emails) + Phone · **Admin · Notifications** (F23) | Approved (2026-11-01); built (F23, 2026-11-05) |
 | **Import of existing staff** — Phone · Admin · Import existing staff, Import check, Confirm import + result, An imported person (F24, `staff-import.md`) | Approved (2026-11-05); building (F24) |
+| **Employee or contractor** — Phone · Section 2 with Employee / Contractor (F24f; two-pill switch, *No office* for contractors, "Was: Contractor" on an access change, record rows) | Approved (2026-11-06); building (F24f) |
 | Components sheet · shared components (TopBar, BrandPanel, AdminNav) | Draft |
 | Phone (D22): app shell (menu closed/open) · requests list (+ empty) · request form sections 1–2 (+ changed elsewhere) | Approved (2026-10-07) |
 | Phone (D22): sections 4–5 application access (+ edit-an-app sheet) | Approved (2026-10-08) |
