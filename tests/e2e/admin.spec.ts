@@ -959,6 +959,27 @@ test("Admin → Import (F24c): a staff file is checked, one row fixed, then impo
       .filter({ hasText: `staff-${stamp}.csv` })
       .first(),
   ).toContainText("2 people (1 leaver)");
+
+  // F24d: in Records, badged, no app PDF; the record says where it came from.
+  await openApp(page, `/records?q=${encodeURIComponent(email("lena"))}`);
+  const lena = page.getByRole("link", { name: /^Lena Import/ });
+  await expect(lena).toContainText("Started 6 Jan 2025 · imported");
+  await expect(
+    page.getByRole("link", { name: "Download the PDF record of Lena Import" }),
+  ).toHaveCount(0);
+  await lena.click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Lena Import" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("note", { name: "Imported record" }),
+  ).toContainText("signed onboarding form is filed in SharePoint");
+  await expect(
+    page.getByRole("region", { name: /^Access held · 1/ }),
+  ).toContainText("Notion");
+  await expect(
+    page.getByRole("button", { name: "Start an offboarding" }),
+  ).toBeVisible();
 });
 
 test("Admin → Notifications: sender status, a switch saved and put back, a test email in the outbox", async ({

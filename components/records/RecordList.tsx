@@ -25,16 +25,24 @@ export function RecordList({ rows }: { rows: RecordRow[] }) {
               {row.ticketId} · {TYPE_LABELS[row.type]}
             </span>
             <span className="truncate text-xs text-graphite">
-              Closed {row.closed} · approved by {row.approvedBy}
+              {row.imported
+                ? `${row.type === "offboarding" ? "Left" : "Started"} ${row.closed} · imported`
+                : `Closed ${row.closed} · approved by ${row.approvedBy}`}
             </span>
           </Link>
-          <a
-            href={`/records/${row.id}/pdf`}
-            aria-label={`Download the PDF record of ${row.name}`}
-            className="flex size-11 shrink-0 items-center justify-center rounded-pill border border-ink hover:bg-sand"
-          >
-            <DownloadIcon size={18} />
-          </a>
+          {row.imported ? (
+            <span className="shrink-0 rounded-pill border border-ink px-2.5 py-0.5 text-[11px] font-semibold">
+              Imported
+            </span>
+          ) : (
+            <a
+              href={`/records/${row.id}/pdf`}
+              aria-label={`Download the PDF record of ${row.name}`}
+              className="flex size-11 shrink-0 items-center justify-center rounded-pill border border-ink hover:bg-sand"
+            >
+              <DownloadIcon size={18} />
+            </a>
+          )}
         </li>
       ))}
     </ul>

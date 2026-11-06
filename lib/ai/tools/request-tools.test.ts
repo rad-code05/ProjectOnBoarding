@@ -182,6 +182,26 @@ describe("getRequest", () => {
     });
   });
 
+  test("an Imported record (F24): said so, and no app PDF to link", async () => {
+    const imported = {
+      ...draft,
+      ticket_id: "IMP-2025-000374",
+      state: "closed",
+      import_id: "33333333-3333-3333-3333-333333333333",
+      closed_at: "2025-01-06T08:00:00Z",
+    };
+    const out = await run(
+      getRequest,
+      { ticket: "IMP-2025-374" },
+      fakeDb({ requests: [imported] }).db,
+    );
+    expect(out).toMatchObject({
+      link: `/records/${ID}`,
+      imported: expect.stringContaining("signed form is on SharePoint"),
+    });
+    expect(out).not.toHaveProperty("pdfLink");
+  });
+
   test("a closed request: the PDF link, for the people Records is for", async () => {
     const closed = {
       ...draft,

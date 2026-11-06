@@ -16,6 +16,7 @@ describe("RecordList", () => {
             name: "Anna Keller",
             closed: "9 Oct 2026",
             approvedBy: "Moises Larez",
+            imported: false,
           },
         ]}
       />,
@@ -31,5 +32,28 @@ describe("RecordList", () => {
         name: "Download the PDF record of Anna Keller",
       }),
     ).toHaveAttribute("href", `/records/${ID}/pdf`);
+  });
+
+  test("an Imported record: its own date, a badge, no app PDF", () => {
+    render(
+      <RecordList
+        rows={[
+          {
+            id: ID,
+            ticketId: "IMP-2025-000004",
+            type: "onboarding",
+            name: "Lucas Moreau",
+            closed: "6 Jan 2025",
+            approvedBy: "—",
+            imported: true,
+          },
+        ]}
+      />,
+    );
+    expect(
+      screen.getByRole("link", { name: /^Lucas Moreau/ }),
+    ).toHaveTextContent("Started 6 Jan 2025 · imported");
+    expect(screen.getByText("Imported")).toBeVisible();
+    expect(screen.queryByRole("link", { name: /Download the PDF/ })).toBeNull();
   });
 });
