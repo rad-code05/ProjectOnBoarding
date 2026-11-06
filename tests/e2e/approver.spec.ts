@@ -5,6 +5,7 @@ import { expect, test } from "@playwright/test";
 import { authFile } from "../../playwright.config";
 import {
   choose,
+  chooseWorkerType,
   createExecutedRequest,
   reviewAndSign,
   saveInitials,
@@ -1034,6 +1035,13 @@ test("Batch journey (F17b-6b): a draft from a batch is executed, signed, confirm
     "Bea Journey",
   );
   const requestId = raju.url().split("/").pop();
+  // Form v4.3 (F24f): batches don't fill Employee or contractor yet — Raju
+  // picks it on the draft (F24f-5 teaches batches the column).
+  await chooseWorkerType(raju, "Employee");
+  await raju.getByRole("button", { name: "Save draft" }).click();
+  await expect(raju.getByRole("status").first()).toHaveText(
+    /^(All changes saved|Saved) \d\d:\d\d/,
+  );
 
   // 3. Raju executes it like any other request: section 9, Review & sign.
   await raju.getByRole("button", { name: "Start execution" }).click();

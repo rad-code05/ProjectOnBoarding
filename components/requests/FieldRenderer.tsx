@@ -118,6 +118,49 @@ export function FieldRenderer({
     </>
   );
 
+  // F24f: employee or contractor — a two-pill switch, nothing pre-picked.
+  if (field.field_type === "worker_type") {
+    return (
+      <fieldset
+        disabled={disabled}
+        aria-describedby={describedBy}
+        className="col-span-2 flex min-w-0 flex-col gap-1.5 md:col-span-full"
+        data-field-label={field.label}
+      >
+        <legend className="mb-1.5 text-xs font-semibold md:text-[11px]">
+          {field.label}
+        </legend>
+        <div
+          className={cn(
+            "grid grid-cols-2 gap-0.75 rounded-pill bg-sand p-0.75 md:max-w-xs",
+            error && "outline-2 outline-signal",
+          )}
+        >
+          {choices.map((choice) => (
+            <label
+              key={choice.value}
+              className={cn(
+                "flex h-11 items-center justify-center rounded-pill text-sm font-medium has-checked:bg-ink has-checked:font-semibold has-checked:text-paper has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ink md:h-8 md:text-xs",
+                disabled ? "cursor-default" : "cursor-pointer",
+              )}
+            >
+              <input
+                type="radio"
+                name={id}
+                value={choice.value}
+                checked={value === choice.value}
+                onChange={() => onChange?.(choice.value)}
+                className="sr-only"
+              />
+              {choice.label}
+            </label>
+          ))}
+        </div>
+        {notes}
+      </fieldset>
+    );
+  }
+
   if (SEARCHABLE.has(field.field_type)) {
     return (
       <div

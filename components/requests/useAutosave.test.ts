@@ -18,6 +18,7 @@ const values: DraftFormValues = {
   job_title: "",
   department: "",
   country: "",
+  worker_type: "",
   office: "",
   region: "",
   office_city: "",

@@ -25,11 +25,11 @@ insert into public.signature_assets (user_id, kind, source, typed_text) values
   ('user_eo_abe', 'initials', 'typed', 'AB');
 
 insert into public.requests
-  (created_by, first_name, last_name, work_email, job_title, department_id, country, office_id,
+  (created_by, first_name, last_name, work_email, job_title, department_id, country, office_id, worker_type,
    manager_name, requestor_name, effective_date)
 select 'user_eo_admin', x.first, 'Mail', lower(x.first) || '.eo@example.test', 'Analyst',
   (select id from public.departments order by id limit 1), 'AE',
-  (select id from public.offices where name = 'Dubai'), 'Mara Manager', 'Rita Requestor', date '2026-11-02'
+  (select id from public.offices where name = 'Dubai'), 'employee', 'Mara Manager', 'Rita Requestor', date '2026-11-02'
 from (values ('Nina'), ('Dora')) as x (first);
 create temporary table ids as
   select id, first_name from public.requests where work_email like '%.eo@example.test';
