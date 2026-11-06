@@ -4,7 +4,7 @@
 -- and the department Legal. Run: pnpm db:test
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(20);
+select plan(21);
 
 insert into public.app_users (clerk_user_id, email, first_name, last_name) values
   ('user_wt_admin', 'wt-admin@example.test', 'Ada', 'Admin');
@@ -20,6 +20,12 @@ grant select on v to authenticated;
 
 -- 1–5. Reference data and form v4.3 ---------------------------------------------------------
 select ok(exists (select 1 from public.departments where name = 'Legal' and active), 'department Legal');
+select is((select array_agg(r.code || ' · ' || c.name order by c.name) from public.office_cities c
+           join public.offices o on o.id = c.office_id and o.name = 'US'
+           join public.country_regions r on r.id = c.region_id
+           where c.name in ('Manlius', 'Rancho Mission Viejo', 'South Easton')),
+  array['NY · Manlius', 'CA · Rancho Mission Viejo', 'MA · South Easton'],
+  'three more cities of the US office for the import (20261106140000_us_cities_more.sql)');
 select is((select is_current from public.form_versions where version = '4.3'), false,
   'form v4.3 exists but is not current yet (F24f-2 publishes it)');
 select is((select key from public.form_fields where form_version_id = (select v43 from v) and section = 2
