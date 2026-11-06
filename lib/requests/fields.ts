@@ -12,7 +12,9 @@ export type FieldType =
   | "office"
   | "region"
   | "office_city"
-  | "nationality";
+  | "nationality"
+  // F24f: employee or contractor (a two-pill switch).
+  | "worker_type";
 
 /** One row of form_fields — the form is drawn from these, not hard-coded. */
 export type FormField = {

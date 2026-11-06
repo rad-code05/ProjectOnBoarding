@@ -45,6 +45,7 @@ import type {
 import type { SignedSection } from "./signing";
 import type { HeldItem, HeldKind, PreviousDetails } from "./access-change";
 import { loadAccessChange } from "./access-change-load";
+import { WORKER_TYPE_CHOICES } from "./worker-type";
 import {
   buildSuggestions,
   NO_SUGGESTIONS,
@@ -151,7 +152,7 @@ export async function loadRequestForm(
   const { data: request, error } = await supabase
     .from("requests")
     .select(
-      "id, ticket_id, type, state, employee_id, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, office_id, region_id, office_city_id, nationalities, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, sla_missed_reason, mailbox_handling, mailbox_recorded_at, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
+      "id, ticket_id, type, state, employee_id, priority, assignee_id, first_name, last_name, work_email, job_title, department_id, country, worker_type, office_id, region_id, office_city_id, nationalities, manager_name, requestor_name, effective_date, sla_timeline, last_working_day, access_cutoff_at, sla_due_at, handover_to, sla_missed_reason, mailbox_handling, mailbox_recorded_at, form_version_id, version, created_at, updated_at, closed_at, execution_started_at, cancelled_at, cancel_reason, return_reason, canceller:app_users!requests_cancelled_by_fkey(first_name, last_name)",
     )
     .eq("id", id)
     .maybeSingle();
@@ -372,6 +373,7 @@ export async function loadRequestForm(
     })),
     country: countryOptions(),
     nationalities: countryOptions(),
+    worker_type: WORKER_TYPE_CHOICES,
     assignee: assignees,
     // Active offices, plus the request's own one if it was retired since.
     office: (offices.data ?? [])
@@ -426,6 +428,8 @@ export async function loadRequestForm(
       job_title: request.job_title ?? "",
       department: request.department_id ? String(request.department_id) : "",
       country: request.country ?? "",
+      worker_type: (request.worker_type ??
+        "") as DraftFormValues["worker_type"],
       office: request.office_id ? String(request.office_id) : "",
       region: request.region_id ? String(request.region_id) : "",
       office_city: request.office_city_id ? String(request.office_city_id) : "",

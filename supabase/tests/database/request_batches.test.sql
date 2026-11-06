@@ -22,10 +22,10 @@ insert into public.signature_assets (user_id, kind, source, typed_text) values
 -- Omar's closed onboarding (Slack) — for the batch of leavers.
 insert into public.requests
   (created_by, first_name, last_name, work_email, job_title, department_id, country,
-   manager_name, requestor_name, effective_date, office_id)
+   manager_name, requestor_name, effective_date, office_id, worker_type)
 values ('user_rb_admin', 'Omar', 'Test', 'omar.rb@example.test', 'Analyst',
   (select id from public.departments where name = 'Sales'), 'AE', 'Mara Manager', 'Rita Requestor',
-  date '2026-01-05', (select id from public.offices where name = 'Dubai'));
+  date '2026-01-05', (select id from public.offices where name = 'Dubai'), 'employee');
 create temporary table onb as select id from public.requests where work_email = 'omar.rb@example.test';
 grant select on onb to authenticated;
 insert into public.request_access_items (request_id, app_id, action, permission)
@@ -60,6 +60,7 @@ select e, jsonb_build_array(
     jsonb_build_object('kind', 'field', 'target', 'office_id', 'value',
       (select id from public.offices where name = 'Dubai')),
     jsonb_build_object('kind', 'field', 'target', 'effective_date', 'value', (current_date + 10)::text),
+    jsonb_build_object('kind', 'field', 'target', 'worker_type', 'value', 'employee'),
     jsonb_build_object('kind', 'access', 'target', 'app:' || (select id from public.catalog_apps where name = 'Slack'),
       'value', jsonb_build_object('action', 'Grant', 'permission', 'Regular Member')))
 from unnest(array['nina.rb@example.test', 'ola.rb@example.test', 'pia.rb@example.test', 'quinn.rb@example.test']) e;

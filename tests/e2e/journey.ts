@@ -38,6 +38,16 @@ export async function choose(
   if (shows) await expect(box).toHaveValue(option);
 }
 
+/** Form v4.3 (F24f): the Employee or contractor switch in section 2. */
+export async function chooseWorkerType(
+  page: Page,
+  kind: "Employee" | "Contractor",
+) {
+  const group = page.getByRole("group", { name: "Employee or contractor" });
+  await group.getByText(kind, { exact: true }).click();
+  await expect(group.getByRole("radio", { name: kind })).toBeChecked();
+}
+
 /** As Raju: New request → Start onboarding (F09c: New request opens a sheet). */
 export async function newOnboarding(page: Page) {
   await page.getByRole("button", { name: "New request" }).first().click();
@@ -64,6 +74,7 @@ export async function createExecutedRequest(page: Page, firstName: string) {
   await page
     .getByLabel("Work email")
     .fill(`${firstName.toLowerCase()}.${Date.now()}@laine.ai`);
+  await chooseWorkerType(page, "Employee");
   await page.getByLabel("Job title / role").fill("Analyst");
   await page
     .getByLabel("Department / team")

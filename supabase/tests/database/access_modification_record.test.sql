@@ -25,6 +25,9 @@ begin
   -- Form v4.2 (F27): new requests need an Office before Review & sign.
 update public.requests set office_id = (select id from public.offices where name = 'Dubai')
 where office_id is null and state not in ('closed', 'cancelled');
+-- Form v4.3 (F24f): Employee or contractor is required too.
+update public.requests set worker_type = 'employee'
+where worker_type is null and state not in ('closed', 'cancelled');
 set local role authenticated;
   perform set_config('request.jwt.claims', '{"sub":"user_ar_admin","role":"authenticated"}', true);
   if (select state from public.requests where id = p_id) = 'draft' then

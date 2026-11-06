@@ -53,6 +53,10 @@ export const draftValuesSchema = z
         message: "Choose a country from the list.",
       }),
     ),
+    // F24f: employee or contractor ("" = not chosen yet).
+    worker_type: z
+      .union([z.literal(""), z.enum(["employee", "contractor"])])
+      .transform((value) => value || null),
     // F27: office, then (US) state and city; up to two nationalities ("CH,IT").
     office: idChoice("Choose an office from the list."),
     region: idChoice("Choose a state from the list."),
@@ -157,6 +161,7 @@ export function toColumns(
     job_title: values.job_title,
     department_id: values.department,
     country: values.country,
+    worker_type: values.worker_type,
     office_id: values.office,
     region_id: values.office ? values.region : null,
     office_city_id: values.office && values.region ? values.office_city : null,

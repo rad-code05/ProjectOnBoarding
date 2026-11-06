@@ -2,6 +2,7 @@ import sharp from "sharp";
 import { setupClerkTestingToken } from "@clerk/testing/playwright";
 import {
   choose,
+  chooseWorkerType,
   createExecutedRequest,
   newOnboarding,
   reviewAndSign,
@@ -1177,6 +1178,7 @@ test("Raju reviews and signs a request; it awaits confirmation with his signatur
   await page
     .getByLabel("Work email")
     .fill(`sina.signer.${Date.now()}@laine.ai`);
+  await chooseWorkerType(page, "Employee");
   await page.getByLabel("Job title / role").fill("Analyst");
   await page
     .getByLabel("Department / team")

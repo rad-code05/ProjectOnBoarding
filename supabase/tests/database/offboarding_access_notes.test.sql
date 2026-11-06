@@ -19,10 +19,10 @@ insert into public.signature_assets (user_id, kind, source, typed_text) values
 -- Lena's closed onboarding: Slack and an office badge.
 insert into public.requests
   (created_by, first_name, last_name, work_email, job_title, department_id, country,
-   manager_name, requestor_name, effective_date, office_id)
+   manager_name, requestor_name, effective_date, office_id, worker_type)
 values ('user_an_admin', 'Lena', 'Test', 'lena.an@example.test', 'Analyst',
   (select id from public.departments where name = 'Sales'), 'AE', 'Mara Manager', 'Rita Requestor',
-  date '2026-01-05', (select id from public.offices where name = 'Dubai'));
+  date '2026-01-05', (select id from public.offices where name = 'Dubai'), 'employee');
 create temporary table onb as select id from public.requests where work_email = 'lena.an@example.test';
 grant select on onb to authenticated;
 insert into public.request_access_items (request_id, app_id, action, permission)

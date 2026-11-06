@@ -26,8 +26,8 @@ select is((select array_agg(r.code || ' · ' || c.name order by c.name) from pub
            where c.name in ('Manlius', 'Rancho Mission Viejo', 'South Easton')),
   array['NY · Manlius', 'CA · Rancho Mission Viejo', 'MA · South Easton'],
   'three more cities of the US office for the import (20261106140000_us_cities_more.sql)');
-select is((select is_current from public.form_versions where version = '4.3'), false,
-  'form v4.3 exists but is not current yet (F24f-2 publishes it)');
+select is((select is_current from public.form_versions where version = '4.3'), true,
+  'form v4.3 is current (published in F24f-2)');
 select is((select key from public.form_fields where form_version_id = (select v43 from v) and section = 2
            order by sort_order limit 1), 'worker_type', 'Employee or contractor comes first in section 2');
 select is((select row(required, field_type, options, applies_to)::text from public.form_fields
