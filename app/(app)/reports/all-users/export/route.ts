@@ -1,3 +1,4 @@
+import { sourceWords } from "@/lib/reports/imported";
 import type { NextRequest } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { toCsv } from "@/lib/csv";
@@ -138,6 +139,7 @@ export async function GET(request: NextRequest) {
       "Last working day",
       "Created",
       "Closed",
+      "Source",
     ],
     rows.map((r) => [
       r.ticket_id,
@@ -155,6 +157,7 @@ export async function GET(request: NextRequest) {
       r.last_working_day,
       formatDayTime(r.created_at, timeZone),
       r.closed_at ? formatDayTime(r.closed_at, timeZone) : null,
+      sourceWords(r.ticket_id),
     ]),
   );
   return new Response(csv, {

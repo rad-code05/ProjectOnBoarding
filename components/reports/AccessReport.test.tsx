@@ -64,6 +64,7 @@ describe("AccessHolderList", () => {
             grantedBy: "UAM-2026-000021",
             grantedHref: "/records/g1",
             leaving: { ticketId: "UAM-2026-000149", href: "/requests/o1" },
+            imported: false,
           },
         ]}
       />,

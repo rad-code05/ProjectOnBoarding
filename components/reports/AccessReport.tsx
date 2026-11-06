@@ -1,3 +1,4 @@
+import { ImportedNote, ImportedTag } from "./ImportedTag";
 import Link from "next/link";
 import { ChevronRightIcon } from "@/components/ui";
 import { cn } from "@/lib/cn";
@@ -93,52 +94,58 @@ export function AccessItemBars({
 /** One card per person holding the item (board: … · one app (who holds it)). */
 export function AccessHolderList({ rows }: { rows: AccessHolder[] }) {
   return (
-    <ul className="flex flex-col gap-2.5 md:grid md:grid-cols-2">
-      {rows.map((row) => (
-        <li
-          key={row.id}
-          className="flex flex-col gap-2 rounded-card border border-line bg-paper px-3.5 py-3"
-        >
-          <div className="flex items-start gap-2">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="truncate text-[15px] font-bold">{row.name}</span>
-              <span className="truncate text-xs text-graphite">
-                {row.subtitle}
+    <>
+      <ul className="flex flex-col gap-2.5 md:grid md:grid-cols-2">
+        {rows.map((row) => (
+          <li
+            key={row.id}
+            className="flex flex-col gap-2 rounded-card border border-line bg-paper px-3.5 py-3"
+          >
+            <div className="flex items-start gap-2">
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="truncate text-[15px] font-bold">
+                  {row.name}
+                </span>
+                <span className="truncate text-xs text-graphite">
+                  {row.subtitle}
+                </span>
+              </div>
+              {row.imported && <ImportedTag />}
+              <span className="inline-flex shrink-0 items-center rounded-pill bg-line-subtle px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
+                {row.detail}
               </span>
             </div>
-            <span className="inline-flex shrink-0 items-center rounded-pill bg-line-subtle px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap">
-              {row.detail}
-            </span>
-          </div>
-          <dl className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-x-2.5 gap-y-1 text-xs leading-snug">
-            <dt className="text-graphite">Since</dt>
-            <dd>{row.since}</dd>
-            <dt className="text-graphite">Granted by</dt>
-            <dd>
-              {row.grantedHref ? (
-                <Link href={row.grantedHref} className="underline">
-                  {row.grantedBy}
-                </Link>
-              ) : (
-                row.grantedBy
-              )}
-            </dd>
-          </dl>
-          {row.leaving && (
-            <span className="text-xs font-semibold text-signal">
-              Leaving — offboarding{" "}
-              {row.leaving.href ? (
-                <Link href={row.leaving.href} className="underline">
-                  {row.leaving.ticketId}
-                </Link>
-              ) : (
-                row.leaving.ticketId
-              )}{" "}
-              is open
-            </span>
-          )}
-        </li>
-      ))}
-    </ul>
+            <dl className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-x-2.5 gap-y-1 text-xs leading-snug">
+              <dt className="text-graphite">Since</dt>
+              <dd>{row.since}</dd>
+              <dt className="text-graphite">Granted by</dt>
+              <dd>
+                {row.grantedHref ? (
+                  <Link href={row.grantedHref} className="underline">
+                    {row.grantedBy}
+                  </Link>
+                ) : (
+                  row.grantedBy
+                )}
+              </dd>
+            </dl>
+            {row.leaving && (
+              <span className="text-xs font-semibold text-signal">
+                Leaving — offboarding{" "}
+                {row.leaving.href ? (
+                  <Link href={row.leaving.href} className="underline">
+                    {row.leaving.ticketId}
+                  </Link>
+                ) : (
+                  row.leaving.ticketId
+                )}{" "}
+                is open
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+      <ImportedNote count={rows.filter((r) => r.imported).length} />
+    </>
   );
 }
