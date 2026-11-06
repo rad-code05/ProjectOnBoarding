@@ -596,3 +596,38 @@ describe("notifications (F23)", () => {
     );
   });
 });
+
+describe("staff import (F24)", () => {
+  test("the import, each person, a discard and the signed form", () => {
+    const say = (action: string, diff: Record<string, Json> = {}) =>
+      describeEvent(ev({ action, diff, ticket_id: null })).what;
+    expect(
+      say("import.completed", {
+        file_name: "staff.xlsx",
+        people: 36,
+        leavers: 5,
+      }),
+    ).toBe("imported 36 existing staff (5 leavers) from “staff.xlsx”");
+    expect(
+      say("import.person", {
+        file_name: "staff.xlsx",
+        row: 7,
+        tickets: ["IMP-2024-000011", "IMP-2026-000002"],
+      }),
+    ).toBe(
+      "imported IMP-2024-000011 + IMP-2026-000002 from “staff.xlsx”, row 7",
+    );
+    expect(say("import.discarded", { file_name: "trial.xlsx" })).toBe(
+      "discarded the import of “trial.xlsx”",
+    );
+    expect(
+      say("import.document_attached", {
+        ticket_id: "IMP-2025-000004",
+        replaced: true,
+      }),
+    ).toBe("replaced the original signed form on IMP-2025-000004");
+    expect(
+      say("import.document_downloaded", { ticket_id: "IMP-2025-000004" }),
+    ).toBe("downloaded the original signed form on IMP-2025-000004");
+  });
+});

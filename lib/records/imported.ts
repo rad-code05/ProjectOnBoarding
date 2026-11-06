@@ -31,6 +31,13 @@ export type ImportedRecord = {
   current: boolean;
   /** "laine-staff-reviewed.xlsx on 13 Nov 2026 by Raju Bholani" */
   importedFrom: string;
+  /** The original signed form, once attached (F24d-2). */
+  document: {
+    id: string;
+    fileName: string;
+    /** "attached 20 Nov 2026, 10:12 by Raju Bholani · fingerprint 4be1…" */
+    line: string;
+  } | null;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -51,7 +58,7 @@ export async function loadImportedRecord(
     .maybeSingle();
   if (!r || !r.import_id || r.state !== "closed") return null;
 
-  const [items, sibling, leftSince, tz] = await Promise.all([
+  const [items, sibling, leftSince, tz, doc] = await Promise.all([
     db
       .from("employee_access_inventory")
       .select("name, permission, granted_at, ended_at")
@@ -76,6 +83,14 @@ export async function loadImportedRecord(
           .eq("state", "closed")
       : Promise.resolve({ count: 0 }),
     tzPromise,
+    db
+      .from("imported_documents")
+      .select(
+        "id, file_name, sha256, attached_at, by:app_users!imported_documents_attached_by_fkey(first_name, last_name)",
+      )
+      .eq("request_id", id)
+      .is("replaced_at", null)
+      .maybeSingle(),
   ]);
 
   const day = (iso: string | null) => (iso ? formatDay(iso, tz) : "—");
@@ -141,5 +156,20 @@ export async function loadImportedRecord(
     ]
       .filter(Boolean)
       .join(" "),
+    document: doc.data
+      ? {
+          id: doc.data.id,
+          fileName: doc.data.file_name,
+          line: [
+            `attached ${formatDayTime(doc.data.attached_at, tz)}`,
+            personName(doc.data.by?.first_name, doc.data.by?.last_name)
+              ? `by ${personName(doc.data.by?.first_name, doc.data.by?.last_name)}`
+              : "",
+            `· fingerprint ${doc.data.sha256.slice(0, 4)}…`,
+          ]
+            .filter(Boolean)
+            .join(" "),
+        }
+      : null,
   };
 }

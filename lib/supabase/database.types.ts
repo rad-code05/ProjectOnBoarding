@@ -944,6 +944,58 @@ export type Database = {
         };
         Relationships: [];
       };
+      imported_documents: {
+        Row: {
+          attached_at: string;
+          attached_by: string;
+          file_name: string;
+          id: string;
+          replaced_at: string | null;
+          request_id: string;
+          sha256: string;
+          size_bytes: number;
+          storage_path: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          attached_at?: string;
+          attached_by: string;
+          file_name: string;
+          id?: string;
+          replaced_at?: string | null;
+          request_id: string;
+          sha256: string;
+          size_bytes: number;
+          storage_path: string;
+        };
+        Update: {
+          attached_at?: string;
+          attached_by?: string;
+          file_name?: string;
+          id?: string;
+          replaced_at?: string | null;
+          request_id?: string;
+          sha256?: string;
+          size_bytes?: number;
+          storage_path?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "imported_documents_attached_by_fkey";
+            columns: ["attached_by"];
+            isOneToOne: false;
+            referencedRelation: "app_users";
+            referencedColumns: ["clerk_user_id"];
+          },
+          {
+            foreignKeyName: "imported_documents_request_id_fkey";
+            columns: ["request_id"];
+            isOneToOne: false;
+            referencedRelation: "requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notification_settings: {
         Row: {
           closed: boolean;
@@ -2383,6 +2435,16 @@ export type Database = {
         }[];
       };
       approval_preview: { Args: { p_request_id: string }; Returns: Json };
+      attach_imported_document: {
+        Args: {
+          p_file_name: string;
+          p_request_id: string;
+          p_sha256: string;
+          p_size: number;
+          p_storage_path: string;
+        };
+        Returns: string;
+      };
       audit_log: {
         Args: {
           p_actor?: string;
@@ -2490,6 +2552,10 @@ export type Database = {
         Returns: undefined;
       };
       import_staff: { Args: { p_import: string }; Returns: Json };
+      log_imported_document_download: {
+        Args: { p_document_id: string };
+        Returns: undefined;
+      };
       log_record_download: {
         Args: { p_request_id: string };
         Returns: undefined;
