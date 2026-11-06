@@ -81,6 +81,7 @@ describe("accessHolder", () => {
       grantedBy: "UAM-2026-000021",
       grantedHref: "/records/g1",
       leaving: { ticketId: "UAM-2026-000149", href: "/requests/o1" },
+      imported: false,
     });
   });
   test("devices show the asset tag; imported rows say so; approvers open approvals", () => {
@@ -101,6 +102,7 @@ describe("accessHolder", () => {
       grantedBy: "Excel import",
       grantedHref: null,
       leaving: { href: "/approvals/o1" },
+      imported: true,
     });
     expect(
       accessHolder(

@@ -1,3 +1,4 @@
+import { isImportedTicket } from "./imported";
 import { formatDay } from "@/lib/requests/format";
 import { countryName, personName } from "@/lib/requests/labels";
 import { nationalityText } from "@/lib/requests/signing";
@@ -160,6 +161,8 @@ export type EmployeeCard = {
   /** The record they are placed by. */
   record: { ticketId: string; href: string } | null;
   leaving: { ticketId: string; href: string | null } | null;
+  /** Placed by an Imported record (F24): dates from the import file. */
+  imported: boolean;
 };
 
 export function employeeCard(
@@ -192,6 +195,7 @@ export function employeeCard(
       r.leaving_request_id && r.leaving_ticket_id
         ? { ticketId: r.leaving_ticket_id, href: leavingHref }
         : null,
+    imported: isImportedTicket(r.latest_ticket_id),
   };
 }
 

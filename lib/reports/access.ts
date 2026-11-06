@@ -160,6 +160,8 @@ export type AccessHolder = {
   grantedBy: string;
   grantedHref: string | null;
   leaving: { ticketId: string; href: string | null } | null;
+  /** Came in with the staff import (F24): the date is from the import file. */
+  imported: boolean;
 };
 
 export function accessHolder(
@@ -193,6 +195,7 @@ export function accessHolder(
       r.leaving_request_id && r.leaving_ticket_id
         ? { ticketId: r.leaving_ticket_id, href: leavingHref }
         : null,
+    imported: r.source === "import",
   };
 }
 

@@ -20,6 +20,7 @@ describe("AllUsersList", () => {
             nationality: "Switzerland, Italy",
             dates: "Effective 20 Oct 2026 · Closed 15 Oct 2026",
             href: "/records/r1",
+            imported: false,
           },
           {
             id: "r2",
@@ -34,6 +35,7 @@ describe("AllUsersList", () => {
             nationality: null,
             dates: "Effective 3 Nov 2026 · not closed yet",
             href: null,
+            imported: false,
           },
         ]}
       />,
@@ -56,5 +58,33 @@ describe("AllUsersList", () => {
     );
     expect(lea).toHaveTextContent("UAM-2026-000139 · Onboarding");
     expect(lea).not.toHaveTextContent("Office");
+  });
+
+  test("an imported person: a tag, and the footnote says where the dates come from", () => {
+    render(
+      <AllUsersList
+        rows={[
+          {
+            id: "r3",
+            ticketId: "IMP-2025-000004",
+            type: "onboarding",
+            state: "closed",
+            name: "Lucas Moreau",
+            email: "lucas.moreau@example.com",
+            department: "Engineering",
+            country: "United Arab Emirates",
+            office: "Dubai",
+            nationality: null,
+            dates: "Effective 6 Jan 2025 · Closed 6 Jan 2025",
+            href: "/records/r3",
+            imported: true,
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByRole("listitem")).toHaveTextContent("Imported");
+    expect(screen.getByRole("note")).toHaveTextContent(
+      "1 person here was imported (joined before the app)",
+    );
   });
 });

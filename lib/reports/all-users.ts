@@ -1,3 +1,4 @@
+import { isImportedTicket } from "./imported";
 import "server-only";
 import { formatDate, formatDay } from "@/lib/requests/format";
 import {
@@ -31,6 +32,8 @@ export type AllUsersRow = {
   dates: string;
   /** Where the row opens for this reader; null = nothing to open. */
   href: string | null;
+  /** An Imported record (F24): dates from the import file. */
+  imported: boolean;
 };
 
 export type ReportOptions = {
@@ -167,6 +170,7 @@ export async function loadAllUsers(
     return {
       id: r.id,
       ticketId: r.ticket_id,
+      imported: isImportedTicket(r.ticket_id),
       type: r.type,
       state: r.state,
       name: personName(r.first_name, r.last_name) || "Unnamed person",

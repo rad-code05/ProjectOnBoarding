@@ -173,6 +173,7 @@ describe("employeeCard", () => {
       since: "1 Sept 2026",
       record: { ticketId: "UAM-2026-000101", href: "/records/r1" },
       leaving: { ticketId: "UAM-2026-000140", href: "/requests/r2" },
+      imported: false,
     });
   });
 

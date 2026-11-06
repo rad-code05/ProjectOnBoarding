@@ -1,3 +1,4 @@
+import { ImportedNote, ImportedTag } from "./ImportedTag";
 import Link from "next/link";
 import { ChevronRightIcon } from "@/components/ui";
 import { cn } from "@/lib/cn";
@@ -131,65 +132,73 @@ export function OfficeTable({
 /** One card per person: name, email · department, where, since, Leaving. */
 export function EmployeeList({ rows }: { rows: EmployeeCard[] }) {
   return (
-    <ul className="flex flex-col gap-2.5 md:grid md:grid-cols-2">
-      {rows.map((row) => (
-        <li
-          key={row.id}
-          className="flex flex-col gap-2 rounded-card border border-line bg-paper px-3.5 py-3"
-        >
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <span className="truncate text-[15px] font-bold">{row.name}</span>
-            <span className="truncate text-xs text-graphite">
-              {row.subtitle}
-            </span>
-          </div>
-          <dl className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-x-2.5 gap-y-1 text-xs leading-snug">
-            <dt className="text-graphite">Office</dt>
-            <dd>{row.place}</dd>
-            {row.country && (
-              <>
-                <dt className="text-graphite">Works in</dt>
-                <dd>{row.country}</dd>
-              </>
-            )}
-            {row.nationality && (
-              <>
-                <dt className="text-graphite">Nationality</dt>
-                <dd>{row.nationality}</dd>
-              </>
-            )}
-            {row.since && (
-              <>
-                <dt className="text-graphite">Onboarded</dt>
-                <dd>{row.since}</dd>
-              </>
-            )}
-            {row.record && (
-              <>
-                <dt className="text-graphite">Latest record</dt>
-                <dd>
-                  <Link href={row.record.href} className="underline">
-                    {row.record.ticketId}
+    <>
+      <ul className="flex flex-col gap-2.5 md:grid md:grid-cols-2">
+        {rows.map((row) => (
+          <li
+            key={row.id}
+            className="flex flex-col gap-2 rounded-card border border-line bg-paper px-3.5 py-3"
+          >
+            <div className="flex items-start gap-2">
+              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                <span className="truncate text-[15px] font-bold">
+                  {row.name}
+                </span>
+                <span className="truncate text-xs text-graphite">
+                  {row.subtitle}
+                </span>
+              </div>
+              {row.imported && <ImportedTag />}
+            </div>
+            <dl className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-x-2.5 gap-y-1 text-xs leading-snug">
+              <dt className="text-graphite">Office</dt>
+              <dd>{row.place}</dd>
+              {row.country && (
+                <>
+                  <dt className="text-graphite">Works in</dt>
+                  <dd>{row.country}</dd>
+                </>
+              )}
+              {row.nationality && (
+                <>
+                  <dt className="text-graphite">Nationality</dt>
+                  <dd>{row.nationality}</dd>
+                </>
+              )}
+              {row.since && (
+                <>
+                  <dt className="text-graphite">Onboarded</dt>
+                  <dd>{row.since}</dd>
+                </>
+              )}
+              {row.record && (
+                <>
+                  <dt className="text-graphite">Latest record</dt>
+                  <dd>
+                    <Link href={row.record.href} className="underline">
+                      {row.record.ticketId}
+                    </Link>
+                  </dd>
+                </>
+              )}
+            </dl>
+            {row.leaving && (
+              <span className="text-xs font-semibold text-signal">
+                Leaving — offboarding{" "}
+                {row.leaving.href ? (
+                  <Link href={row.leaving.href} className="underline">
+                    {row.leaving.ticketId}
                   </Link>
-                </dd>
-              </>
+                ) : (
+                  row.leaving.ticketId
+                )}{" "}
+                is open
+              </span>
             )}
-          </dl>
-          {row.leaving && (
-            <span className="text-xs font-semibold text-signal">
-              Leaving — offboarding{" "}
-              {row.leaving.href ? (
-                <Link href={row.leaving.href} className="underline">
-                  {row.leaving.ticketId}
-                </Link>
-              ) : (
-                row.leaving.ticketId
-              )}{" "}
-              is open
-            </span>
-          )}
-        </li>
-      ))}
-    </ul>
+          </li>
+        ))}
+      </ul>
+      <ImportedNote count={rows.filter((r) => r.imported).length} />
+    </>
   );
 }
