@@ -869,6 +869,13 @@
       "w": 390,
       "h": 1640,
       "title": "Phone · An imported person (SharePoint note, attach signed PDF) — F24 proposal"
+    },
+    "WorkerTypeMobile.dc.html": {
+      "x": 42750,
+      "y": 13560,
+      "w": 390,
+      "h": 1640,
+      "title": "Phone · Section 2 with Employee / Contractor — F24f proposal"
     }
   },
   "createdOnFiles": {
@@ -890,7 +897,7 @@
     },
     "mobileRow": {
       "kind": "title1",
-      "maxW": 42750,
+      "maxW": 43140,
       "text": "Mobile-first (D22) — phone screens",
       "w": 240,
       "x": 0,
@@ -1051,7 +1058,8 @@
     "ImportStartMobile.dc.html",
     "ImportGridMobile.dc.html",
     "ImportConfirmMobile.dc.html",
-    "ImportedPersonMobile.dc.html"
+    "ImportedPersonMobile.dc.html",
+    "WorkerTypeMobile.dc.html"
   ],
   "pages": [],
   "title": "Laine Onboarding Rights — Design"
