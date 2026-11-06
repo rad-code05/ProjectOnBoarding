@@ -980,6 +980,29 @@ test("Admin → Import (F24c): a staff file is checked, one row fixed, then impo
   await expect(
     page.getByRole("button", { name: "Start an offboarding" }),
   ).toBeVisible();
+
+  // F24d-2: attach the original signed form; the note turns calm.
+  await page.getByRole("button", { name: "Attach the signed PDF…" }).click();
+  const attach = page.getByRole("dialog", { name: "Attach the signed PDF" });
+  await attach.getByLabel("Signed PDF").setInputFiles({
+    name: "lena-onboarding-signed.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from(
+      "%PDF-1.4\n1 0 obj << >> endobj\ntrailer << >>\n%%EOF\n",
+    ),
+  });
+  await attach.getByRole("button", { name: "Attach", exact: true }).click();
+  await expect(attach).toHaveCount(0);
+  const note = page.getByRole("note", { name: "Imported record" });
+  await expect(note).toContainText("original signed form attached");
+  await expect(note).toContainText("lena-onboarding-signed.pdf");
+  const download = await page.request.get(
+    (await note.getByRole("link", { name: "Download" }).getAttribute("href")) ??
+      "",
+  );
+  expect(download.status()).toBe(200);
+  expect(download.headers()["content-type"]).toBe("application/pdf");
+  expect((await download.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });
 
 test("Admin → Notifications: sender status, a switch saved and put back, a test email in the outbox", async ({

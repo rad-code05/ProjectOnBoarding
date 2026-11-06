@@ -599,6 +599,34 @@ export function describeEvent(
         ev.action === "notification.sent" ? "sent" : "could not send";
       return say(`${verb} ${email} to ${whom}${on}`, "Admin → Notifications");
     }
+    case "import.completed": {
+      const leavers = num(d, "leavers");
+      return say(
+        `imported ${num(d, "people")} existing staff${leavers ? ` (${leavers} leaver${leavers === 1 ? "" : "s"})` : ""} from “${str(d, "file_name") ?? "a file"}”`,
+        "Admin → Import",
+      );
+    }
+    case "import.person": {
+      const tickets = Array.isArray(d.tickets)
+        ? d.tickets.filter((t): t is string => typeof t === "string")
+        : [];
+      return say(
+        `imported ${tickets.join(" + ") || "a record"} from “${str(d, "file_name") ?? "a file"}”, row ${num(d, "row")}`,
+        "Admin → Import",
+      );
+    }
+    case "import.discarded":
+      return say(
+        `discarded the import of “${str(d, "file_name") ?? "a file"}”`,
+        "Admin → Import",
+      );
+    case "import.document_attached":
+      return say(
+        `${d.replaced === true ? "replaced" : "attached"} the original signed form${on}`,
+        "Imported record",
+      );
+    case "import.document_downloaded":
+      return say(`downloaded the original signed form${on}`, "Imported record");
     case "settings.timezone_changed":
       return say(
         `changed the company timezone to ${str(d, "after") ?? "—"}`,

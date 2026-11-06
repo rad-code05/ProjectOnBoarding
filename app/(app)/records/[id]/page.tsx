@@ -38,6 +38,7 @@ export default async function RecordPagePage({
           <ImportedRecordView
             record={imported}
             canStart={roles.some((r) => r === "admin" || r === "requester")}
+            canAttach={roles.includes("admin")}
           />
         )
       )}

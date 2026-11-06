@@ -1,12 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   startAccessChange,
   startOffboarding,
 } from "@/app/(app)/requests/actions";
-import { Button, ChevronLeftIcon, InlineError } from "@/components/ui";
+import { attachSignedPdf } from "@/app/(app)/records/imported-actions";
+import {
+  Button,
+  ChevronLeftIcon,
+  InlineError,
+  Sheet,
+  buttonStyles,
+} from "@/components/ui";
 import type { ImportedRecord } from "@/lib/records/imported";
 import { TYPE_LABELS } from "@/lib/requests/labels";
 
@@ -27,10 +35,15 @@ const FORM: Record<string, string> = {
 export function ImportedRecordView({
   record,
   canStart,
+  canAttach,
 }: {
   record: ImportedRecord;
+  /** Admin + requester: a new access change / offboarding. */
   canStart: boolean;
+  /** Admin: attach or replace the original signed PDF (F24d-2). */
+  canAttach: boolean;
 }) {
+  const [attaching, setAttaching] = useState(false);
   const [all, setAll] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -79,22 +92,74 @@ export function ImportedRecordView({
         )}
       </div>
 
-      <div
-        role="note"
-        aria-label="Imported record"
-        className="flex flex-col gap-2 rounded-card border-[1.5px] border-signal bg-paper px-3.5 py-3"
-      >
-        <strong className="text-sm text-signal">
-          Imported record — signed form on SharePoint
-        </strong>
-        <span className="text-[13px] leading-normal">
-          {record.name} was{" "}
-          {record.type === "offboarding" ? "offboarded" : "onboarded"} before
-          this app. The signed {form} is filed in <strong>SharePoint</strong> —
-          this record was imported from <em>{record.importedFrom}</em> and is
-          not signed in the app.
-        </span>
-      </div>
+      {record.document ? (
+        <div
+          role="note"
+          aria-label="Imported record"
+          className="flex flex-col gap-2 rounded-card border border-line bg-paper px-3.5 py-3"
+        >
+          <strong className="text-sm">
+            Imported record — original signed form attached
+          </strong>
+          <span className="text-[13px] leading-normal break-words text-graphite">
+            {record.document.fileName} · {record.document.line}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href={`/records/${record.id}/original`}
+              className={buttonStyles("primary", "sm")}
+            >
+              Download
+            </a>
+            {canAttach && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setAttaching(true)}
+              >
+                Replace…
+              </Button>
+            )}
+          </div>
+          <span className="text-xs text-graphite">
+            Imported from {record.importedFrom}; not signed in the app.
+          </span>
+        </div>
+      ) : (
+        <div
+          role="note"
+          aria-label="Imported record"
+          className="flex flex-col gap-2 rounded-card border-[1.5px] border-signal bg-paper px-3.5 py-3"
+        >
+          <strong className="text-sm text-signal">
+            Imported record — signed form on SharePoint
+          </strong>
+          <span className="text-[13px] leading-normal">
+            {record.name} was{" "}
+            {record.type === "offboarding" ? "offboarded" : "onboarded"} before
+            this app. The signed {form} is filed in <strong>SharePoint</strong>{" "}
+            — this record was imported from <em>{record.importedFrom}</em> and
+            is not signed in the app.
+          </span>
+          {canAttach && (
+            <Button
+              size="sm"
+              className="self-start"
+              onClick={() => setAttaching(true)}
+            >
+              Attach the signed PDF…
+            </Button>
+          )}
+        </div>
+      )}
+      {attaching && (
+        <AttachSheet
+          requestId={record.id}
+          replacing={Boolean(record.document)}
+          form={form}
+          onClose={() => setAttaching(false)}
+        />
+      )}
 
       <section
         aria-labelledby="imported-employee"
@@ -191,5 +256,75 @@ export function ImportedRecordView({
         </div>
       )}
     </div>
+  );
+}
+
+/** Attach (or replace) the original signed PDF (sheet). */
+function AttachSheet({
+  requestId,
+  replacing,
+  form,
+  onClose,
+}: {
+  requestId: string;
+  replacing: boolean;
+  form: string;
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <Sheet
+      eyebrow="Imported record"
+      title={replacing ? "Replace the signed PDF" : "Attach the signed PDF"}
+      onClose={onClose}
+      footer={
+        <div className="flex flex-col gap-2">
+          {error && <InlineError live>{error}</InlineError>}
+          <div className="grid grid-cols-[1fr_1.4fr] gap-2">
+            <Button variant="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              loading={busy}
+              onClick={async () => {
+                if (!file) {
+                  setError("Choose the signed PDF.");
+                  return;
+                }
+                setBusy(true);
+                setError(null);
+                const data = new FormData();
+                data.set("file", file);
+                const r = await attachSignedPdf(requestId, data);
+                setBusy(false);
+                if (r.ok) {
+                  onClose();
+                  router.refresh();
+                } else setError(r.message);
+              }}
+            >
+              {replacing ? "Replace" : "Attach"}
+            </Button>
+          </div>
+        </div>
+      }
+    >
+      <p className="text-sm leading-normal">
+        The signed {form} from SharePoint, as a PDF (up to 10 MB). It is kept
+        privately with this record; everyone who reads records can download it,
+        and every download is recorded.
+        {replacing && " The current one is kept in the history."}
+      </p>
+      <input
+        type="file"
+        aria-label="Signed PDF"
+        accept="application/pdf,.pdf"
+        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        className="text-[13px] file:mr-3 file:h-10 file:rounded-pill file:border file:border-ink file:bg-transparent file:px-4 file:font-semibold"
+      />
+    </Sheet>
   );
 }
