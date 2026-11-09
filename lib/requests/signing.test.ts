@@ -148,6 +148,38 @@ describe("summary cards", () => {
     ]);
   });
 
+  test("form v4.3 (F24f): employee or contractor; a contractor may have no office", () => {
+    expect(employeeRows(snapshot).map((r) => r.label)).not.toContain(
+      "Employee or contractor",
+    );
+    const contractor = snapshotSchema.parse({
+      ...snapshot,
+      request: { ...snapshot.request, worker_type: "contractor" },
+    });
+    const rows = employeeRows(contractor);
+    expect(rows.map((r) => r.label).slice(0, 2)).toEqual([
+      "Name",
+      "Employee or contractor",
+    ]);
+    expect(rows).toContainEqual({
+      label: "Employee or contractor",
+      value: "Contractor",
+    });
+    expect(rows).toContainEqual({ label: "Office", value: "No office" });
+    const employee = snapshotSchema.parse({
+      ...snapshot,
+      request: {
+        ...snapshot.request,
+        worker_type: "employee",
+        office: "Dubai",
+      },
+    });
+    expect(employeeRows(employee)).toContainEqual({
+      label: "Office",
+      value: "Dubai",
+    });
+  });
+
   test("access rows: apps, equipment, physical access", () => {
     expect(accessRows(snapshot)).toEqual([
       { label: "Figma", value: "Grant · Editor" },
@@ -403,6 +435,29 @@ describe("an access change (F10d)", () => {
     expect(
       employeeChangeRows(moved, { withNationality: false }).map((r) => r.label),
     ).toEqual(["Job title", "Office", "Location"]);
+  });
+
+  test("employee: a contractor becomes an employee (F24f)", () => {
+    const hired = snapshotSchema.parse({
+      ...snapshot,
+      request: {
+        ...snapshot.request,
+        worker_type: "employee",
+        office: "Dubai",
+      },
+      access_modification: {
+        ...snapshot.access_modification!,
+        previous: {
+          ...snapshot.access_modification!.previous!,
+          worker_type: "contractor",
+        },
+      },
+    });
+    expect(employeeChangeRows(hired)).toEqual([
+      { label: "Employee or contractor", value: "Contractor → Employee" },
+      { label: "Job title", value: "Product Designer → Design Lead" },
+      { label: "Office", value: "No office → Dubai" },
+    ]);
   });
 
   test("kept: everything left as it is, or one kind", () => {

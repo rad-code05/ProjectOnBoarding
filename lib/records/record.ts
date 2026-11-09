@@ -11,6 +11,7 @@ import {
   appRows,
   employeeChangeRows,
   locationText,
+  officeText,
   equipmentRows,
   keptRows,
   offboardingRows,
@@ -18,6 +19,7 @@ import {
   type Row,
   type Snapshot,
 } from "@/lib/requests/signing";
+import { workerTypeLabel } from "@/lib/requests/worker-type";
 
 /**
  * The PDF record (F08, design: PDF record · page 1 / 2). Everything printed
@@ -149,11 +151,21 @@ export function recordSections(input: RecordInput): RecordSection[] {
           label: "Employee name",
           value: dash(personName(r.first_name, r.last_name)),
         },
+        // F24f (form v4.3): employee or contractor — only when recorded.
+        ...(r.worker_type
+          ? [
+              {
+                label: "Employee or contractor",
+                value: workerTypeLabel(r.worker_type),
+              },
+            ]
+          : []),
         { label: "Work email", value: dash(r.work_email) },
         { label: "Job title / role", value: dash(r.job_title) },
         { label: "Department / team", value: dash(r.department) },
         // F27 (form v4.2): office and location — nationality stays off the PDF.
-        ...(r.office ? [{ label: "Office", value: r.office }] : []),
+        // A contractor without an office: "No office" (F24f).
+        ...(officeText(r) ? [{ label: "Office", value: officeText(r) }] : []),
         ...(r.region ? [{ label: "Location", value: locationText(r) }] : []),
         {
           label: "Manager / requestor",
