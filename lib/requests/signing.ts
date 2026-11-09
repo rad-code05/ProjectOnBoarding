@@ -3,6 +3,7 @@ import type { Json } from "@/lib/supabase/database.types";
 import { formatDate, formatDay, formatTime } from "./format";
 import { countryName, personName } from "./labels";
 import { splitBlockers } from "./offboarding";
+import { NO_OFFICE, workerTypeLabel } from "./worker-type";
 
 /**
  * Review & sign (F06): what the sheet shows and how its answers are worded.
@@ -28,6 +29,8 @@ export const snapshotSchema = z.object({
     region: text.optional(),
     office_city: text.optional(),
     nationalities: z.array(z.string()).optional(),
+    // F24f (form v4.3): employee or contractor — only when filled.
+    worker_type: text.optional(),
     manager_name: text,
     requestor_name: text,
     effective_date: text,
@@ -111,6 +114,7 @@ export const snapshotSchema = z.object({
           region: text.optional(),
           office_city: text.optional(),
           nationalities: z.array(z.string()).optional(),
+          worker_type: text.optional(),
         })
         .nullable(),
       kept: z.array(
@@ -177,6 +181,17 @@ export function locationText(place: {
   return join(place.region, place.office_city);
 }
 
+/**
+ * The office as the record names it: a contractor without one has
+ * "No office" (F24f); otherwise nothing when none is set.
+ */
+export function officeText(place: {
+  office?: string | null;
+  worker_type?: string | null;
+}): string {
+  return place.office || (place.worker_type === "contractor" ? NO_OFFICE : "");
+}
+
 /** "Switzerland, Italy" (F27). */
 export function nationalityText(codes: string[] | null | undefined): string {
   return (codes ?? []).map(countryName).join(", ");
@@ -192,7 +207,7 @@ function placeRows(
 ): { office: Row[]; nationality: Row[] } {
   return {
     office: [
-      ...(r.office ? [{ label: "Office", value: r.office }] : []),
+      ...(officeText(r) ? [{ label: "Office", value: officeText(r) }] : []),
       ...(r.region ? [{ label: "Location", value: locationText(r) }] : []),
     ],
     nationality:
@@ -208,6 +223,15 @@ export function employeeRows(snapshot: Snapshot): Row[] {
   const place = placeRows(r, { withNationality: true });
   return [
     { label: "Name", value: personName(r.first_name, r.last_name) },
+    // F24f (form v4.3): only when the snapshot has it.
+    ...(r.worker_type
+      ? [
+          {
+            label: "Employee or contractor",
+            value: workerTypeLabel(r.worker_type),
+          },
+        ]
+      : []),
     { label: "Work email", value: r.work_email ?? "" },
     { label: "Job title", value: r.job_title ?? "" },
     { label: "Department", value: r.department ?? "" },
@@ -337,9 +361,19 @@ export function employeeChangeRows(
   const r = snapshot.request;
   const country = (code: string | null) => (code ? countryName(code) : null);
   const rows: (readonly [string, string | null, string | null])[] = [
+    // F24f: only once the previous request had it (a contractor → employee).
+    ...(prev.worker_type
+      ? [
+          [
+            "Employee or contractor",
+            workerTypeLabel(prev.worker_type) || null,
+            workerTypeLabel(r.worker_type) || null,
+          ] as const,
+        ]
+      : []),
     ["Job title", prev.job_title, r.job_title],
     ["Department", prev.department, r.department],
-    ["Office", prev.office ?? null, r.office ?? null],
+    ["Office", officeText(prev) || null, officeText(r) || null],
     ["Location", locationText(prev) || null, locationText(r) || null],
     ["Country", country(prev.country), country(r.country)],
     ["Manager", prev.manager_name, r.manager_name],

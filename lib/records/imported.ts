@@ -7,6 +7,7 @@ import {
 import { formatDay, formatDayTime } from "@/lib/requests/format";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { displayTimezone } from "@/lib/time/display";
+import { NO_OFFICE, workerTypeLabel } from "@/lib/requests/worker-type";
 
 /**
  * An Imported record (F24d, board *Phone · An imported person*): a closed
@@ -52,7 +53,7 @@ export async function loadImportedRecord(
   const { data: r } = await db
     .from("requests")
     .select(
-      "id, ticket_id, type, state, import_id, employee_id, first_name, last_name, work_email, job_title, country, nationalities, manager_name, effective_date, last_working_day, closed_at, department:departments(name), office:offices(name), region:country_regions(name), city:office_cities(name), import:staff_imports(file_name, finished_at, maker:app_users!staff_imports_created_by_fkey(first_name, last_name))",
+      "id, ticket_id, type, state, import_id, employee_id, first_name, last_name, work_email, job_title, country, worker_type, nationalities, manager_name, effective_date, last_working_day, closed_at, department:departments(name), office:offices(name), region:country_regions(name), city:office_cities(name), import:staff_imports(file_name, finished_at, maker:app_users!staff_imports_created_by_fkey(first_name, last_name))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -94,12 +95,18 @@ export async function loadImportedRecord(
   ]);
 
   const day = (iso: string | null) => (iso ? formatDay(iso, tz) : "—");
-  const place = [r.office?.name, r.region?.name, r.city?.name]
-    .filter(Boolean)
-    .join(" · ");
-  const rows: ImportedRecord["rows"] = [
-    { label: "Work email", value: r.work_email ?? "—" },
-  ];
+  // F24f: a contractor may have no office — "No office" (then the country).
+  const place =
+    [r.office?.name, r.region?.name, r.city?.name]
+      .filter(Boolean)
+      .join(" · ") || (r.worker_type === "contractor" ? NO_OFFICE : "");
+  const rows: ImportedRecord["rows"] = [];
+  if (r.worker_type)
+    rows.push({
+      label: "Employee or contractor",
+      value: workerTypeLabel(r.worker_type),
+    });
+  rows.push({ label: "Work email", value: r.work_email ?? "—" });
   if (place)
     rows.push({
       label: "Office",

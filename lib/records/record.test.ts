@@ -114,6 +114,23 @@ describe("form v4.2 (F27)", () => {
   });
 });
 
+describe("form v4.3 (F24f)", () => {
+  test("section 2: employee or contractor, and No office for a contractor without one", () => {
+    const base = sampleRecord();
+    const contractor = sampleRecord({
+      snapshot: {
+        ...base.snapshot,
+        request: { ...base.snapshot.request, worker_type: "contractor" },
+      },
+    });
+    expect(rows(2, contractor)).toMatchObject({
+      "Employee or contractor": "Contractor",
+      Office: "No office",
+    });
+    expect(Object.keys(rows(2))).not.toContain("Employee or contractor");
+  });
+});
+
 describe("an offboarding record (F09d-3)", () => {
   const sections = recordSections(sampleOffboardingRecord());
   const rows = (n: number) => sections.find((s) => s.number === n)?.rows ?? [];
