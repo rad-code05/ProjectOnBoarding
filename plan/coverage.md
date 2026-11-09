@@ -231,7 +231,7 @@ Test names: **pgTAP** = `supabase/tests/database/*.test.sql` · **unit** = Vites
 | N4 | Production starts with complete data (go-live after all features + F24/F25) | Raju 2026-10-11 | `release.md` | R7 checklist | ⏳ |
 | N6 | Each person chooses the timezone of their screens (My profile); PDF / tickets / reports / SLAs stay on the company timezone | Raju 2026-10-12 | **F05e** | pgTAP `user_timezone.test.sql` + F05e-2 tests | ✅ database F05e-1 (#61) + screens F05e-2 (My profile Timezone card; all screen times; unit + e2e) |
 | N5 | More applications from the vendor list (Confluence, Adobe, Cursor, Graphite, Sentry, GoDaddy, Acronis, Avanan, HostedScan, Stripe) | Raju 2026-10-11 | seed migration | pgTAP `access_items_rls` (38 apps) | ✅ |
-| N7 | Employee or contractor on every request (section 2); a contractor may have no office (*No office* / *Office not set*); contractor → employee = an access change; on the record, PDF, reports, robot and import; department Legal | Raju 2026-11-06 | **F24f** | pgTAP `worker_type.test.sql` + F24f-2…5 tests | 🟡 F24f-1 database (#232) + 3 US cities (#233), F24f-2 section 2 + form v4.3 live, F24f-3 record + PDF + imported records |
+| N7 | Employee or contractor on every request (section 2); a contractor may have no office (*No office* / *Office not set*); contractor → employee = an access change; on the record, PDF, reports, robot and import; department Legal | Raju 2026-11-06 | **F24f** | pgTAP `worker_type.test.sql` + F24f-2…5 tests | 🟡 F24f-1 database (#232) + 3 US cities (#233), F24f-2 section 2 + form v4.3 live, F24f-3 record + PDF + imported records, F24f-4a report filter in the database |
 
 ## Gaps found on 2026-10-07 and what was done
 
