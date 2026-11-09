@@ -2626,6 +2626,7 @@ export type Database = {
           p_office?: number;
           p_region?: number;
           p_search?: string;
+          p_worker_type?: string;
         };
         Returns: {
           catalog_count: number;
@@ -2668,6 +2669,7 @@ export type Database = {
           p_offset?: number;
           p_region?: number;
           p_search?: string;
+          p_worker_type?: string;
         };
         Returns: {
           asset_tag: string;
@@ -2691,6 +2693,7 @@ export type Database = {
           source: string;
           total_count: number;
           work_email: string;
+          worker_type: string;
         }[];
       };
       report_all_users: {
@@ -2707,6 +2710,7 @@ export type Database = {
           p_search?: string;
           p_to?: string;
           p_type?: Database["public"]["Enums"]["request_type"];
+          p_worker_type?: string;
         };
         Returns: {
           closed_at: string;
@@ -2727,6 +2731,7 @@ export type Database = {
           total_count: number;
           type: Database["public"]["Enums"]["request_type"];
           work_email: string;
+          worker_type: string;
         }[];
       };
       report_employees: {
@@ -2740,6 +2745,7 @@ export type Database = {
           p_offset?: number;
           p_region?: number;
           p_search?: string;
+          p_worker_type?: string;
         };
         Returns: {
           city: string;
@@ -2758,6 +2764,7 @@ export type Database = {
           region: string;
           total_count: number;
           work_email: string;
+          worker_type: string;
         }[];
       };
       report_employees_by_office: {
@@ -2768,6 +2775,7 @@ export type Database = {
           p_nationality?: string;
           p_office?: number;
           p_region?: number;
+          p_worker_type?: string;
         };
         Returns: {
           city: string;
@@ -2793,6 +2801,7 @@ export type Database = {
           p_region?: number;
           p_search?: string;
           p_to?: string;
+          p_worker_type?: string;
         };
         Returns: {
           access_cutoff_at: string;
@@ -2823,6 +2832,7 @@ export type Database = {
           p_region?: number;
           p_search?: string;
           p_to?: string;
+          p_worker_type?: string;
         };
         Returns: {
           met: number;
@@ -2844,6 +2854,7 @@ export type Database = {
           p_office?: number;
           p_region?: number;
           p_to?: string;
+          p_worker_type?: string;
         };
         Returns: {
           key: string;
@@ -2861,6 +2872,7 @@ export type Database = {
           p_office?: number;
           p_region?: number;
           p_to_month: string;
+          p_worker_type?: string;
         };
         Returns: {
           month: string;
@@ -2902,6 +2914,7 @@ export type Database = {
           p_search?: string;
           p_to?: string;
           p_type?: Database["public"]["Enums"]["request_type"];
+          p_worker_type?: string;
         };
         Returns: {
           approved_at: string;
