@@ -18,6 +18,7 @@ const empty: DraftFormValues = {
   job_title: "",
   department: "",
   country: "",
+  worker_type: "",
   office: "",
   region: "",
   office_city: "",
@@ -202,5 +203,24 @@ describe("countries", () => {
     expect(labels).toEqual(
       [...labels].sort((a, b) => a.localeCompare(b, "en")),
     );
+  });
+});
+
+describe("employee or contractor (F24f)", () => {
+  test("saved to worker_type; nothing chosen = null", () => {
+    const pick = (worker_type: string) =>
+      toColumns(
+        draftValuesSchema.parse({ ...empty, worker_type }),
+        "Asia/Dubai",
+      ).worker_type;
+    expect(pick("contractor")).toBe("contractor");
+    expect(pick("employee")).toBe("employee");
+    expect(pick("")).toBeNull();
+  });
+
+  test("only the two values", () => {
+    expect(
+      draftValuesSchema.safeParse({ ...empty, worker_type: "intern" }).success,
+    ).toBe(false);
   });
 });

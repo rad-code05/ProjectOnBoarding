@@ -237,6 +237,8 @@ export type PreviousDetails = {
   country: string | null;
   manager_name: string | null;
   requestor_name: string | null;
+  /** F24f: employee or contractor (null before form v4.3). */
+  worker_type: string | null;
   /** F27: where they worked and nationalities, as on that request. */
   office_id: number | null;
   office: string | null;

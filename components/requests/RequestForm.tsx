@@ -32,6 +32,12 @@ import {
   regionName,
   usesRegions,
 } from "@/lib/requests/places";
+import {
+  NO_OFFICE,
+  fieldFor,
+  officeChoicesFor,
+  workerTypeLabel,
+} from "@/lib/requests/worker-type";
 import type { AccessChoices, OtherApp } from "@/lib/requests/access";
 import type { HeldItem } from "@/lib/requests/access-change";
 import type { DraftFieldKey } from "@/lib/requests/draft";
@@ -444,7 +450,20 @@ export function RequestForm({
     if (!prev) return null;
     const now = values[field.key as DraftFieldKey] ?? "";
     const place = placeWas(field.key, now, prev);
+    // A contractor's empty office was "No office" (F24f).
+    if (
+      field.key === "office" &&
+      place === "—" &&
+      prev.worker_type === "contractor"
+    ) {
+      return NO_OFFICE;
+    }
     if (place !== null) return place;
+    if (field.key === "worker_type") {
+      return (prev.worker_type ?? "") !== now
+        ? workerTypeLabel(prev.worker_type) || "—"
+        : null;
+    }
     if (
       field.key === "job_title" ||
       field.key === "manager_name" ||
@@ -476,14 +495,18 @@ export function RequestForm({
   // F27: State and City only for an office that asks for them (the US).
   const officeId = values.office ?? "";
   const regionId = values.region ?? "";
+  const workerType = values.worker_type ?? "";
   const fieldsOf = (section: number) =>
-    form.fields.filter(
-      (field) =>
-        field.section === section &&
-        field.key !== "type" &&
-        ((field.key !== "region" && field.key !== "office_city") ||
-          usesRegions(form.places, officeId)),
-    );
+    form.fields
+      .filter(
+        (field) =>
+          field.section === section &&
+          field.key !== "type" &&
+          ((field.key !== "region" && field.key !== "office_city") ||
+            usesRegions(form.places, officeId)),
+      )
+      // F24f: a contractor's office is optional ("No office").
+      .map((field) => fieldFor(field, workerType, officeId));
   const setField = (key: string, value: string) => {
     for (const [k, v] of Object.entries(
       placeChanges(form.places, key, value),
@@ -496,7 +519,9 @@ export function RequestForm({
       ? regionChoices(form.places, officeId)
       : field.key === "office_city"
         ? cityChoices(form.places, officeId, regionId, values.office_city ?? "")
-        : form.choices[field.key];
+        : field.key === "office"
+          ? officeChoicesFor(form.choices.office ?? [], workerType)
+          : form.choices[field.key];
   const state = regionName(form.places, regionId);
   const [cityError, setCityError] = useState<string | null>(null);
   const searchProps = (field: FormField) => {

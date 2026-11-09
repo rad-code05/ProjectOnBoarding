@@ -15,6 +15,35 @@ const field = (overrides: Partial<FormField>): FormField => ({
 });
 
 describe("FieldRenderer", () => {
+  test("employee or contractor (F24f): two radios, nothing picked, reports the pick", async () => {
+    const onChange = vi.fn();
+    const props = {
+      field: field({
+        key: "worker_type",
+        label: "Employee or contractor",
+        field_type: "worker_type",
+        help_text: "A contractor may have no office.",
+      }),
+      choices: [
+        { value: "employee", label: "Employee" },
+        { value: "contractor", label: "Contractor" },
+      ],
+      onChange,
+    };
+    const { rerender } = render(<FieldRenderer {...props} value="" />);
+    const group = screen.getByRole("group", { name: "Employee or contractor" });
+    expect(group).toHaveAccessibleDescription(
+      "A contractor may have no office.",
+    );
+    expect(screen.getByRole("radio", { name: "Employee" })).not.toBeChecked();
+    expect(screen.getByRole("radio", { name: "Contractor" })).not.toBeChecked();
+    await userEvent.click(screen.getByText("Contractor"));
+    expect(onChange).toHaveBeenCalledWith("contractor");
+    rerender(<FieldRenderer {...props} value="contractor" disabled />);
+    expect(screen.getByRole("radio", { name: "Contractor" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "Employee" })).toBeDisabled();
+  });
+
   test("text field: labelled input that reports changes", async () => {
     const onChange = vi.fn();
     render(<FieldRenderer field={field({})} value="" onChange={onChange} />);
