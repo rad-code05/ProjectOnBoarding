@@ -21,6 +21,7 @@ import {
 import { fileHeaders, madeBy, renderReportPdf } from "@/lib/reports/pdf";
 import { formatDay } from "@/lib/requests/format";
 import { countryName, personName } from "@/lib/requests/labels";
+import { workerTypeLabel } from "@/lib/requests/worker-type";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
 
@@ -73,6 +74,11 @@ export async function GET(request: NextRequest) {
       item,
       country: filters.country,
       department: filters.department,
+      office: filters.office,
+      state: filters.region,
+      city: filters.city,
+      nationality: filters.nationality,
+      worker_type: filters.workerType,
       search: filters.q || null,
     },
     p_rows: raw.length,
@@ -138,6 +144,7 @@ export async function GET(request: NextRequest) {
           { label: info.tab.replace(/s$/, ""), width: 1.4 },
           { label: "Name", width: 1.4 },
           { label: "Work email", width: 2 },
+          { label: "Employee or contractor", width: 1.1 },
           { label: info.detail, width: 1.4 },
           { label: "Since", width: 1 },
           { label: "Granted by", width: 1.3 },
@@ -147,6 +154,7 @@ export async function GET(request: NextRequest) {
           raw[i].name,
           r.name,
           raw[i].work_email,
+          workerTypeLabel(raw[i].worker_type) || "—",
           r.detail,
           r.since,
           r.grantedBy,
@@ -166,6 +174,7 @@ export async function GET(request: NextRequest) {
       "Category",
       "Name",
       "Work email",
+      "Employee or contractor",
       "Department",
       "Country",
       info.detail,
@@ -180,6 +189,7 @@ export async function GET(request: NextRequest) {
       r.category_name,
       personName(r.first_name, r.last_name),
       r.work_email,
+      workerTypeLabel(r.worker_type) || null,
       r.department,
       r.country ? countryName(r.country) : null,
       kind === "equipment" ? r.asset_tag : r.permission,

@@ -20,6 +20,7 @@ import {
   type ReportFilters,
 } from "@/lib/reports/filters";
 import { REQUEST_TYPES, TYPE_LABELS, countryName } from "@/lib/requests/labels";
+import { WORKER_TYPES, WORKER_TYPE_LABELS } from "@/lib/requests/worker-type";
 
 const SEARCH_DELAY_MS = 300;
 const COUNT_DELAY_MS = 300;
@@ -357,8 +358,9 @@ function ReportFiltersSheet({
 }
 
 /**
- * "Where they work" — Office, then (US) State + City, Country, Department —
- * and Nationality (board: Phone · Report filters with office).
+ * Employee or contractor (F24f) — a switch like Period — then "Where they
+ * work" — Office, then (US) State + City, Country, Department — and
+ * Nationality (board: Phone · Report filters with office).
  */
 function WhereFields({
   id,
@@ -404,8 +406,41 @@ function WhereFields({
   ];
   const num = (value: string) => (value === "" ? null : Number(value));
 
+  const workerChoices = [
+    { value: null, label: "All" },
+    ...WORKER_TYPES.map((value) => ({
+      value,
+      label: `${WORKER_TYPE_LABELS[value]}s`,
+    })),
+  ];
+
   return (
     <>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-2 text-sm font-bold">
+          Employee or contractor
+        </legend>
+        <div className="grid grid-cols-3 gap-1 rounded-pill bg-sand p-1">
+          {workerChoices.map((choice) => {
+            const on = draft.workerType === choice.value;
+            return (
+              <label
+                key={choice.label}
+                className={sheetPill(on, on ? "bg-ink text-paper" : undefined)}
+              >
+                <input
+                  type="radio"
+                  name={`${id}-worker`}
+                  checked={on}
+                  onChange={() => change({ workerType: choice.value })}
+                  className="sr-only"
+                />
+                {choice.label}
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 text-sm font-bold">Where they work</legend>
         {officeChoices.length > 0 && (

@@ -15,6 +15,7 @@ import { fileHeaders, madeBy, renderReportPdf } from "@/lib/reports/pdf";
 import { formatDay } from "@/lib/requests/format";
 import { countryName } from "@/lib/requests/labels";
 import { nationalityText } from "@/lib/requests/signing";
+import { workerTypeLabel } from "@/lib/requests/worker-type";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
 
@@ -68,6 +69,7 @@ export async function GET(request: NextRequest) {
       state: filters.region,
       city: filters.city,
       nationality: filters.nationality,
+      worker_type: filters.workerType,
       search: filters.q || null,
     },
     p_rows: format === "pdf" ? lines.length : rows.length,
@@ -141,6 +143,7 @@ export async function GET(request: NextRequest) {
       "First name",
       "Last name",
       "Work email",
+      "Employee or contractor",
       "Department",
       "Country (works in)",
       "Nationality",
@@ -155,6 +158,7 @@ export async function GET(request: NextRequest) {
       r.first_name,
       r.last_name,
       r.work_email,
+      workerTypeLabel(r.worker_type) || null,
       r.department,
       r.country ? countryName(r.country) : null,
       nationalityText(r.nationalities) || null,

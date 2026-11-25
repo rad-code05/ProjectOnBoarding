@@ -6,7 +6,8 @@ import { TYPE_LABELS } from "@/lib/requests/labels";
 
 /**
  * The All users list (board: Phone · All users list): one card per request —
- * name, email, status, ticket · type · department · country, office and
+ * name, email, status, ticket · type · employee or contractor (F24f) ·
+ * department · country, office and
  * nationality (F27), dates. Cards on phones, two columns on desktop.
  */
 export function AllUsersList({ rows }: { rows: AllUsersRow[] }) {
@@ -47,6 +48,7 @@ export function AllUsersList({ rows }: { rows: AllUsersRow[] }) {
                 {[
                   row.ticketId,
                   TYPE_LABELS[row.type],
+                  row.workerType,
                   row.department,
                   row.country,
                 ]

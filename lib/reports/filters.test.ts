@@ -146,8 +146,41 @@ describe("export", () => {
       state: null,
       city: null,
       nationality: null,
+      worker_type: null,
       search: null,
     });
+  });
+});
+
+describe("employee or contractor (F24f)", () => {
+  test("round-trips through the URL as worker= and reaches every report", () => {
+    const filters = parseReportFilters({ worker: "contractor" });
+    expect(filters.workerType).toBe("contractor");
+    expect(reportParams(filters).toString()).toBe("worker=contractor");
+    expect(placeArgs(filters).p_worker_type).toBe("contractor");
+    expect(placeArgs(DEFAULT_REPORT_FILTERS).p_worker_type).toBeUndefined();
+  });
+
+  test("anything else = everyone", () => {
+    expect(parseReportFilters({ worker: "Contractor" }).workerType).toBeNull();
+    expect(parseReportFilters({ worker: "intern" }).workerType).toBeNull();
+    expect(parseReportFilters({}).workerType).toBeNull();
+  });
+
+  test("a chip in the plural, words for the PDF, removable", () => {
+    const filters = {
+      ...DEFAULT_REPORT_FILTERS,
+      period: "all" as const,
+      workerType: "employee" as const,
+      office: 0,
+    };
+    const chips = reportChips(filters, {});
+    expect(chips.map((c) => c.label)).toEqual(["Employees", "Office not set"]);
+    expect(chips[0].clear).toEqual({ workerType: null });
+    expect(filterWords(filters, {})).toEqual([
+      "Employee or contractor: Employee",
+      "Office: Not set",
+    ]);
   });
 });
 
