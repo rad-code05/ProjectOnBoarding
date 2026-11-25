@@ -71,6 +71,20 @@ describe("resolveReportFilters", () => {
     ).toMatchObject({ office: 0, nationality: "none" });
   });
 
+  test("employees or contractors only (F24f); left out = everyone", () => {
+    expect(
+      resolveReportFilters(input({ workerType: "contractor" }), lists).filters
+        .workerType,
+    ).toBe("contractor");
+    expect(
+      resolveReportFilters(input({}), lists).filters.workerType,
+    ).toBeNull();
+    expect(
+      reportInput.safeParse({ report: "all_users", workerType: "intern" })
+        .success,
+    ).toBe(false);
+  });
+
   test("names that match nothing are reported, never guessed", () => {
     const { unknown } = resolveReportFilters(
       input({ office: "Riyadh", department: "Magic", state: "Texas" }),

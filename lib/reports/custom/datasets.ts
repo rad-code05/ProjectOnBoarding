@@ -46,6 +46,13 @@ const PERSON: Field[] = [
   { key: "name", label: "Name", type: "text" },
   { key: "email", label: "Work email", type: "text" },
   { key: "department", label: "Department", type: "text" },
+  {
+    key: "worker_type",
+    label: "Employee or contractor",
+    type: "text",
+    about:
+      "employee or contractor (empty on requests made before form v4.3); a contractor may have no office",
+  },
   { key: "office", label: "Office", type: "text" },
   {
     key: "state",

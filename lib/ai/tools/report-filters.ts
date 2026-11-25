@@ -62,6 +62,12 @@ export const reportInput = z.object({
   nationality: name
     .optional()
     .describe('Country name or ISO code, or "not set".'),
+  workerType: z
+    .enum(["employee", "contractor"])
+    .optional()
+    .describe(
+      "Employees only or contractors only (F24f); leave out for everyone. A contractor may have no office (office not set).",
+    ),
   accessKind: z
     .enum(["application", "equipment", "access"])
     .optional()
@@ -185,6 +191,7 @@ export function resolveReportFilters(
       else unknown.push(`nationality "${input.nationality}"`);
     }
   }
+  if (input.workerType) f.workerType = input.workerType;
   return { filters: f, unknown };
 }
 
