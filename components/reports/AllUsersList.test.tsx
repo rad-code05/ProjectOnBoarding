@@ -18,6 +18,7 @@ describe("AllUsersList", () => {
             country: "Switzerland",
             office: "US · Texas · Austin",
             nationality: "Switzerland, Italy",
+            workerType: "Contractor",
             dates: "Effective 20 Oct 2026 · Closed 15 Oct 2026",
             href: "/records/r1",
             imported: false,
@@ -33,6 +34,7 @@ describe("AllUsersList", () => {
             country: null,
             office: null,
             nationality: null,
+            workerType: null,
             dates: "Effective 3 Nov 2026 · not closed yet",
             href: null,
             imported: false,
@@ -46,7 +48,7 @@ describe("AllUsersList", () => {
     ).toHaveAttribute("href", "/records/r1");
     expect(anna).toHaveTextContent("Closed");
     expect(anna).toHaveTextContent(
-      "UAM-2026-000141 · Access modification · Design · Switzerland",
+      "UAM-2026-000141 · Access modification · Contractor · Design · Switzerland",
     );
     expect(anna).toHaveTextContent(
       "Effective 20 Oct 2026 · Closed 15 Oct 2026",
@@ -75,6 +77,7 @@ describe("AllUsersList", () => {
             country: "United Arab Emirates",
             office: "Dubai",
             nationality: null,
+            workerType: null,
             dates: "Effective 6 Jan 2025 · Closed 6 Jan 2025",
             href: "/records/r3",
             imported: true,

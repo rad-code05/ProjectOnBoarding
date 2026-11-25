@@ -8,6 +8,7 @@ import {
   type RequestType,
 } from "@/lib/requests/labels";
 import { nationalityText } from "@/lib/requests/signing";
+import { workerTypeLabel } from "@/lib/requests/worker-type";
 import {
   createServerSupabaseClient,
   type ServerSupabase,
@@ -28,6 +29,8 @@ export type AllUsersRow = {
   office: string | null;
   /** "Switzerland, Italy" (F27); null = not set. */
   nationality: string | null;
+  /** "Employee" / "Contractor" (F24f); null = not chosen (before form v4.3). */
+  workerType: string | null;
   /** "Effective 20 Oct 2026 · Closed 15 Oct 2026" (company timezone). */
   dates: string;
   /** Where the row opens for this reader; null = nothing to open. */
@@ -179,6 +182,7 @@ export async function loadAllUsers(
       country: r.country ? countryName(r.country) : null,
       office: officeText(r.office, r.location),
       nationality: nationalityText(r.nationalities) || null,
+      workerType: workerTypeLabel(r.worker_type) || null,
       dates: `${start} · ${end}`,
       href:
         r.state === "closed"

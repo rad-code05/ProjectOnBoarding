@@ -2,6 +2,7 @@ import { isImportedTicket } from "./imported";
 import { formatDay } from "@/lib/requests/format";
 import { countryName, personName } from "@/lib/requests/labels";
 import { nationalityText } from "@/lib/requests/signing";
+import { workerTypeLabel } from "@/lib/requests/worker-type";
 
 /** One row of report_employees_by_office(): an office · state · city. */
 export type RawOfficeCount = {
@@ -140,6 +141,7 @@ export type RawEmployee = {
   region: string | null;
   city: string | null;
   nationalities: string[] | null;
+  worker_type: string | null;
   onboarded_at: string | null;
   latest_request_id: string | null;
   latest_ticket_id: string | null;
@@ -151,7 +153,7 @@ export type RawEmployee = {
 export type EmployeeCard = {
   id: string;
   name: string;
-  /** "anna@laine.ai · Design". */
+  /** "anna@laine.ai · Design · Contractor". */
   subtitle: string;
   /** "US · Texas · Austin", "Office not set". */
   place: string;
@@ -179,7 +181,9 @@ export function employeeCard(
   return {
     id: r.employee_id,
     name: personName(r.first_name, r.last_name) || r.work_email,
-    subtitle: [r.work_email, r.department].filter(Boolean).join(" · "),
+    subtitle: [r.work_email, r.department, workerTypeLabel(r.worker_type)]
+      .filter(Boolean)
+      .join(" · "),
     place: employeePlace(r),
     country: r.country ? countryName(r.country) : null,
     nationality: nationalityText(r.nationalities) || null,

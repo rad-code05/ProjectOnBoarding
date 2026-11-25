@@ -26,6 +26,7 @@ import {
   personName,
 } from "@/lib/requests/labels";
 import { nationalityText } from "@/lib/requests/signing";
+import { workerTypeLabel } from "@/lib/requests/worker-type";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { companyTimezone } from "@/lib/time/display";
 
@@ -87,6 +88,7 @@ export async function GET(request: NextRequest) {
           { label: "Ticket", width: 1.3 },
           { label: "Name", width: 1.4 },
           { label: "Work email", width: 2 },
+          { label: "Employee or contractor", width: 1.1 },
           { label: "Type", width: 1.2 },
           { label: "Status", width: 1.2 },
           { label: "Department", width: 1.1 },
@@ -100,6 +102,7 @@ export async function GET(request: NextRequest) {
           r.ticket_id,
           personName(r.first_name, r.last_name) || "—",
           r.work_email ?? "—",
+          workerTypeLabel(r.worker_type) || "—",
           TYPE_LABELS[r.type],
           STATE_LABELS[r.state],
           r.department ?? "—",
@@ -130,6 +133,7 @@ export async function GET(request: NextRequest) {
       "First name",
       "Last name",
       "Work email",
+      "Employee or contractor",
       "Department",
       "Country",
       "Office",
@@ -148,6 +152,7 @@ export async function GET(request: NextRequest) {
       r.first_name,
       r.last_name,
       r.work_email,
+      workerTypeLabel(r.worker_type) || null,
       r.department,
       r.country ? countryName(r.country) : null,
       r.office,

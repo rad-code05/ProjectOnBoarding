@@ -1,5 +1,6 @@
 import { formatDay } from "@/lib/requests/format";
 import { countryName, personName } from "@/lib/requests/labels";
+import { workerTypeLabel } from "@/lib/requests/worker-type";
 import type { GroupRow } from "./groups";
 
 /** The three tabs of Access by application (board: Phone · Access by application). */
@@ -142,6 +143,7 @@ export type RawAccessHolder = {
   work_email: string;
   department: string | null;
   country: string | null;
+  worker_type: string | null;
   leaving_request_id: string | null;
   leaving_ticket_id: string | null;
 };
@@ -150,7 +152,7 @@ export type RawAccessHolder = {
 export type AccessHolder = {
   id: string;
   name: string;
-  /** "anna.keller@laine.ai · Engineering". */
+  /** "anna.keller@laine.ai · Engineering · Switzerland · Contractor". */
   subtitle: string;
   /** Permission, asset tag or scope — "—" when none. */
   detail: string;
@@ -181,7 +183,12 @@ export function accessHolder(
   return {
     id: r.inventory_id,
     name: personName(r.first_name, r.last_name) || r.work_email,
-    subtitle: [r.work_email, r.department, r.country && countryName(r.country)]
+    subtitle: [
+      r.work_email,
+      r.department,
+      r.country && countryName(r.country),
+      workerTypeLabel(r.worker_type),
+    ]
       .filter(Boolean)
       .join(" · "),
     detail,

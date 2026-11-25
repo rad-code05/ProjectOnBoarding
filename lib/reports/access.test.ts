@@ -27,6 +27,7 @@ const holder: RawAccessHolder = {
   work_email: "jonas.meier@example.test",
   department: "Engineering",
   country: "CH",
+  worker_type: "contractor",
   leaving_request_id: "o1",
   leaving_ticket_id: "UAM-2026-000149",
 };
@@ -75,7 +76,8 @@ describe("accessHolder", () => {
     expect(accessHolder(holder, "application", opts)).toEqual({
       id: "i1",
       name: "Jonas Meier",
-      subtitle: "jonas.meier@example.test · Engineering · Switzerland",
+      subtitle:
+        "jonas.meier@example.test · Engineering · Switzerland · Contractor",
       detail: "Maintain",
       since: "3 Mar 2026",
       grantedBy: "UAM-2026-000021",

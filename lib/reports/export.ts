@@ -17,6 +17,7 @@ export function exportFilters(filters: ReportFilters, timeZone: string): Json {
     state: filters.region,
     city: filters.city,
     nationality: filters.nationality,
+    worker_type: filters.workerType,
     search: filters.q || null,
   };
 }

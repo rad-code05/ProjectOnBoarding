@@ -4,6 +4,11 @@ import {
   countryName,
   type RequestType,
 } from "@/lib/requests/labels";
+import {
+  WORKER_TYPES,
+  WORKER_TYPE_LABELS,
+  type WorkerType,
+} from "@/lib/requests/worker-type";
 import { zonedParts, zonedToIso } from "@/lib/time/zoned";
 
 /** Board: Month / 3 months / 12 months / Dates — plus "all" when cleared. */
@@ -36,6 +41,8 @@ export type ReportFilters = {
   city: number | null;
   /** Nationality ISO code, or "none" = "Not set"; two nationalities match either. */
   nationality: string | null;
+  /** Employee or contractor (F24f); null = everyone. */
+  workerType: WorkerType | null;
   /** How many rows to show ("Show 20 more" adds a page). */
   limit: number;
 };
@@ -52,6 +59,7 @@ export const DEFAULT_REPORT_FILTERS: ReportFilters = {
   region: null,
   city: null,
   nationality: null,
+  workerType: null,
   limit: REPORT_PAGE_SIZE,
 };
 
@@ -77,6 +85,7 @@ export function parseReportFilters(params: SearchParams): ReportFilters {
   const region = Number.parseInt(first(params.state), 10);
   const city = Number.parseInt(first(params.city), 10);
   const nationality = first(params.nationality);
+  const worker = first(params.worker);
   const validOffice =
     Number.isInteger(office) && office >= 0 && office < 32768 ? office : null;
   // A state only under a chosen office, a city only under a state.
@@ -112,6 +121,9 @@ export function parseReportFilters(params: SearchParams): ReportFilters {
         : /^[A-Z]{2}$/.test(nationality.toUpperCase())
           ? nationality.toUpperCase()
           : null,
+    workerType: WORKER_TYPES.includes(worker as WorkerType)
+      ? (worker as WorkerType)
+      : null,
     limit: Number.isFinite(limit)
       ? Math.min(Math.max(limit, REPORT_PAGE_SIZE), MAX_LIMIT)
       : REPORT_PAGE_SIZE,
@@ -139,6 +151,7 @@ export function reportParams(filters: ReportFilters): URLSearchParams {
     }
   }
   if (filters.nationality) params.set("nationality", filters.nationality);
+  if (filters.workerType) params.set("worker", filters.workerType);
   return params;
 }
 
@@ -247,13 +260,21 @@ export function reportNames(options: {
   };
 }
 
-/** "Dubai", "Office not set", "Texas", "Austin", "Nationality: Switzerland". */
+/** "Contractors", "Dubai", "Office not set", "Texas", "Austin", "Nationality: Switzerland". */
 function placeLabels(filters: ReportFilters, names: ReportNames) {
   const labels: {
-    key: "office" | "region" | "city" | "nationality";
+    key: PlaceKey;
     label: string;
     words: string;
   }[] = [];
+  if (filters.workerType) {
+    const name = WORKER_TYPE_LABELS[filters.workerType];
+    labels.push({
+      key: "workerType",
+      label: `${name}s`,
+      words: `Employee or contractor: ${name}`,
+    });
+  }
   if (filters.office !== null) {
     const name =
       filters.office === 0
@@ -296,6 +317,7 @@ const PLACE_CLEAR: Record<string, Partial<ReportFilters>> = {
   region: { region: null, city: null },
   city: { city: null },
   nationality: { nationality: null },
+  workerType: { workerType: null },
 };
 
 /** Active filters as removable chips ("Last 12 months ×", "Sales ×"). */
@@ -357,15 +379,20 @@ export function filterWords(
   return words;
 }
 
-/** The place filters (F27d). */
-export type PlaceKey = "office" | "region" | "city" | "nationality";
+/** The place filters (F27d) and employee or contractor (F24f). */
+export type PlaceKey =
+  "office" | "region" | "city" | "nationality" | "workerType";
 
-/** The office / state / city / nationality arguments every report function takes (F27d). */
+/**
+ * The office / state / city / nationality (F27d) and employee or contractor
+ * (F24f) arguments every report function takes.
+ */
 export function placeArgs(filters: Pick<ReportFilters, PlaceKey>) {
   return {
     p_office: filters.office ?? undefined,
     p_region: filters.region ?? undefined,
     p_city: filters.city ?? undefined,
     p_nationality: filters.nationality ?? undefined,
+    p_worker_type: filters.workerType ?? undefined,
   };
 }

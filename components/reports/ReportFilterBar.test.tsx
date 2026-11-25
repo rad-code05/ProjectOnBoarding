@@ -165,6 +165,28 @@ describe("ReportFilterBar", () => {
     );
   });
 
+  test("employee or contractor (F24f): All / Employees / Contractors, a chip that clears", async () => {
+    const user = userEvent.setup();
+    show();
+    await user.click(screen.getByRole("button", { name: "Filters · 1" }));
+    const sheet = screen.getByRole("dialog", { name: "Filters" });
+    const group = within(sheet).getByRole("group", {
+      name: "Employee or contractor",
+    });
+    expect(within(group).getByRole("radio", { name: "All" })).toBeChecked();
+    await user.click(within(group).getByRole("radio", { name: "Contractors" }));
+    await waitFor(() =>
+      expect(count).toHaveBeenLastCalledWith("worker=contractor"),
+    );
+    await user.click(
+      await within(sheet).findByRole("button", { name: "Show 27 requests" }),
+    );
+    expect(replace).toHaveBeenLastCalledWith(
+      "/reports/all-users?worker=contractor",
+      { scroll: false },
+    );
+  });
+
   test("places: false leaves out country and department", async () => {
     const user = userEvent.setup();
     render(
@@ -184,6 +206,9 @@ describe("ReportFilterBar", () => {
       within(sheet).queryByLabelText("Department"),
     ).not.toBeInTheDocument();
     expect(within(sheet).queryByLabelText("Office")).not.toBeInTheDocument();
+    expect(
+      within(sheet).queryByRole("group", { name: "Employee or contractor" }),
+    ).not.toBeInTheDocument();
     expect(
       within(sheet).queryByLabelText("Nationality"),
     ).not.toBeInTheDocument();

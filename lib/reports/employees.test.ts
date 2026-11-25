@@ -150,6 +150,7 @@ describe("employeeCard", () => {
     region: "Texas",
     city: "Austin",
     nationalities: ["US", "MX"],
+    worker_type: "employee",
     onboarded_at: "2026-09-01T08:00:00Z",
     latest_request_id: "r1",
     latest_ticket_id: "UAM-2026-000101",
@@ -166,7 +167,7 @@ describe("employeeCard", () => {
     expect(employeeCard(raw, options)).toEqual({
       id: "e1",
       name: "Ben Ortiz",
-      subtitle: "ben@example.com · Sales",
+      subtitle: "ben@example.com · Sales · Employee",
       place: "US · Texas · Austin",
       country: "United States",
       nationality: "United States, Mexico",
