@@ -146,6 +146,7 @@ async function run(input: ReportInput, ctx: ToolContext) {
           ticket: x.ticketId,
           type: x.type,
           status: x.state,
+          employeeOrContractor: x.workerType,
           office: x.office,
           dates: x.dates,
         })),

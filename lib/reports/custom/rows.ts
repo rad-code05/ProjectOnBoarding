@@ -31,6 +31,7 @@ type Person = Pick<
   | "name"
   | "email"
   | "department"
+  | "worker_type"
   | "office"
   | "state"
   | "city"
@@ -43,6 +44,7 @@ function personOf(e: EmployeeRow): Person {
     name: fullName(e.first_name, e.last_name, e.work_email),
     email: e.work_email,
     department: e.department,
+    worker_type: e.worker_type,
     office: e.office,
     state: e.region,
     city: e.city,
@@ -60,6 +62,7 @@ const unknownPerson = (
   name: fullName(first, last, email),
   email,
   department: null,
+  worker_type: null,
   office: null,
   state: null,
   city: null,
@@ -134,6 +137,7 @@ export function requestRows(requests: RequestRow[]): Row[] {
     name: fullName(r.first_name, r.last_name, r.work_email),
     email: r.work_email,
     department: r.department,
+    worker_type: r.worker_type,
     office: r.office,
     ...splitLocation(r.location),
     country: r.country,
@@ -166,6 +170,7 @@ export function personIndex(
       name: r.name,
       email,
       department: r.department,
+      worker_type: r.worker_type,
       office: r.office,
       state: r.state,
       city: r.city,
