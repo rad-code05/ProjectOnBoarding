@@ -16,6 +16,8 @@ export type OnboardingInput = {
   /** Required for a new draft (the schema says so); optional when adding. */
   firstName?: string;
   lastName?: string;
+  /** Employee or contractor (F24f, form v4.3). */
+  workerType?: "employee" | "contractor";
   workEmail?: string;
   jobTitle?: string;
   department?: string;
@@ -23,6 +25,8 @@ export type OnboardingInput = {
   office?: string;
   state?: string;
   city?: string;
+  /** A contractor with no office: the country they work from (name or code). */
+  country?: string;
   nationalities?: string[];
   startDate?: string;
   priority?: "low" | "medium" | "high";
@@ -37,6 +41,7 @@ export type OnboardingInput = {
 
 /** What every onboarding is asked about before the Confirm (Raju, 2026-10-26). */
 export const TOPICS = {
+  workerType: "employee or contractor",
   workEmail: "work email",
   jobTitle: "job title",
   department: "department",
@@ -47,12 +52,15 @@ export const TOPICS = {
   equipment: "equipment",
   access: "physical / logical access (badge, VPN …)",
   nationalities: "nationality",
+  country: "the country they work from (a contractor with no office)",
 } as const;
 export type Topic = keyof typeof TOPICS;
 
 /**
  * The topics nobody answered yet — neither a value nor the person saying it
- * isn't needed. The office is never optional (the form requires it).
+ * isn't needed. Employee or contractor is always asked; the office is
+ * required for an employee, and a contractor without one (office in
+ * notNeeded) is asked for the country they work from instead (F24f).
  */
 export function missingTopics(input: OnboardingInput): Topic[] {
   const skipped = new Set(input.notNeeded ?? []);
@@ -60,9 +68,15 @@ export function missingTopics(input: OnboardingInput): Topic[] {
     const v = input[t];
     return Array.isArray(v) ? v.length > 0 : Boolean(v?.toString().trim());
   };
-  return (Object.keys(TOPICS) as Topic[]).filter(
-    (t) => !given(t) && (t === "office" || !skipped.has(t)),
-  );
+  const contractor = input.workerType === "contractor";
+  const noOffice = contractor && !given("office") && skipped.has("office");
+  return (Object.keys(TOPICS) as Topic[]).filter((t) => {
+    if (given(t)) return false;
+    if (t === "workerType") return true;
+    if (t === "office") return !contractor || !skipped.has("office");
+    if (t === "country") return noOffice;
+    return !skipped.has(t);
+  });
 }
 
 /** Words for the model when something is missing or wrong (null = complete). */
@@ -88,6 +102,7 @@ export function precheckOnboarding(
 export type FieldName =
   | "firstName"
   | "lastName"
+  | "workerType"
   | "workEmail"
   | "jobTitle"
   | "department"
@@ -95,6 +110,7 @@ export type FieldName =
   | "office"
   | "state"
   | "city"
+  | "country"
   | "nationalities"
   | "startDate"
   | "priority";
@@ -189,6 +205,7 @@ export function resolveOnboarding(
 
   field("firstName", "first_name", text(input.firstName));
   field("lastName", "last_name", text(input.lastName));
+  field("workerType", "worker_type", input.workerType);
   const email = text(input.workEmail)?.toLowerCase();
   if (email && !EMAIL.test(email))
     problems.push(`"${email}" isn't a valid email address.`);
@@ -246,6 +263,14 @@ export function resolveOnboarding(
         problems.push(`Which state is ${input.city} in?`);
       }
     }
+  } else if (text(input.country)) {
+    // No office: the country they work from (a contractor, F24f).
+    const code = countryCode(input.country!);
+    if (!code)
+      problems.push(
+        `"${input.country}" isn't a country: write it like India or Germany.`,
+      );
+    else field("country", "country", code);
   }
 
   if (input.nationalities?.length) {

@@ -183,6 +183,7 @@ describe("nothing missed before the Confirm (Raju, 2026-10-26)", () => {
   const complete = {
     firstName: "Meera",
     lastName: "Nair",
+    workerType: "employee" as const,
     workEmail: "meera.nair@laine.ai",
     jobTitle: "Backend developer",
     department: "Engineering",
@@ -204,6 +205,7 @@ describe("nothing missed before the Confirm (Raju, 2026-10-26)", () => {
         applications: [{ name: "Slack" }],
       }),
     ).toEqual([
+      "workerType",
       "workEmail",
       "jobTitle",
       "department",
@@ -215,7 +217,7 @@ describe("nothing missed before the Confirm (Raju, 2026-10-26)", () => {
     ]);
   });
 
-  test("a topic the person said isn't needed is closed — never the office", () => {
+  test("a topic the person said isn't needed is closed — never an employee's office", () => {
     const { equipment, access, nationalities, office, ...rest } = complete;
     void equipment;
     void access;
@@ -237,12 +239,67 @@ describe("nothing missed before the Confirm (Raju, 2026-10-26)", () => {
         options,
       ),
     ).toContain(
-      "Ask about: work email, job title, department, manager, start date, applications and their roles, equipment",
+      "Ask about: employee or contractor, work email, job title, department, manager, start date, applications and their roles, equipment",
     );
     expect(
       precheckOnboarding({ ...complete, office: "Mumbai" }, options),
     ).toContain('There is no office "Mumbai"');
     expect(precheckOnboarding(complete, options)).toBeNull();
+  });
+
+  test("employee or contractor is always asked, never 'not needed' (F24f)", () => {
+    const { workerType, ...rest } = complete;
+    void workerType;
+    expect(missingTopics({ ...rest, notNeeded: ["workerType"] })).toEqual([
+      "workerType",
+    ]);
+  });
+
+  test("a contractor may have no office — then the country they work from is asked", () => {
+    const { office, ...rest } = complete;
+    void office;
+    const contractor = { ...rest, workerType: "contractor" as const };
+    expect(missingTopics(contractor)).toEqual(["office"]);
+    expect(missingTopics({ ...contractor, notNeeded: ["office"] })).toEqual([
+      "country",
+    ]);
+    expect(
+      missingTopics({
+        ...contractor,
+        notNeeded: ["office"],
+        country: "Germany",
+      }),
+    ).toEqual([]);
+    // An employee still needs one.
+    expect(missingTopics({ ...rest, notNeeded: ["office"] })).toEqual([
+      "office",
+    ]);
+  });
+
+  test("a contractor with no office: worker type + country, no office suggested", () => {
+    const r = resolveOnboarding(
+      { workerType: "contractor", country: "Germany", notNeeded: ["office"] },
+      options,
+    );
+    expect(r.ok && r.suggestions.map((s) => [s.target, s.value])).toEqual([
+      ["worker_type", "contractor"],
+      ["country", "DE"],
+    ]);
+    expect(
+      resolveOnboarding(
+        { workerType: "contractor", country: "Atlantis" },
+        options,
+      ),
+    ).toMatchObject({ ok: false });
+    // With an office, the office's country wins (as on the form).
+    const withOffice = resolveOnboarding(
+      { workerType: "contractor", office: "Dubai", country: "Germany" },
+      options,
+    );
+    expect(
+      withOffice.ok &&
+        withOffice.suggestions.find((s) => s.target === "country")?.value,
+    ).toBe("AE");
   });
 });
 

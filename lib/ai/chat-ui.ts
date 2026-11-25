@@ -1,6 +1,7 @@
 import type { UIMessage } from "ai";
 import type { Role } from "@/lib/auth";
 import { formatDate } from "@/lib/requests/format";
+import { NO_OFFICE, workerTypeLabel } from "@/lib/requests/worker-type";
 import { zonedParts } from "@/lib/time/zoned";
 import {
   MAILBOX_WORDS,
@@ -501,15 +502,21 @@ export function confirmCard(tool: string, input: unknown): ConfirmCard | null {
       value: [name, str(i.workEmail)].filter(Boolean).join(" · "),
     },
     {
+      label: "Employee or contractor",
+      value: workerTypeLabel(str(i.workerType)),
+    },
+    {
       label: "Job",
       value: [str(i.jobTitle), str(i.department)].filter(Boolean).join(" · "),
     },
     { label: "Manager", value: str(i.manager) ?? "" },
     {
       label: "Office",
-      value: [str(i.office), str(i.city), str(i.state)]
-        .filter(Boolean)
-        .join(" · "),
+      value: str(i.office)
+        ? [str(i.office), str(i.city), str(i.state)].filter(Boolean).join(" · ")
+        : str(i.workerType) === "contractor"
+          ? [NO_OFFICE, str(i.country)].filter(Boolean).join(" · ")
+          : "",
     },
     {
       label: "Start date",

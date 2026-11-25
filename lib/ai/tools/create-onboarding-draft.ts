@@ -23,6 +23,12 @@ const reason = optional(
 export const onboardingInputSchema = z.object({
   firstName: name("First name."),
   lastName: name("Last name."),
+  workerType: z
+    .enum(["employee", "contractor"])
+    .optional()
+    .describe(
+      "Employee or contractor — always ask. A contractor may have no office (then put office in notNeeded and give country).",
+    ),
   workEmail: optional("Work email, e.g. meera.nair@laine.ai."),
   jobTitle: optional("Job title / role."),
   department: optional("A department exactly as getFormOptions lists it."),
@@ -30,6 +36,10 @@ export const onboardingInputSchema = z.object({
   office: optional("An office exactly as getFormOptions lists it."),
   state: optional("US office only: the state."),
   city: optional("US office only: the city (getFormOptions citySearch)."),
+  country: optional(
+    "A contractor with no office only: the country they work from, e.g. Germany.",
+    60,
+  ),
   nationalities: z
     .array(z.string().trim().min(2).max(60))
     .max(2)
@@ -73,7 +83,7 @@ export const onboardingInputSchema = z.object({
     .array(z.enum(Object.keys(TOPICS) as [Topic, ...Topic[]]))
     .optional()
     .describe(
-      "Topics the person said aren't needed for this joiner (never the office). Only after asking.",
+      "Topics the person said aren't needed for this joiner. Only after asking. The office only for a contractor with no office; never employee or contractor.",
     ),
   reasons: z
     .record(z.string(), z.string().max(80))

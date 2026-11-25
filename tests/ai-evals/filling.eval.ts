@@ -72,7 +72,14 @@ describe.skipIf(!KEY)(`filling by chat — ${MODEL}`, () => {
       "Create an onboarding draft for Meera Test, Dubai office, Slack Regular Member.",
     );
     expect(confirmCards).toEqual([]);
-    for (const topic of ["email", "equipment", "manager", "start"]) {
+    // Employee or contractor is asked too (F24f).
+    for (const topic of [
+      "email",
+      "equipment",
+      "manager",
+      "start",
+      "contractor",
+    ]) {
       expect(text).toContain(topic);
     }
   });
