@@ -154,12 +154,13 @@ describe("precheck: the Confirm card only shows a complete request", () => {
         { firstName: "Meera", lastName: "Test", office: "Dubai" },
         ctx,
       ),
-    ).resolves.toContain("Ask about: work email");
+    ).resolves.toContain("Ask about: employee or contractor, work email");
     await expect(
       createOnboardingDraft.precheck!(
         {
           firstName: "Meera",
           lastName: "Nair",
+          workerType: "employee",
           workEmail: "meera.nair@laine.ai",
           jobTitle: "Backend developer",
           department: "Engineering",

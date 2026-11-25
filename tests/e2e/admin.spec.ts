@@ -1833,7 +1833,7 @@ test("Filling by chat (F16c): the robot prepares a draft after Confirm; Raju acc
     .getByRole("button", { name: "Confirm — create the draft" })
     .click();
   await expect(
-    log.getByText(/Created the draft UAM-\d{4}-\d{6} · 13 suggestions waiting/),
+    log.getByText(/Created the draft UAM-\d{4}-\d{6} · 14 suggestions waiting/),
   ).toBeVisible();
   await expect(log).toContainText("The draft is ready with its suggestions");
   await log.getByRole("link", { name: "Open the request" }).click();
@@ -1843,11 +1843,11 @@ test("Filling by chat (F16c): the robot prepares a draft after Confirm; Raju acc
   const banner = page.getByRole("region", {
     name: "Suggestions from the assistant",
   });
-  await expect(banner).toContainText("13 suggestions from the assistant");
+  await expect(banner).toContainText("14 suggestions from the assistant");
   // The robot's badge counts them too (F16c-2).
   await expect(
     page.getByRole("button", {
-      name: "Open the Laine assistant — 13 suggestions waiting",
+      name: "Open the Laine assistant — 14 suggestions waiting",
     }),
   ).toBeVisible();
   await expect(page.getByRole("group", { name: "Manager" })).toContainText(
@@ -1861,8 +1861,8 @@ test("Filling by chat (F16c): the robot prepares a draft after Confirm; Raju acc
     page.getByRole("textbox", { name: "Manager", exact: true }),
   ).toHaveValue("Omar Haddad");
   // …then the rest (more than 10 asks once more).
-  await banner.getByRole("button", { name: "Accept all 12" }).click();
-  await banner.getByRole("button", { name: "Yes, accept all 12" }).click();
+  await banner.getByRole("button", { name: "Accept all 13" }).click();
+  await banner.getByRole("button", { name: "Yes, accept all 13" }).click();
   await expect(banner).toBeHidden();
   await expect(
     page.getByRole("button", { name: "Open the Laine assistant", exact: true }),
@@ -1873,6 +1873,8 @@ test("Filling by chat (F16c): the robot prepares a draft after Confirm; Raju acc
   await expect(
     page.getByRole("textbox", { name: "Job title / role", exact: true }),
   ).toHaveValue("Backend developer");
+  // Employee or contractor (F24f) came from the chat too.
+  await expect(page.getByRole("radio", { name: "Employee" })).toBeChecked();
   await page.reload();
   await expect(
     page.getByRole("textbox", { name: "Manager", exact: true }),

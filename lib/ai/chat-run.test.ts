@@ -479,6 +479,6 @@ describe("nothing missed: an incomplete draft never reaches the Confirm card", (
     expect(requests.length).toBeGreaterThan(0);
     expect(requests.every((l) => l.includes('"isAutomatic":true'))).toBe(true);
     expect(text).toContain('"approved":false');
-    expect(text).toContain("Ask about: work email");
+    expect(text).toContain("Ask about: employee or contractor, work email");
   });
 });
