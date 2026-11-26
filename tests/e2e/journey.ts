@@ -61,7 +61,12 @@ export async function newOnboarding(page: Page) {
  * As Raju: a fresh request with every required field, executed (section 9
  * ticked). Returns its ticket ID; the page stays on the request.
  */
-export async function createExecutedRequest(page: Page, firstName: string) {
+export async function createExecutedRequest(
+  page: Page,
+  firstName: string,
+  // F24f-5c: a contractor with no office, who works from Germany.
+  { contractor = false }: { contractor?: boolean } = {},
+) {
   await openApp(page, "/requests");
   await newOnboarding(page);
   await expect(page).toHaveURL(/\/requests\/[0-9a-f-]{36}$/);
@@ -74,16 +79,22 @@ export async function createExecutedRequest(page: Page, firstName: string) {
   await page
     .getByLabel("Work email")
     .fill(`${firstName.toLowerCase()}.${Date.now()}@laine.ai`);
-  await chooseWorkerType(page, "Employee");
+  await chooseWorkerType(page, contractor ? "Contractor" : "Employee");
   await page.getByLabel("Job title / role").fill("Analyst");
   await page
     .getByLabel("Department / team")
     .selectOption({ label: "Engineering" });
-  // Form v4.2 (F27): Office is required; it fills the country.
-  await choose(page, "Office", "Dubai");
-  await expect(
-    page.getByRole("combobox", { name: "Country", exact: true }),
-  ).toHaveValue("United Arab Emirates");
+  if (contractor) {
+    // F24f: a contractor may have no office, then picks the country.
+    await choose(page, "Office", "No office");
+    await choose(page, "Country", "Germany");
+  } else {
+    // Form v4.2 (F27): Office is required; it fills the country.
+    await choose(page, "Office", "Dubai");
+    await expect(
+      page.getByRole("combobox", { name: "Country", exact: true }),
+    ).toHaveValue("United Arab Emirates");
+  }
   await page.getByLabel("Manager").fill("Mara Manager");
   await page.getByLabel("Requested by").fill("Rita Requestor");
   await page.getByLabel("Effective date").fill("2026-11-02");
