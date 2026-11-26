@@ -1274,3 +1274,64 @@ test("Leavers by chat (F17b-5d): a leaver list attached with the paperclip is re
   ).toContainText("Slack");
   await rajuContext.close();
 });
+
+test("Contractor journey (F24f-5c): a contractor with no office is signed, confirmed, shown on the record and found by the report filter", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(300_000);
+
+  // 1. Raju: a contractor with no office, working from Germany, executed and signed.
+  const rajuContext = await browser.newContext({
+    storageState: authFile("admin"),
+  });
+  const raju = await rajuContext.newPage();
+  await setupClerkTestingToken({ page: raju });
+  await saveInitials(raju);
+  await saveInitials(page);
+  const ticket = await createExecutedRequest(raju, "Cora", {
+    contractor: true,
+  });
+  const requestId = raju.url().split("/").pop();
+  await reviewAndSign(raju);
+  await rajuContext.close();
+
+  // 2. The approver sees Contractor and No office, then confirms.
+  await openApp(page, "/approvals");
+  await page
+    .getByRole("listitem")
+    .filter({ hasText: ticket })
+    .getByRole("link", { name: "Review & confirm" })
+    .click();
+  const main = page.getByRole("main");
+  await expect(main).toContainText("Contractor");
+  await expect(main).toContainText("No office");
+  await page.getByRole("button", { name: "Confirm & sign" }).click();
+  const confirm = page.getByRole("dialog", { name: "Confirm & sign" });
+  await confirm.getByLabel(/I have reviewed this record/).check();
+  await confirm.getByRole("button", { name: "Confirm, sign & close" }).click();
+  await expect(page).toHaveURL(`/records/${requestId}?closed=1`, {
+    timeout: 30_000,
+  });
+
+  // 3. The record says so too.
+  await expect(main).toContainText("Employee or contractor");
+  await expect(main).toContainText("Contractor");
+  await expect(main).toContainText("No office");
+
+  // 4. All users: the Contractors filter finds the ticket, Employees doesn't.
+  await openApp(page, `/reports/all-users?q=${ticket}&worker=contractor`);
+  await expect(main.getByText(ticket)).toBeVisible();
+  await expect(main.getByText(/Contractor/).first()).toBeVisible();
+  const asContractor = await page.request.get(
+    `/reports/all-users/export?q=${ticket}&worker=contractor`,
+  );
+  expect(asContractor.status()).toBe(200);
+  const csv = await asContractor.text();
+  expect(csv).toContain(ticket);
+  expect(csv).toContain("Contractor");
+  const asEmployee = await page.request.get(
+    `/reports/all-users/export?q=${ticket}&worker=employee`,
+  );
+  expect(await asEmployee.text()).not.toContain(ticket);
+});

@@ -24,6 +24,7 @@ Several people at once: joiners, leavers or role changes. You upload a list (**.
   - The work email is unique in the batch and not already on an open request.
   - The person has no open request of the same kind (one open offboarding / access change per person).
   - No dates in the past (never backdated).
+  - **Employee or contractor** (F24f-5b): the column *Employee or contractor* — empty or *Employee* = employee, *Contractor* / *Freelance* / *Consultant* = contractor, anything else is flagged. Employees need an office; a contractor may have none (empty or *No office*), then *Country (no office)* says where they work.
   - Leavers and role changers must be found among the people who hold something today; they are never guessed.
 - **Values are written directly** into each draft once you **Confirm**, because you checked them in the grid. There's no second accept. Audit: *created from batch …*, source **ai**, by the person who confirmed.
 - The database **checks every row again** at Confirm and creates **all or nothing**.
