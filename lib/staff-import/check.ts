@@ -9,6 +9,7 @@ import {
   readDay,
   splitItem,
   toOnboardingInput,
+  workerTypeProblems,
   type Problem,
 } from "@/lib/requests/batch/onboarding";
 
@@ -32,6 +33,8 @@ export type ImportPerson = {
   region_id?: number;
   office_city_id?: number;
   country?: string;
+  /** Employee or contractor (F24f); `import_staff()` defaults to employee. */
+  worker_type?: "employee" | "contractor";
   nationalities?: string[];
   manager_name?: string;
   start_date?: string;
@@ -64,7 +67,7 @@ export const IMPORT_REQUIRED: { field: string; label: string }[] = [
   { field: "lastName", label: "Last name" },
   { field: "workEmail", label: "Work email" },
   { field: "department", label: "Department" },
-  { field: "office", label: "Office" },
+  // Office: required for employees only — `workerTypeProblems` (F24f).
   { field: "startDate", label: "Start date" },
 ];
 
@@ -73,6 +76,7 @@ const GROUPS: [string, (keyof OnboardingInput)[]][] = [
   ["workEmail", ["workEmail"]],
   ["department", ["department"]],
   ["office", ["office", "state", "city"]],
+  ["country", ["country"]],
   ["nationalities", ["nationalities"]],
   ["applications", ["applications"]],
 ];
@@ -101,6 +105,8 @@ export function checkImportRow(
         message: `${r.label} missing — required`,
       });
   }
+
+  problems.push(...workerTypeProblems(values, input));
 
   // The dates come from the file: in the past is fine, the future isn't.
   const start = values.startDate ? readDay(values.startDate) : null;
@@ -178,11 +184,13 @@ function toPerson(
         [
           "firstName",
           "lastName",
+          "workerType",
           "workEmail",
           "jobTitle",
           "manager",
           "department",
           "office",
+          "country",
           "nationalities",
           "applications",
         ] as const
@@ -190,7 +198,9 @@ function toPerson(
         const one = resolveOnboarding(
           k === "office"
             ? { office: input.office, state: input.state, city: input.city }
-            : { [k]: input[k] },
+            : k === "country" && input.office
+              ? {}
+              : { [k]: input[k] },
           options,
         );
         return one.ok ? one.suggestions : [];

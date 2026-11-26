@@ -207,6 +207,38 @@ describe("one row", () => {
       },
     ]);
   });
+
+  test("employee or contractor (F24f): empty = employee; a contractor may have no office", () => {
+    const fieldValue = (
+      r: ReturnType<typeof checkOnboardingRow>,
+      target: string,
+    ) => r.writes.find((w) => w.target === target)?.value;
+    expect(fieldValue(checkOnboardingRow(meera, ctx), "worker_type")).toBe(
+      "employee",
+    );
+    const contractor = checkOnboardingRow(
+      { ...meera, office: "", workerType: "Consultant", country: "India" },
+      ctx,
+    );
+    expect(contractor.problems).toEqual([]);
+    expect(fieldValue(contractor, "worker_type")).toBe("contractor");
+    expect(fieldValue(contractor, "country")).toBe("IN");
+    expect(fieldValue(contractor, "office_id")).toBeUndefined();
+    expect(
+      checkOnboardingRow(
+        { ...meera, office: "No office", workerType: "contractor" },
+        ctx,
+      ).problems.map((p) => p.field),
+    ).toEqual(["country"]);
+    expect(checkOnboardingRow({ ...meera, office: "" }, ctx).problems).toEqual([
+      { field: "office", message: "Office missing — required" },
+    ]);
+    expect(
+      checkOnboardingRow({ ...meera, workerType: "maybe" }, ctx).problems.map(
+        (p) => p.field,
+      ),
+    ).toEqual(["workerType"]);
+  });
 });
 
 describe("the whole batch", () => {

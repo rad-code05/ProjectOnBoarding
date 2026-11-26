@@ -33,6 +33,20 @@ export const IMPORT_FIELDS: BatchField[] = [
     aliases: ["email", "e-mail", "email address", "mail", "emails"],
   },
   {
+    key: "workerType",
+    label: "Employee or contractor",
+    aliases: [
+      "employee / contractor",
+      "employee or contractor",
+      "worker type",
+      "employment type",
+      "employee type",
+      "contract type",
+      "contractor",
+      "staff type",
+    ],
+  },
+  {
     key: "jobTitle",
     label: "Job title",
     aliases: ["title", "role", "position", "positions", "job"],
@@ -49,6 +63,11 @@ export const IMPORT_FIELDS: BatchField[] = [
   },
   { key: "state", label: "State", aliases: ["us state"] },
   { key: "city", label: "City", aliases: [] },
+  {
+    key: "country",
+    label: "Country (no office)",
+    aliases: ["country", "work country", "works in", "country of work"],
+  },
   {
     key: "nationalities",
     label: "Nationality",

@@ -67,6 +67,8 @@ describe("checkImportRow", () => {
     expect(r.person).toEqual({
       first_name: "Lucas",
       last_name: "Moreau",
+      // No "Employee or contractor" column = employee (F24f).
+      worker_type: "employee",
       work_email: "lucas.moreau@laine.ai",
       job_title: "Backend developer",
       manager_name: "Omar Haddad",
@@ -133,6 +135,54 @@ describe("checkImportRow", () => {
     expect(r.person.office_id).toBe(1);
   });
 
+  test("employee or contractor (F24f): a contractor may have no office, then a country", () => {
+    const { office, ...noOffice } = lucas;
+    void office;
+    const contractor = checkImportRow(
+      { ...noOffice, workerType: "Contractor", country: "Germany" },
+      ctx,
+    );
+    expect(contractor.problems).toEqual([]);
+    expect(contractor.person).toMatchObject({
+      worker_type: "contractor",
+      country: "DE",
+    });
+    expect(contractor.person.office_id).toBeUndefined();
+    // "No office" written in the cell is the same as empty.
+    expect(
+      checkImportRow(
+        {
+          ...lucas,
+          office: "No office",
+          workerType: "freelance",
+          country: "DE",
+        },
+        ctx,
+      ).problems,
+    ).toEqual([]);
+    expect(
+      checkImportRow({ ...noOffice, workerType: "contractor" }, ctx).problems,
+    ).toEqual([
+      {
+        field: "country",
+        message:
+          "Country missing — a contractor with no office needs the country they work from",
+      },
+    ]);
+    // An employee still needs an office; an unknown word is flagged.
+    expect(checkImportRow(noOffice, ctx).problems).toEqual([
+      { field: "office", message: "Office missing — required" },
+    ]);
+    expect(
+      checkImportRow({ ...lucas, workerType: "Intern" }, ctx).problems,
+    ).toEqual([
+      {
+        field: "workerType",
+        message: '"Intern" isn\'t Employee or Contractor',
+      },
+    ]);
+  });
+
   test("someone already in the app is skipped, not imported", () => {
     const r = checkImportRow(
       { ...lucas, workEmail: "Rose.Bernal@laine.ai" },
@@ -164,11 +214,13 @@ describe("the import file", () => {
       "First name",
       "Last name",
       "Work email",
+      "Employee or contractor",
       "Job title",
       "Department",
       "Office",
       "State",
       "City",
+      "Country (no office)",
       "Nationality",
       "Manager",
       "Start date",
