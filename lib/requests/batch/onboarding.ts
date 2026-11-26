@@ -36,7 +36,7 @@ export const REQUIRED: { field: string; label: string }[] = [
   { field: "workEmail", label: "Work email" },
   { field: "jobTitle", label: "Job title" },
   { field: "department", label: "Department" },
-  { field: "office", label: "Office" },
+  // Office: required for employees only — `workerTypeProblems` (F24f).
   { field: "manager", label: "Manager" },
   { field: "startDate", label: "Start date" },
 ];
@@ -110,6 +110,71 @@ export function readDay(text: string | undefined): string | null {
   return date.toISOString().slice(0, 10);
 }
 
+const CONTRACTOR_WORDS = new Set([
+  "contractor",
+  "contract",
+  "freelance",
+  "freelancer",
+  "consultant",
+  "external",
+]);
+const EMPLOYEE_WORDS = new Set([
+  "employee",
+  "staff",
+  "permanent",
+  "fulltime",
+  "parttime",
+  "internal",
+]);
+/** Office cells that mean "none" — a contractor without an office (F24f). */
+const NO_OFFICE_WORDS = new Set(["nooffice", "none", "remote", "-", ""]);
+
+const wordKey = (text: string) => text.toLowerCase().replace(/[\s_-]+/g, "");
+
+/**
+ * Employee or contractor from a cell (F24f): empty = employee (as the import
+ * decided), "Contractor", "Freelance", "Consultant" … = contractor; anything
+ * else = null (a problem on that cell).
+ */
+export function readWorkerType(
+  text: string | undefined,
+): "employee" | "contractor" | null {
+  const key = wordKey(text ?? "");
+  if (!key || EMPLOYEE_WORDS.has(key)) return "employee";
+  if (CONTRACTOR_WORDS.has(key)) return "contractor";
+  return null;
+}
+
+/**
+ * The rules a list adds for Employee or contractor (F24f): a cell that is
+ * neither; an employee needs an office; a contractor with no office needs
+ * the country they work from. Shared by batches and the staff import.
+ */
+export function workerTypeProblems(
+  values: Record<string, string>,
+  input: OnboardingInput,
+): Problem[] {
+  if (!input.workerType)
+    return [
+      {
+        field: "workerType",
+        message: `"${values.workerType}" isn't Employee or Contractor`,
+      },
+    ];
+  if (input.office) return [];
+  if (input.workerType === "employee")
+    return [{ field: "office", message: "Office missing — required" }];
+  return input.country?.trim()
+    ? []
+    : [
+        {
+          field: "country",
+          message:
+            "Country missing — a contractor with no office needs the country they work from",
+        },
+      ];
+}
+
 /** A row's cells → what the robot's checks read. */
 export function toOnboardingInput(
   values: Record<string, string>,
@@ -129,9 +194,14 @@ export function toOnboardingInput(
     jobTitle: values.jobTitle,
     department: values.department,
     manager: values.manager,
-    office: values.office,
+    workerType: readWorkerType(values.workerType) ?? undefined,
+    // "No office" in the cell = none (a contractor; an employee is flagged).
+    office: NO_OFFICE_WORDS.has(wordKey(values.office ?? ""))
+      ? undefined
+      : values.office,
     state: values.state,
     city: values.city,
+    country: values.country,
     nationalities: values.nationalities
       ?.split(/[,;/&]|\band\b/)
       .map((s) => s.trim())
@@ -155,6 +225,7 @@ const GROUPS: [string, (keyof OnboardingInput)[]][] = [
   ["startDate", ["startDate"]],
   ["department", ["department"]],
   ["office", ["office", "state", "city"]],
+  ["country", ["country"]],
   ["nationalities", ["nationalities"]],
   ["applications", ["applications"]],
   ["equipment", ["equipment"]],
@@ -271,6 +342,7 @@ export function checkOnboardingRow(
         message: `${r.label} missing — required`,
       });
   }
+  problems.push(...workerTypeProblems(values, input));
   if (values.startDate && !readDay(values.startDate)) {
     problems.push({
       field: "startDate",

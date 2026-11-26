@@ -55,6 +55,20 @@ export const BATCH_FIELDS: Record<RequestType, BatchField[]> = {
       aliases: ["email", "e-mail", "email address", "mail"],
     },
     {
+      key: "workerType",
+      label: "Employee or contractor",
+      aliases: [
+        "employee / contractor",
+        "employee or contractor",
+        "worker type",
+        "employment type",
+        "employee type",
+        "contract type",
+        "contractor",
+        "staff type",
+      ],
+    },
+    {
       key: "jobTitle",
       label: "Job title",
       aliases: ["title", "role", "position", "job"],
@@ -71,6 +85,11 @@ export const BATCH_FIELDS: Record<RequestType, BatchField[]> = {
     },
     { key: "state", label: "State", aliases: ["us state"] },
     { key: "city", label: "City", aliases: [] },
+    {
+      key: "country",
+      label: "Country (no office)",
+      aliases: ["country", "work country", "works in", "country of work"],
+    },
     {
       key: "manager",
       label: "Manager",
