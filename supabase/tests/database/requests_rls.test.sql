@@ -20,8 +20,8 @@ insert into public.user_roles (clerk_user_id, role) values
 -- ---------------------------------------------------------------------------
 select results_eq(
   $$select name from public.departments order by sort_order$$,
-  array['Engineering', 'Tech', 'Sales', 'Operations', 'Marketing', 'Compliance', 'Admin', 'Innovation', 'Legal'],
-  'the nine departments are seeded in order (Innovation 2026-10-29, Legal 2026-11-06)');
+  array['Engineering', 'Tech', 'Sales', 'Operations', 'Marketing', 'Compliance', 'Admin', 'Innovation', 'Legal', 'Finance'],
+  'the ten departments are seeded in order (Innovation 2026-10-29, Legal 2026-11-06, Finance 2026-11-27)');
 select is(
   (select version from public.form_versions where is_current), '4.3',
   'form v4.3 is the current version (F24f: Employee or contractor)');
